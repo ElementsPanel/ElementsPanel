@@ -11,7 +11,7 @@ export function useModUpload(
   activeKey: Ref<string>,
   loadMods: () => void
 ) {
-  // Resolve the optional file plugin's upload queue and picker; leave uploads unavailable when it is absent.
+  // Resolve uploads from the optional file service.
   const fileManager = usePluginService<FrontendFileManagerService>("file");
   const uploadService = fileManager?.uploadService;
   const selectedFiles = fileManager?.useFileManager(instanceId, daemonId)?.selectedFiles;
@@ -40,7 +40,7 @@ export function useModUpload(
     const files = (e.target as HTMLInputElement).files;
     if (!files || files.length === 0) return;
 
-    // Reject zero-byte entries; this heuristic also excludes empty files.
+    // Skip zero-byte entries, including empty files, when filtering upload candidates.
     const validFiles = Array.from(files).filter(f => f.size > 0);
     if (validFiles.length === 0) {
       return message.warning(t("TXT_CODE_MOD_UPLOAD_NO_FOLDER"));

@@ -18,9 +18,7 @@ function resolveDockerOptionsFromEnv(): Docker.DockerOptions {
 }
 
 function parseDockerHostToDockerOptions(dockerHost: string): Docker.DockerOptions | undefined {
-  // Support both:
-  // - Docker CLI style: unix:///run/user/<uid>/docker.sock (rootless Docker)
-  // - Raw socket path: /run/user/<uid>/docker.sock
+  // Accept Docker socket URLs and raw paths, including rootless sockets.
 
   const value = dockerHost.trim();
   if (!value) return undefined;
@@ -28,20 +26,18 @@ function parseDockerHostToDockerOptions(dockerHost: string): Docker.DockerOption
   // Windows named pipe (Docker CLI uses: npipe:////./pipe/docker_engine)
   if (value.startsWith("npipe:")) {
     let pipePath = value.slice("npipe:".length);
-    // Reduce leading slashes: "////./pipe/docker_engine" -> "//./pipe/docker_engine"
+    // Normalize named-pipe slashes without losing the ./ component.
     if (pipePath.startsWith("////")) pipePath = `//${pipePath.slice(4)}`;
     // URL parsing would normalize away "./", keep the canonical dockerode form.
     if (pipePath.startsWith("//pipe/")) pipePath = pipePath.replace("//pipe/", "//./pipe/");
     return { socketPath: pipePath };
   }
 
-  // Unix socket URL (Docker CLI style)
   if (value.startsWith("unix://")) {
     const socketPath = value.slice("unix://".length);
     return socketPath ? { socketPath } : undefined;
   }
 
-  // Support TCP/HTTP(S) style (e.g. tcp://127.0.0.1:2375)
   if (value.includes("://")) {
     try {
       const url = new URL(value);
@@ -63,11 +59,10 @@ function parseDockerHostToDockerOptions(dockerHost: string): Docker.DockerOption
         };
       }
     } catch {
-      // Fall through to raw socket path handling.
+      // Invalid URLs may still be valid raw socket paths.
     }
   }
 
-  // Raw path fallback (common in systemd env files)
   return { socketPath: value };
 }
 
@@ -135,12 +130,7 @@ export class DockerManager {
     }
   }
 
-  /**
-   * Get all supported platform types (e.g., linux/arm64, linux/amd64)
-   * Returns the native platform of the Docker daemon.
-   * For additional platforms via buildx, you may need to query buildx separately.
-   * @returns Array of supported platform strings
-   */
+  /** Return the daemon's native platform; discover additional buildx platforms separately. */
   async getSupportedPlatforms(): Promise<string[]> {
     try {
       const info = await this.docker.info();
@@ -184,12 +174,6 @@ export class DockerManager {
     }
   }
 
-  /**
-   * Get supported platforms for a Docker image
-   * Attempts to fetch manifest from registry to get platform information
-   * @param imageName Image name in format "image:tag" or "registry/image:tag"
-   * @returns Array of supported platform strings (e.g., ["linux/amd64", "linux/arm64"])
-   */
   async getImagePlatforms(imageName: string): Promise<string[]> {
     try {
       return await this.getImagePlatformsFromRegistry(imageName);
@@ -198,11 +182,7 @@ export class DockerManager {
     }
   }
 
-  /**
-   * Fetch image platforms from Docker registry using HTTP API V2
-   * @param imageName Image name in format "image:tag" or "registry/image:tag"
-   * @returns Array of supported platform strings
-   */
+  /** Read image platforms from the registry HTTP API v2. */
   private async getImagePlatformsFromRegistry(imageName: string): Promise<string[]> {
     try {
       // Parse image name: registry/repo/image:tag or repo/image:tag
@@ -212,14 +192,11 @@ export class DockerManager {
       let tag = "latest";
 
       if (parts.length === 1) {
-        // format: image:tag or image
         const [img, imgTag] = parts[0].includes(":") ? parts[0].split(":") : [parts[0], "latest"];
         repository = `library/${img}`;
         tag = imgTag;
       } else if (parts.length === 2) {
-        // format: repo/image:tag or registry/repo:tag
         if (parts[0].includes(".") || parts[0].includes(":")) {
-          // likely a registry
           registry = parts[0];
           const [repo, repoTag] = parts[1].includes(":")
             ? parts[1].split(":")
@@ -227,7 +204,6 @@ export class DockerManager {
           repository = repo;
           tag = repoTag;
         } else {
-          // format: repo/image:tag
           const [repo, repoTag] = parts[1].includes(":")
             ? parts[1].split(":")
             : [parts[1], "latest"];
@@ -235,7 +211,6 @@ export class DockerManager {
           tag = repoTag;
         }
       } else {
-        // format: registry/repo/image:tag
         registry = parts[0];
         const lastPart = parts[parts.length - 1];
         const [lastRepo, lastTag] = lastPart.includes(":")
@@ -284,8 +259,7 @@ export class DockerManager {
                 }
               } else if (manifest.config || manifest.layers) {
                 if (manifest.config?.digest) {
-                  // for single platform, we'd need to fetch the config blob
-                  // for now, return empty and let the caller handle it
+                  // Single-platform manifests need a config-blob lookup; return no platform hints for now.
                 }
               }
 

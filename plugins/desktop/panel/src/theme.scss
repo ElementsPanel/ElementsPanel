@@ -84,7 +84,6 @@
   --desktop-resize-handle-color: transparent;
 }
 
-/* Paint window surfaces once so feature views can use the shared background. */
 .desktop-window > .window__frame,
 .desktop-login-window {
   background: var(--desktop-window-bg);
@@ -95,7 +94,6 @@
   background: var(--desktop-window-bg) !important;
 }
 
-/* Desktop mode uses Vuetify surfaces and controls without visible outlines. */
 .desktop-container,
 .desktop-container *,
 .desktop-container *::before,
@@ -134,7 +132,6 @@
   box-shadow: none !important;
 }
 
-/* Hide separators and outlines inherited from feature styles. */
 .desktop-container table,
 .desktop-container th,
 .desktop-container td,
@@ -167,8 +164,7 @@
   box-shadow: none !important;
 }
 
-/* Dialogs and toasts retain the desktop treatment after teleporting to body.
-   Selection menus use the console's shared menu styles in every layout. */
+/* Apply desktop styling to teleported dialogs and toasts; menus use shared console styles. */
 .desktop-mode-active .v-overlay:not(.v-menu),
 .desktop-mode-active .v-overlay:not(.v-menu) *,
 .desktop-mode-active .v-overlay:not(.v-menu) *::before,
@@ -190,10 +186,7 @@
   box-shadow: none !important;
 }
 
-/*
- * Paint editable fields, including teleported dialogs, without painting labels or validation
- * messages.
- */
+/* Paint field controls in teleported dialogs without painting labels or validation messages. */
 .desktop-mode-active {
   --app-field-surface: var(--v-theme-surface-variant);
 }

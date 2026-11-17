@@ -58,9 +58,6 @@ function useDefineMarketMutation<P, T>(baseConfig: Parameters<typeof useDefineAp
   };
 }
 
-// Plugin packages use a separate catalogue from instance templates.
-
-/** One plugin as the market lists it, with the version installed here, if any. */
 export interface MarketPlugin {
   /** Empty for this panel; omitted for an unscoped catalogue response. */
   targetDaemonId?: string;
@@ -71,28 +68,19 @@ export interface MarketPlugin {
   category: string;
   author: { id: string; displayName: string };
   latestVersion?: MarketPluginVersion;
-  /** The version installed on this panel or its nodes, if any. */
   installedVersion?: string;
   installedState?: string;
-  /** Nodes with a recorded installation of this plugin. */
   installedDaemonIds?: string[];
-  /**
-   * Whether the installation shown here can be removed from this panel.
-   * Essential packages can still change versions through npm.
-   */
+  /** Essential packages may be updated through npm but cannot be removed. */
   installedRemovable?: boolean;
-  /** Whether this installation has an npm package whose version can be changed. */
+  /** Only npm-installed packages support version changes. */
   installedUpdatable?: boolean;
-  /**
-   * The halves the latest release carries, as the market reports them. Optional
-   * because a market source that predates the field simply does not send it.
-   */
+  /** Older market sources may omit the release's plugin sides. */
   sides?: PluginSide[];
   /** Market path to icon.png. Older markets may omit it; null or absent values use the default icon. */
   iconUrl?: string | null;
 }
 
-/** Which half of a package carries a plugin: its first path segment. */
 export type PluginSide = "panel" | "daemon";
 
 export interface MarketPluginVersion {
@@ -110,7 +98,6 @@ export interface MarketPluginVersion {
   fileCount: number;
   sizeBytes: number;
   submittedAt: number;
-  /** The halves this release's own package carries. */
   sides?: PluginSide[];
 }
 
@@ -118,7 +105,6 @@ export interface MarketPluginDetail extends MarketPlugin {
   /** Versions resolvable from this panel, not from its remote daemons. */
   dependencyVersions?: Record<string, string>;
   description: string;
-  /** Raw package README.md, or empty when unavailable. */
   readme?: string;
   versions: MarketPluginVersion[];
   selectedVersion: MarketPluginVersion;
@@ -126,7 +112,6 @@ export interface MarketPluginDetail extends MarketPlugin {
   updatedAt: number;
 }
 
-/** One plugin installed from the market on the panel or its nodes. */
 export interface InstalledPlugin {
   state?: string;
   panelVersion?: string;
@@ -148,10 +133,7 @@ export const pluginMarketList = useDefineApi<{ params?: { daemonId?: string } },
   method: "GET"
 });
 
-/**
- * Fetch the icon through the backend and return a JSON data URL, or null for the default icon.
- * The market serves the latest icon; the requested version only keys the frontend cache.
- */
+/** Proxy the latest icon as a data URL; version only partitions the frontend cache. */
 export const pluginMarketIcon = useDefineApi<
   { params: { pluginId: string; version?: string } },
   { dataUrl: string | null }
@@ -205,7 +187,6 @@ export const updateMarketBatch = useDefineMarketMutation<
   method: "POST"
 });
 
-/** One daemon a plugin with a daemon half can be installed on. */
 export interface MarketNode {
   daemonId: string;
   remarks: string;
@@ -219,7 +200,7 @@ export const pluginMarketNodes = useDefineApi<unknown, MarketNode[]>({
   method: "GET"
 });
 
-/** Live installation information for the panel and every configured daemon. */
+/** Read live install state from the panel and every configured daemon. */
 export interface MarketPluginTarget extends MarketNode {
   installed: boolean;
   installedVersion?: string;

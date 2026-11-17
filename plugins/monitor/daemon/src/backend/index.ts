@@ -3,8 +3,6 @@ import { Logger } from "cordis";
 import { systemInfo } from "mcsmanager-common";
 import { SystemUsageHistory } from "./visual_data";
 
-// Optional CPU/memory histories augment the runtime overview.
-
 export const inject = ["i18n", "overview"];
 
 export function apply(ctx: DaemonPluginContext) {

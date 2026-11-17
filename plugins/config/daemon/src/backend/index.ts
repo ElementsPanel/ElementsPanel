@@ -4,16 +4,11 @@ import { localeMessages } from "../i18n";
 import { SettingsFormService } from "./settings";
 import { writePluginOverride } from "mcsmanager-common";
 
-// Expose daemon plugin management over the protocol.
-// The daemon auth middleware requires an authenticated panel session for these events.
+// Authenticate panel sessions before handling daemon management events.
 
-/** Turning this plugin off would remove the events the request came in over. */
 const SELF = "config";
 
-/**
- * Turning the web server off would drop the connection the request arrived on,
- * and with it every event that could turn it back on.
- */
+/** Keep the server enabled so remote management remains reachable. */
 const ESSENTIAL = new Set(["i18n", "storage", "runtime", "server"]);
 const PLUGIN_GROUPS_CATEGORY = "PluginGroups";
 const PLUGIN_GROUPS_ID = "config";
@@ -62,15 +57,13 @@ export function apply(ctx: DaemonPluginContext) {
   const settingsForm = ctx.get("settingsForm");
   if (!settingsForm) throw new Error("Daemon settings form service is unavailable.");
 
-  // Include plugin versions and dual-side requirements in the overview for compatibility checks.
-  // Hosts without an overview service can still load this plugin.
+  // Advertise plugin versions and dependencies when the host supports overviews.
   ctx.overview?.provide(() => ({
     plugins: ctx.plugins
       .inventory()
       .map((record) => ({ id: record.id, version: record.version, dual: record.dual }))
   }));
 
-  // The loader enforces removal restrictions and returns protocol errors.
   ctx.protocol.on("plugin/remove", async (routerCtx, data) => {
     try {
       const id = String((data as { id?: unknown })?.id ?? "");
@@ -125,14 +118,11 @@ export function apply(ctx: DaemonPluginContext) {
       }
       ctx.protocol.response(routerCtx, await ctx.plugins.setEnabled(id, enabled));
     } catch (error: any) {
-      // The panel turns this into the error its page reports; an unhandled throw
-      // from an async handler would reach nobody, because `emitRouter` only
-      // catches the synchronous part.
+      // Reply explicitly: emitRouter does not catch asynchronous rejections.
       ctx.protocol.responseError(routerCtx, error);
     }
   });
 
-  // Install the selected npm dependency in the daemon's installation project.
   async function installPackage(
     routerCtx: Parameters<typeof ctx.protocol.response>[0],
     data: unknown,
@@ -192,8 +182,7 @@ export function apply(ctx: DaemonPluginContext) {
     try {
       respond();
     } finally {
-      // A polling transport may be between HTTP requests. Wait until Engine.IO
-      // hands the buffered reply to its transport before replacing the socket.
+      // Wait for Engine.IO to flush a polling reply before replacing the socket.
       connection?.off("drain", onDrain);
       if (connection?.readyState === "open" && !flushed) {
         const release = () => {
@@ -232,8 +221,7 @@ export function apply(ctx: DaemonPluginContext) {
     }
   });
 
-  // Reconcile dependencies and make their current handlers available on
-  // existing authenticated sockets.
+  // Refresh handlers on existing authenticated sockets after dependency changes.
   ctx.protocol.on("plugin/reload", async (routerCtx) => {
     try {
       await ctx.plugins.reload();
@@ -243,7 +231,6 @@ export function apply(ctx: DaemonPluginContext) {
     }
   });
 
-  // Expose backend-declared settings for the panel's generic form.
   ctx.protocol.on("plugin/config", async (routerCtx, data) => {
     try {
       const id = String((data as { id?: unknown })?.id ?? "");

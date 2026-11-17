@@ -26,7 +26,7 @@ export function registerModManager(ctx: PanelPluginContext) {
   const manager = new ModManagerService(ctx);
   registerModManagerRoutes(ctx, manager);
 
-  // Load before publishing the form, so a late startup read cannot overwrite a saved change.
+  // Load saved settings before exposing the form so late reads cannot overwrite edits.
   ctx.inject(["storage"], async (scope) => {
     try {
       manager.setSettings(await loadModManagerSettings(scope));

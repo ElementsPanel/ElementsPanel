@@ -23,7 +23,6 @@ export function apply(ctx: PanelFrontendPluginContext) {
       mainMenu: true,
       permission: ROLE_ADMIN,
       icon: "mdi-puzzle-outline"
-      // Use the plugin market's own breadcrumb trail.
     }
   });
 

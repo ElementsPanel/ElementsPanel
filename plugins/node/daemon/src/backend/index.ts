@@ -2,11 +2,7 @@ import type { DaemonPluginContext } from "../../../../../core/daemon/src/plugin"
 import { localeMessages } from "../i18n";
 import { registerSettings } from "./settings";
 
-// Node address mappings belong here. Keep language synchronization and legacy
-// port allocation updates separate from the other plugins' settings forms.
-
-// Inlined from mcsmanager-common so the plugin does not depend on how the
-// daemon bundles it.
+// Keep this helper local to avoid depending on the host bundle layout.
 function isEmpty(value: unknown) {
   return value === null || value === undefined;
 }

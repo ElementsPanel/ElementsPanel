@@ -29,16 +29,14 @@ export class OperationLogger {
 
   private flush(): boolean {
     if (this.#buffer.size === 0) return true;
-    // Histories are bounded. Commit them atomically before dropping the buffer,
-    // so reads and shutdown cannot race an asynchronous append/trim operation.
+    // Commit bounded histories atomically before clearing the buffer to avoid read and shutdown races.
     try {
       this.#storage.appendSync("global", Array.from(this.#buffer.values()));
       this.#buffer.clear();
       this.#retryAfter = 0;
       return true;
     } catch (error) {
-      // Audit persistence must not turn an already completed business operation
-      // into a failed request. Keep the bounded buffer and retry from the timer.
+      // Keep buffered audits for retry; persistence failures must not fail completed requests.
       if (Date.now() >= this.#retryAfter) console.error("Failed to persist operation logs:", error);
       this.#retryAfter = Date.now() + 5000;
       return false;

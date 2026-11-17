@@ -103,8 +103,7 @@ class InstanceControlSubsystem {
         }
         this.registerScheduleJob(config, false);
       } catch (error: any) {
-        // Some scheduled tasks may be left, but the upper limit will not change
-        // Ignore the scheduled task registration at startup
+        // Apply current task limits to new registrations while restoring older tasks unchanged.
       }
     });
   }
@@ -306,7 +305,7 @@ class InstanceControlSubsystem {
           continue;
         }
 
-        // Limit execution frequency to prevent user scheduled tasks from causing performance issues
+        // Bound task frequency to avoid excessive dispatch work.
         await sleep(100);
       }
     } catch (error: any) {

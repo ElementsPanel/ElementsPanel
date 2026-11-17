@@ -26,7 +26,7 @@ const handleDownload = (record: any) => {
   if (isInstalled(record) || downloadingVersionId.value === record.id) return;
   downloadingVersionId.value = record.id;
 
-  // Clear pending download state if no installation update arrives within 60 seconds.
+  // Clear pending downloads after 60 seconds without an installation update.
   if (downloadTimeout) clearTimeout(downloadTimeout);
   downloadTimeout = setTimeout(() => {
     if (downloadingVersionId.value === record.id) {
@@ -94,12 +94,12 @@ const sortedVersions = computed(() => {
 
     if (aScore !== bScore) return bScore - aScore;
 
-    // Fallback 1: Date (Latest first)
+    // Fall back to release date, newest first.
     const aDate = new Date(a.date_published || a.published_at || a.updated || 0).getTime();
     const bDate = new Date(b.date_published || b.published_at || b.updated || 0).getTime();
     if (aDate !== bDate && !isNaN(aDate) && !isNaN(bDate)) return bDate - aDate;
 
-    // Fallback 2: Version number (Natural sort, Latest first)
+    // Then compare version numbers in descending natural order.
     return (b.version_number || "").localeCompare(a.version_number || "", undefined, {
       numeric: true,
       sensitivity: "base"
@@ -109,9 +109,9 @@ const sortedVersions = computed(() => {
 
 const isInstalled = (record: any) => {
   return props.mods?.some((m: any) => {
-    // 1. Check by version ID (most accurate for MCSM managed mods)
+    // Match managed files by version ID before falling back to filenames.
     if (m.extraInfo?.version?.id && m.extraInfo.version.id === record.id) return true;
-    // 2. Check by filename (for manually uploaded or different metadata)
+    // Filename matching also covers manually uploaded files.
     const targetFileName =
       record.filename || record.fileName || (record.files && record.files[0]?.filename);
     if (targetFileName && m.file === targetFileName) return true;

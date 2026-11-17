@@ -10,11 +10,7 @@ export type ApiMutationListener = () => void;
 
 const mutationListeners = new Set<ApiMutationListener>();
 
-/**
- * Subscribes to successful write requests. Pull-based views (such as the
- * background task list) use this to refresh right after a mutation instead of
- * waiting for their next poll.
- */
+/** Refresh pull-based views immediately after successful writes. */
 export function onApiMutation(listener: ApiMutationListener) {
   mutationListeners.add(listener);
   return () => mutationListeners.delete(listener);
@@ -72,8 +68,7 @@ class ApiService {
     config.timeout ??= 30_000;
 
     const isRead = config.method === "GET" || config.method === "HEAD";
-    // Mutations must always reach the server. Invalidate both before and after
-    // them so an older read cannot repopulate the cache while a write is running.
+    // Invalidate before and after writes so an in-flight read cannot restore stale data.
     if (!isRead || config.forceRequest) this.clearCache();
     const cacheable = isRead && !config.forceRequest && !config.signal;
     const generation = this.generation;

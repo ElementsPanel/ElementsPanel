@@ -47,14 +47,14 @@ const emit = defineEmits<{
     (e: "contextmenu-titlebar", event: MouseEvent, id: string): void;
 }>();
 
-// Keep menus in their owning window's stacking context, outside the clipped frame.
+// Keep menus outside the clipped frame but inside their owning window's stacking context.
 const windowElement = ref<HTMLElement>();
 const overlayDefaults = computed(() => ({
     VMenu: { attach: windowElement.value },
     VTooltip: { attach: windowElement.value }
 }));
 
-// Use display directly so visibility changes do not invoke the outer window group's transitions.
+// Use display to avoid triggering the outer window transition group.
 const renderWindow = ref(!props.minimized);
 const isAnimatingVisibility = ref(false);
 let visibilityAnimation: Animation | undefined;
@@ -129,7 +129,6 @@ watch(() => [props.visible, props.minimized] as const, async ([visible, minimize
     animation.onfinish = () => {
         if (visibilityAnimation !== animation) return;
         renderWindow.value = !minimized;
-        // Hide the minimized window before clearing the final frame.
         void nextTick(() => {
             if (visibilityAnimation === animation) stopVisibilityAnimation();
         });
@@ -157,10 +156,9 @@ const fitBounds = (bounds: WindowBounds): WindowBounds => {
     };
 };
 
-// Fit before the first render so even centered subwindows and saved layouts open fully on screen.
+// Fit restored and centered windows inside the screen before rendering.
 const requestedBounds = { x: props.initialX, y: props.initialY, width: props.initialWidth, height: props.initialHeight };
 const initialBounds = fitBounds(requestedBounds);
-// Keep a small gap when moving a new window back to the top.
 const availableHeight = Math.max(1, window.innerHeight - TASKBAR_HEIGHT);
 if (initialBounds.y >= availableHeight - initialBounds.height) {
     initialBounds.y = Math.min(16, Math.max(0, availableHeight - 1));

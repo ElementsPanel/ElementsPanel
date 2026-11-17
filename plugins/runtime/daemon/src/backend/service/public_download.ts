@@ -62,9 +62,7 @@ export function isPublicAddress(address: string): boolean {
 
 const hostname = (value: string) => value.replace(/^\[|\]$/g, "").toLowerCase();
 
-// Clash/Mihomo and sing-box can resolve public CDNs to these synthetic ranges.
-// They are still non-public: only verified HTTPS to known catalog hosts may use
-// them, never arbitrary downloads, literal IPs or other private addresses.
+// Allow synthetic proxy ranges only for verified HTTPS catalog hosts; arbitrary downloads must use public addresses.
 const proxyAddresses = new BlockList();
 proxyAddresses.addSubnet("198.18.0.0", 15, "ipv4");
 proxyAddresses.addSubnet("fdfe:dcba:9876::", 48, "ipv6");

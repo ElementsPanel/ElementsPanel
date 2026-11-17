@@ -11,9 +11,6 @@ import trTR from "./tr_TR.json";
 import zhCN from "./zh_CN.json";
 import zhTW from "./zh_TW.json";
 
-// The lines a backup prints into the instance console, plus the errors its
-// protocol handlers throw. Registered with the daemon's i18next instance at
-// setup, so the daemon catalogue carries nothing backup-specific.
 export const localeMessages = {
   de_de: deDE,
   en_us: enUS,

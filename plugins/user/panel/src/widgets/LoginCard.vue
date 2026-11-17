@@ -97,7 +97,7 @@ onMounted(async () => {
     const res = await ssoConfig().execute();
     if (res.value) ssoInfo.value = res.value;
   } catch {
-    // SSO config may not be available
+    // Keep password login available when SSO settings cannot be loaded.
   }
 
   if (ssoInfo.value?.enabled && ssoInfo.value?.autoRedirect) {

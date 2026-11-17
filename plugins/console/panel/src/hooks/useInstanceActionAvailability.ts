@@ -1,10 +1,7 @@
 import type { PanelFrontendInstanceActionContext } from "@elements-panel/sdk";
 import { TYPE_MINECRAFT_BEDROCK, TYPE_MINECRAFT_JAVA } from "@/hooks/useInstance";
 
-/**
- * Instance actions are always scoped to a real instance; the global terminal is
- * not an instance, so it must never offer an action that opens instance UI.
- */
+/** Exclude global terminals from actions that require an instance. */
 export const isScopedInstance = ({
   instanceId,
   daemonId,
@@ -12,7 +9,6 @@ export const isScopedInstance = ({
 }: PanelFrontendInstanceActionContext) =>
   !isGlobalTerminal && Boolean(instanceId && daemonId);
 
-/** True when the node reports the daemon plugin that serves this action. */
 export const hasNodeFeature = (
   { daemon }: PanelFrontendInstanceActionContext,
   feature: string

@@ -11,7 +11,6 @@ import trTR from "./tr_TR.json";
 import zhCN from "./zh_CN.json";
 import zhTW from "./zh_TW.json";
 
-// Translate protocol errors on the daemon before the panel displays them.
 export const localeMessages = {
   de_de: deDE,
   en_us: enUS,

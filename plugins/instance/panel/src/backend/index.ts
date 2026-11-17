@@ -27,7 +27,7 @@ export function apply(ctx: PanelPluginContext) {
   setPluginContext(ctx);
   ctx.set("instances", {
     getDetails: getInstanceDetails,
-    // Compatibility facade only: account data and policy belong to `user`.
+    // Forward legacy account access to the optional user service.
     getByUuid: (uuid, daemonId, advanced) => {
       const accounts = ctx.get("guard")?.accounts;
       if (!accounts?.getProfile) throw new Error("Account profiles are unavailable.");
@@ -50,8 +50,6 @@ export function apply(ctx: PanelPluginContext) {
   api.use(scheduleRouter.routes()).use(scheduleRouter.allowedMethods());
   api.use(minecraftRouter.routes()).use(minecraftRouter.allowedMethods());
 
-  // Instance selection is part of instance management, while daemon CRUD is
-  // owned by the node plugin.
   const instanceSelection = new Router({ prefix: "/service" });
   instanceSelection.get(
     "/remote_service_instances",

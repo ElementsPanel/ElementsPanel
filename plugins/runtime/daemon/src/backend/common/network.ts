@@ -1,7 +1,4 @@
-/**
- * Common network request headers to avoid 403 Forbidden and other security issues.
- * Provides a standardized set of headers for all outward network requests.
- */
+/** Use consistent browser-compatible headers for outbound requests. */
 export function getCommonHeaders(url?: string) {
   const headers: Record<string, string> = {
     "User-Agent":
@@ -16,7 +13,6 @@ export function getCommonHeaders(url?: string) {
       const urlObj = new URL(url);
       headers["Referer"] = urlObj.origin;
     } catch (e) {
-      // Ignore invalid URL
     }
   }
 

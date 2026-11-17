@@ -9,20 +9,17 @@ import {
   roles
 } from "./runtime";
 
-/** The upload/download passport key. Its own copy of the core's `timeUuid`. */
 function timeUuid() {
   return v4().replace(/-/gim, "") + new Date().getTime();
 }
 
-/** Scope /api/files routes and their access gate to this plugin. */
 export function registerFileRoutes() {
   const router = koa().router("/api/files");
   const permission = middleware().permission;
   const validator = middleware().validator;
   const ROLE = roles();
 
-  // The user plugin decides whether ordinary users may open the file manager;
-  // the same guard also decides who may reach a particular instance.
+  // Use the user guard for file-manager capabilities and per-instance access.
   router.use(async (ctx, next) => {
     if (!identity().accessPolicy.canFileManager && !identity().of(ctx).elevated) {
       ctx.status = 403;

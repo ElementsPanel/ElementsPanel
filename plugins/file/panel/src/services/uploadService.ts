@@ -165,7 +165,7 @@ export class UploadFiles {
 
 class UploadTask {
   status: "pending" | "uploading" | "completed" | "failed" | "stopping" | "removing" = "pending";
-  progress: number = 0; // byte
+  progress: number = 0;
   file: UploadFiles;
   rangeStart: number;
   rangeEnd: number;
@@ -234,7 +234,7 @@ class UploadTask {
     const msg = error.response?.data || error.message;
     console.error(msg);
     if (msg == "Access denied: No task found" || msg == "File is not opened") {
-      // usually caused by multi-tab upload, just remove the task
+      // A competing upload may have removed this task.
       this.status = "removing";
       return uploadService.update();
     }
@@ -461,8 +461,7 @@ class UploadService {
     this.files.clear();
     this.uploaded = 0;
     this.updateProgress();
-    // Clear the old queue before awaiting; newly appended uploads belong to
-    // the next batch and must not be cleared by this cancellation.
+    // Clear the old batch before awaiting so cancellation cannot remove newly queued uploads.
     const results = await Promise.allSettled(files.map((file) => file.stop()));
     for (const result of results) {
       if (result.status === "rejected") reportErrorMsg(result.reason?.message || result.reason);

@@ -26,9 +26,7 @@ export const inject = ["console", "i18n", "routes", "slots"];
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);
 
-  // Everything the console implementation needs from the account API and the windows the
-  // Desktop plugin mounts. Resolved at call time, so unloading this plugin
-  // takes authentication with it.
+  // Resolve account APIs and window providers at call time so unloading removes authentication.
   ctx.set("user", {
     api: userApi,
     restoreSession,
@@ -38,12 +36,8 @@ export function apply(ctx: PanelFrontendPluginContext) {
     desktopStartMenuAvatar: "mdi-account-outline"
   });
 
-  // Authentication settings are declared by this plugin's backend, so the plugin
-  // manager renders them and this half contributes no form.
-
   ctx.slots.register("shell.overlay", MyselfInfoDialog, { id: "user-self-dialog" });
 
-  // Account actions belong to this plugin; the shell renders the buttons.
   const accountVisible = () => {
     const { authEnabled, isLogged } = useAppStateStore();
     return authEnabled.value && isLogged.value;

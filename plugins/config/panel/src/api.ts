@@ -3,36 +3,28 @@ export type { PluginChangeResult };
 import { useDefineApi } from "@elementspanel/epanel-plugin-console/stores/useDefineApi";
 
 
-/** One installed plugin, as the panel reports it. */
 export interface PluginRecord {
   packageName?: string;
   id: string;
   version?: string;
   description?: string;
   priority?: number;
-  /** The persisted switch, after applying data/plugin-overrides.json. */
+  /** Enabled state after applying data/plugin-overrides.json. */
   enabled: boolean;
-  /** Which halves the manifest declares. */
   sides: { backend: boolean; frontend: boolean };
-  /** Whether the backend half is running in the panel process right now. */
+  /** Current panel backend state. */
   running: boolean;
   state?: PluginState;
   result?: PluginChangeResult;
-  /** Why the backend half is not running, when it should be. */
   error?: string;
-  /** Whether the plugin declared a configuration form. */
   hasSettings?: boolean;
-  /** Whether the panel may remove this plugin package in the current environment. */
   removable: boolean;
 }
 
-// Panel and daemon forms share the same backend-declared schema.
-
-/** What a declared setting renders as. `link` reads and writes nothing. */
+/** Link fields navigate without reading or writing a value. */
 export type SettingFieldType =
   | "string"
   | "color"
-  /** Multi-line string. */
   | "text"
   | "number"
   | "boolean"
@@ -45,7 +37,7 @@ export interface SettingOption {
   label: string;
 }
 
-/** One row of a plugin's form, with its labels already translated. */
+/** Field labels are already translated by the backend. */
 export interface SettingField {
   key?: string;
   type: SettingFieldType;
@@ -58,10 +50,7 @@ export interface SettingField {
   secret?: boolean;
   /** `string`: offer the installed file manager's upload dialog. */
   fileUpload?: boolean;
-  /**
-   * Shown only while every listed condition holds: a field name (truthy) or
-   * `"name=value"`.
-   */
+  /** All conditions must match: a truthy field name or "name=value". */
   visibleWhen?: string | string[];
   /** `link`: a frontend route the form offers as a button. */
   route?: string;
@@ -75,14 +64,13 @@ export interface SettingField {
   required?: boolean;
 }
 
-/** One plugin's form and its current values. */
 export interface SettingsSchema {
   id: string;
   fields: SettingField[];
   values: Record<string, unknown>;
 }
 
-/** A user-defined plugin group persisted by the panel or its daemon. */
+/** Custom plugin group persisted on its host. */
 export interface PluginGroup {
   id: string;
   name: string;
@@ -95,7 +83,7 @@ export const pluginList = useDefineApi<unknown, PluginRecord[]>({
   method: "GET"
 });
 
-/** Turns a plugin on or off, in the user override layer and in the running panel. */
+/** Persist and apply the panel plugin's enabled state. */
 export const setPluginEnabled = useDefineApi<
   { data: { id: string; enabled: boolean } },
   PluginRecord
@@ -104,7 +92,6 @@ export const setPluginEnabled = useDefineApi<
   method: "PUT"
 });
 
-/** Unloads and removes one panel plugin package. */
 export const removePlugin = useDefineApi<{ params: { id: string } }, void>({
   url: "/api/plugins",
   method: "DELETE"
@@ -120,7 +107,6 @@ export const installNodePlugin = useDefineApi<
   NodePluginRecord
 >({ url: "/api/plugins/node/npm/install", method: "POST" });
 
-/** One panel plugin's declared form and values, or `null` when it declared none. */
 export const pluginSettings = useDefineApi<{ params: { id: string } }, SettingsSchema | null>({
   url: "/api/plugins/settings",
   method: "GET"
@@ -134,7 +120,6 @@ export const updatePluginSettings = useDefineApi<
   method: "PUT"
 });
 
-/** Panel-side plugin groups, persisted by the panel storage service. */
 export const pluginGroupList = useDefineApi<unknown, PluginGroup[]>({
   url: "/api/plugins/groups",
   method: "GET"
@@ -148,9 +133,8 @@ export const updatePluginGroupList = useDefineApi<
   method: "PUT"
 });
 
-// Node requests require the node plugin's remote connection service.
+// Resolve node requests through the optional remote service.
 
-/** One connected node, as the page lists it for selection. */
 export interface NodeSummary {
   uuid: string;
   remarks: string;
@@ -159,7 +143,6 @@ export interface NodeSummary {
   available: boolean;
 }
 
-/** One plugin installed on a daemon, as that daemon reports it. */
 export interface NodePluginRecord {
   packageName?: string;
   id: string;
@@ -167,35 +150,30 @@ export interface NodePluginRecord {
   version?: string;
   description?: string;
   priority?: number;
-  /** The persisted switch, after applying data/plugin-overrides.json. */
+  /** Enabled state after applying data/plugin-overrides.json. */
   enabled: boolean;
-  /** Whether the manifest names an entry module at all. */
   hasEntry: boolean;
-  /** Whether the plugin is running in the daemon process right now. */
+  /** Current daemon backend state. */
   running: boolean;
   state?: PluginState;
   result?: PluginChangeResult;
-  /** Why it is not running, when it should be. */
   error?: string;
-  /** Whether the plugin declared a configuration form. */
   hasSettings?: boolean;
-  /** Whether the daemon may remove this plugin package in the current environment. */
   removable: boolean;
 }
 
-/** The nodes this panel can administer. */
 export const nodeList = useDefineApi<unknown, NodeSummary[]>({
   url: "/api/plugins/node/list",
   method: "GET"
 });
 
-/** One node's plugin inventory, fetched from the daemon itself. */
+/** Fetch the selected daemon's plugin inventory. */
 export const nodePluginList = useDefineApi<{ params: { daemonId: string } }, NodePluginRecord[]>({
   url: "/api/plugins/node/plugins",
   method: "GET"
 });
 
-/** Turns a plugin on or off on that node. The daemon applies it immediately. */
+/** Persist and apply the daemon plugin's enabled state. */
 export const setNodePluginEnabled = useDefineApi<
   { params: { daemonId: string }; data: { id: string; enabled: boolean } },
   NodePluginRecord
@@ -204,13 +182,11 @@ export const setNodePluginEnabled = useDefineApi<
   method: "PUT"
 });
 
-/** Unloads and removes one daemon plugin package on the selected node. */
 export const removeNodePlugin = useDefineApi<{ params: { daemonId: string; id: string } }, void>({
   url: "/api/plugins/node",
   method: "DELETE"
 });
 
-/** One daemon plugin's declared form and values, straight from that daemon. */
 export const nodePluginSettings = useDefineApi<
   { params: { daemonId: string; id: string } },
   SettingsSchema | null
@@ -227,7 +203,6 @@ export const updateNodePluginSettings = useDefineApi<
   method: "PUT"
 });
 
-/** Daemon-side plugin groups, persisted by the selected daemon. */
 export const nodePluginGroupList = useDefineApi<{ params: { daemonId: string } }, PluginGroup[]>({
   url: "/api/plugins/node/groups",
   method: "GET"

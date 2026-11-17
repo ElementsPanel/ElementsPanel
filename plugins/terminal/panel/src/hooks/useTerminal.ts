@@ -19,27 +19,27 @@ import { TerminalSettings, normalizeTerminalSettings } from "../../../shared/set
 
 export const TERM_COLOR = {
   TERM_RESET: "\x1B[0m",
-  TERM_TEXT_BLACK: "\x1B[0;30m", // Black §0
-  TERM_TEXT_DARK_BLUE: "\x1B[0;34m", // Dark Blue §1
-  TERM_TEXT_DARK_GREEN: "\x1B[0;32m", // Dark Green §2
-  TERM_TEXT_DARK_AQUA: "\x1B[0;36m", // Dark Aqua §3
-  TERM_TEXT_DARK_RED: "\x1B[0;31m", // Dark Red §4
-  TERM_TEXT_DARK_PURPLE: "\x1B[0;35m", // Dark Purple §5
-  TERM_TEXT_GOLD: "\x1B[0;33m", // Gold §6
-  TERM_TEXT_GRAY: "\x1B[0;37m", // Gray §7
-  TERM_TEXT_DARK_GRAY: "\x1B[0;30;1m", // Dark Gray §8
-  TERM_TEXT_BLUE: "\x1B[0;34;1m", // Blue §9
-  TERM_TEXT_GREEN: "\x1B[0;32;1m", // Green §a
-  TERM_TEXT_AQUA: "\x1B[0;36;1m", // Aqua §b
-  TERM_TEXT_RED: "\x1B[0;31;1m", // Red §c
-  TERM_TEXT_LIGHT_PURPLE: "\x1B[0;35;1m", // Light Purple §d
-  TERM_TEXT_YELLOW: "\x1B[0;33;1m", // Yellow §e
-  TERM_TEXT_WHITE: "\x1B[0;37;1m", // White §f
-  TERM_TEXT_OBFUSCATED: "\x1B[5m", // Obfuscated §k
-  TERM_TEXT_BOLD: "\x1B[21m", // Bold §l
-  TERM_TEXT_STRIKETHROUGH: "\x1B[9m", // Strikethrough §m
-  TERM_TEXT_UNDERLINE: "\x1B[4m", // Underline §n
-  TERM_TEXT_ITALIC: "\x1B[3m", // Italic §o
+  TERM_TEXT_BLACK: "\x1B[0;30m",
+  TERM_TEXT_DARK_BLUE: "\x1B[0;34m",
+  TERM_TEXT_DARK_GREEN: "\x1B[0;32m",
+  TERM_TEXT_DARK_AQUA: "\x1B[0;36m",
+  TERM_TEXT_DARK_RED: "\x1B[0;31m",
+  TERM_TEXT_DARK_PURPLE: "\x1B[0;35m",
+  TERM_TEXT_GOLD: "\x1B[0;33m",
+  TERM_TEXT_GRAY: "\x1B[0;37m",
+  TERM_TEXT_DARK_GRAY: "\x1B[0;30;1m",
+  TERM_TEXT_BLUE: "\x1B[0;34;1m",
+  TERM_TEXT_GREEN: "\x1B[0;32;1m",
+  TERM_TEXT_AQUA: "\x1B[0;36;1m",
+  TERM_TEXT_RED: "\x1B[0;31;1m",
+  TERM_TEXT_LIGHT_PURPLE: "\x1B[0;35;1m",
+  TERM_TEXT_YELLOW: "\x1B[0;33;1m",
+  TERM_TEXT_WHITE: "\x1B[0;37;1m",
+  TERM_TEXT_OBFUSCATED: "\x1B[5m",
+  TERM_TEXT_BOLD: "\x1B[21m",
+  TERM_TEXT_STRIKETHROUGH: "\x1B[9m",
+  TERM_TEXT_UNDERLINE: "\x1B[4m",
+  TERM_TEXT_ITALIC: "\x1B[3m",
   TERM_TEXT_B: "\x1B[1m"
 };
 
@@ -262,7 +262,6 @@ export function useTerminal() {
     }
     terminalElement = element;
 
-    // init touch handler
     element.addEventListener("touchstart", touchHandler, true);
     element.addEventListener("touchmove", touchHandler, true);
     element.addEventListener("touchend", touchHandler, true);
@@ -290,26 +289,23 @@ export function useTerminal() {
 
     const gl = document.createElement("canvas").getContext("webgl2");
     if (gl) {
-      // If WebGL2 is supported, use the WebGlAddon
       const webglAddon = new WebglAddon();
       webglAddon.onContextLoss((_) => {
         webglAddon.dispose();
       });
       term.loadAddon(webglAddon);
     } else {
-      // If WebGL2 is not supported, use the CanvasAddon
       const canvasAddon = new CanvasAddon();
       term.loadAddon(canvasAddon);
     }
 
     term.open(element);
 
-    // If text is selected, copy it. Otherwise, fallback to default behavior.
     term.attachCustomKeyEventHandler((arg) => {
       if (arg.type === "keydown" && arg.ctrlKey && arg.code === "KeyC") {
         const selection = term.getSelection();
         if (selection) {
-          // If not in SecureContext, writeText will fail. Fallback to browser's default copy behavior, but selection won't be cleared.
+          // Clipboard writes require a secure context; preserve the browser's native copy fallback.
           if (window.isSecureContext) {
             arg.preventDefault()
           }
@@ -327,7 +323,6 @@ export function useTerminal() {
       return true;
     });
 
-    // Auto resize pty win size
     fitAddon.fit();
     refreshWindowSize(term.cols - 1, term.rows - 1);
     fitAddonTask = setInterval(() => {
@@ -344,7 +339,6 @@ export function useTerminal() {
     }
 
     term.onData((data) => {
-      // If the PTY terminal is disabled, no input is sent.
       if (
         state.value?.config.terminalOption?.pty === false ||
         state.value?.status === INSTANCE_STATUS_CODE.STOPPED
@@ -380,8 +374,7 @@ export function useTerminal() {
     const output = state.value?.config?.terminalOption?.haveColor ? encodeConsoleColor(text) : text;
     let previousDisableStdin = term.options.disableStdin;
 
-    // History can contain terminal queries. Queue the boundary so earlier live
-    // output keeps its replies, then suppress replies until history is parsed.
+    // Suppress replies to queries in replayed history while preserving earlier live-output replies.
     term.write("", () => {
       if (disposed) return;
       previousDisableStdin = term.options.disableStdin;
@@ -464,7 +457,6 @@ export function encodeConsoleColor(text: string) {
   text = text.replace(/([0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2})/gim, "§6$1§r");
   text = text.replace(/([0-9]{2,4}[\/\-][0-9]{2,4}[\/\-][0-9]{2,4})/gim, "§6$1§r");
   text = text.replace(/(\x1B[^m]*m);/gm, "$1");
-  // ["](.*?)["];
   text = text.replace(/§0/gim, TERM_COLOR.TERM_TEXT_BLACK);
   text = text.replace(/§1/gim, TERM_COLOR.TERM_TEXT_DARK_BLUE);
   text = text.replace(/§2/gim, TERM_COLOR.TERM_TEXT_DARK_GREEN);
@@ -512,33 +504,24 @@ export function encodeConsoleColor(text: string) {
   text = text.replace(/&r/gim, TERM_COLOR.TERM_RESET);
 
   const RegExpStringArr = [
-    //blue
     ["\\d{1,3}%", "true", "false"],
-    //green
     ["information", "info", "\\(", "\\)", "\\{", "\\}", '\\"', "&lt;", "&gt;", "-->", "->", ">>>"],
-    //red
     ["Error", "Caused by", "panic"],
-    //yellow
     ["WARNING", "Warn"]
   ];
   for (const k in RegExpStringArr) {
     for (const y in RegExpStringArr[k]) {
       const reg = new RegExp("(" + RegExpStringArr[k][y].replace(/ /gim, "&nbsp;") + ")", "igm");
       if (k === "0")
-        //blue
         text = text.replace(reg, TERM_COLOR.TERM_TEXT_BLUE + "$1" + TERM_COLOR.TERM_RESET);
       if (k === "1")
-        //green
         text = text.replace(reg, TERM_COLOR.TERM_TEXT_DARK_GREEN + "$1" + TERM_COLOR.TERM_RESET);
       if (k === "2")
-        //red
         text = text.replace(reg, TERM_COLOR.TERM_TEXT_RED + "$1" + TERM_COLOR.TERM_RESET);
       if (k === "3")
-        //yellow
         text = text.replace(reg, TERM_COLOR.TERM_TEXT_GOLD + "$1" + TERM_COLOR.TERM_RESET);
     }
   }
-  // line ending symbol substitution
   text = text.replace(/\r\n/gm, TERM_COLOR.TERM_RESET + "\r\n");
   return text;
 }

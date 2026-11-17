@@ -2,8 +2,7 @@ import { useDefineApi } from "@/stores/useDefineApi";
 import type { PanelStatus, Settings } from "@/types";
 export { addNode, connectNode, deleteNode, editNode, remoteNodeList } from "./node";
 export { remoteInstances } from "./instance";
-// Account APIs live in the "user" plugin; these are facades over its
-// `user.api` service so existing call sites keep working.
+// Forward legacy account imports to the user plugin API.
 export {
   addUser,
   bind2FA,

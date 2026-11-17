@@ -8,11 +8,7 @@ interface IconRequest {
   pending?: Promise<void>;
 }
 
-/**
- * Cache each plugin's current release icon within this component's scope.
- * Failed or missing images stay retryable; older markets without `iconUrl`
- * retain the default icon and make no image request.
- */
+/** Cache icons per view; failed requests remain retryable and missing icon metadata uses the default. */
 export function usePluginIcons() {
   const icons = ref<Record<string, string>>(Object.create(null));
   const requests = new Map<string, IconRequest>();
@@ -33,7 +29,6 @@ export function usePluginIcons() {
         icons.value[pluginId] = dataUrl;
       }
     } catch {
-      // Keep the default icon; a later catalogue refresh can retry this request.
     }
   }
 

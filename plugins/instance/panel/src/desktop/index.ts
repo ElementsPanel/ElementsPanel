@@ -39,7 +39,6 @@ export function openInstanceConsole(
   });
 }
 
-/** All instance-specific desktop content and navigation belong to this plugin. */
 export function registerDesktop(ctx: PanelFrontendPluginContext) {
   const { isAdmin } = useAppStateStore();
   const hasInstance = (props: Record<string, unknown>) =>

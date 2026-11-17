@@ -31,7 +31,6 @@ export const useBackgroundTasks = createGlobalState(() => {
   const loading = ref(false);
   const error = ref(false);
   const streamState = ref<TaskStreamState>("degraded");
-  /** Bumped when a task id appears for the first time; the shell restarts its ripple. */
   const rippleKey = ref(0);
   const activeCount = computed(() => tasks.value.filter((task) => task.state === "running").length);
   let knownTaskIds = new Set<string>();
@@ -55,10 +54,7 @@ export const useBackgroundTasks = createGlobalState(() => {
     watchdogTimer = undefined;
   };
 
-  /**
-   * Low-frequency polling is a fallback only: an unreachable socket, or a daemon
-   * too old to push snapshots. A delivered push stops it again.
-   */
+  /** Use polling only until a task-stream push arrives, including for older daemons. */
   const scheduleFallback = () => {
     if (fallbackTimer || !isLogged.value) return;
     fallbackTimer = setTimeout(() => {
@@ -78,10 +74,7 @@ export const useBackgroundTasks = createGlobalState(() => {
     }, 15_000);
   };
 
-  /**
-   * A task the list has never seen before is a new one; the first read after a
-   * login only primes the set so existing work does not ripple.
-   */
+  /** Prime task IDs on the first read so existing work does not trigger a new-task ripple. */
   const trackNewTasks = (list: BackgroundTask[]) => {
     if (tasksInitialized && list.some((task) => !knownTaskIds.has(task.id))) rippleKey.value++;
     knownTaskIds = new Set(list.map((task) => task.id));
@@ -136,8 +129,7 @@ export const useBackgroundTasks = createGlobalState(() => {
 
   const refresh = async ({ silent = false }: { silent?: boolean } = {}) => {
     if (!isLogged.value) return;
-    // A mutation may land while a read is still in flight; remember it and
-    // re-read once the current request settles instead of dropping the update.
+    // Queue one more read if a mutation arrives during the current request.
     if (controller) {
       queued = true;
       return;
@@ -164,8 +156,7 @@ export const useBackgroundTasks = createGlobalState(() => {
       unavailable.value = !!result?.unavailable;
       error.value = false;
       trackNewTasks(tasks.value);
-      // An old daemon sends no pushes: start the watchdog from the tasks the
-      // first read discovered, not only from a later push.
+      // Start the legacy-daemon watchdog from the initial task snapshot.
       armWatchdog();
     } catch {
       if (generation === currentGeneration) error.value = true;
@@ -181,8 +172,7 @@ export const useBackgroundTasks = createGlobalState(() => {
     }
   };
 
-  // The daemon exposes tasks only through a pull endpoint, so new or cancelled
-  // tasks are picked up by refreshing right after any successful write.
+  // Refresh legacy pull-only tasks after successful writes.
   onApiMutation(() => {
     if (isLogged.value) void refresh({ silent: true });
   });

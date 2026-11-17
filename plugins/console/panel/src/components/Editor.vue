@@ -46,8 +46,7 @@ let animationFrameId = 0;
 const jsonLintExtensions = [lintGutter(), linter(jsonParseLinter())];
 
 const getLanguageExtension = () => {
-  // The filename helpers belong to `plugins/file`. Without it the editor
-  // still edits; it just cannot tell which language to highlight.
+  // Without the optional file plugin, editing remains available but filename-based highlighting does not.
   const fileManager = usePluginService<FrontendFileManagerService>("file");
   const ext = fileManager?.getFileExtName(props.filename) ?? "";
   const isJSON = ["json", "json5"].includes(ext);

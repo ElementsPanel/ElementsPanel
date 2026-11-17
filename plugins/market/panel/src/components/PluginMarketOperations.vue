@@ -28,7 +28,7 @@ import {
 const props = defineProps<{
   plugin: MarketPlugin;
   version?: MarketPluginVersion;
-  /** Release rows only install that release; uninstalling belongs to the plugin-level actions. */
+  /** Release rows install versions; uninstall is a plugin-level action. */
   installOnly?: boolean;
   allowVersionChange?: boolean;
   disabled?: boolean;
@@ -229,8 +229,7 @@ async function runInstall(plugin: MarketPlugin, selected: string[]) {
     });
     if (disposed) return;
     if (!response.value) throw new Error(t("TXT_CODE_PLUGIN_MARKET_UNREACHABLE"));
-    // npm has already committed the operation; asset refresh failures are
-    // reported by the frontend loader and must not turn it into an npm error.
+    // Report frontend refresh failures separately from the already committed npm operation.
     await ctx.plugins
       .refresh()
       .catch((error) => console.error("Failed to refresh plugins:", error));
@@ -297,8 +296,7 @@ async function runUninstall(plugin: MarketPlugin, selected: string[]) {
     });
     if (disposed) return;
     if (!response.value) throw new Error(t("TXT_CODE_PLUGIN_MARKET_UNREACHABLE"));
-    // npm has already committed the operation; asset refresh failures are
-    // reported by the frontend loader and must not turn it into an npm error.
+    // Report frontend refresh failures separately from the already committed npm operation.
     await ctx.plugins
       .refresh()
       .catch((error) => console.error("Failed to refresh plugins:", error));

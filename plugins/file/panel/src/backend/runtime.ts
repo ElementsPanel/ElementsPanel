@@ -1,6 +1,6 @@
 import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
 
-/** Access shared services through the plugin context without bundling host singletons. */
+/** Resolve shared services through context to avoid bundling duplicate host singletons. */
 let context: PanelPluginContext | undefined;
 
 export function setPluginContext(value: PanelPluginContext) {

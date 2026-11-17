@@ -51,8 +51,7 @@ class DownloadManager {
     fallbackUrl?: string,
     options: { ifIdle?: boolean; overwrite?: boolean; userAgent?: string } = {}
   ): Promise<void> {
-    // Check and reserve synchronously, before the first await. Two callers cannot
-    // both pass an idle check and then cancel one another's download.
+    // Reserve the downloader before awaiting so concurrent callers cannot cancel one another.
     if (options.ifIdle && this.downloadingCount > 0) {
       throw Object.assign(new Error("The file downloader is busy."), { code: "DOWNLOAD_BUSY" });
     }
@@ -61,8 +60,7 @@ class DownloadManager {
     const task: DownloadTask = { path: targetPath, total: 0, current: 0, status: 0 };
     this.controller = controller;
     this.task = task;
-    // Each attempt owns its staging file. Cancelling an old task cannot delete a
-    // replacement download or a file that existed before the download started.
+    // Give each attempt its own staging file so cancellation cannot delete another download.
     const temporary = path.join(
       path.dirname(targetPath),
       `.${path.basename(targetPath)}.${randomUUID()}.part`
@@ -90,8 +88,7 @@ class DownloadManager {
           }
           controller.signal.throwIfAborted();
           if (options.overwrite === false) {
-            // Both paths share a filesystem. Linking publishes the completed file
-            // atomically and fails if another writer has already created it.
+            // Publish by linking on the same filesystem to preserve atomic creation without overwriting.
             await fs.link(temporary, targetPath);
           } else {
             await fs.rename(temporary, targetPath);

@@ -1,14 +1,10 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
 
-/**
- * Teleport page ripples to body to avoid clipping by shell containers.
- * Render inline for the desktop taskbar so its stacking context does not cover the ripple.
- */
+/** Teleport page ripples to avoid clipping; taskbar ripples stay inside their stacking context. */
 const props = defineProps<{
   /** A changing value starts a new ripple; `0`/`undefined` render nothing. */
   trigger?: number;
-  /** Render the ripple inside the button wrapper instead of the page layer. */
   inline?: boolean;
 }>();
 
@@ -73,8 +69,7 @@ const remove = (key: number) => {
   pointer-events: none;
 }
 
-/* Fixed to the page so the growth is never clipped by the header, and just
-   above the shell chrome (header uses 20) while dialogs stay on top. */
+/* Keep page ripples above the header but below dialogs. */
 .action-ripple-circle {
   position: fixed;
   width: 40px;
@@ -86,8 +81,7 @@ const remove = (key: number) => {
   animation: action-ripple 600ms cubic-bezier(0, -0.04, 0, 0.99) forwards;
 }
 
-/* Anchored to the button wrapper, so the ripple grows from the button itself
-   and is painted inside the taskbar's own stacking context. */
+/* Draw taskbar ripples inside the button's stacking context. */
 .action-ripple-circle--inline {
   position: absolute;
   left: 50%;

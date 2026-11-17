@@ -11,7 +11,6 @@ import trTR from "./tr_TR.json";
 import zhCN from "./zh_CN.json";
 import zhTW from "./zh_TW.json";
 
-// Translate daemon settings labels before the panel renders the form.
 export const localeMessages = {
   de_de: deDE,
   en_us: enUS,

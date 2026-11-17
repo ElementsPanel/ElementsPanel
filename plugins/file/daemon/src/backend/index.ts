@@ -8,8 +8,6 @@ import FileManager from "./system_file";
 import uploadManager from "./upload_manager";
 import { registerSettings } from "./settings";
 
-// Provide sandboxed file access, chunked uploads and file routes through ctx.files.
-
 // Resolve instances at request time to avoid a startup cycle with the instance plugin.
 export const inject = {
   i18n: { required: true },
@@ -22,7 +20,6 @@ export const inject = {
 };
 
 export function apply(ctx: DaemonPluginContext) {
-  // Set the context before modules access services or translations.
   setPluginContext(ctx);
   ctx.i18n.define(localeMessages);
   registerSettings(ctx);

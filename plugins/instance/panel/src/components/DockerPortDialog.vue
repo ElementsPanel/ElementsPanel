@@ -89,15 +89,12 @@ const operation = (type: OperationType, index = 0) => {
   if (type === "add") {
     dataSource.value.push(_.cloneDeep(emptyPortMapping));
   } else {
-    // Remove port from usedPorts
     const removedRecord = dataSource.value[index];
 
-    // check and clean host port
     if (removedRecord.autoAssignHostPort) {
       cleanupPort(removedRecord.host, index);
     }
 
-    // check and clean container port
     if (removedRecord.autoAssignContainerPort) {
       cleanupPort(removedRecord.container, index);
     }
@@ -126,10 +123,9 @@ const handleAutoAssignChange = (record: DockerPortMappingWithAutoAssign, field: 
     const port = hasMCSMPort(record[field]);
     if (port) {
       const portNum = parseInt(port[1]);
-      // check if other field is using the same port
       const otherPort = hasMCSMPort(record[otherField]);
       if (!otherPort || parseInt(otherPort[1]) !== portNum || !record[otherAutoAssignField]) {
-        // if other field is not using the same port, or other field is not auto assign, then release the port
+        // Keep a port reserved while another automatically assigned field still uses it.
         usedPorts.value = usedPorts.value.filter((p) => p !== portNum);
       }
     }
@@ -140,7 +136,6 @@ const handleAutoAssignChange = (record: DockerPortMappingWithAutoAssign, field: 
 
     const otherPort = hasMCSMPort(record[otherField]);
     if (otherPort && record[otherAutoAssignField]) {
-      // Use port from other field
       portToUse = parseInt(otherPort[1]);
     } else {
       portToUse = getNextNumber(usedPorts.value);
@@ -180,7 +175,6 @@ onMounted(() => {
         }))
       : [];
 
-  // Initialize used ports
   dataSource.value.forEach((record: DockerPortMappingWithAutoAssign) => {
     (["host", "container"] as const).forEach((key) => {
       const match = hasMCSMPort(record[key]);

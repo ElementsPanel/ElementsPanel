@@ -4,16 +4,11 @@ import type SystemConfig from "../../../../runtime/panel/src/backend/entity/sett
 import { localeMessages } from "../i18n";
 import { SettingsFormService } from "./settings";
 
-// Expose panel plugin management over HTTP.
-// Proxy node operations through an optional remote service so panel management works without the node plugin.
+// Scope node routes to the optional remote service so panel management remains available.
 
-/** Turning this plugin off would remove the page the request came from. */
 const SELF = "config";
 
-/**
- * Turning an essential plugin off would remove the interface or connection
- * that is needed to turn it back on.
- */
+/** Keep essential management services enabled. */
 const ESSENTIAL = new Set(["console", "i18n", "storage", "runtime", "server"]);
 const PLUGIN_GROUPS_CATEGORY = "PluginGroups";
 
@@ -74,7 +69,6 @@ export function apply(ctx: PanelPluginContext) {
   const router = ctx.koa.router("/api/plugins");
   const requireAdmin = ctx.middleware.permission({ level: ctx.roles.ADMIN });
 
-  // System settings live here; plugin settings use the generic routes below.
   const settingsRouter = ctx.koa.router("/api/overview");
   settingsRouter.get("/setting", requireAdmin, async (requestCtx) => {
     requestCtx.body = ctx.settings.config;
@@ -115,8 +109,7 @@ export function apply(ctx: PanelPluginContext) {
     ctx.middleware.validator({ query: { id: String } }),
     async (requestCtx: Koa.ParameterizedContext) => {
       const id = String(requestCtx.request.query.id);
-      // The plugin's own `write()` validates: this route knows nothing about
-      // what any particular plugin's values mean.
+      // Each plugin validates its own settings.
       requestCtx.body = await settingsForm.write(
         id,
         (requestCtx.request.body ?? {}) as Record<string, unknown>
@@ -153,8 +146,7 @@ export function apply(ctx: PanelPluginContext) {
     async (requestCtx: Koa.ParameterizedContext) => {
       const id = String(requestCtx.request.body.id);
       const enabled = Boolean(requestCtx.request.body.enabled);
-      // Thrown rather than answered: the panel's response protocol turns an
-      // Error into the standard envelope, which is what the page reports.
+      // Throw errors so the response protocol applies the standard envelope.
       if (id === SELF && !enabled) throw new Error(ctx.i18n.$t("TXT_CODE_PLUGIN_SELF_DISABLE"));
       if (ESSENTIAL.has(id) && !enabled)
         throw new Error(ctx.i18n.$t("TXT_CODE_PLUGIN_ESSENTIAL_DISABLE"));
@@ -185,7 +177,6 @@ export function apply(ctx: PanelPluginContext) {
     }
   );
 
-  // Scope node routes to the remote service so panel routes survive its removal.
   ctx.inject(["remote"], (scoped) => {
     const nodeRouter = scoped.koa.router("/api/plugins/node");
     const RemoteRequest = scoped.remote.Request;
@@ -224,11 +215,9 @@ export function apply(ctx: PanelPluginContext) {
         const node = nodeOf(requestCtx);
         const id = String(requestCtx.request.body.id);
         const enabled = Boolean(requestCtx.request.body.enabled);
-        // Let the daemon enforce its protected-plugin rules and propagate its errors.
         const record = await new RemoteRequest(node).request("plugin/enabled", { id, enabled });
 
-        // Older daemons bind routes per socket; reconnect after their reply
-        // so newly enabled handlers remain available there too.
+        // Reconnect older daemons after the reply to refresh socket-bound handlers.
         node.refreshReconnect();
 
         requestCtx.body = record;
@@ -241,8 +230,7 @@ export function apply(ctx: PanelPluginContext) {
       ctx.middleware.validator({ query: { daemonId: String, id: String } }),
       async (requestCtx: Koa.ParameterizedContext) => {
         const node = nodeOf(requestCtx);
-        // Removing unloads the plugin's scope before the files go, which can
-        // outlast the default request window.
+        // Unloading can exceed the default request timeout.
         await new RemoteRequest(node).request(
           "plugin/remove",
           { id: String(requestCtx.request.query.id) },
@@ -272,7 +260,6 @@ export function apply(ctx: PanelPluginContext) {
       }
     );
 
-    // Forward the daemon's declared settings schema and values.
     nodeRouter.get(
       "/settings",
       requireAdmin,
@@ -294,8 +281,7 @@ export function apply(ctx: PanelPluginContext) {
           id: String(requestCtx.request.query.id),
           values: (requestCtx.request.body ?? {}) as Record<string, unknown>
         });
-        // Refresh node-owned connection metadata before subsequent file/terminal requests.
-        // A refresh failure must not turn a successfully saved setting into an error.
+        // Refresh connection metadata after saving; a failed refresh must not invalidate a successful response.
         try {
           await request.request("info/overview");
         } catch (error) {

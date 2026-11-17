@@ -16,7 +16,6 @@ export interface PluginUpdateTarget {
 }
 
 export interface PluginUpdate {
-  /** Runtime packages use the same target selection and progress as plugins. */
   runtime?: "panel" | "daemon";
   pluginId: string;
   name: string;

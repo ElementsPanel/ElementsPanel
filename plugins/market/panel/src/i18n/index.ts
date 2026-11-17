@@ -11,9 +11,6 @@ import trTR from "./tr_TR.json";
 import zhCN from "./zh_CN.json";
 import zhTW from "./zh_TW.json";
 
-// Strings for the market pages, the package picker and the custom-catalogue
-// editor. The frontend hands this to the panel as `localeMessages`; the backend
-// registers the same catalogue with the panel's i18next instance.
 export const localeMessages = {
   de_de: deDE,
   en_us: enUS,

@@ -98,8 +98,7 @@ onMounted(() => {
   }
 }
 
-// Card variant: the option is stacked inside its own tile instead of being one
-// more row in a vertical list, so it can live in a responsive grid.
+// Stack card options inside tiles for responsive grid layouts.
 .option-card {
   height: 100%;
   margin-bottom: 0;

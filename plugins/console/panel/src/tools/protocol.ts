@@ -83,7 +83,6 @@ export function parseForwardAddress(addr: string, require: "http" | "ws") {
   return addr;
 }
 
-// The ws address on the Daemon side is converted into an http address
 export function daemonWsAddressToHttp(wsAddr = "") {
   if (wsAddr.toLocaleLowerCase().indexOf("ws://") === 0) {
     return `http://${wsAddr.slice(5)}`;
@@ -111,7 +110,6 @@ export function deleteHttpHeader(addr: string) {
   return addr;
 }
 
-// The ws address on the Daemon side is converted to the local ws address
 export function daemonWsAddressToWs(wsAddr = "") {
   if (
     wsAddr.toLocaleLowerCase().indexOf("ws://") !== 0 &&

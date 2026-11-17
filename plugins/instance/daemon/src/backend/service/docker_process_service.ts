@@ -80,8 +80,7 @@ export class SetupDockerContainer extends AsyncTask {
       throw new Error("Instance's Docker configuration is not found! ");
     }
 
-    // Parsing port open
-    // 25565:25565/tcp 8080:8080/tcp
+    // Port mappings use hostPort:containerPort/protocol.
     const portMap = dockerConfig.ports || [];
 
     const logOpenedPorts: { host: number; container: number; protocol: string }[] = [];
@@ -92,7 +91,6 @@ export class SetupDockerContainer extends AsyncTask {
       if (elem.length != 2) throw new Error($t("TXT_CODE_COMMON_INCORRECT_PORT_OPEN_CONFIGURATION_FOR_THIS_CONTAINER"));
       const ports = elem[0];
       const protocol = elem[1];
-      //Host (host) port: container port
       const publicAndPrivatePort = ports.split(":");
       if (publicAndPrivatePort.length != 2) throw new Error($t("TXT_CODE_DOCKER_PORT_MAPPING_INVALID"));
       publicPortArray[`${publicAndPrivatePort[1]}/${protocol}`] = [
@@ -106,7 +104,6 @@ export class SetupDockerContainer extends AsyncTask {
       });
     }
 
-    // resolve extra path mounts
     const extraVolumes = dockerConfig.extraVolumes || [];
     const extraBinds: { hostPath: string; containerPath: string }[] = [];
     for (const item of extraVolumes) {
@@ -160,8 +157,7 @@ export class SetupDockerContainer extends AsyncTask {
     const capAdd = dockerConfig.capAdd || [];
     const capDrop = dockerConfig.capDrop || [];
 
-    // resolve devices
-    // /dev/a, /dev/a|dev/b, /dev/a|/dev/b|rwm, /dev/a||rwm
+    // Device mappings use hostPath|containerPath|permissions, with optional trailing fields.
     const devices = dockerConfig.devices || [];
     const parsedDevices: {
       PathOnHost: string;
@@ -187,14 +183,12 @@ export class SetupDockerContainer extends AsyncTask {
       const gpuDeviceIds = dockerConfig.gpuDeviceIds ?? [];
       const gpuDriver = dockerConfig.gpuDriver ?? "";
 
-      // Validate gpuCount: must be integer >= -1 and <= 128 (reasonable upper bound)
       if (!Number.isInteger(gpuCount) || gpuCount < -1 || gpuCount > 128) {
         throw new Error(
           $t("TXT_CODE_GPU_INVALID_COUNT", { v: String(gpuCount) })
         );
       }
 
-      // Validate gpuDeviceIds: each item must be non-empty and contain only [a-zA-Z0-9_-]
       if (gpuDeviceIds.length > 128) {
         throw new Error(
           $t("TXT_CODE_GPU_INVALID_DEVICE_ID", { v: `(${gpuDeviceIds.length} items)` })
@@ -209,25 +203,22 @@ export class SetupDockerContainer extends AsyncTask {
         }
       }
 
-      // Validate gpuDriver: if set, must contain only letters and digits, max 32 chars
       if (gpuDriver && (gpuDriver.length > 32 || !/^[a-zA-Z0-9]+$/.test(gpuDriver))) {
         throw new Error(
           $t("TXT_CODE_GPU_INVALID_DRIVER", { v: gpuDriver })
         );
       }
 
-      // Conflict check: gpuDeviceIds and gpuCount > 0 are mutually exclusive
+      // Docker accepts GPU IDs or a count, not both.
       if (gpuDeviceIds.length > 0 && gpuCount > 0) {
         throw new Error($t("TXT_CODE_GPU_CONFLICT_COUNT_AND_IDS"));
       }
 
-      // Conflict check: gpuCount === 0 and no deviceIds => effectively disabled
       if (gpuCount === 0 && gpuDeviceIds.length === 0) {
         logger.warn(
           `[SetupDockerContainer] GPU enabled but gpuCount=0 and no deviceIds specified, GPU will not be allocated. Instance: ${instance.instanceUuid}`
         );
       } else {
-        // Warn if privileged mode is also enabled
         if (privileged) {
           logger.warn(
             `[SetupDockerContainer] GPU passthrough is configured alongside privileged mode. ` +
@@ -242,11 +233,10 @@ export class SetupDockerContainer extends AsyncTask {
         };
 
         if (gpuDeviceIds.length > 0) {
-          // Specific device IDs take priority, Count must be 0
           deviceRequest.DeviceIDs = gpuDeviceIds;
           deviceRequest.Count = 0;
         } else {
-          // Allocate by count (-1 = all, positive integer = specific count)
+          // Docker Count=-1 requests all GPUs.
           deviceRequest.Count = gpuCount;
         }
 
@@ -326,7 +316,7 @@ export class SetupDockerContainer extends AsyncTask {
     let entrypoint: string | string[] | undefined = commandList.length ? commandList[0] : undefined;
     const startCmd = commandList.length > 1 ? commandList.slice(1) : undefined;
 
-    // Compatible with Docker API v29+: Entrypoint must be an array type
+    // Docker API v29 and later require Entrypoint to be an array.
     const { Version: dockerVersion } = await docker.version();
     const versionNum = dockerVersion.split(".")[0];
     if (Number(versionNum.replace("v", "")) >= 29 && entrypoint !== undefined) {
@@ -392,8 +382,7 @@ export class SetupDockerContainer extends AsyncTask {
         Privileged: privileged,
         DeviceRequests: gpuDeviceRequests
       },
-      // Only set NetworkingConfig for non-host network modes
-      // host mode uses the host's network stack and doesn't support EndpointsConfig
+      // Host networking does not support EndpointsConfig.
       ...(dockerConfig.networkMode !== "host" &&
         dockerConfig.networkMode !== "none" && {
           NetworkingConfig: {
@@ -488,7 +477,7 @@ export class DockerProcessAdapter extends EventEmitter implements IInstanceProce
     super();
   }
 
-  // Once the program is actually started, no errors can block the next startup process
+  // Release startup ownership even if post-start setup fails.
   public async start(param: IDockerProcessAdapterStartParam, container?: Docker.Container) {
     try {
       if (container) {

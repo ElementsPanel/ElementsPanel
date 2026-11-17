@@ -12,9 +12,7 @@ const ACCESS_POLICY_KEYS: Array<keyof AuthSettings> = [
   "allowJavaManager"
 ];
 
-// The panel used to keep these fields in its own SystemConfig. That file is
-// written by the core's file-backed storage, so the one-time migration reads it
-// directly rather than going through the (possibly Redis-backed) entity store.
+// Migrate legacy file-backed SystemConfig directly, even when current storage uses Redis.
 const LEGACY_CONFIG_FILE = path.join(process.cwd(), "data", "SystemConfig", "config.json");
 
 let settings = new AuthSettings();

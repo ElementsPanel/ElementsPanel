@@ -1,6 +1,6 @@
 import type { PanelPluginContext } from "../../../../../../core/panel/src/app/plugin";
 
-/** Accounts own their public profile; instance details are an optional enrichment. */
+/** Enrich profiles with instance data only when its provider is available. */
 export async function getUserProfile(
   ctx: PanelPluginContext,
   uuid: string,

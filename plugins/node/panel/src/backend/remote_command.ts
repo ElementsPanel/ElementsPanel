@@ -16,8 +16,7 @@ export class RemoteRequestTimeoutError extends RemoteError {
   }
 }
 
-// Use RemoteRequest to send Socket.io events and data to remote services,
-// and support synchronous response data (such as HTTP).
+// Forward protocol events to a daemon and await its response.
 export default class RemoteRequest {
   constructor(public readonly rService?: RemoteService) {
     if (!this.rService || !this.rService.socket) throw new Error($t("TXT_CODE_COMMON_INITIALIZATION_FAILED_THE_REMOTE_NODE_DOES_NOT_EXIST"));

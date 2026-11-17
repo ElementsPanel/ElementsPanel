@@ -57,14 +57,12 @@ const getDesktopIcon = (id: string, icon?: Component | string): string | Compone
 const router = useRouter();
 const { state: appState, isAdmin, isLogged, authEnabled } = useAppStateStore();
 
-// Only offer account windows when the user plugin is available.
 const user = computed(() => usePluginService<FrontendUserService>("user"));
 const desktopLoginWindow = computed(() => user.value?.desktopLoginWindow);
 const desktopUsersWindow = computed(() => user.value?.desktopUsers);
 const desktopUserInfoWindow = computed(() => user.value?.desktopUserInfo);
 const desktopStartMenuAvatar = computed(() => user.value?.desktopStartMenuAvatar);
 
-// Only offer file windows when the file plugin is available.
 const fileManager = computed(() => usePluginService<FrontendFileManagerService>("file"));
 const desktopFileEditorWindow = computed(() => fileManager.value?.DesktopFileEditor);
 const desktopImageViewerWindow = computed(() => fileManager.value?.DesktopImageViewer);
@@ -77,8 +75,7 @@ const wallpaperStyle = computed<CSSProperties>(() => {
     const settings = desktopSettings.value;
     const image = settings.wallpaperMode === "image" ? settings.wallpaperImage : backgroundImageUrl.value;
     if (!image) {
-        // The fallback only applies before the plugin's theme.scss is injected;
-        // keep it on the same side as the active theme so it cannot flash light.
+        // Match the active theme while waiting for the desktop stylesheet to load.
         const fallback = isDarkTheme.value ? "#232429" : "#f5f5f5";
         return { backgroundColor: `var(--desktop-bg-color, ${fallback})` };
     }
@@ -274,7 +271,7 @@ const isDragging = ref(false);
 const dragOffsetX = ref(0);
 const dragOffsetY = ref(0);
 
-// Pending: mousedown happened but hasn't crossed threshold yet
+// Wait for the drag threshold after mousedown.
 const pendingDragId = ref<string | null>(null);
 const pendingStartX = ref(0);
 const pendingStartY = ref(0);

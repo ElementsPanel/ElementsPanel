@@ -26,9 +26,6 @@ export function apply(ctx: DaemonPluginContext) {
 
   const BACKUP_FORMATS = ["zip", "tar.gz", "7z"];
 
-  // Described, not drawn. The fields a backup actually reads live in the
-  // daemon configuration, and the panel's plugin manager renders this
-  // declaration; there is no browser half of a daemon plugin to put a form in.
   ctx.settingsForm.declare({
     fields: () => [
       {
@@ -112,7 +109,7 @@ export function apply(ctx: DaemonPluginContext) {
       instanceUuid
     );
 
-  // Returns the instance's backup archives, newest first. `time` is in milliseconds.
+  // Archive timestamps are in milliseconds; results are newest first.
   const listBackupFiles = async (instanceUuid: string) => {
     const instanceBackupDir = getBackupDirPath(instanceUuid);
     if (!(await fs.pathExists(instanceBackupDir))) return [];
@@ -127,10 +124,7 @@ export function apply(ctx: DaemonPluginContext) {
     return backups.sort((a, b) => b.time - a.time);
   };
 
-  // One instance may store at most `instanceBackupMaxSize` GB of backup archives
-  // (0 = unlimited). A new backup is only allowed while the space left is at
-  // least as large as the average size of the archives already stored, so the
-  // archive about to be written stays within the budget.
+  // Reserve room for an average-size archive; a zero quota disables the limit.
   const getBackupBudget = (backups: Array<{ size: number }>) => {
     const limitGb = Number(ctx.settings.config.instanceBackupMaxSize);
     const unlimited = !Number.isFinite(limitGb) || limitGb <= 0;
@@ -441,9 +435,7 @@ export function apply(ctx: DaemonPluginContext) {
     }
 
     async onStop() {
-      // Release the busy state here rather than in `onStart`'s finally: `wait()`
-      // resolves from this stop, so a following scheduled action would otherwise
-      // still read STATUS_BUSY and skip itself.
+      // Clear STATUS_BUSY before wait() resumes the next scheduled action.
       if (this.ownsBusyState) {
         this.ownsBusyState = false;
         if (this.instance.status() === Instance.STATUS_BUSY) {
@@ -494,8 +486,7 @@ export function apply(ctx: DaemonPluginContext) {
     type: InstanceBackupTask.TYPE,
     create: createBackupTask
   });
-  // A scheduled backup must not be blocked by a full budget, so the oldest
-  // archives are dropped until a new one fits. The task's own check then passes.
+  // Scheduled backups evict the oldest archives until a new backup fits.
   const freeBackupBudget = async (instance: InstanceEntity) => {
     const instanceBackupDir = getBackupDirPath(instance.instanceUuid);
     let backups = await listBackupFiles(instance.instanceUuid);

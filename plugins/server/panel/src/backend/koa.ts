@@ -5,19 +5,14 @@ import compose from "koa-compose";
 import type Koa from "koa";
 import type { PanelKoaService } from "../../../../../core/panel/src/app/plugin";
 
-/**
- * Mount permanent dispatchers over mutable middleware and router lists.
- * Scope each registration to its caller so unloading a plugin removes its handlers. Middleware
- * runs before routers.
- */
+/** Keep dispatchers stable while plugin-scoped middleware and routers change. */
 export class KoaService extends Service implements PanelKoaService {
   private readonly middlewares: Koa.Middleware[] = [];
   private readonly routers: Koa.Middleware[] = [];
 
   constructor(ctx: Context, public readonly app: Koa) {
     super(ctx, "koa", true);
-    // Composed per request rather than once: the arrays change as plugins load
-    // and unload, and a request must see the set mounted at that moment.
+    // Compose middleware per request so plugin reloads take effect immediately.
     app.use((requestCtx, next) => compose([...this.middlewares])(requestCtx, next));
     app.use((requestCtx, next) => compose([...this.routers])(requestCtx, next));
   }
@@ -31,12 +26,10 @@ export class KoaService extends Service implements PanelKoaService {
 
   router(prefix?: string) {
     const router = new Router(prefix ? { prefix } : undefined);
-    // Routes are declared after this returns, so the dispatcher is built lazily
-    // and only once, on the first request that reaches it.
+    // Build each router dispatcher lazily on its first request.
     let dispatch: Koa.Middleware | undefined;
     const layer: Koa.Middleware = (requestCtx, next) => {
-      // `routes()` carries the router's own parameter context, which Koa accepts
-      // but its middleware type does not describe.
+      // Koa accepts router parameter contexts that its Middleware type omits.
       const dispatchNow = (dispatch ??= compose([
         router.routes(),
         router.allowedMethods()

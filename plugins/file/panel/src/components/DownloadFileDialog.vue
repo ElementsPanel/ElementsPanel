@@ -13,7 +13,7 @@ import {
   VTextField
 } from "vuetify/components";
 
-// Declare mount callbacks locally because the SFC compiler cannot resolve the host's aliased props type.
+// Declare callbacks locally; the SFC compiler cannot resolve the host-aliased props type.
 interface Props {
   destroyComponent(delay?: number): void;
   emitResult(data?: any): void;

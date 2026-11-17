@@ -17,8 +17,7 @@ import uploadService, { UploadFiles } from "./services/uploadService";
 import { filterFileName, getFileExtName, getFileIcon, isCompressFile } from "./tools/fileManager";
 import { localeMessages } from "./i18n";
 
-// Publish file views, dialogs, uploads and editor helpers through the file service.
-// Consumers resolve the optional service and handle its absence.
+// Publish file features through an optional service that callers resolve at use time.
 
 const ROLE_USER = 1;
 const ROLE_ADMIN = 10;

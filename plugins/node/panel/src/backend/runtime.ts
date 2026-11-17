@@ -1,9 +1,6 @@
 import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
 
-/**
- * Access shared services through the plugin context. Runtime imports of host singletons would
- * create duplicate instances.
- */
+/** Resolve shared services through context to avoid bundling duplicate host singletons. */
 let context: PanelPluginContext | undefined;
 
 export function setPluginContext(value: PanelPluginContext) {
@@ -17,7 +14,7 @@ export function core(): PanelPluginContext {
 
 type PluginLogger = PanelPluginContext["logger"];
 
-/** Use a quiet logger after scope disposal so socket cleanup cannot fail while logging. */
+/** Use a quiet logger after disposal so socket cleanup can finish. */
 const SILENT = {
   info() {},
   warn() {},

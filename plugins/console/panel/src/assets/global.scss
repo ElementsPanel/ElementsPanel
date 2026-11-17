@@ -1,7 +1,6 @@
 @import "./xterm.scss";
 
-// Follow the system color scheme until the theme class is applied, avoiding a white startup flash.
-// Theme classes then control native widgets and scrollbars.
+// Use the system color scheme until theme classes load to avoid a white startup flash.
 html {
   color-scheme: light dark;
 }
@@ -18,8 +17,7 @@ html {
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
-// The mount point is the page scroller in top-header mode. Keep the scrollbar
-// on demand so a track is not permanently visible on pages that fit.
+// Use the mount point as the top-header page scroller; show its scrollbar only when needed.
 #app-mount-point {
   width: 100vw !important;
   max-width: 100vw !important;
@@ -57,7 +55,7 @@ html {
   box-shadow: none !important;
 }
 
-// Hide the root scrollbar when the browser promotes html or body to the scrolling element.
+// Hide the root scrollbar when html or body becomes the scrolling element.
 html,
 body {
   scrollbar-width: none;
@@ -78,8 +76,7 @@ body::-webkit-scrollbar-track {
   box-shadow: none !important;
 }
 
-// Sidebar mode owns scrolling on the main content column. Avoid creating a
-// second scrollbar on the mount point when that layout is active.
+// Sidebar mode scrolls the main column, so the mount point must not add another scrollbar.
 #app-mount-point:has(.app-layout-sidebar-only) {
   overflow-y: hidden;
   scrollbar-gutter: auto;
@@ -107,9 +104,7 @@ body::-webkit-scrollbar-track {
 }
 
 .v-field {
-  // Fields need their own surface: light cards are also white, and the flat
-  // treatment removes the outline and shadow that would separate them.
-  // Component-specific desktop surfaces can still override this locally.
+  // Give fields their own surface so they remain distinct from flat cards.
   background-color: rgb(var(--app-field-surface, var(--v-theme-field-surface)));
   box-shadow: none !important;
 }
@@ -156,8 +151,7 @@ body::-webkit-scrollbar-track {
   border-radius: var(--app-dialog-radius);
 }
 
-// Inset the scrollable viewport so header and row separators keep their
-// spacing from card edges even when the table scrolls horizontally.
+// Inset the table viewport so row and header separators stay clear of card edges.
 .v-table {
   min-width: 0;
 }
@@ -168,8 +162,7 @@ body::-webkit-scrollbar-track {
   overscroll-behavior-x: contain;
 }
 
-// Keep column labels readable; the wrapper owns horizontal scrolling when
-// their combined width exceeds the card or dialog.
+// Keep column labels readable while the wrapper handles horizontal overflow.
 .v-table > .v-table__wrapper > table > thead > tr > th {
   white-space: nowrap;
   overflow-wrap: normal;
@@ -187,7 +180,6 @@ body::-webkit-scrollbar-track {
   width: calc(100cqw - 32px);
 }
 
-// The pagination divider is rendered outside the table's scrollable wrapper.
 .v-table > .v-divider:not(.v-divider--vertical),
 .v-list .v-divider:not(.v-divider--vertical) {
   margin-inline: var(--app-list-inset);
@@ -508,8 +500,7 @@ body::-webkit-scrollbar-track {
   min-width: 0;
 }
 
-// Vuetify tooltips are teleported to the overlay container, so keep their
-// contrast independent of the surrounding page or plugin styles.
+// Set tooltip contrast independently because overlays are teleported.
 .v-tooltip>.v-overlay__content {
   background: #262626 !important;
   color: #ffffff !important;
@@ -561,15 +552,13 @@ body::-webkit-scrollbar-track {
   border-radius: inherit;
 }
 
-// Clip the animated ripple to the button's rounded border without clipping
-// the selected-tab slider as it moves between buttons.
+// Clip tab ripples to rounded borders while allowing the slider to cross button boundaries.
 .v-btn.v-tab>.v-ripple__container {
   overflow: hidden;
   clip-path: border-box;
 }
 
-// Draw a shorter, heavier indicator inside the native slider so the visible
-// handle is inset from both sides without replacing Vuetify's animation.
+// Inset the tab indicator without replacing Vuetify's slider animation.
 .v-btn.v-tab .v-tab__slider {
   z-index: 1;
   height: 4px !important;
@@ -728,8 +717,7 @@ body::-webkit-scrollbar-track {
     border-radius: inherit;
   }
 
-  // Select/autocomplete lists are marked navigable by Vuetify, which
-  // disables the default overlay transition for keyboard navigation.
+  // Vuetify disables overlay transitions for navigable select and autocomplete menus.
   .v-list.v-list--navigable .v-list-item__overlay {
     transition: 0.2s ease-in-out;
     transition-property: opacity, color;
@@ -740,8 +728,7 @@ body::-webkit-scrollbar-track {
   }
 }
 
-// Keep field-specific sizing and forced text colors on selection menus:
-// button menus can contain wider cards and explicitly colored actions.
+// Limit field sizing and text-color overrides to selection menus.
 :is(.v-select__content, .v-autocomplete__content, .v-combobox__content) {
   max-width: min(420px, calc(100vw - 32px));
 

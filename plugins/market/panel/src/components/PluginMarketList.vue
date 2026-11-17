@@ -319,7 +319,6 @@ onBeforeUnmount(() => {
             >
               <VCardText class="plugin-market-card-content">
                 <div class="plugin-market-card-head">
-                  <!-- Keep the generic icon out while a declared custom icon is loading. -->
                   <VAvatar
                     class="plugin-market-icon"
                     size="52"

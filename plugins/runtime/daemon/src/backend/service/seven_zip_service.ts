@@ -9,20 +9,12 @@ import logger from "./log";
 
 const execPromise = promisify(exec);
 
-/**
- * Check if the file is in zip format (only supports .zip extension)
- */
 export function isZipFormat(filePath: string): boolean {
   const ext = path.extname(filePath).toLowerCase();
   return ext === ".zip";
 }
 
-/**
- * Check if it's a multi-volume archive (supports ZIP, 7z, RAR formats)
- * ZIP multi-volume naming: archive.zip, archive.z01, archive.z02, etc.
- * 7z multi-volume naming: archive.7z.001, archive.7z.002, etc.
- * RAR multi-volume naming: archive.part1.rar, archive.part2.rar or archive.rar, archive.r00, archive.r01, etc.
- */
+/** Recognize split ZIP, 7z and RAR names, including z01, 7z.001, part1.rar and r00. */
 export function isMultiVolume(filePath: string): boolean {
   const dir = path.dirname(filePath);
   const fullName = path.basename(filePath);
@@ -56,17 +48,11 @@ export function isMultiVolume(filePath: string): boolean {
   return false;
 }
 
-/**
- * Get file extension for error messages
- */
 export function getFileExtension(filePath: string): string {
   return path.extname(filePath).toLowerCase().substring(1) || "unknown";
 }
 
 let isChecked7zip = false;
-/**
- * Check if 7zip is working properly
- */
 export async function check7zipStatus(): Promise<boolean> {
   try {
     if (isChecked7zip) return true;

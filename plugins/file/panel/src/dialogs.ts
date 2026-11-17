@@ -4,8 +4,6 @@ import DownloadFileDialogVue from "./components/DownloadFileDialog.vue";
 import UploadFileDialogVue from "./components/UploadFileDialog.vue";
 import ImageViewerDialog from "./normal/ImageViewer.vue";
 
-// File-manager dialogs are owned and mounted by this plugin.
-
 export async function useDownloadFileDialog() {
   return (
     (await useMountComponent().mount<DownloadFileConfigItem>(DownloadFileDialogVue)) || undefined

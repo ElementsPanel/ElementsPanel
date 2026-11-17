@@ -142,8 +142,7 @@ export class ChildProcessAdapter extends EventEmitter implements IInstanceProces
     this.child.stderr?.off("data", this.onData);
     this.removeAllListeners();
 
-    // Keep the error handlers through close: kill() and closing stdin can still
-    // report asynchronous errors after disposal has begun.
+    // Keep error handlers until close because kill() and stdin shutdown may still fail asynchronously.
     const removeErrorHandlers = () => {
       this.child.off("error", this.onError);
       this.child.stdin?.off("error", this.onError);

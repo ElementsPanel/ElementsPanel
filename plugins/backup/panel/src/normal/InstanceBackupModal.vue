@@ -39,11 +39,6 @@ const backupList = ref<{ name: string; size: number; time: string }[]>([]);
 const listLoading = ref(false);
 const fileEditorDialog = ref<any>();
 
-/**
- * The file API belongs to `plugins/file`. A backup that edits an
- * instance file needs it; without the plugin the edit path is unavailable
- * rather than broken.
- */
 const fileApi = () => {
     const service = usePluginService<FrontendFileManagerService>("file");
     if (!service) throw new Error("file plugin is not installed");
@@ -54,11 +49,7 @@ const fileApi = () => {
 };
 
 
-/**
- * The file editor belongs to `plugins/file`. Resolved through a
- * `computed` so the dialog appears and disappears with the plugin; without it
- * the button that opens it simply has nothing to open.
- */
+/** Resolve the optional editor reactively so unloading removes the dialog. */
 const fileEditorComponent = computed(
   () => usePluginService<FrontendFileManagerService>("file")?.FileEditor
 );

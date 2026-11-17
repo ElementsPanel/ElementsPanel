@@ -19,7 +19,7 @@ import { getInstanceOutputLog } from "../api";
 import { useCommandHistory } from "../hooks/useCommandHistory";
 import type { UseTerminalHook } from "../hooks/useTerminal";
 
-// Module-level dedup: prevent duplicate crash/restart logs across multiple TerminalCore instances
+// Deduplicate crash and restart logs across terminal components.
 let lastCrashLogTime = 0;
 const CRASH_LOG_DEDUP_MS = 8000;
 let lastAutoRestartLogTime = 0;
@@ -148,8 +148,7 @@ const refreshPage = () => {
   window.location.reload();
 };
 
-// Initialize the terminal when the component is mounted.
-// Do not reinitialize it in the parent component.
+// Initialize the terminal here once; parent components must not initialize it again.
 onMounted(async () => {
   try {
     if (instanceId && daemonId) {
@@ -167,7 +166,6 @@ onMounted(async () => {
 </script>
 
 <template>
-  <!-- Terminal Page View -->
   <div class="console-wrapper">
     <div v-if="!isConnect && !socketError" class="terminal-loading">
       <VProgressCircular indeterminate />

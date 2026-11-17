@@ -11,7 +11,6 @@ import trTR from "./tr_TR.json";
 import zhCN from "./zh_CN.json";
 import zhTW from "./zh_TW.json";
 
-// Shared installation progress and Minecraft diagnostics belong to instance.
 export const localeMessages = {
   de_de: deDE,
   en_us: enUS,

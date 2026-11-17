@@ -28,13 +28,10 @@ export class PluginMarketError extends Error {
   }
 }
 
-// Install and update market-indexed epanel-plugin-* npm dependencies in the installation project.
-
 export type PluginSide = "panel" | "daemon";
 
 export interface MarketInstallInfo {
   pluginId: string;
-  /** The npm package name. */
   name: string;
   version: string;
   installedAt: number;
@@ -47,7 +44,6 @@ export interface InstalledMarketPlugin extends MarketInstallInfo {
   sides: PluginSide[];
   directories: string[];
   daemonIds: string[];
-  /** Whether the dependency belongs to the runtime or the installation project. */
   source: "bundled" | "project";
   removable: boolean;
   updatable?: boolean;
@@ -169,7 +165,6 @@ function localRecord(record: NpmPluginRecord): InstalledMarketPlugin {
   };
 }
 
-/** Local npm dependencies, both bundled and project-installed, plus node records. */
 export function listInstalled(): InstalledMarketPlugin[] {
   const found = new Map<string, InstalledMarketPlugin>();
   for (const record of listNpmPlugins(undefined, { skipInvalid: true }))
@@ -273,7 +268,6 @@ export function panelDependencyVersions(detail: {
           result[name] = metadata.version;
           break;
         } catch {
-          /* Not installed at this resolution path. */
         }
       }
       if (result[name]) break;
@@ -282,10 +276,7 @@ export function panelDependencyVersions(detail: {
   return result;
 }
 
-/**
- * Resolve the release through the market catalogue to verify the npm package name before
- * installation.
- */
+/** Verify the release's npm package name against the market catalogue before installing. */
 export async function fetchMarketPluginDetail(
   addr: string,
   pluginId: string,

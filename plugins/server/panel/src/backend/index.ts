@@ -20,12 +20,10 @@ import { preCheck } from "./precheck";
 import { protocol } from "./protocol";
 import { pluginAssets } from "./plugin_assets";
 
-// Own the panel HTTP stack, listener and plugin-scoped Koa service.
-// Provide koa here; declaring it as an injected dependency would prevent startup.
+// Provide the Koa service here so server startup has no self-dependency.
 
 const STATIC_MAX_AGE = 10 * 24 * 60 * 60;
 
-/** The fields this plugin owns in the panel configuration. */
 const SETTING_KEYS = [
   "httpPort",
   "httpIp",
@@ -98,8 +96,7 @@ export function apply(ctx: PanelPluginContext) {
       }
     });
   }
-  // Wrap parser and upload errors too, while keeping the authenticated session
-  // available before multipart parsing writes any temporary files.
+  // Wrap parser errors while preserving authentication before multipart writes.
   app.use(protocol(ctx));
 
   // Reject unauthorized uploads before the body parser writes temporary files.
@@ -139,7 +136,6 @@ export function apply(ctx: PanelPluginContext) {
   );
   app.use(koaStatic(packagePath("public"), { maxAge: STATIC_MAX_AGE }));
 
-  // Provide the administrative proxy for remote integrations.
   ctx.inject(["koa"], (koaCtx) => {
     const proxyRouter = koaCtx.koa.router("/api/auth");
     proxyRouter.all(
@@ -272,7 +268,6 @@ export function apply(ctx: PanelPluginContext) {
       httpServer = http.createServer(app.callback());
     }
   } catch (error) {
-    // Fail startup if the listener cannot be created.
     ctx.logger.error($t("TXT_CODE_APP_HTTP_SETUP_ERROR"));
     ctx.logger.error(error);
     return process.exit(1);
@@ -291,14 +286,12 @@ export function apply(ctx: PanelPluginContext) {
   const closeTransport = () =>
     (closing ??= (async () => {
       await closeDevelopment?.();
-      // Socket.IO releases the listener after its adapters finish closing.
-      // Existing HTTP replies may finish after it stops accepting connections.
+      // Wait for Socket.IO adapters to release the listener while existing HTTP replies finish.
       await websocket?.close();
       if (httpServer?.listening) httpServer.close();
     })());
 
-  // Stop accepting requests before authentication and feature routes unload.
-  // An install request already in progress can still send its final HTTP reply.
+  // Stop new requests before unloading routes; allow in-flight installation replies to finish.
   ctx.on("process/restarting", () => {
     reloading = true;
     return closeTransport();
@@ -310,8 +303,7 @@ export function apply(ctx: PanelPluginContext) {
     process.exit(1);
   });
 
-  // Bound on `ready`, not here: the panel must not accept a request before every
-  // plugin has registered its routes.
+  // Listen only after every plugin has registered its routes.
   ctx.on("ready", async () => {
     if (process.env.EPANEL_DEV === "1")
       closeDevelopment = await developmentRuntime()?.attach(httpServer!, config.prefix);
@@ -333,7 +325,6 @@ export function apply(ctx: PanelPluginContext) {
     }
   });
 
-  // Close the listener when the server plugin unloads.
   ctx.on("dispose", async () => {
     await closeTransport();
     websocket = undefined;

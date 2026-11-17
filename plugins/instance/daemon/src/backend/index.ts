@@ -111,8 +111,7 @@ export function apply(ctx: DaemonPluginContext) {
         release: () => InstanceSubsystem.releaseAfterReload()
       };
     };
-    // Own the processes before any asynchronous initialization. A failed Java
-    // manager or replacement must leave them available for another attempt.
+    // Claim retained processes before asynchronous initialization so failed replacements can retry.
     if (previous) {
       InstanceControlSubsystem.dispose();
       InstanceSubsystem.adoptInstances(previous.instances);
@@ -124,8 +123,7 @@ export function apply(ctx: DaemonPluginContext) {
       InstanceControlSubsystem.dispose();
       routerApp.dispose();
       if (runtime.restarting) {
-        // The launcher owns general/PTY processes; Docker is reattached at
-        // startup. Disposing adapters here would terminate those live owners.
+        // Keep launcher-owned general and PTY processes alive; Docker containers are reattached at startup.
         await InstanceSubsystem.prepareForRestart();
       } else if ((preserving || recovering) && !runtime.stopping && ctx.root.scope.isActive) {
         await InstanceSubsystem.suspendForReload();
@@ -165,8 +163,7 @@ export function apply(ctx: DaemonPluginContext) {
       InstallTask: createInstanceInstallTaskClass(instanceCtx, services)
     };
     instanceCtx.set("instances", instanceServices);
-    // Restored instances must see their Java runtimes from their first
-    // lifecycle dispatch, including automatic startup and takeover.
+    // Load Java runtimes before restoring instances, including automatic startup and takeover.
     if (!(await registerJavaManager(instanceCtx, instanceServices))) return;
     registerModManager(instanceCtx, instanceServices);
     instanceCtx.plugin(minecraftInstall);
@@ -220,8 +217,7 @@ export function apply(ctx: DaemonPluginContext) {
           recovering = false;
           runtime.handover = undefined;
         })());
-      // Rebuild commands after other plugins have registered their presets and
-      // lifecycle tasks, and before the replacement server starts listening.
+      // Rebuild commands after plugin registrations and before the replacement server listens.
       instanceCtx.on("plugins/reloaded", resume);
       // Also allow recovery by enabling/retrying only the instance plugin.
       instanceCtx.on("ready", resume);

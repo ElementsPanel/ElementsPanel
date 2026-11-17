@@ -105,7 +105,7 @@ export default class DockerPullCommand extends InstanceCommand {
       await new Promise<void>((resolve, reject) => {
         stream.on("data", (data: Buffer | string) => {
           try {
-            // Docker pull stream sends JSON objects as strings (one per line)
+            // Docker pull progress contains one JSON object per line.
             const dataStr = data.toString();
             const lines = dataStr.split("\n").filter((line) => line.trim());
 
@@ -171,7 +171,6 @@ export default class DockerPullCommand extends InstanceCommand {
                   }
                 }
               } catch (parseError) {
-                // not JSON, just log it as a string message
                 logger.debug(`Docker pull non-JSON data: ${line}`);
               }
             }

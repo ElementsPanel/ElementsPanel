@@ -37,9 +37,7 @@ const showSidebar = computed(
 );
 const vuetifyTheme = computed(() => (isDarkTheme.value ? "dark" : "light"));
 
-// VThemeProvider covers the main tree, while dynamically mounted dialogs use
-// Vuetify's global theme. Keep both in lockstep so every popup follows the
-// current light/dark mode.
+// Synchronize the global Vuetify theme for dialogs mounted outside the main provider.
 watch(
   isDarkTheme,
   (dark) => setVuetifyTheme(dark),

@@ -1,4 +1,3 @@
-// HTML from "index.html"
 export const DAEMON_INDEX_HTML = `<!DOCTYPE html>
 <html lang="en">
 

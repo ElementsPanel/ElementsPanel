@@ -1,8 +1,5 @@
 import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
 
-// Panel side of instance backup: the browser talks to the panel, the panel
-// forwards to the node that owns the instance. See `plugins/backup/daemon`.
-
 export const inject = ["koa", "middleware", "roles", "remote"];
 
 export function apply(ctx: PanelPluginContext) {

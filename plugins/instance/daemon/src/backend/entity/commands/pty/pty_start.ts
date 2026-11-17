@@ -184,7 +184,6 @@ export default class PtyStartCommand extends AbsStartCommand {
     let commandList: string[] = [];
     const tmpStarCmd = await instance.parseTextParams(instance.config.startCommand);
     if (os.platform() === "win32") {
-      // windows: cmd.exe /c {{startCommand}}
       commandList = [tmpStarCmd];
     } else {
       commandList = commandStringToArray(tmpStarCmd);

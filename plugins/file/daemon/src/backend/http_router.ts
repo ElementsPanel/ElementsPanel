@@ -7,10 +7,7 @@ import { $t, core, instances, transfer } from "./runtime";
 import FileManager from "./system_file";
 import uploadManager from "./upload_manager";
 
-/**
- * Authorize HTTP transfers with protocol-issued passports. Upload middleware runs before the
- * body parser.
- */
+/** Authorize transfers with protocol-issued passports before the upload body parser runs. */
 export function registerHttpRoutes() {
   const router = core().koa.router();
 
@@ -28,7 +25,6 @@ export function registerHttpRoutes() {
       const cwd = instance.absoluteCwdPath();
       const fileRelativePath = mission.parameter.fileName;
 
-      // Check for file cross-directory security risks
       const fileManager = new FileManager(cwd);
       if (!fileManager.check(fileRelativePath))
         throw new Error((ctx.body = "Access denied: Invalid destination"));

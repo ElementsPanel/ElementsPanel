@@ -57,15 +57,11 @@ export class ModManagerService {
     );
   }
 
-  /** The upstream tried first for every request and download. */
   public get sourcePreference(): ModSourcePreference {
     return this.preference;
   }
 
-  /**
-   * Switches the preferred upstream at runtime. Cached metadata stays valid
-   * either way — both bases serve the same upstream data.
-   */
+  /** Preserve metadata caches when changing upstream order because both bases return the same data. */
   public setSourcePreference(preference: ModSourcePreference) {
     this.preference = preference;
   }
@@ -223,8 +219,7 @@ export class ModManagerService {
     } catch (err: any) {
       if (this.controller.signal.aborted) throw err;
       const fallback = upstreamRequest(config.url);
-      // A miss queues an upstream refresh at MCIM. Do not repeatedly poll the
-      // mirror while it catches up, or leave searches empty during an outage.
+      // Fall back to upstream after a mirror miss instead of polling while its cache refreshes.
       const shouldFallback =
         fallback &&
         !fallbackUsed &&
@@ -476,7 +471,6 @@ export class ModManagerService {
       if (filters?.type && filters.type !== "all") {
         if (filters.type === "plugin") {
           facets.push(["project_type:mod"]);
-          // If no specific loader is selected, filter by common plugin categories
           if (!filters.loader || filters.loader === "all") {
             facets.push([
               "categories:Spigot",
@@ -555,8 +549,6 @@ export class ModManagerService {
       }
 
       const mappedHits = hits.map((hit: any) => {
-        // If user explicitly searched for plugins, force the type to plugin
-        // Otherwise, try to detect if it's a plugin based on categories
         let projectType = hit.project_type;
         if (filters?.type === "plugin") {
           projectType = "plugin";
@@ -640,8 +632,7 @@ export class ModManagerService {
       if (type !== "all" && classIdMap[type]) {
         params.classId = classIdMap[type];
       } else if (type === "all") {
-        // Default to Mods (6) if searching all, or omit to search everything
-        // Most users expect mods when searching "all" on CurseForge
+        // CurseForge classId 6 represents mods and is the default for an unscoped search.
         params.classId = 6;
       }
 
@@ -771,8 +762,7 @@ export class ModManagerService {
         }
       });
 
-      // Determine project type from categories or classId
-      // classId 6 is Mod, 12 is Plugin
+      // CurseForge classId 6 is a mod; classId 12 is a plugin.
       const isPlugin =
         modData?.classId === 12 ||
         modData?.categories?.some((c: any) =>
@@ -859,7 +849,7 @@ export class ModManagerService {
 
       const data = Array.isArray(res.data) ? res.data : [];
 
-      // Fetch version names for all hits to avoid showing IDs
+      // Resolve version IDs to names before display.
       const versionIds = data.map((item: any) => item.version?.id).filter((id: any) => !!id);
       const versionNamesMap: Record<string, string> = {};
 
@@ -934,8 +924,7 @@ export class ModManagerService {
       });
       const versions = res.data;
       return versions.map((v: any, index: number) => {
-        // Version names are display text too (for example "1.2/1.3: stable").
-        // Sanitize the complete generated name, without weakening daemon path checks.
+        // Sanitize generated filenames because release labels may contain path separators.
         const baseName = `${resourceName}-${v.name}`
           .replace(/[\\/:*?"<>|\x00-\x1f\x7f]/g, "_")
           .replace(/\s+/g, "_");
@@ -947,15 +936,13 @@ export class ModManagerService {
         if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(safeName))
           safeName = `_${safeName}`;
         const fileName = `${safeName}.jar`;
-        // Use version-less download URL for the latest version to bypass SpigotMC Cloudflare via Spiget CDN
-        // Spiget API returns versions sorted by releaseDate descending (newest first)
+        // Use the versionless Spiget CDN URL for the latest release to avoid Cloudflare.
         const isLatest = index === 0;
         const downloadUrl = isLatest
           ? `https://api.spiget.org/v2/resources/${projectId}/download`
           : `https://api.spiget.org/v2/resources/${projectId}/versions/${v.id}/download`;
 
-        // Use Spiget CDN to bypass Cloudflare if possible
-        // If CDN fails (521), the daemon will still try the original URL with browser headers
+        // Prefer the Spiget CDN; retain the original URL for daemon fallback.
         const cdnDownloadUrl = downloadUrl.replace("api.spiget.org", "cdn.spiget.org");
 
         return {

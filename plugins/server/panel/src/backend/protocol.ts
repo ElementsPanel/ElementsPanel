@@ -2,10 +2,7 @@ import { Stream } from "stream";
 import type Koa from "koa";
 import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
 
-/**
- * Wrap downstream API responses and errors in { status, data, time }.
- * Install in the base stack so plugin middleware errors use the same envelope.
- */
+/** Apply the { status, data, time } envelope to API results and middleware errors. */
 export function protocol(ctx: PanelPluginContext) {
   return async function protocolMiddleware(
     requestCtx: Koa.ParameterizedContext<Koa.DefaultState, Koa.DefaultContext, any>,
@@ -33,12 +30,10 @@ export function protocol(ctx: PanelPluginContext) {
       );
     }
     requestCtx.response.set("X-Powered-By", "MCSManager");
-    // The runtime foundation records the version in the shared globals store;
-    // the server only exposes it as a response header.
+    // Read the public version from the runtime's shared globals.
     requestCtx.response.set("X-Version", ctx.globals.get("version", "Unknown"));
 
-    // Frontend plugin manifests are regular JSON resources, not API responses.
-    // Keep the array shape intact so the browser can discover compiled plugins.
+    // Leave frontend plugin manifests as plain JSON arrays, outside the API envelope.
     if (requestCtx.path === "/plugins/manifest.json") {
       return;
     }

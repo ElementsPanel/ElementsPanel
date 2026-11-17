@@ -9,10 +9,10 @@ export default class ProcessInfoCommand extends InstanceCommand {
   }
   async exec(instance: Instance): Promise<Object> {
     let info: any = {
-      cpu: 0, // percentage (from 0 to 100*vcore)
+      cpu: 0, // CPU percentage, up to 100 per core.
       memory: 0, // bytes
-      ppid: 0, // PPID
-      pid: 0, // PID
+      ppid: 0,
+      pid: 0,
       ctime: 0, // ms user + system time
       elapsed: 0, // ms since the start of the process
       timestamp: 0 // ms since epoch

@@ -15,7 +15,6 @@ export class OpenFrp {
     public readonly token: string,
     public readonly tunnelId: string
   ) {
-    // ./frpc -u <passowrd> -p <channel id>
     this.processWrapper = new ProcessWrapper(
       FRPC_PATH,
       ["-u", this.token, "-p", this.tunnelId],

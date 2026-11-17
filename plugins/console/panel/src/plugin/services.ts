@@ -21,11 +21,7 @@ import type {
   PanelFrontendTerminalActionContext
 } from "@elements-panel/sdk";
 
-/**
- * Scope UI registrations to the calling plugin so unloading removes them.
- * Keep stores shallowReactive and framework instances markRaw to avoid proxying Cordis
- * contexts.
- */
+/** Remove UI registrations on unload; keep framework instances out of reactive proxies. */
 
 export class VueService extends Service implements FrontendVueService {
   readonly app: App;
@@ -40,7 +36,6 @@ export class VueService extends Service implements FrontendVueService {
 }
 
 export class RoutesService extends Service implements FrontendRoutesService {
-  /** Route path to the name of the plugin that added it. */
   private readonly owners = new Map<string, string>();
   private readonly generation = shallowRef(0);
 
@@ -63,8 +58,7 @@ export class RoutesService extends Service implements FrontendRoutesService {
   }
 
   add(route: RouteRecordRaw) {
-    // `ctx.name` is the calling plugin, which is how a route is attributed
-    // without the caller having to pass its own id.
+    // Attribute routes to the calling plugin through ctx.name.
     const owner = this.ctx.name;
     return this.ctx.effect(() => {
       const before = new Set(router.getRoutes());
@@ -86,10 +80,7 @@ interface ComponentStack {
   registrations: Component[];
 }
 
-/**
- * A stack of component registrations for one name, so a plugin can override a
- * core component and have the original restored when it unloads.
- */
+/** Restore the previous component registration when an overriding plugin unloads. */
 interface ComponentSlots {
   stacks: Map<string, ComponentStack>;
   read(name: string): Component | undefined;
@@ -98,8 +89,7 @@ interface ComponentSlots {
 }
 
 export class UiService extends Service implements FrontendUiService {
-  // Declared because `app()` reads `ctx.vue` on every registration; without it
-  // cordis warns once per call that the service was not injected.
+  // Declare vue as injected because app() reads it on each registration.
   static inject = ["vue", "slots"];
 
   get globalComponents(): readonly Component[] {
@@ -127,10 +117,7 @@ export class UiService extends Service implements FrontendUiService {
     return this.ctx.slots.register("shell.overlay", component);
   }
 
-  /**
-   * Stacks a registration so a plugin can override a core component or card and
-   * have the original restored when it unloads. The last registration wins.
-   */
+  /** The latest registration wins; unloading restores the previous component or card. */
   private push(slots: ComponentSlots, name: string, component: Component) {
     let stack = slots.stacks.get(name);
     if (!stack) {
@@ -229,12 +216,7 @@ export class ActionsService extends Service implements FrontendActionsService {
   }
 }
 
-/**
- * Desktop mode's application registry and window shell.
- *
- * The console provides this registry even when Desktop is absent. Each
- * registration belongs to the calling plugin and is removed with its scope.
- */
+/** Provide the application registry without Desktop and remove each registration with its plugin. */
 export class DesktopService extends Service implements FrontendDesktopService {
   readonly apps = shallowReactive<PanelFrontendDesktopApp[]>([]);
   readonly views = shallowReactive<PanelFrontendDesktopView[]>([]);

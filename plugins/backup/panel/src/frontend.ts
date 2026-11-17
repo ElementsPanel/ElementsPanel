@@ -22,8 +22,6 @@ export function apply(ctx: PanelFrontendPluginContext) {
     mdiIcon: "mdi-cloud-outline",
     normalComponent: InstanceBackupModal,
     desktopComponent: DesktopInstanceBackup,
-    // The node has to provide the feature, which means its backup plugin has to
-    // be installed there too.
     condition: (context) =>
       isScopedInstance(context) && hasNodeFeature(context, "instanceBackup"),
     desktopInitialWidth: 700,

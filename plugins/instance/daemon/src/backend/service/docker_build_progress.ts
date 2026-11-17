@@ -47,8 +47,7 @@ export class DockerBuildTracker {
     }
     return {
       status: this.status,
-      // Downloading is only part of a build. Reserve 100% for a successful build;
-      // extraction and Dockerfile RUN steps have no trustworthy total byte count.
+      // Reserve 100% for build success because extraction and RUN steps lack reliable byte totals.
       percentage: this.status === 2 ? 100 : !unknown && totalBytes > 0
         ? Math.min(99, Math.floor(downloadedBytes / totalBytes * 100)) : undefined,
       downloadedBytes,

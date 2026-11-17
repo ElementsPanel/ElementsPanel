@@ -33,7 +33,6 @@ class InstanceSubsystem extends EventEmitter {
 
   constructor() {
     super();
-    // init instance default install path
     globalConfiguration.load();
     let instanceDataDir = path.join(process.cwd(), "data/InstanceData");
     if (globalConfiguration.config.defaultInstancePath) {
@@ -47,7 +46,6 @@ class InstanceSubsystem extends EventEmitter {
     return this.instanceDataDir;
   }
 
-  // start automatically at boot
   private async autoStart() {
     if (!this.canAutoStart()) return;
     await sleep(1000 * 5);
@@ -89,7 +87,6 @@ class InstanceSubsystem extends EventEmitter {
     );
   }
 
-  // init all instances from local files
   loadInstances() {
     this.startupCancelled = false;
     const instanceConfigs = StorageSubsystem.list("InstanceConfig");
@@ -101,7 +98,6 @@ class InstanceSubsystem extends EventEmitter {
 
         instanceConfig.eventTask.ignore = false;
 
-        // All instances are all function schedulers
         instance
           .forceExec(new FunctionDispatcher())
           .then((v) => {})
@@ -115,7 +111,6 @@ class InstanceSubsystem extends EventEmitter {
       }
     });
 
-    // handle global instance
     let globalConfig: InstanceConfig;
     try {
       globalConfig = StorageSubsystem.load(
@@ -126,8 +121,6 @@ class InstanceSubsystem extends EventEmitter {
       if (globalConfig?.nickname !== this.GLOBAL_INSTANCE)
         throw new Error("Global instance config is not valid");
     } catch (error: any) {
-      // if global instance config is not valid, create a new one
-      // create default global instance config if not exists
       globalConfig = new InstanceConfig();
       globalConfig.nickname = this.GLOBAL_INSTANCE;
       globalConfig.cwd = "/";
@@ -138,11 +131,9 @@ class InstanceSubsystem extends EventEmitter {
       globalConfig.type = Instance.TYPE_UNIVERSAL;
       globalConfig.processType = "general";
 
-      // save config to file
       StorageSubsystem.store("InstanceConfig", this.GLOBAL_INSTANCE_UUID, globalConfig);
     }
 
-    // create global instance
     this.createInstance(
       {
         nickname: globalConfig.nickname,
@@ -154,7 +145,7 @@ class InstanceSubsystem extends EventEmitter {
         type: globalConfig.type,
         processType: globalConfig.processType
       },
-      true, // allow persistence
+      true,
       this.GLOBAL_INSTANCE_UUID
     );
 
@@ -170,8 +161,7 @@ class InstanceSubsystem extends EventEmitter {
     })();
     void this.takeover
       .then(() => {
-        // Only a fresh node startup runs auto-start commands. Worker replacements
-        // and pending restarts only take over the processes that already exist.
+        // Run auto-start only on fresh node startup; replacements reclaim existing processes.
         return this.autoStart();
       })
       .catch((error) => logger.error(error));
@@ -180,7 +170,6 @@ class InstanceSubsystem extends EventEmitter {
   createInstance(cfg: any, persistence = true, uuid?: string) {
     const newUuid = uuid || v4().replace(/-/gim, "");
     const instance = new Instance(newUuid, new InstanceConfig());
-    // Instance working directory verification and automatic creation
     if (!cfg.cwd || cfg.cwd === ".") {
       cfg.cwd = path.normalize(`${this.instanceDataDir}/${instance.instanceUuid}`);
     }
@@ -374,7 +363,6 @@ class InstanceSubsystem extends EventEmitter {
         await instance.execPreset("kill");
       } else {
         logger.info(`Stopping ${instance.config.nickname} (${instance.instanceUuid})...`);
-        // BUG: Error: write EPIPE
         await instance.execPreset("stop");
       }
     }
@@ -419,7 +407,7 @@ class InstanceSubsystem extends EventEmitter {
     });
   }
 
-  // Soft exit: optional docker skip and configurable wait timeout
+  // Try graceful shutdown before the configured timeout.
   softExit(skipDocker = true, waitSeconds = 10) {
     const promises: Promise<void>[] = [];
     for (const iterator of this.instances) {
@@ -431,7 +419,6 @@ class InstanceSubsystem extends EventEmitter {
           );
           continue;
         } else {
-          // Soft close general instances (don't force kill)
           promises.push(this.exitInstance(instance, false));
         }
       }
@@ -453,7 +440,6 @@ class InstanceSubsystem extends EventEmitter {
                   instance: instance.config.nickname
                 })
               );
-              // If it takes too long, force close target instances
               this.exitInstance(instance, true);
             }
           }

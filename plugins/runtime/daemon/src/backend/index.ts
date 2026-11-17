@@ -64,11 +64,6 @@ function createUploadMiddleware(ctx: DaemonPluginContext) {
   return { uploadFileCheck, uploadSpeedLimit };
 }
 
-/**
- * Shared daemon bootstrap. The executable only loads plugins; this plugin
- * follows the storage foundation and owns configuration, dependency checks and
- * the reusable runtime primitives.
- */
 export const inject = ["i18n", "storage"];
 
 export async function apply(ctx: DaemonPluginContext) {

@@ -179,7 +179,6 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
       }
 
       if (activeTab.value === key) {
-        // Prefer to switch to the previous tab; if none exists, take the last one
         const prevIndex = index > 0 ? index - 1 : currentTabs.value.length - 1;
         const nextKey = currentTabs.value[prevIndex]?.key || "";
         activeTab.value = nextKey;
@@ -395,8 +394,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
   };
 
   const getFileList = async (throwErr = false, initPath?: string) => {
-    // An explicitly empty saved tab list means the user closed every folder.
-    // Background refreshes and table events must not reopen it.
+    // An explicitly empty saved tab list must not be reopened by background refreshes.
     if (disposed || tabList.value[currentTabKey]?.length === 0) return false;
     const request = ++fileListRequest;
     spinning.value = true;

@@ -6,15 +6,12 @@ import { $t } from "../i18n";
 
 const execAsync = promisify(exec);
 
-/**
- * Retrieves the Linux system UID and GID for a given username
- */
 export async function getLinuxSystemId(username: string): Promise<{ uid: number; gid: number }> {
   if (!username || typeof username !== "string" || username.trim() === "") {
     throw new Error('"Run As User" Error: Username must be a non-empty string');
   }
 
-  // Sanitize username to prevent command injection (allow only alphanumeric, underscore, and hyphen)
+  // Restrict usernames before passing them to system commands.
   const sanitizedUsername = username.replace(/[^a-zA-Z0-9_-]/g, "");
   if (sanitizedUsername !== username) {
     throw new Error('"Run As User" Error: Username contains unsafe characters');

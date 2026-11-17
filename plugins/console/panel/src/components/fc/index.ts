@@ -6,9 +6,6 @@ import KvOptionsDialogVue from "@/components/fc/KvOptionsDialog.vue";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import TaskLoadingDialog from "./TaskLoadingDialog.vue";
 
-// The file manager's own dialogs — upload, download-from-URL and the image
-// viewer — moved to `plugins/file`, which owns the components they mount.
-
 interface DockerConfigItem {
   host: string;
   container: string;

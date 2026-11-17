@@ -14,7 +14,6 @@ interface StoredSlotEntry<K extends PanelFrontendSlotName = PanelFrontendSlotNam
   condition?: (props: PanelFrontendSlotProps<K>) => boolean;
 }
 
-/** Header actions are data; anything else in a slot is a Vue component. */
 function isHeaderAction(
   target: Component | PanelFrontendHeaderAction
 ): target is PanelFrontendHeaderAction {

@@ -3,25 +3,10 @@ import type RouterContext from "../../../../server/daemon/src/backend/context";
 import type { DaemonPluginContext } from "../../../../../core/daemon/src/plugin";
 import { localeMessages } from "../i18n";
 
-// The daemon's identity check.
-//
-// Everything about deciding *who* may talk to this daemon lives here: the
-// top-level protocol middleware that gates every event, the key comparison the
-// panel authenticates with, the optional panel IP whitelist and the timeout that
-// hangs up on a connection that never authenticates.
-//
-// The daemon core keeps no "is auth enabled" branch anywhere — it simply has no
-// opinion on who is calling. Removing this plugin therefore leaves the daemon
-// answering every event to anyone who can reach the port, which is the same trade
-// the panel makes with `plugins/user`.
-//
-// The session type is this plugin's own; stream and upload passports are exposed
-// by the runtime transfer service.
+// Authenticate daemon sessions; disabling this plugin leaves protocol access unrestricted.
 
-/** How long a connection may stay unauthenticated before it is hung up on. */
 const AUTH_TIMEOUT = 6000;
 
-/** What this plugin marks a session it has authenticated with. */
 const LOGIN_BY_TOP_LEVEL = "TOP_LEVEL";
 
 export const inject = ["protocol", "i18n", "settings", "transfer"];
@@ -32,10 +17,7 @@ export function apply(ctx: DaemonPluginContext) {
   const $t = ctx.i18n.$t;
   const protocol = ctx.protocol;
 
-  // Temporary upload/download passports are part of authentication: they are
-  // issued only after the panel has authenticated and are consumed by the file
-  // and terminal plugins. Keeping this event here leaves the server plugin
-  // responsible only for transport.
+  // Issue transfer passports only for authenticated panel sessions.
   const ONE_HOUR_TIME = 3600000;
   protocol.on("passport/register", (routerCtx, data) => {
     const start = Date.now();
@@ -59,17 +41,13 @@ export function apply(ctx: DaemonPluginContext) {
     routerCtx.session.login &&
     routerCtx.session.id;
 
-  // Top-level authority authentication middleware. It is registered before the
-  // server listens, and it is the only protocol middleware, so it runs first for
-  // every event on every socket.
+  // Register authentication before the server starts accepting events.
   protocol.use(async (routePath, routerCtx, _data, next) => {
     const socket = routerCtx.socket;
 
-    // release all data flow controllers
     if (routePath.startsWith("stream")) return next();
 
-    // Except for the auth controller, which is publicly accessible, other
-    // business controllers must be authorized before they can be accessed
+    // Allow unauthenticated access to the login event.
     if (routePath === "auth") return await next();
     if (!routerCtx.session) {
       throw new Error("Session does not exist in authentication middleware.");
@@ -86,11 +64,10 @@ export function apply(ctx: DaemonPluginContext) {
     return protocol.error(routerCtx, "error", protocol.IGNORE, { disablePrint: true });
   });
 
-  // The authentication controller itself.
   protocol.on("auth", (routerCtx, data) => {
     try {
       let ip = routerCtx.socket.handshake.address;
-      // extract IPv4 address from IPv6 format
+      // Strip the IPv4-mapped IPv6 prefix.
       if (ip.startsWith("::ffff:")) ip = ip.substring(7);
 
       const config = ctx.settings.config;
@@ -102,8 +79,6 @@ export function apply(ctx: DaemonPluginContext) {
         suppliedKey.length === configuredKey.length &&
         timingSafeEqual(suppliedKey, configuredKey)
       ) {
-        // The authentication is passed, and the registered session is a trusted
-        // session.
         ctx.logger.info(
           $t("TXT_CODE_AUTH_ROUTER_ACCESS", {
             id: routerCtx.socket.id,
@@ -126,8 +101,7 @@ export function apply(ctx: DaemonPluginContext) {
     }
   });
 
-  // Hang up on a connection that never authenticates. `ctx.setTimeout` is
-  // cancelled when the plugin unloads, so a pending timer leaves with it.
+  // Disconnect unauthenticated sessions; unloading cancels pending timers.
   protocol.on("connection", (routerCtx) => {
     const session = routerCtx.session;
     ctx.setTimeout(() => {

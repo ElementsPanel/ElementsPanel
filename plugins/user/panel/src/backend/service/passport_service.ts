@@ -7,7 +7,6 @@ import { $t, globalVariable, logger, ROLE } from "../runtime";
 import { authSettings } from "./auth_settings";
 import userSystem from "./user_service";
 
-// Counters reported by the panel overview through RequestGuard.stats().
 export const BAN_IP_COUNT = "banip";
 export const LOGIN_FAILED_KEY = "loginFailed";
 export const ILLEGAL_ACCESS_KEY = "illegalAccess";
@@ -45,7 +44,6 @@ export function isAjax(ctx: Koa.ParameterizedContext) {
   );
 }
 
-// Validate apiKey: only A-Z, a-z, 0-9 are allowed
 export function checkSafeName(name: string) {
   return /^[a-zA-Z0-9]+$/.test(name);
 }
@@ -236,7 +234,6 @@ export function checkBanIp(ctx: Koa.ParameterizedContext) {
   const keys = statsKeys();
   const GlobalVariable = globalVariable();
   if (!GlobalVariable.map.has(keys.LOGIN_FAILED_KEY)) GlobalVariable.set(keys.LOGIN_FAILED_KEY, {});
-  // This IpMap also needs to be used when logging in
   const ipMap = GlobalVariable.get(keys.LOGIN_FAILED_KEY);
 
   const ip = getLoginIp(ctx);

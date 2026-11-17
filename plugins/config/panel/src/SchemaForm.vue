@@ -22,8 +22,6 @@ import {
 } from "vuetify/components";
 import type { SettingField } from "./api";
 
-// Render backend-declared fields with translated labels for panel and daemon plugins.
-
 const props = defineProps<{
   fields: SettingField[];
   values: Record<string, unknown>;
@@ -33,7 +31,6 @@ const props = defineProps<{
 // eslint-disable-next-line no-unused-vars
 const emit = defineEmits<{ (event: "save"): void }>();
 
-/** Show a field only when every condition matches: a truthy field name or "name=value". */
 const visible = (field: SettingField, values = props.values) => {
   const conditions = field.visibleWhen;
   if (!conditions) return true;
@@ -86,8 +83,7 @@ const editor = ref<{
   draft: Record<string, unknown>;
 }>();
 const editorOpen = ref(false);
-// Configuration values are JSON data. Copy the whole item to retain IDs and
-// secret-preservation flags while keeping cancelled edits out of the list.
+// Clone the full JSON item to preserve IDs and secret flags without applying cancelled edits.
 const copyItem = (item: Record<string, unknown>) =>
   JSON.parse(JSON.stringify(item)) as Record<string, unknown>;
 const editItem = (field: SettingField, item?: Record<string, unknown>) => {

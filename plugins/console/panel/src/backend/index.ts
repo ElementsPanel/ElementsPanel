@@ -38,9 +38,7 @@ function readAppearance(config: AppearanceConfig) {
 }
 
 function writeAppearance(values: AppearanceValues, config: AppearanceConfig, save: () => Promise<void>) {
-  // `null` is sent by the clearable Vuetify input when an image is removed.
-  // Only an omitted field should fall back to the persisted value; treating
-  // null as missing writes the old image straight back.
+  // Treat a clearable input's null as removal; only omitted fields retain the saved image.
   const valueOrCurrent = (value: unknown, currentValue: unknown) =>
     value === undefined ? currentValue : value;
   config.pageTitle =
@@ -59,11 +57,7 @@ function writeAppearance(values: AppearanceValues, config: AppearanceConfig, sav
   return save();
 }
 
-/**
- * Site appearance used to live inside `data/layout.json` under the
- * `__settings__` pseudo page. It now belongs to SystemConfig; copy any saved
- * values over once so the title, logo and background survive the change.
- */
+/** Migrate saved appearance from layout.json to SystemConfig once. */
 async function migrateLegacyAppearance(config: AppearanceConfig, save: () => Promise<void>) {
   const customized =
     (config.pageTitle && config.pageTitle !== DEFAULT_PAGE_TITLE) ||
@@ -92,9 +86,6 @@ function isSafeFileName(fileName: string) {
   return !/[\\/:*?"<>|]/.test(fileName) && !fileName.includes("..") && fileName.length > 0;
 }
 
-/**
- * The console owns the browser shell's appearance and its shared asset route.
- */
 export const inject = [
   "koa",
   "i18n",

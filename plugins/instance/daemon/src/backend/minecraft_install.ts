@@ -57,7 +57,7 @@ export function minecraftInstallerCommand(options: MinecraftInstallOptions) {
   return `${javaExecutableCommand(options.javaPath)} -jar server-installer.jar --installServer`;
 }
 
-/** Resolve only files actually produced by this installation. */
+/** Ignore artifacts outside this installation. */
 export async function minecraftStartCommand(
   cwd: string,
   options: MinecraftInstallOptions,

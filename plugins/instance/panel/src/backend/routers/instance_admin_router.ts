@@ -172,7 +172,6 @@ export function createInstanceAdminRouter() {
     }
   );
 
-  // Batch routes share authorization, forwarding, failure handling and logging.
   for (const [operation, logType] of [
     ["open", "instance_start"],
     ["stop", "instance_stop"],

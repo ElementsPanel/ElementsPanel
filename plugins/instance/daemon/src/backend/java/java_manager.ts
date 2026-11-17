@@ -125,7 +125,7 @@ export class JavaManager {
     if (this.javaList.has(info.fullname)) this.save(info);
   }
 
-  /** One shared installation per node/version; callers can poll the persisted runtime state. */
+  /** Share one installation per node and version; publish progress in runtime metadata. */
   async startInstall(version: string): Promise<IJavaRuntime> {
     await this.ready;
     if (this.disposed) throw new Error(this.dependencies.translate("TXT_CODE_JAVA_MSL_INTERRUPTED"));

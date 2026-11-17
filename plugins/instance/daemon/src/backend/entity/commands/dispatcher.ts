@@ -62,7 +62,6 @@ export default class FunctionDispatcher extends InstanceCommand {
       instance.setPreset("command", new RconCommand());
     }
 
-    // Plugin-contributed lifecycle tasks, such as Minecraft status polling.
     for (const createTask of daemon.instanceLifecycle.entries()) {
       const task = createTask(instance);
       if (task) instance.lifeCycleTaskManager.registerLifeCycleTask(task);

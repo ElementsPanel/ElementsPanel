@@ -171,8 +171,6 @@ export function registerModManagerRoutes(
       try {
         const { daemonId, uuid, url, fileName, projectType, fallbackUrl, extraInfo } =
           requestCtx.request.body;
-        // The client may hold a version list fetched under an older preference,
-        // so the current setting decides which of the two URLs is tried first.
         const download = preferDownload(url, fallbackUrl, modManagerService.sourcePreference);
 
         if (!checkSafeUrl(download.url)) {
@@ -221,7 +219,6 @@ export function registerModManagerRoutes(
           });
           requestCtx.body = result;
         } else {
-          // Upload stop is handled by deleting the file or specific upload task
           const result = await remoteRequest(remoteService).request("file/delete", {
             instanceUuid: uuid,
             targets: [fileName]

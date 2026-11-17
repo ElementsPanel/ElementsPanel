@@ -133,7 +133,7 @@ export function getInstanceConfigByType(type: string) {
   INSTANCE_CONFIGS.forEach((v) => {
     if (v.category.includes(type)) result.push(v);
   });
-  // Return a copy to avoid interfering with the original data
+  // Return a copy to protect shared instance data.
   return JSON.parse(JSON.stringify(result));
 }
 

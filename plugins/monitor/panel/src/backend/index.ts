@@ -2,16 +2,11 @@ import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugi
 import { localeMessages } from "../i18n";
 import { VisualDataHistory } from "./service/visual_data";
 
-// Optional monitoring contributes history and exposes the audit log view.
-
 export const inject = ["i18n", "koa", "middleware", "roles", "operations", "overview"];
 
 type OperationLogEntry = Record<string, any>;
 
-/**
- * Older log entries only carry the instance id, so the audit view cannot show
- * a name. Resolve the missing ones through the optional instance provider.
- */
+/** Resolve names missing from legacy audit entries through the optional instance provider. */
 async function attachInstanceNames(ctx: PanelPluginContext, entries: OperationLogEntry[]) {
   const provider = ctx.get("instances");
   if (!provider || !Array.isArray(entries) || entries.length === 0) return entries;
@@ -46,9 +41,7 @@ export function apply(ctx: PanelPluginContext) {
   ctx.i18n.define(localeMessages);
   const history = new VisualDataHistory(ctx);
 
-  // Counted here rather than in the core response middleware: the request rate
-  // only exists to be charted. Runs for every request regardless of where in
-  // the middleware chain the plugin was mounted.
+  // Count each request in this monitoring middleware regardless of its position in the stack.
   ctx.koa.use(async (requestCtx, next) => {
     if (requestCtx.url.startsWith("/api/")) history.addRequestCount();
     await next();

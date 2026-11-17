@@ -1,9 +1,4 @@
-/**
- * A circular buffer is an array-based data structure that enables element addition and overwrite operations with O(1) time complexity,
- * making it highly suitable for high-frequency push operations and the need to remove the oldest data.
- * Additionally, its memory usage is fixed and does not grow dynamically,
- * meeting the requirements for high efficiency and low memory consumption.
- */
+/** Fixed-size circular buffer with constant-time insertion. */
 export class CircularBuffer<T> {
   private capacity: number;
   private buffer: T[];

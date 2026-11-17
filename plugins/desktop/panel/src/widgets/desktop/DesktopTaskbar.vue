@@ -13,7 +13,6 @@ import { computed, onBeforeUnmount, ref, type Component } from "vue";
 const { isDarkTheme } = useAppConfigStore();
 const { themeIcon, themeTitle, cycleTheme } = useThemeSwitch();
 const actionSlots = computed(() => ctx.slots.entries("shell.header.actions", { mobile: false }));
-// Descriptors are drawn by the shell; component entries stay supported.
 const slotActions = computed(() =>
     actionSlots.value.flatMap((entry) =>
         entry.action && entry.action.taskbar !== false ? [{ id: entry.id, action: entry.action }] : []

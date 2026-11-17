@@ -11,9 +11,6 @@ import trTR from "./tr_TR.json";
 import zhCN from "./zh_CN.json";
 import zhTW from "./zh_TW.json";
 
-// The lines this plugin writes about who connected and who was turned away.
-// Registered with the daemon's i18next instance at setup, so the shared
-// foundational `plugins/i18n` catalogue carries nothing authentication-specific.
 export const localeMessages = {
   de_de: deDE,
   en_us: enUS,

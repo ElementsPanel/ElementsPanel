@@ -3,7 +3,7 @@ import logger from "../../service/log";
 
 export interface ILifeCycleTask {
   name: string;
-  status: number; // Running status, the default is 0, the task manager will automatically change
+  status: number;
   start: (instance: Instance) => Promise<void>;
   stop: (instance: Instance) => Promise<void>;
 }

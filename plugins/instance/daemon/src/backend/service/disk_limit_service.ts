@@ -71,16 +71,14 @@ class DiskLimitService {
 
   public async checkDiskNow(item: IDiskLimitItem, autoStop: boolean = true) {
     const { instance, workspace, maxSpace } = item;
-    // There was already an initial check on the working directory when saving,
-    // but we double-check here.
+    // Recheck the working directory because it may have changed since configuration was saved.
     if (['"', "'", "`", "$"].some((ch) => workspace.includes(ch)) || !fs.existsSync(workspace)) {
       instance.info.storageUsage = -1;
       instance.info.storageLimit = maxSpace;
       return;
     }
 
-    // Use Node.js native recursive directory size calculation instead of `du` command,
-    // because `du` is not available on Windows.
+    // Traverse with Node.js APIs because du is unavailable on Windows.
     const diskUsageSizeBytes = await getDirectorySizeBytes(workspace);
     const diskUsageSizeMb = Math.ceil(diskUsageSizeBytes / (1024 * 1024));
 
@@ -128,11 +126,6 @@ export function convertGBToBytes(gb: number) {
   return Number((gb * 1024 * 1024 * 1024).toFixed(2));
 }
 
-/**
- * Cross-platform function to calculate directory size in bytes.
- * Recursively walks the directory tree using Node.js fs,
- * which works on both Windows and Linux without external commands.
- */
 async function getDirectorySizeBytes(dirPath: string): Promise<number> {
   let totalSize = 0;
   try {
@@ -146,12 +139,11 @@ async function getDirectorySizeBytes(dirPath: string): Promise<number> {
           const stat = await fs.promises.stat(fullPath);
           totalSize += stat.size;
         } catch {
-          // skip files we cannot stat (permission issues, etc.)
         }
       }
     }
   } catch {
-    // if we can't read the directory, return 0
+    // Unreadable paths contribute zero to the directory total.
   }
   return totalSize;
 }

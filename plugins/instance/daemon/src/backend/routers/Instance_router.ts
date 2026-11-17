@@ -67,7 +67,6 @@ routerApp.on("instance/select", (ctx, data) => {
     }
     return true;
   });
-  // Sort by status, then nickname.
   result.sort((a, b) => {
     if (a.status() !== b.status()) {
       return b.status() - a.status();
@@ -139,7 +138,7 @@ routerApp.on("instance/detail", async (ctx, data) => {
     let processInfo = null;
     let space = 0;
     try {
-      // Parts that may be wrong due to file permissions, avoid affecting the acquisition of the entire configuration
+      // Skip unreadable permission-dependent fields while returning the remaining configuration.
       processInfo = await instance.forceExec(new ProcessInfoCommand());
     } catch (err: any) {}
     protocol.msg(ctx, "instance/detail", {
@@ -380,14 +379,13 @@ routerApp.on("instance/asynchronous", (ctx, data) => {
       });
   }
 
-  // Plugin task declarations specify caller roles and whether an existing instance is required.
+  // Task declarations define required roles and instance scope.
   const registeredTask = daemon.tasks.get(taskName);
   if (registeredTask) {
     if (registeredTask.requiredRole != null && role < registeredTask.requiredRole) {
       return protocol.error(ctx, "instance/asynchronous", $t("TXT_CODE_PERMISSION_FORBIDDEN"));
     }
-    // A task that builds its own instance, such as creating one from a market
-    // package, declares `requiresInstance: false` and is handed no instance.
+    // Creation tasks declare requiresInstance: false and receive no existing instance.
     const needsInstance = registeredTask.requiresInstance !== false;
     if (!needsInstance || instance) {
       const runningTask = instance

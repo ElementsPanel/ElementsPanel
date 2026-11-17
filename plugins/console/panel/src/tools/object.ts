@@ -1,8 +1,5 @@
 /* eslint-disable no-unused-vars */
 
-// Deeply traverse all keys of an object and execute a callback.
-// If the callback returns true,
-// keep the key; otherwise, delete it.
 export function deepTraverseObject<T = any>(
   obj: any,
   filter: (key: string, value: T) => boolean,
@@ -12,7 +9,7 @@ export function deepTraverseObject<T = any>(
   if (deep > 5) {
     return obj;
   }
-  // Prevent infinite recursion: check if object was already visited (handles circular references)
+  // Track visited objects to prevent cycles during traversal.
   if (obj && typeof obj === "object") {
     if (visited.has(obj)) {
       return obj;

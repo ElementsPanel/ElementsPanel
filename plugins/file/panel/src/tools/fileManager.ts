@@ -17,10 +17,6 @@ export const getFileExtName = (fileName: string) => {
   return fileName.substring(i + 1).toLowerCase();
 };
 
-/**
- * Check if the file is a decompressible archive format
- * Supports the single-volume formats handled by the daemon's archive service.
- */
 export const isCompressFile = (fileName: string): boolean => {
   const lowerFileName = fileName.toLowerCase();
   const supportedExtensions = [

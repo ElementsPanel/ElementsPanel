@@ -91,8 +91,7 @@ export function registerSettings(ctx: DaemonPluginContext) {
     })
   );
 
-  // Null advertises migration support without confusing a deliberately empty list
-  // with a node that has never imported its panel-side configuration.
+  // Null distinguishes an unmigrated configuration from an intentionally empty mapping list.
   ctx.overview.provide(() => ({ remoteMappings: config.remoteMappings ?? null }));
   ctx.protocol.on("node/mappings", (routerCtx, data) => {
     try {

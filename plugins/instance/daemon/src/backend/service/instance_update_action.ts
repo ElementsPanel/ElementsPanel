@@ -35,8 +35,7 @@ export class InstanceUpdateAction extends AsyncTask {
     );
     this.instance.println($t("TXT_CODE_GENERAL_UPDATE_UPDATE"), `${updateCommand}`);
 
-    // Docker Update Command Mode: Prefer using docker.updateCommandImage,
-    // otherwise, if the instance is in Docker mode, use docker.image
+    // Prefer updateCommandImage; otherwise reuse the configured container image.
     const updateImage =
       this.instance.config.docker?.updateCommandImage?.trim() ||
       (this.instance.config.processType === "docker" && this.instance.config.docker?.image
@@ -66,7 +65,6 @@ export class InstanceUpdateAction extends AsyncTask {
     });
     process.once("error", (error) => { void this.error(error); });
 
-    // process & pid
     this.pid = process.pid;
     this.process = process;
 

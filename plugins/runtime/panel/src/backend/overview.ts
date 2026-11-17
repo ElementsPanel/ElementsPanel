@@ -2,7 +2,7 @@ import { systemInfo } from "mcsmanager-common";
 import os from "os";
 import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
 
-/** Same major.minor rule the node page uses: patch differences stay compatible. */
+/** Compare major and minor versions; patch differences remain compatible. */
 function hasDaemonVersionUpdate(panelVersion: string, daemonVersion?: string) {
   if (!daemonVersion) return true;
   const [panelMajor, panelMinor] = panelVersion.split(".");

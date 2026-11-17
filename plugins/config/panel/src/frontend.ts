@@ -5,8 +5,6 @@ import ConfigPage from "./ConfigPage.vue";
 import { localeMessages } from "./i18n";
 import PluginConfig from "./normal/PluginConfig.vue";
 
-// Render each plugin's backend-declared settings, including daemon-only plugins.
-
 const ROLE_ADMIN = 10;
 
 export const inject = ["console", "i18n", "routes", "desktop"];

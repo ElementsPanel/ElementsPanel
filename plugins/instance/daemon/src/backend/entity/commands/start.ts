@@ -54,10 +54,9 @@ export default abstract class AbsStartCommand extends InstanceCommand {
 
       instance.println("INFO", $t("TXT_CODE_START_START_INSTANCE"));
 
-      // prevent the dead-loop from starting
+      // Block automatic restart loops.
       await this.sleep();
 
-      // check the disk space
       if (instance.config.docker?.maxSpace && instance.config.docker.maxSpace > 0) {
         instance.println("INFO", $t("TXT_CODE_COMMON_CALCULATING_USED_STORAGE_SPACE_PLEASE_WAIT_PATIENTLY"));
         const result = await disk_limit_service.checkDiskNow(
@@ -88,8 +87,7 @@ export default abstract class AbsStartCommand extends InstanceCommand {
 
       return await this.createProcess(instance);
     } catch (error: any) {
-      // createProcess owns a child until started() hands it to the instance.
-      // A delayed kill preset could otherwise kill a subsequent startup.
+      // Retain process ownership until started() so a delayed kill cannot affect a later startup.
       await instance.releaseResources();
       instance.status(Instance.STATUS_STOP);
       instance.startTimestamp = 0;

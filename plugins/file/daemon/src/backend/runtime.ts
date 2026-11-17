@@ -1,9 +1,6 @@
 import type { DaemonPluginContext } from "../../../../../core/daemon/src/plugin";
 
-/**
- * Access shared services through the plugin context. Runtime imports of host singletons would
- * create duplicate instances.
- */
+/** Resolve shared services through context to avoid bundling duplicate host singletons. */
 let context: DaemonPluginContext | undefined;
 
 export function setPluginContext(value: DaemonPluginContext) {
@@ -17,7 +14,7 @@ export function core(): DaemonPluginContext {
 
 type PluginLogger = DaemonPluginContext["logger"];
 
-/** Use a quiet logger after scope disposal so upload cleanup cannot fail while logging. */
+/** Use a quiet logger after disposal so upload cleanup can finish. */
 const SILENT = {
   info() {},
   warn() {},
@@ -35,15 +32,11 @@ export const transfer = () => core().transfer;
 export const $t = (key: string, options?: any): string =>
   (core().get("i18n")?.$t(key, options) ?? key) as unknown as string;
 
-/**
- * The file plugin can load before the instance plugin. `get()` avoids Cordis'
- * undeclared-property warning while keeping the existing lazy dependency.
- */
+/** Resolve the optional instance service lazily to avoid startup order and Cordis injection warnings. */
 export const instances = () => {
   const service = core().get("instances");
   if (!service) throw new Error("Instance access requires the daemon instance plugin.");
   return service;
 };
 
-/** Count file tasks across the daemon. */
 export const fileTasks = { count: 0 };

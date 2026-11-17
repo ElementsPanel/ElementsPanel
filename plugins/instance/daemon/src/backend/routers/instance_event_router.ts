@@ -43,7 +43,7 @@ export function registerInstanceEvents() {
     buffer.set(instanceUuid, logTail(Buffer.from(buf, "utf8"), Math.min(maxBytes, 1024 * 1024)).toString("utf8"));
   };
 
-  // Instance output stream event. The buffer controls disk write frequency.
+  // Buffer instance output to limit disk-write frequency.
   const onData = (instanceUuid: string, text: string) => {
     InstanceSubsystem.forEachForward(instanceUuid, (socket) => {
       protocol.msg(new RouterContext(null, socket), "instance/stdout", {

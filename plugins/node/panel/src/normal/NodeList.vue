@@ -10,7 +10,6 @@ import { useRemoteNode } from "../hooks/useRemoteNode";
 import NodeDetailDialog from "./node/NodeDetailDialog.vue";
 import NodeItem from "./node/NodeItem.vue";
 
-// Keep the legacy card registration harmless while the /node route remains fixed.
 defineProps<{ card?: unknown }>();
 
 const nodeDetailDialog = ref<InstanceType<typeof NodeDetailDialog>>();

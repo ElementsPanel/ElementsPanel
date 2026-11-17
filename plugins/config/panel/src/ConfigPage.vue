@@ -53,9 +53,6 @@ import {
 } from "./api";
 import SchemaForm from "./SchemaForm.vue";
 
-// Keep disabled plugins listed so they can be enabled again.
-// Render backend-declared settings for both panel and daemon plugins.
-
 type Scope = "panel" | "node";
 type PluginAction = "disable" | "remove";
 
@@ -131,7 +128,6 @@ const nodeLabel = (node: NodeSummary) =>
   }`;
 
 const PLUGIN_NAME_PREFIX = "epanel-plugin-";
-/** Show plugin package names without the ePanel package prefix. */
 const pluginLabel = (id?: string) => {
   if (!id) return "";
   const slash = id.indexOf("/");
@@ -463,8 +459,7 @@ const loadSchema = async () => {
       if (request === schemaRequest) schema.value = res.value ?? null;
     }
   } catch (error: any) {
-    // A plugin that declared nothing is the common case; a real failure is
-    // reported by the list above, which uses the same connection.
+    // Missing settings are normal; the inventory request reports connection failures.
     if (request === schemaRequest) schema.value = null;
   } finally {
     if (request === schemaRequest) schemaLoading.value = false;
@@ -556,7 +551,6 @@ const load = async (quiet = false) => {
   }
 };
 
-/** Node routes are unavailable when the node plugin is absent. */
 const loadNodes = async () => {
   loading.value = true;
   nodeError.value = "";
@@ -599,7 +593,6 @@ const loadNodePlugins = async (quiet = false) => {
   }
 };
 
-/** Re-read with retries while the node reconnects after a plugin toggle. */
 const reloadNodePluginsAfterToggle = async () => {
   for (let attempt = 0; attempt < 4; attempt++) {
     if (disposed) return;
@@ -641,7 +634,7 @@ onUnmounted(() => {
   nodePluginsRequest++;
 });
 
-/** Remove this page's query parameters before navigating. Preserve values supplied by the target link. */
+/** Drop page-specific query parameters while preserving the target link's values. */
 onBeforeRouteLeave((to) => {
   if (to.path === "/plugins/config") return true;
   const query = { ...to.query };
@@ -727,10 +720,7 @@ watch(
   { immediate: true }
 );
 
-/**
- * Update shareable plugin URLs without triggering the router guard and progress bar.
- * Desktop windows leave the desktop route's address unchanged.
- */
+/** Update plugin URLs without navigation; leave the browser URL unchanged for desktop windows. */
 let lastSyncedPath = "";
 const syncRoute = () => {
   if (route.path !== "/plugins/config") return;
@@ -747,7 +737,7 @@ const syncRoute = () => {
 
 watch([scope, currentId, selectedNodeId], syncRoute);
 
-/** Read live inventories: node plugins may have been installed outside the market. */
+/** Re-read inventories to include plugins installed outside the market. */
 const checkNodePlugins = async (candidate: PluginActionCandidate) => {
   if (
     candidate.scope !== "panel" ||
@@ -842,8 +832,7 @@ const syncNodePlugins = async (candidate: PluginActionCandidate) => {
               )
           );
       }
-      // A panel failure can leave the dialog open for a retry. Do not repeat
-      // successful removals against plugins that no longer exist on that node.
+      // Keep successful node removals out of retries after a panel failure.
       candidate.selectedNodeIds = candidate.selectedNodeIds.filter((id) => id !== node.uuid);
     } catch (error) {
       failures.push(`${nodeLabel(node)}: ${getValidatorErrorMsg(error, t("TXT_CODE_COMMON_OPERATION_FAILED"))}`);
@@ -860,7 +849,6 @@ const apply = async (plugin: PluginRecord, enabled: boolean, candidate?: PluginA
     const nodesSucceeded = candidate ? await syncNodePlugins(candidate) : true;
     const { execute } = setPluginEnabled();
     recordResult((await execute({ data: { id: plugin.id, enabled } })).value?.result);
-    // Reconcile frontend contributions against the updated plugin manifest.
     await ctx.plugins.refresh();
     await load();
     if (nodesSucceeded && (!lastResult.value || lastResult.value.application === "applied"))
@@ -873,7 +861,6 @@ const apply = async (plugin: PluginRecord, enabled: boolean, candidate?: PluginA
   }
 };
 
-/** The daemon applies the switch; the browser only refreshes its inventory. */
 const applyNode = async (
   plugin: NodePluginRecord,
   enabled: boolean,
@@ -900,7 +887,7 @@ const applyNode = async (
   }
 };
 
-/** Confirm disabling because it can remove services such as authentication. */
+/** Disabling a plugin can remove authentication or other services. */
 const toggle = (plugin: PluginRecord | NodePluginRecord, enabled: boolean) => {
   if (actionBusy.value) return;
   const targetScope = scope.value;

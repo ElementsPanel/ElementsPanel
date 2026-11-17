@@ -17,8 +17,6 @@ export default class GeneralRestartCommand extends InstanceCommand {
       } catch (error) {
       }
       const startCount = instance.startCount;
-      // Check the instance status every second,
-      // if the instance status is stopped, restart the server immediately
       const task = setInterval(async () => {
         try {
           if (startCount !== instance.startCount) {

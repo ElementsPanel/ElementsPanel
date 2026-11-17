@@ -3,9 +3,7 @@ import sanitizeHtml from "sanitize-html";
 
 export function markdownToHTML(markdown: string) {
   const html = parse(markdown);
-  // Allow only a super restricted set of tags and attributes. The plugin market
-  // renders plugin READMEs with the same list (EPanel_Market server/utils/markdown.ts);
-  // change both together.
+  // Keep README sanitization rules aligned with the market server.
   const safeHtml = sanitizeHtml(html, {
     allowedTags: [
       "h1",

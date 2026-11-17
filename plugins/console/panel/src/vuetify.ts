@@ -5,10 +5,7 @@ import type { App } from "vue";
 import { createVuetify } from "vuetify";
 import { aliases, mdi } from "vuetify/iconsets/mdi";
 
-/**
- * Vuetify is installed by the console plugin so feature plugins can use the
- * same component and theme context without putting UI code back in the host.
- */
+/** Share one Vuetify component and theme context across feature plugins. */
 export const vuetify = createVuetify({
   defaults: {
     VDialog: {
@@ -79,11 +76,7 @@ export const vuetify = createVuetify({
   }
 });
 
-/**
- * Keep Vuetify's global theme in sync with the console theme.  This matters
- * for dialogs mounted through createApp() (for example Modal.confirm), since
- * those apps are outside ConsoleApp's VThemeProvider subtree.
- */
+/** Synchronize the global theme for dialogs mounted with separate Vue apps. */
 export function setVuetifyTheme(isDark: boolean) {
   return vuetify.theme.change(isDark ? "dark" : "light");
 }

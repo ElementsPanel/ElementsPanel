@@ -16,7 +16,6 @@ import { useFileManager } from "../hooks/useFileManager";
 import uploadService from "../services/uploadService";
 import { filterFileName, getFileExtName, isCompressFile } from "../tools/fileManager";
 
-/** Resolve the desktop window through its service instead of importing another plugin's source. */
 const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
 
 const desktopVuetifyMode = true;

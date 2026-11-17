@@ -21,7 +21,6 @@ export default function createSsoRouter() {
   const validator = core().middleware.validator;
   const router = new Router({ prefix: "/auth/sso" });
 
-  // [Public] Return SSO configuration (no secrets)
   router.get(
     "/config",
     permission({ token: false, level: null, speedLimit: false }),
@@ -30,7 +29,6 @@ export default function createSsoRouter() {
     }
   );
 
-  // [Public] Initiate SSO authorization - redirects to IdP
   router.get(
     "/authorize",
     permission({ token: false, level: null }),
@@ -73,7 +71,6 @@ export default function createSsoRouter() {
     }
   );
 
-  // [Public] SSO callback from IdP
   router.get(
     "/callback",
     permission({ token: false, level: null }),
@@ -94,7 +91,7 @@ export default function createSsoRouter() {
       const codeVerifier = ctx.session["ssoCodeVerifier"];
       const ssoTimestamp = ctx.session["ssoTimestamp"];
 
-      // Clean up session SSO data immediately
+      // Consume SSO session data before awaiting to prevent replay.
       delete ctx.session["ssoState"];
       delete ctx.session["ssoNonce"];
       delete ctx.session["ssoCodeVerifier"];
@@ -107,7 +104,7 @@ export default function createSsoRouter() {
         return;
       }
 
-      // Reject if the SSO flow took longer than 10 minutes
+      // Expire SSO flows after ten minutes.
       if (!ssoTimestamp || Date.now() - ssoTimestamp > 10 * 60 * 1000) {
         ctx.redirect("/#/login?sso_error=sso_session_expired");
         return;
@@ -115,7 +112,6 @@ export default function createSsoRouter() {
 
       const callbackUrl = new URL(ctx.href);
 
-      // Check if the IdP returned an error directly (e.g. user denied consent)
       const idpError = callbackUrl.searchParams.get("error");
       if (idpError) {
         const idpDesc = callbackUrl.searchParams.get("error_description") || "";
@@ -150,7 +146,6 @@ export default function createSsoRouter() {
 
         logger().info(`[SSO] Callback received for sub: ${sub}`);
 
-        // Check if user is already bound
         const existingUser = userSystem.getUserBySsoSub(sub);
         if (existingUser) {
           loginSuccess(ctx, existingUser.userName);
@@ -164,7 +159,6 @@ export default function createSsoRouter() {
           return;
         }
 
-        // Not bound yet - redirect to bind page
         ctx.session!["ssoBindSub"] = sub;
         ctx.session!["ssoBindClaims"] = JSON.stringify(claims);
         ctx.session!["ssoBindTimestamp"] = Date.now();
@@ -187,7 +181,6 @@ export default function createSsoRouter() {
     }
   );
 
-  // [Public] Bind SSO to existing panel account
   router.post(
     "/bind",
     permission({ token: false, level: null }),
@@ -210,7 +203,7 @@ export default function createSsoRouter() {
         throw new Error("No pending SSO binding session");
       }
 
-      // Reject if the bind session is older than 10 minutes
+      // Expire account-binding sessions after ten minutes.
       if (!ssoBindTimestamp || Date.now() - ssoBindTimestamp > 10 * 60 * 1000) {
         delete ctx.session["ssoBindSub"];
         delete ctx.session["ssoBindClaims"];
@@ -219,7 +212,6 @@ export default function createSsoRouter() {
         throw new Error("SSO binding session expired");
       }
 
-      // Check if this SSO sub is already bound to another account
       const alreadyBound = userSystem.getUserBySsoSub(ssoSub);
       if (alreadyBound) {
         delete ctx.session["ssoBindSub"];
@@ -253,7 +245,6 @@ export default function createSsoRouter() {
 
       await userSystem.bindSso(user.uuid, ssoSub);
 
-      // Clean up session
       delete ctx.session["ssoBindSub"];
       delete ctx.session["ssoBindClaims"];
       delete ctx.session["ssoBindTimestamp"];
@@ -272,7 +263,7 @@ export default function createSsoRouter() {
     }
   );
 
-  // [Logged-in user] Bind SSO to current session account (no password needed)
+  // Bind the authenticated user without requesting another password.
   router.post(
     "/bind-current",
     permission({ level: ROLE().USER }),
@@ -338,7 +329,6 @@ export default function createSsoRouter() {
     }
   );
 
-  // [Admin] Unbind SSO from a user
   router.put(
     "/unbind",
     permission({ level: ROLE().ADMIN }),

@@ -79,8 +79,7 @@ export default class FileManager {
     if (!isInside(this.topPath, target)) {
       throw new Error(ERROR_MSG_01());
     }
-    // New files need the same protection as existing files: resolve the nearest
-    // existing parent so a symlink/junction cannot escape an instance directory.
+    // Resolve the nearest existing parent so links cannot let new files escape the instance directory.
     if (!fs.existsSync(this.topPath)) return;
     const realRoot = fs.realpathSync(this.topPath);
     let ancestor = target;
@@ -146,7 +145,6 @@ export default class FileManager {
 
     const total = filteredItems.length;
 
-    // Sort: directories first (type 0), then files (type 1), both alphabetically
     filteredItems.sort((a, b) => {
       if (a.type !== b.type) return a.type - b.type;
       return a.name.localeCompare(b.name);

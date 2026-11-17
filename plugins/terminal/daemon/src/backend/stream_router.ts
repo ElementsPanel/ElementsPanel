@@ -72,7 +72,7 @@ export function registerTerminalEvents(ctx: DaemonPluginContext) {
       const instance = instances.getInstance(routerCtx.session?.stream?.instanceUuid);
       await instance?.execPreset("command", data.command);
     } catch {
-      // Stream input is high frequency; a stale instance is harmless.
+      // Ignore stale-instance errors on high-frequency stream events.
     }
   });
 
@@ -81,7 +81,7 @@ export function registerTerminalEvents(ctx: DaemonPluginContext) {
       const instance = instances.getInstance(routerCtx.session?.stream?.instanceUuid);
       if (instance?.process) instance.process.write(data.input);
     } catch {
-      // Stream input is high frequency; a stale instance is harmless.
+      // Ignore stale-instance errors on high-frequency stream events.
     }
   });
 
@@ -93,7 +93,7 @@ export function registerTerminalEvents(ctx: DaemonPluginContext) {
       });
       if (instance) await instance.execPreset("resize");
     } catch {
-      // Stream input is high frequency; a stale instance is harmless.
+      // Ignore stale-instance errors on high-frequency stream events.
     }
   });
 

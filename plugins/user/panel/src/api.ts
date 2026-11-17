@@ -2,10 +2,6 @@ import { useDefineApi } from "@elementspanel/epanel-plugin-console/stores/useDef
 import type { BaseUserInfo, EditUserInfo, LoginUserInfo, UserInstance } from "@elementspanel/epanel-plugin-console/types/user";
 import type { SsoPublicConfig } from "@elementspanel/epanel-plugin-console/services/apis/user";
 
-// The real /api/auth definitions. The console plugin re-exports facades over
-// these (see plugins/console/src/services/apis/user.ts) so nothing outside this plugin has
-// to know they exist.
-
 export const loginUser = useDefineApi<
   | {
       data: {

@@ -1,7 +1,7 @@
 import { open } from "node:fs/promises";
 import { TerminalSettings, TERMINAL_SETTINGS_LIMITS } from "../../../shared/settings";
 
-/** Read a bounded suffix even when an instance log is much larger than the reply. */
+/** Read only the byte-limited suffix of an instance log. */
 export async function readOutputLogTail(filename: string, size: unknown) {
   const limit = size ?? new TerminalSettings().historyLimitKB * 1024;
   if (

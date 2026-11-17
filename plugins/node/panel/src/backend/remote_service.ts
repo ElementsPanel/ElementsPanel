@@ -6,10 +6,8 @@ import { RemoteServiceConfig } from "./remote_config";
 import RemoteService from "./remote_entity";
 import { $t, core, logger, storage } from "./runtime";
 
-// Manage stored daemon connections and request forwarding.
 class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
   async initialize() {
-    // Load stored nodes, or discover localhost on the first startup.
     for (const uuid of await storage().getStorage().list("RemoteServiceConfig")) {
       const config = (await storage()
         .getStorage()
@@ -25,8 +23,6 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
 
     logger().info($t("TXT_CODE_SYSTEM_REMOTE_SERVICE_NODE_COUNT", { n: this.services.size }));
 
-    // Register for periodic connection status checks. `ctx.setInterval` is
-    // cancelled when the plugin unloads, so the check leaves with it.
     core().setInterval(() => this.connectionStatusCheckTask(), 1000 * 60);
   }
 
@@ -105,7 +101,7 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
     }
     logger().warn($t("TXT_CODE_SYSTEM_REMOTE_SERVICE_ERROR"));
 
-    // Retry localhost discovery every five seconds until connected. The scoped timer stops on unload.
+    // Retry localhost discovery every five seconds until connected; unloading stops the timer.
     core().setTimeout(() => {
       if (this.services.size === 0) return this.initConnectLocalhost();
     }, 5 * 1000);

@@ -36,8 +36,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  // Explicit undefined defaults prevent Vue's Boolean prop casting from
-  // turning omitted channels into `false` and masking the active v-model.
+  // Explicit undefined defaults prevent Boolean prop casting from masking the active v-model.
   modelValue: undefined,
   open: undefined,
   visible: undefined,
@@ -64,9 +63,7 @@ const slots = useSlots();
 const localOpen = ref(false);
 const instance = getCurrentInstance();
 
-// Boolean props are cast to `false` when omitted. Inspect the vnode to tell
-// which v-model channel the caller supplied, so an omitted `open` prop cannot
-// mask a `modelValue` controlled by the parent.
+// Inspect supplied props to distinguish an omitted Boolean channel from an explicit false value.
 const hasVnodeProp = (name: string) =>
   Object.prototype.hasOwnProperty.call(instance?.vnode.props ?? {}, name);
 
@@ -101,9 +98,7 @@ const isOpen = computed({
   }
 });
 
-// Vuetify already sizes and centers every dialog at `calc(100% - 48px)`, so a
-// dialog only needs a ceiling. Declaring `width` as well would replace that
-// viewport gap and force callers to clamp against `100vw` themselves.
+// Set only a maximum width to preserve Vuetify's viewport margins.
 const dialogMaxWidth = computed(() => {
   const width = props.maxWidth ?? props.width;
   if (width == null) return props.compact ? "460px" : "1120px";

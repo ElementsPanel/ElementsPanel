@@ -1,10 +1,7 @@
 // MCIM preserves the upstream API paths and response shapes.
 // https://mcimirror.top/guide/start/getting-started
 
-/**
- * Which upstream to try first. The other one stays available as a fallback, so
- * a preference never removes a path — it only decides the order.
- */
+/** Choose the first upstream while keeping the other as fallback. */
 export type ModSourcePreference = "mirror" | "official";
 
 const API_BASES = {
@@ -18,14 +15,11 @@ const API_BASES = {
   }
 } as const;
 
-/** The base URLs of the preferred upstream, one per API. */
 export function apiBase(preference: ModSourcePreference) {
   return API_BASES[preference];
 }
 
-// The official CurseForge API authenticates every request with this key; the
-// mirror proxies it, so only requests that actually reach the official base
-// carry it.
+// Send the CurseForge API key only to the official API, not the mirror.
 const CURSEFORGE_KEY_HEADERS = {
   "x-api-key": "$2a$10$S.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6"
 };
@@ -34,10 +28,7 @@ export function curseforgeKeyHeaders(url: string) {
   return url.startsWith(`${API_BASES.official.curseforge}/`) ? CURSEFORGE_KEY_HEADERS : {};
 }
 
-/**
- * Maps a URL on either base onto the other base, which is what makes the
- * fallback direction follow the preference instead of being hard-wired.
- */
+/** Map between official and mirror URLs in either direction. */
 export function upstreamRequest(url: string) {
   const mirror = API_BASES.mirror;
   const official = API_BASES.official;
@@ -76,25 +67,19 @@ function mirrorFileUrl(value: string): string {
   }
 }
 
-/**
- * Orders one file's download URLs by the preference: the preferred host becomes
- * `url` and the other one becomes `fallbackUrl`. Files the mirror does not
- * proxy keep their single URL in either mode.
- */
+/** Order mirror-supported downloads by preference; leave unsupported URLs unchanged. */
 export function withMirrorDownload<T extends { url?: string }>(
   file: T,
   preference: ModSourcePreference
 ): T & { fallbackUrl?: string } {
   if (!file.url) return file;
   const fallbackUrl = mirrorFileUrl(file.url);
-  // Nothing to reorder when the mirror cannot proxy this file.
   if (fallbackUrl === file.url) return file;
   return preference === "mirror"
     ? { ...file, url: fallbackUrl, fallbackUrl: file.url }
     : { ...file, fallbackUrl };
 }
 
-/** Whether a download URL is served by the mirror rather than the upstream CDN. */
 export function isMirrorDownloadUrl(value: string): boolean {
   try {
     return new URL(value).hostname === "mod.mcimirror.top";
@@ -103,12 +88,7 @@ export function isMirrorDownloadUrl(value: string): boolean {
   }
 }
 
-/**
- * Re-applies the preference to the pair a client already sent, so a download
- * follows the current setting even when the version list was fetched under a
- * different one. Only pairs that MCIM actually proxies are reordered; a client
- * pair with two upstream hosts (SpigotMC's CDNs) keeps its order.
- */
+/** Reapply the live preference to cached client URL pairs; reorder only supported mirror pairs. */
 export function preferDownload(
   url: string,
   fallbackUrl: string | undefined,
@@ -118,7 +98,6 @@ export function preferDownload(
     (value, index, list): value is string => !!value && list.indexOf(value) === index
   );
   const mirror = candidates.find(isMirrorDownloadUrl);
-  // No mirror/upstream pair means there is nothing to order.
   if (!mirror || candidates.every(isMirrorDownloadUrl)) return { url, fallbackUrl };
   const preferred =
     preference === "mirror" ? mirror : candidates.find((value) => !isMirrorDownloadUrl(value))!;

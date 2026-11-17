@@ -67,8 +67,7 @@ export default class RemoteService {
       await this.onDisconnect();
     });
 
-    // Daemon-side task snapshots are pushed to every authenticated socket;
-    // forward them to the panel's browser stream with this node's identity.
+    // Forward daemon snapshots to the browser stream with the originating node identity.
     this.socket.on("tasks/update", (packet: any) =>
       publishTasks(this.uuid, this.config.remarks || this.uuid, packet?.data)
     );
@@ -85,7 +84,6 @@ export default class RemoteService {
     });
   }
 
-  // Authenticate once after each socket connection.
   public async auth(key?: string) {
     if (key) this.config.apiKey = key;
     const daemonInfo = this.getDaemonInfo();
@@ -98,8 +96,7 @@ export default class RemoteService {
         try {
           await this.setLanguage();
         } catch (error: any) {
-          // "info/setting" belongs to the daemon-side node plugin. A daemon
-          // without it stays usable, it just keeps its own language.
+          // A daemon without the node plugin keeps its own language settings.
           logger().warn(
             `Failed to push the panel language to the daemon, the daemon node plugin may be missing: ${daemonInfo}`
           );
@@ -145,7 +142,6 @@ export default class RemoteService {
     return await this.auth(this.config.apiKey);
   }
 
-  /** Close sockets without logging because disposal has already removed the logger scope. */
   close() {
     for (const cancel of this.pendingRequests) cancel();
     this.pendingRequests.clear();

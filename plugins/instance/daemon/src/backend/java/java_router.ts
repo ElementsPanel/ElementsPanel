@@ -4,7 +4,6 @@ import { bindJavaCommand } from "../../../../../../core/common/src/java";
 import { JavaInfo } from "./java_info";
 import type { JavaManager } from "./java_manager";
 
-/** Registers the instance plugin's Java runtime protocol. */
 export function registerJavaManagerRoutes(
   ctx: DaemonPluginContext,
   javaManager: JavaManager,

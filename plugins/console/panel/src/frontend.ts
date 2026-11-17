@@ -69,7 +69,6 @@ export async function apply(parent: PanelFrontendPluginContext) {
     id: "console:background-tasks-sidebar"
   });
 
-  // The theme switcher is shell UI, described like any other header action.
   ctx.slots.register(
     "shell.header.actions",
     {
@@ -103,8 +102,7 @@ export async function apply(parent: PanelFrontendPluginContext) {
     meta: { permission: ROLE.GUEST, mainMenu: false }
   });
 
-  // The page title belongs to the shell. A temporary backend failure should not
-  // prevent the shell and its routes from loading.
+  // A title request failure must not prevent the shell from loading.
   try {
     setLoadingTitle("Initializing Appearance...");
     await initAppearance();

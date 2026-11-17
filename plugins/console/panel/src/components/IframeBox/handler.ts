@@ -15,7 +15,7 @@ export const iframeRouters: Record<string, IframeRouterHandler<any>> = {
     return true;
   },
   OpenMarketDialog: async (data: any) => {
-    // Provided by the `market` plugin; without it there is no market to open.
+    // Open the market only when its provider is available.
     const market = usePluginService<FrontendMarketService>("market");
     if (!market) throw new Error("The market plugin is not installed.");
     const res = await market.openMarketDialog(data?.daemonId, data?.instanceId, data?.options);

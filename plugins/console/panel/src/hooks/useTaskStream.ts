@@ -1,7 +1,6 @@
 import { io, type Socket } from "socket.io-client";
 import type { BackgroundTask } from "@/stores/useBackgroundTasks";
 
-/** One daemon's snapshot, already filtered for the connected panel user. */
 export interface TaskStreamUpdate {
   daemonId: string;
   nodeName: string;
@@ -19,13 +18,7 @@ export interface TaskStreamOptions {
   onState: (state: TaskStreamState) => void;
 }
 
-/**
- * The browser half of the background-task stream.
- *
- * Kept separate from the store so tests can replace this module and so the
- * socket lifetime has exactly one owner. Socket.IO reconnects on its own and
- * asks for a fresh ticket on every attempt.
- */
+/** Own one background-task socket and request a fresh ticket on every reconnect. */
 export function createTaskStream(options: TaskStreamOptions) {
   let socket: Socket | undefined;
   let disposed = false;

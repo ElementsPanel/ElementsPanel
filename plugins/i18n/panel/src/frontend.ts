@@ -145,8 +145,7 @@ export function apply(ctx: PanelFrontendPluginContext, config?: FrontendI18nPlug
     messages: cloneMessages(baseLocaleMessages) as any
   });
 
-  // vue-i18n's inferred schema recursively expands through Cordis's plugin
-  // constructor overloads, so keep that third-party generic at this boundary.
+  // Keep the vue-i18n generic at this boundary to avoid recursive Cordis constructor inference.
   ctx.plugin(I18nService as any, { instance });
   const service = ctx.get("i18n");
   if (!service) throw new Error("Failed to register the frontend i18n service.");

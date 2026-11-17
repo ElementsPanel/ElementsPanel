@@ -3,7 +3,7 @@ import type { PanelPluginContext } from "../../../../../../core/panel/src/app/pl
 const missingName = (entry: any) =>
   !entry?.instance_name || entry.instance_name === entry.instance_id;
 
-/** Logs written before the name was recorded still need one the dialog can show. */
+/** Enrich legacy log entries that contain only an instance ID. */
 async function attachInstanceName(
   ctx: PanelPluginContext,
   entries: any[],
@@ -24,7 +24,7 @@ async function attachInstanceName(
   }
 }
 
-/** Instance audit endpoints consume the runtime logger without requiring a viewer. */
+/** Read audit logs even when the monitoring UI is absent. */
 export function registerOperationLogRoutes(ctx: PanelPluginContext) {
   const overviewRouter = ctx.koa.router("/api/overview");
   const requireUser = ctx.middleware.permission({ level: ctx.roles.USER, token: false });

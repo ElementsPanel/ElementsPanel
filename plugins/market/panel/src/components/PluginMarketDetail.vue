@@ -44,8 +44,7 @@ const icon = computed(() => (plugin.value ? icons.value[plugin.value.id] : undef
 const readme = computed(() =>
   markdownToHTML(plugin.value?.readme || plugin.value?.description || "")
 );
-// The updates tab lists every release's notes, so each one is rendered once here
-// rather than re-parsed on every render.
+// Parse release notes once per loaded plugin.
 const changelogs = computed(() =>
   (plugin.value?.versions ?? []).map((version) => ({
     version,
@@ -70,8 +69,6 @@ async function refresh() {
   loading.value = true;
   error.value = "";
   if (plugin.value?.id !== props.pluginId) plugin.value = undefined;
-  // A refresh starts from a clean slate: an install still running belongs to the
-  // state this page is leaving behind.
   running = 0;
   busy.value = false;
   try {

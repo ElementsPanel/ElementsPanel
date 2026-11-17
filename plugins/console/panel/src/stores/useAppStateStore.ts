@@ -39,7 +39,6 @@ export const useAppStateStore = createGlobalState(() => {
     return reactive(tmp);
   };
 
-  /** False when the "user" plugin is not installed: the panel has no login. */
   const authEnabled = computed(() => isUserPluginLoaded());
   const isAdmin = computed(() => state.userInfo?.permission === 10);
   const isLogged = computed(() => Number(state.userInfo?.permission) > 0);

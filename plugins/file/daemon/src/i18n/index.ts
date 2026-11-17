@@ -11,9 +11,6 @@ import trTR from "./tr_TR.json";
 import zhCN from "./zh_CN.json";
 import zhTW from "./zh_TW.json";
 
-// The translated errors the file subsystem throws: path sandbox violations, the
-// per-instance task limit and the archive size limit. Registered at setup, so the
-// foundational `plugins/i18n` catalogue carries nothing file-specific.
 export const localeMessages = {
   de_de: deDE,
   en_us: enUS,

@@ -21,13 +21,7 @@ interface LinuxBandwidthState {
 const TBF_BURST = "32kbit";
 const TBF_LATENCY = "400ms";
 
-/**
- * Commands required for bandwidth limit. Only tc and ip are strictly required.
- * modprobe is not required: it is used only to load the ifb kernel module (upload limit).
- * Many kernels have ifb built-in or loaded at boot; modprobe comes from the kmod package
- * and may be missing on minimal/container hosts. We run "modprobe ifb 2>/dev/null || true"
- * and rely on "ip link add type ifb" failing with a clear error if ifb is unavailable.
- */
+/** Require tc and ip; modprobe is optional because IFB may already be built into the kernel. */
 const REQUIRED_COMMANDS = ["tc", "ip"] as const;
 
 /** Linux interface names are limited to 15 chars (IFNAMSIZ). */
@@ -39,7 +33,6 @@ function ifbNameForContainer(containerId: string): string {
 export class NetworkLimitService {
   private static instance: NetworkLimitService;
   private docker: Dockerode;
-  /** In-memory state: containerId -> { veth, ifb? } for clearBandwidthLimit. */
   private stateByContainer = new Map<string, LinuxBandwidthState>();
 
   private constructor() {
@@ -53,10 +46,7 @@ export class NetworkLimitService {
     return NetworkLimitService.instance;
   }
 
-  /**
-   * Pre-check required commands (tc, ip). Throws if any are missing.
-   * Call before setBandwidthLimit to fail fast with a clear error.
-   */
+  /** Check tc and ip before configuring bandwidth limits. */
   public async checkRequiredCommands(): Promise<void> {
     const missing = await this.getMissingCommands();
     if (missing.length > 0) {
@@ -66,7 +56,6 @@ export class NetworkLimitService {
     }
   }
 
-  /** Start network rate limit for the given container. */
   public async setBandwidthLimit(containerId: string, limit: BandwidthLimit): Promise<void> {
     if (process.platform !== "linux") {
       logger.warn("Network limit is only supported on Linux.");
@@ -112,7 +101,6 @@ export class NetworkLimitService {
     }
   }
 
-  /** Remove network rate limit for the given container. */
   public async clearBandwidthLimit(containerId: string): Promise<void> {
     if (process.platform !== "linux") return;
 
@@ -141,7 +129,6 @@ export class NetworkLimitService {
     this.stateByContainer.delete(containerId);
   }
 
-  /** Inspect container; return { pid, networkMode } or null if inspect fails. */
   private async getContainerNetworkInfo(
     containerId: string
   ): Promise<{ pid: number; networkMode: string } | null> {
@@ -188,7 +175,6 @@ export class NetworkLimitService {
         const value = fs.readFileSync(procPath, "utf8").trim();
         if (value) return value;
       } catch {
-        // continue
       }
     }
     for (const iface of tryPaths) {
@@ -201,7 +187,6 @@ export class NetworkLimitService {
         const value = (stdout || "").trim().replace(/\r/g, "");
         if (value) return value;
       } catch {
-        // continue
       }
     }
     logger.warn(
@@ -210,7 +195,7 @@ export class NetworkLimitService {
     return null;
   }
 
-  /** Find host interface name by ifindex using ip -o link (avoids shell escaping). */
+  /** Find the host interface by ifindex using ip output instead of shell interpolation. */
   private async findVethByIfindex(ifindex: string): Promise<string | null> {
     try {
       const { stdout } = await execAsync("ip -o link show");
@@ -223,7 +208,7 @@ export class NetworkLimitService {
         }
       }
     } catch {
-      // fallback: grep + sed on host
+      // Fall back to sysfs interface lookup.
       try {
         const { stdout } = await execAsync(
           `sh -c 'F=$(grep -l "^${ifindex}$" /sys/class/net/*/ifindex 2>/dev/null | head -1) && [ -n "$F" ] && basename $(dirname "$F")'`
@@ -267,7 +252,6 @@ export class NetworkLimitService {
     );
   }
 
-  /** Remove tc qdiscs and IFB for the given veth (and optional ifb). */
   private async clearLimitForVeth(veth: string, ifbName?: string): Promise<void> {
     await execAsync(`tc qdisc del dev ${this.escapeShell(veth)} root 2>/dev/null || true`);
     await execAsync(`tc qdisc del dev ${this.escapeShell(veth)} ingress 2>/dev/null || true`);
@@ -277,7 +261,6 @@ export class NetworkLimitService {
     }
   }
 
-  /** Returns list of required commands that are not available on PATH. */
   private async getMissingCommands(): Promise<string[]> {
     const missing: string[] = [];
     for (const cmd of REQUIRED_COMMANDS) {

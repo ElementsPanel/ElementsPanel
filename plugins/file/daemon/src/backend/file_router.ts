@@ -4,7 +4,7 @@ import { $t, fileTasks, instances, logger, protocol, settings, transfer } from "
 import uploadManager from "./upload_manager";
 import { checkSafeUrl } from "./url";
 
-/** Register file protocol handlers and their access middleware in the plugin scope, after auth. */
+/** Register file handlers and access middleware after authentication. */
 export function registerFileEvents() {
   protocol().use((event, ctx, data, next) => {
     if (event.startsWith("file/")) {
@@ -278,7 +278,6 @@ export function registerFileEvents() {
 
   protocol().on("file/copy", async (ctx, data) => {
     try {
-      // [["a.txt","b.txt"],["cxz","zzz"]]
       const targets = data.targets;
       const fileManager = getFileManager(data.instanceUuid);
       for (const target of targets) {
@@ -292,7 +291,6 @@ export function registerFileEvents() {
 
   protocol().on("file/move", async (ctx, data) => {
     try {
-      // [["a.txt","b.txt"],["cxz","zzz"]]
       const targets = data.targets;
       const fileManager = getFileManager(data.instanceUuid);
       for (const target of targets) {

@@ -76,8 +76,7 @@ const treeEntries = computed<ArchiveTreeEntry[]>(() => {
   return roots;
 });
 
-// Vuetify's data table does not recursively render arbitrary `children` arrays.
-// Flatten the archive tree while retaining depth so every entry remains visible.
+// Flatten archive entries with depth because VDataTable does not recursively render children.
 const flatEntries = computed(() => {
   const result: ArchiveTreeEntry[] = [];
   const visit = (items: ArchiveTreeEntry[]) => {

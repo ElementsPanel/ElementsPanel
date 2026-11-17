@@ -54,11 +54,6 @@ const UNAVAILABLE_GUARD: RequestGuard = {
   canUpload: () => false
 };
 
-/**
- * The panel runtime follows the storage and translation foundations. It owns
- * startup configuration and the shared primitives that feature plugins consume; the
- * application entry point only orchestrates plugin loading and shutdown.
- */
 export const inject = ["i18n", "storage"];
 
 export async function apply(ctx: PanelPluginContext) {
@@ -79,8 +74,7 @@ export async function apply(ctx: PanelPluginContext) {
   const getGuard = () => {
     const guard = ctx.get("guard");
     if (guard) return guard;
-    // Removing authentication is supported; an enabled plugin that failed or
-    // lost a dependency must never silently grant administrator access.
+    // Allow intentional auth removal, but never grant admin access when an enabled guard fails.
     const expectsGuard = ctx.get("plugins")?.loaded.some((plugin) => plugin.manifest.id === "user");
     return expectsGuard ? UNAVAILABLE_GUARD : UNGUARDED;
   };
@@ -172,8 +166,7 @@ export async function apply(ctx: PanelPluginContext) {
   ctx.set("operations", operations);
   ctx.on("dispose", () => operations.dispose());
   ctx.plugin(OverviewService);
-  // The plugin inventory is best-effort: environments without a plugin service
-  // (minimal hosts, tests) still serve the overview without compatibility data.
+  // Omit compatibility metadata when the host has no plugin service.
   ctx.inject(
     {
       koa: { required: true },
@@ -198,7 +191,6 @@ export async function apply(ctx: PanelPluginContext) {
  + Version ${version}
 `);
 
-  // Configuration migrations performed by feature plugins are persisted once
-  // all plugin scopes have had a chance to update the shared object.
+  // Persist shared configuration migrations after every plugin has applied its updates.
   ctx.on("ready", () => saveSystemConfig(ctx.storage, config));
 }

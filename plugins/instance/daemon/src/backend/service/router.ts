@@ -1,7 +1,6 @@
 import { protocol } from "../runtime";
 
-/** Compatibility facade for the legacy routers. Each registration is scoped to
- * the instance plugin through the daemon protocol service. */
+/** Scope legacy router registrations to the instance plugin. */
 export const routerApp = {
   disposers: new Set<() => void>(),
   on(event: string, handler: (ctx: any, data: any) => void) {

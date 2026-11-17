@@ -9,12 +9,10 @@ export interface SystemSample {
   mem: number;
 }
 
-/** Keep a bounded CPU and memory history for the panel's node charts. */
 export class SystemUsageHistory {
   private readonly samples: SystemSample[] = new Array(HISTORY_SIZE).fill({ cpu: 0, mem: 0 });
 
   constructor(ctx: DaemonPluginContext) {
-    // Cordis cancels this scoped timer when the plugin unloads.
     ctx.setInterval(() => this.sample(), SAMPLE_INTERVAL_MS);
   }
 

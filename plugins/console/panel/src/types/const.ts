@@ -10,11 +10,7 @@ export enum AppTheme {
 
 export const THEME_KEY = "THEME_KEY";
 
-/**
- * Marks that the legacy stored theme has been migrated once. Before AUTO became
- * the default, a first visit persisted LIGHT, which is indistinguishable from a
- * deliberate light choice — so the migration runs exactly once.
- */
+/** Track the one-time migration from the old first-visit LIGHT default. */
 export const THEME_AUTO_MIGRATED_KEY = "THEME_AUTO_MIGRATED";
 
 export const CARD_FIXED_HEIGHT = 200;
@@ -185,16 +181,13 @@ export const defaultInstanceInfo: IGlobalInstanceConfig = {
   category: 0,
   basePort: undefined as any,
 
-  // Steam RCON
   enableRcon: false,
   rconPassword: "",
   rconPort: undefined,
   rconIp: "",
 
-  // Java
   java: defaultInstanceJavaConfig,
 
-  // Old fields
   terminalOption: {
     haveColor: true,
     pty: false,
@@ -238,9 +231,5 @@ export const defaultQuickStartPackages: QuickStartPackages = {
   isSummary: false
 };
 
-/**
- * Sentinel used by the app market's filters to mean "no filter". It lives here
- * because the instance-detail dialog, which the market editor reuses to edit a
- * package's instance configuration, filters it out of the option lists.
- */
+/** Shared sentinel excluded from instance option lists to represent an unset market filter. */
 export const SEARCH_ALL_KEY = "ALL";

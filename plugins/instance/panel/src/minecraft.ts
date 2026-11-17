@@ -25,8 +25,7 @@ const proxy = (title: string, stopCommand = "end"): MinecraftServer => ({
   stopCommand
 });
 
-// Only advertise artifacts that can be installed as a standalone server. For
-// example, SpongeForge is a Forge mod and cannot be launched as a server JAR.
+// Advertise standalone server artifacts only; SpongeForge is a Forge mod.
 export const MINECRAFT_SERVERS: Record<string, MinecraftServer> = {
   vanilla: java("Vanilla"),
   "vanilla-snapshot": java("Vanilla Snapshot"),

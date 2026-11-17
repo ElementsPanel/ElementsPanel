@@ -35,8 +35,7 @@ import {
 } from "./service/plugin_market";
 import { initMarketSettings, marketSettings, saveMarketSettings } from "./service/market_settings";
 
-// Install and update epanel-plugin-* npm dependencies.
-// Application templates belong to the external epanel-plugin-mcsm-market plugin.
+// Manage plugin npm dependencies; application templates belong to the external app-market plugin.
 
 export const inject = [
   "koa",
@@ -50,8 +49,7 @@ export const inject = [
   "plugins"
 ];
 
-// Install and uninstall must share a queue: a second request cannot rewrite the
-// project manifest while the first request is still using it.
+// Serialize install and uninstall to prevent concurrent project-manifest writes.
 const pluginOperations = new Map<string, Promise<void>>();
 // Foundation updates replace the worker and restore instances before the node reconnects.
 const NODE_RESTART_TIMEOUT_MS = 5 * 60 * 1000;
@@ -84,8 +82,7 @@ export async function apply(ctx: PanelPluginContext) {
   ctx.i18n.define(localeMessages);
   await initMarketSettings(ctx);
 
-  // Source and disabled plugins count as installed too. The loader decides
-  // whether a package can be changed; npm records alone cannot protect sources.
+  // Count source and disabled plugins as installed; defer update eligibility to the loader.
   function installedPlugins() {
     const records = listInstalled();
     for (const plugin of ctx.plugins?.inventory() ?? []) {
@@ -187,16 +184,12 @@ export async function apply(ctx: PanelPluginContext) {
 
   async function writeMarketSettings(values: Record<string, unknown>) {
     const settings = marketSettings();
-    // Only a new address is checked: an address stored before this check existed
-    // must not make every other setting on the form unsavable.
+    // Validate only changed URLs so legacy values cannot block unrelated settings.
     if (values.pluginMarketAddr != null && values.pluginMarketAddr !== settings.pluginMarketAddr)
       settings.pluginMarketAddr = normalizePluginMarketAddr(values.pluginMarketAddr);
     await saveMarketSettings(ctx);
   }
 
-  // Install npm plugins into the panel and daemon installation projects.
-
-  /** The largest page the market serves; it answers 12 plugins per page by default. */
   const MARKET_PAGE_SIZE = 48;
   /** A source that never reports the end is bounded by pages, plugins and wall clock. */
   const MAX_MARKET_PAGES = 100;
@@ -207,10 +200,7 @@ export async function apply(ctx: PanelPluginContext) {
   const MAX_MARKET_ICON_BYTES = 2 * 1024 * 1024;
   const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
-  /**
-   * Read all public catalogue pages within the request budget so client-side filters see every
-   * plugin.
-   */
+  /** Load all catalogue pages within the request budget for client-side filtering. */
   async function fetchMarketPlugins(
     addr: string,
     daemonId?: string
@@ -243,7 +233,6 @@ export async function apply(ctx: PanelPluginContext) {
 
       let added = 0;
       for (const item of listed) {
-        // Ignore entries without an installable, unique id.
         const id = typeof item.id === "string" ? item.id.trim() : "";
         if (!id || seen.has(id)) continue;
         seen.add(id);
@@ -330,7 +319,6 @@ export async function apply(ctx: PanelPluginContext) {
     );
   }
 
-  /** The daemons a daemon plugin can be installed on, as the page lists them. */
   function listNodes() {
     return Array.from(ctx.remote.services.services.entries()).map(([daemonId, node]) => ({
       daemonId,
@@ -341,10 +329,7 @@ export async function apply(ctx: PanelPluginContext) {
     }));
   }
 
-  /**
-   * The daemons a request names. The install sends them as an array in the body;
-   * an uninstall has no body, so it names them in the query instead.
-   */
+  /** Install targets come from the body; uninstall targets come from query parameters. */
   function requestedNodes(value: unknown): string[] {
     const values = Array.isArray(value) ? value : typeof value === "string" ? value.split(",") : [];
     return [
@@ -992,8 +977,7 @@ export async function apply(ctx: PanelPluginContext) {
                 target
               );
 
-            // Recheck each side separately: updating a lagging daemon must never
-            // install a missing panel half or downgrade a panel that is ahead.
+            // Check each host independently to avoid downgrades or installing an unselected panel half.
             if (body.panel && sides.includes("panel")) {
               const target = updateTarget(
                 ctx.plugins.inventory(),
@@ -1041,7 +1025,6 @@ export async function apply(ctx: PanelPluginContext) {
     }
   );
 
-  /** Installs the package on each selected node, one npm dependency per node. */
   async function installOnNodes(
     daemonIds: readonly string[],
     info: MarketInstallInfo
@@ -1104,12 +1087,7 @@ export async function apply(ctx: PanelPluginContext) {
     return { failedNodes: [...failedNodes], changedNodes: [...changedNodes] };
   }
 
-  /**
-   * Asks the daemons the user picked to re-scan their plugin directories.
-   *
-   * Current daemons dispatch through their live registry. Reconnecting also
-   * keeps this panel compatible with older daemons that bind routes per socket.
-   */
+  /** Re-scan selected daemons and reconnect older socket-bound routers. */
   async function reloadNodes(daemonIds: readonly string[], pluginId?: string): Promise<boolean> {
     let reloaded = true;
     for (const daemonId of daemonIds) {
@@ -1127,8 +1105,7 @@ export async function apply(ctx: PanelPluginContext) {
           reloaded = false;
         node.refreshReconnect();
       } catch (error) {
-        // A daemon that cannot reload — an older one, or one that is not a
-        // development checkout — keeps what it has until its next restart.
+        // Daemons without reload support apply changes after restart.
         ctx.logger.warn(`Failed to reload a daemon's plugins: ${error}`);
         reloaded = false;
       }
@@ -1136,10 +1113,7 @@ export async function apply(ctx: PanelPluginContext) {
     return reloaded;
   }
 
-  /**
-   * Reconcile ordinary plugins in place. Core changes are applied by the
-   * loader's scheduled process restart, after this request has been answered.
-   */
+  /** Reconcile plugins in place; schedule core process replacement after this response. */
   async function hotReload(
     sides: PluginSide[],
     daemonIds: readonly string[] = [],
@@ -1229,7 +1203,6 @@ export async function apply(ctx: PanelPluginContext) {
     }
   );
 
-  // The daemons the page offers to install a daemon plugin on.
   router.get("/plugin/nodes", requireAdmin, async (requestCtx) => {
     requestCtx.body = listNodes();
   });
@@ -1271,10 +1244,7 @@ export async function apply(ctx: PanelPluginContext) {
     }
   );
 
-  /**
-   * Proxy market icons as data URLs. Return null for missing icons, unavailable markets or
-   * non-PNG data.
-   */
+  /** Return PNG icons as data URLs; missing or invalid icons use the default. */
   router.get("/plugin/icon", requireAdmin, async (requestCtx) => {
     const pluginId = typeof requestCtx.query.pluginId === "string" ? requestCtx.query.pluginId : "";
     let dataUrl: string | null = null;
@@ -1302,7 +1272,6 @@ export async function apply(ctx: PanelPluginContext) {
     requestCtx.body = { dataUrl };
   });
 
-  // List target nodes before installing a package with a daemon entry.
   router.get(
     "/plugin/package",
     requireAdmin,
@@ -1326,7 +1295,6 @@ export async function apply(ctx: PanelPluginContext) {
     }
   );
 
-  // Install the npm dependency on the selected hosts, then reload their plugin revisions.
   router.post(
     "/plugin/install",
     requireAdmin,
@@ -1354,8 +1322,7 @@ export async function apply(ctx: PanelPluginContext) {
             version: detail.selectedVersion.version,
             installedAt: Date.now()
           };
-          // npm versions can replace foundation packages; source plugins have
-          // no npm dependency for the market to update.
+          // Update foundation npm packages while rejecting source-only plugins.
           if (
             installPanel &&
             ctx.plugins.inventory().some((item) => item.id === info.pluginId && !item.packageName)
@@ -1363,8 +1330,7 @@ export async function apply(ctx: PanelPluginContext) {
             throw new PluginMarketError("BUNDLED");
 
           const changedSides: PluginSide[] = [];
-          // Finish node requests while the panel's existing connections are
-          // still available: its own foundation reload recreates those too.
+          // Finish node requests before a panel foundation reload replaces their connections.
           const { failedNodes, changedNodes, pendingNodes } =
             sides.includes("daemon") && daemonIds.length
               ? await installOnNodes(daemonIds, info)
@@ -1379,8 +1345,7 @@ export async function apply(ctx: PanelPluginContext) {
             });
             changedSides.push("panel");
           }
-          // A current daemon queues its reload after sending the install reply.
-          // Do not issue a second RPC over the connection it is about to replace.
+          // Current daemons queue reload after replying; a second RPC would race connection replacement.
           const reloaded = await hotReload(
             changedSides,
             changedNodes.filter((id) => !pendingNodes.includes(id)),

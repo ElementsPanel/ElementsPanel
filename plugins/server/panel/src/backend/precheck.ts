@@ -7,10 +7,7 @@ function isUploadRequest(requestCtx: Context) {
   return contentType.toLowerCase().includes("multipart");
 }
 
-/**
- * Resolve the live guard before koa-body writes uploads.
- * An absent guard permits requests according to the panel's unguarded policy.
- */
+/** Resolve the live guard before multipart parsing; absence follows the unguarded policy. */
 export function preCheck(ctx: PanelPluginContext) {
   return async function preCheckMiddleware(requestCtx: Context, next: () => Promise<void>) {
     const canUpload = () =>

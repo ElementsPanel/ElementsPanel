@@ -8,8 +8,6 @@ import { registerBackgroundTaskRoutes } from "./background_tasks";
 import { disposeTaskTickets, sweepTaskTickets, verifyTaskTicket } from "./task_ticket";
 import { setTaskStreamSink, visibleTasks } from "./task_stream";
 
-// Provide daemon connections, stored node configuration and request forwarding through ctx.remote.
-
 interface RemoteServiceLike {
   uuid: string;
   available: boolean;
@@ -38,25 +36,21 @@ function describeNode(remoteService: RemoteServiceLike) {
 export const inject = ["koa", "i18n", "storage", "settings", "middleware", "roles", "operations", "identity", "websocket"];
 
 export async function apply(ctx: PanelPluginContext) {
-  // Register translations and set the context before the subsystem logs or reads services.
   setPluginContext(ctx);
   ctx.i18n.define(localeMessages);
 
   // Finish loading stored nodes before exposing the remote service.
   await remoteServices.initialize();
 
-  // Scope the remote service to this plugin so unloading removes daemon access.
   const remote = {
     services: remoteServices,
     Request: RemoteRequest,
     RequestTimeoutError: RemoteRequestTimeoutError
   };
   ctx.set("remote", remote);
-  // These routes belong to the provider itself; pass its service directly
-  // rather than declaring a dependency on the service it is creating.
+  // Pass the newly created service directly to avoid a self-dependency.
   registerBackgroundTaskRoutes(ctx, remote);
 
-  // Issue task-stream tickets over authenticated HTTP and sweep them with a scoped timer.
   ctx.setInterval(() => sweepTaskTickets(), 60_000);
   ctx.on("dispose", () => disposeTaskTickets());
 
@@ -90,7 +84,7 @@ export async function apply(ctx: PanelPluginContext) {
   ctx.effect(() => () => setTaskStreamSink(undefined));
 
   ctx.effect(() => () => {
-    // Close sockets without logging after the plugin's logger scope is disposed.
+    // Suppress logging while closing sockets after scope disposal.
     for (const service of remoteServices.services.values()) service.close();
     remoteServices.services.clear();
   });
@@ -100,8 +94,6 @@ export async function apply(ctx: PanelPluginContext) {
   const validator = ctx.middleware.validator;
   const requireAdmin = ctx.middleware.permission({ level: ctx.roles.ADMIN });
 
-  // Get the list of remote services.
-  // Contains only service information, not a list of instance information.
   router.get("/remote_services_list", requireAdmin, async (ctx) => {
     const result = [];
     for (const iterator of remoteServices.services.entries()) {

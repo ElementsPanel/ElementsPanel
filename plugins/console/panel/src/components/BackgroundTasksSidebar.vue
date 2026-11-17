@@ -95,7 +95,6 @@ const stop = async (task: BackgroundTask) => {
   try {
     await cancel(task);
   } catch {
-    /* The shared API service displays action errors. */
   } finally {
     cancelling.value.delete(task.id);
   }
@@ -105,7 +104,6 @@ const clearFinished = async () => {
   try {
     await clear();
   } catch {
-    /* The shared API service displays action errors. */
   } finally {
     clearing.value = false;
   }

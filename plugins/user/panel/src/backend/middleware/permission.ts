@@ -11,9 +11,7 @@ import {
 } from "../service/passport_service";
 import userSystem from "../service/user_service";
 
-/**
- * @description Request speed limit, 8 requests per second
- */
+/** Limit requests to eight per second. */
 function requestSpeedLimit(ctx: Koa.ParameterizedContext) {
   const SESSION_REQ_TIMES = "SESSION_REQ_TIMES";
   const MAX_REQUESTS_PER_SECOND = 8;

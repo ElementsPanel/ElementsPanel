@@ -2,8 +2,6 @@ import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugi
 import { registerFileRoutes } from "./file_router";
 import { setPluginContext } from "./runtime";
 
-// Forward file-manager requests to the daemon that owns the instance.
-
 export const inject = [
   "koa",
   "i18n",
@@ -16,6 +14,5 @@ export const inject = [
 
 export function apply(ctx: PanelPluginContext) {
   setPluginContext(ctx);
-  // File-manager access errors use translations shared with the permission middleware.
   registerFileRoutes();
 }

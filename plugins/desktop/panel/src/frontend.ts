@@ -10,8 +10,7 @@ import { h } from "vue";
 import { VIcon } from "vuetify/components";
 
 
-// Desktop mode owns the window shell. Console supplies the application/view
-// registry, so feature plugins can contribute independently of this shell.
+// Use the console application registry so features can register without the desktop shell.
 
 const openDesktop = () => {
   window.location.hash = "#/desktop";
@@ -51,8 +50,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
       title: () => t("TXT_CODE_DESKTOP_MODE"),
       mdiIcon: "mdi-monitor",
       click: openDesktop,
-      // Desktop mode is not available in the phone shell, and the button would
-      // be redundant inside the Desktop taskbar itself.
+      // Hide the desktop-mode action on phones and inside the desktop taskbar.
       onlyPC: true,
       taskbar: false
     },

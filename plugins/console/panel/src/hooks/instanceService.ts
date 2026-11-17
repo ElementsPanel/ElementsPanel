@@ -12,7 +12,7 @@ export function instanceHooks(): InstanceHooks {
 export const instanceHook = <K extends keyof InstanceHooks>(name: K) =>
   ((...args: any[]) => (instanceHooks()[name] as Function)(...args)) as InstanceHooks[K];
 
-/** Compatibility views over plugin-owned data, without importing its implementation. */
+/** Expose plugin-owned data without importing provider implementations. */
 export function instanceData<K extends keyof InstanceHooks>(
   name: K,
   fallback: object

@@ -11,9 +11,6 @@ import trTR from "./tr_TR.json";
 import zhCN from "./zh_CN.json";
 import zhTW from "./zh_TW.json";
 
-// Strings for the backup management UI. The progress and result lines an
-// instance prints during a backup belong to `plugins/backup/daemon`, which
-// ships its own copy of this catalogue.
 export const localeMessages = {
   de_de: deDE,
   en_us: enUS,

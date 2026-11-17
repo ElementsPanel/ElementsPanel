@@ -55,8 +55,7 @@ export enum ROLE {
   GUEST = 0
 }
 
-// The base routes belong to the `console` plugin. Keeping the router itself in
-// core lets every plugin register routes before the Vue app is mounted.
+// Keep the router in core so plugins can register routes before the app mounts.
 const originRouterConfig: RouterConfig[] = [];
 
 const router = createRouter({

@@ -78,7 +78,6 @@ export class ModService {
     try {
       const entries = await zip.entries();
 
-      // Fabric
       if (entries["fabric.mod.json"]) {
         const data = await zip.entryData("fabric.mod.json");
         const json = JSON.parse(data.toString());
@@ -91,7 +90,6 @@ export class ModService {
         };
       }
 
-      // Forge (mods.toml)
       if (entries["META-INF/mods.toml"]) {
         const data = await zip.entryData("META-INF/mods.toml");
         const config = toml.parse(data.toString()) as any;
@@ -105,7 +103,6 @@ export class ModService {
         };
       }
 
-      // Forge (mcmod.info)
       if (entries["mcmod.info"]) {
         const data = await zip.entryData("mcmod.info");
         try {
@@ -121,7 +118,6 @@ export class ModService {
         } catch (e) {}
       }
 
-      // Quilt
       if (entries["quilt.mod.json"]) {
         const data = await zip.entryData("quilt.mod.json");
         const json = JSON.parse(data.toString());
@@ -136,7 +132,6 @@ export class ModService {
         };
       }
 
-      // Velocity
       if (entries["velocity-plugin.json"]) {
         const data = await zip.entryData("velocity-plugin.json");
         const json = JSON.parse(data.toString());
@@ -149,7 +144,6 @@ export class ModService {
         };
       }
 
-      // Bukkit/Spigot (plugin.yml)
       if (entries["plugin.yml"]) {
         const data = await zip.entryData("plugin.yml");
         const yml = yaml.parse(data.toString());
@@ -162,7 +156,6 @@ export class ModService {
         };
       }
 
-      // BungeeCord (bungee.yml)
       if (entries["bungee.yml"]) {
         const data = await zip.entryData("bungee.yml");
         const yml = yaml.parse(data.toString());
@@ -377,7 +370,7 @@ export class ModService {
     const fileManager = this.ctx.files.getFileManager(instanceUuid);
     const rootDir = fileManager.toAbsolutePath(".");
 
-    // Determine the save directory based on what exists (case-sensitive check for Linux)
+    // Preserve existing directory case on case-sensitive filesystems.
     let saveDir = type === "plugin" ? "plugins" : "mods";
     const variants = type === "plugin" ? ["plugins", "Plugins"] : ["mods", "Mods"];
 
@@ -537,7 +530,6 @@ export class ModService {
     }
 
     if (type === "mod") {
-      // Mods usually have configs in /config directory
       const configDir = fileManager.toAbsolutePath("config");
       if (await fs.pathExists(configDir)) {
         const files = await fs.readdir(configDir);
@@ -576,8 +568,7 @@ export class ModService {
         }
       }
     } else {
-      // Plugins usually have configs in /plugins/PluginName directory
-      // Try direct match first
+      // Try a direct plugin-directory match before fuzzy configuration lookup.
       let pluginConfigDir = fileManager.toAbsolutePath(path.join("plugins", modId));
       if (!(await fs.pathExists(pluginConfigDir)) && fileName) {
         const pluginsDir = fileManager.toAbsolutePath("plugins");

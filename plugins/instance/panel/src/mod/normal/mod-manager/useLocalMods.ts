@@ -83,7 +83,6 @@ export function useLocalMods(
       mods.value = newMods;
       loading.value = false;
 
-      // Fetch extra info for current page mods in batch (Background)
       const hashes = mods.value
         .filter((m) => !m.extraInfo)
         .map((m) => m.hash)

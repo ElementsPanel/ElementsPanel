@@ -81,7 +81,6 @@ export function useLineChart(
         plugins: {
           legend: { display: false },
           tooltip: {
-            // Show only the plotted value and anchor the tooltip above the hovered point.
             yAlign: "bottom",
             displayColors: false,
             backgroundColor: "rgba(20, 24, 35, 0.85)",
@@ -144,7 +143,6 @@ export function useLineChart(
     chart.data.datasets[0].data = data.values;
     const axis = chart.options.scales?.y;
     if (axis) axis.max = data.max;
-    // Default update mode keeps Chart.js's own transition between data points.
     chart.update();
   }, { deep: true, flush: "post" });
 

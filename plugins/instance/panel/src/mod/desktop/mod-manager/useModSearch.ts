@@ -38,7 +38,6 @@ export function useModSearch(
 
   const mcVersions = ref<string[]>([]);
 
-  // Desktop mode: reactive state for the save-location dialog
   const saveLocationDialog = ref({
     show: false,
     detectedType: "mod" as "mod" | "plugin",
@@ -167,12 +166,12 @@ export function useModSearch(
 
       if (aScore !== bScore) return bScore - aScore;
 
-      // Fallback 1: Date (Latest first)
+      // Fall back to release date, newest first.
       const aDate = new Date(a.date_published || a.published_at || a.updated || 0).getTime();
       const bDate = new Date(b.date_published || b.published_at || b.updated || 0).getTime();
       if (aDate !== bDate && !isNaN(aDate) && !isNaN(bDate)) return bDate - aDate;
 
-      // Fallback 2: Version number (Natural sort, Latest first)
+      // Then compare version numbers in descending natural order.
       return (b.version_number || "").localeCompare(a.version_number || "", undefined, {
         numeric: true,
         sensitivity: "base"
@@ -206,7 +205,7 @@ export function useModSearch(
     const file = version.files.find((f: any) => f.primary) || version.files[0];
     if (!file) return;
 
-    // Prefer this file's mirror, then an alternate URL from the version list (e.g. SpigotMC).
+    // Prefer this file's mirror, with the version-list URL as fallback.
     const fallbackFile = version.files.find((f: any) => f.url !== file.url);
     const fallbackUrl = file.fallbackUrl || fallbackFile?.url;
 
@@ -229,7 +228,7 @@ export function useModSearch(
       detectedType = "plugin";
     }
 
-    // 2. Handle hybrid servers (both folders exist)
+    // Hybrid servers may have both mod and plugin directories.
     let finalType = detectedType;
     const hasMods = folders.value.includes("mods");
     const hasPlugins = folders.value.includes("plugins");
@@ -341,7 +340,6 @@ export function useModSearch(
           }
         });
 
-        // If download starts successfully and there's an existing mod, delete it
         if (existingMod) {
           try {
             const { execute: deleteOldMod } = deleteModApi();

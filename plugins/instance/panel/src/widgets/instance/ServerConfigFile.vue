@@ -90,11 +90,7 @@ const { removeKeydownListener, startKeydownListener } = useKeyboardEvents(
 
 const FileEditorDialog = ref<any>();
 
-/**
- * The file editor belongs to `plugins/file`. Resolved through a
- * `computed` so the dialog appears and disappears with the plugin; without it
- * the button that opens it simply has nothing to open.
- */
+/** Resolve the optional editor reactively so unloading removes the dialog. */
 const fileEditorComponent = computed(
   () => usePluginService<FrontendFileManagerService>("file")?.FileEditor
 );

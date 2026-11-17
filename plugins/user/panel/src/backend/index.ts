@@ -16,8 +16,6 @@ import { setPluginContext } from "./runtime";
 import { initAuthSettings } from "./service/auth_settings";
 import userSystem from "./service/user_service";
 
-// Provide accounts, sessions, SSO and request authorization through the guard service.
-
 export const inject = [
   "koa",
   "i18n",
@@ -76,7 +74,6 @@ export async function apply(ctx: PanelPluginContext) {
     apiRouter.use(router.routes()).use(router.allowedMethods());
   }
 
-  // Declare settings for the generic plugin form and reuse the route handler's validation.
   const $t = ctx.i18n.$t;
   const yesNo = () => [
     { value: true, label: $t("TXT_CODE_COMMON_ENABLE") },

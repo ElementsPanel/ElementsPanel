@@ -25,7 +25,6 @@ export default function createGeneralUserRouter() {
     "/token",
     permission({ level: ROLE().USER, token: false, speedLimit: false }),
     async (ctx: Koa.ParameterizedContext) => {
-      // Some and only Ajax requests can get the token
       if (isAjax(ctx)) {
         ctx.body = getToken(ctx);
       } else {
@@ -41,10 +40,9 @@ export default function createGeneralUserRouter() {
       let uuid = getUserUuid(ctx);
       const advanced = ctx.query.advanced;
 
-      // Admin permissions can be obtained from anyone
+      // Administrators may request another user's profile.
       if (isTopPermissionByUuid(uuid) && ctx.query.uuid) uuid = String(ctx.query.uuid);
 
-      // Some and only Ajax requests grant access
       if (isAjax(ctx)) {
         const res = await getUserProfile(core(), uuid, undefined, toBoolean(advanced) || false);
         res.token = getToken(ctx);

@@ -52,7 +52,6 @@ export class BackgroundTasks extends EventEmitter {
   private flushTimer?: NodeJS.Timeout;
   private tickTimer?: NodeJS.Timeout;
 
-  /** Stops the push timers and drops the task table as the runtime plugin unloads. */
   dispose() {
     clearTimeout(this.flushTimer);
     clearInterval(this.tickTimer);
@@ -63,11 +62,7 @@ export class BackgroundTasks extends EventEmitter {
     this.removeAllListeners();
   }
 
-  /**
-   * Coalesces lifecycle changes into one snapshot per owner. A short timer makes
-   * starts and stops visible immediately, while the one-second tick below drives
-   * progress updates for work that is still running.
-   */
+  /** Coalesce lifecycle changes immediately; update running-task progress on the one-second tick. */
   private mark(owner: string) {
     if (!owner) return;
     this.pendingOwners.add(owner);
@@ -79,7 +74,6 @@ export class BackgroundTasks extends EventEmitter {
     this.flushTimer.unref();
   }
 
-  /** Emits one snapshot per dirty owner and keeps running owners on the tick. */
   private flush() {
     // The tick and a pending lifecycle flush can coincide; the first one wins.
     clearTimeout(this.flushTimer);

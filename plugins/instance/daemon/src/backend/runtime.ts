@@ -21,8 +21,7 @@ const INSTANCE_RUNTIME = Symbol.for("elementspanel.daemon.instance-runtime");
 let runtime: InstanceRuntimeState | undefined;
 
 export function setPluginContext(value: DaemonPluginContext) {
-  // Retained process callbacks can come from an evicted module. Give every
-  // generation the same bridge, owned by this daemon rather than the module.
+  // Keep retained process callbacks on a daemon-owned bridge across module reloads.
   const host = value.root as DaemonPluginContext & {
     [INSTANCE_RUNTIME]?: InstanceRuntimeState;
   };
@@ -41,8 +40,7 @@ export function setPluginContext(value: DaemonPluginContext) {
     });
     host.on("dispose", async () => {
       state.stopping = true;
-      // A replacement may fail before it can claim the retained processes.
-      // The daemon still owns them and must stop them during real shutdown.
+      // Stop retained processes at shutdown even if a replacement failed before claiming them.
       if (!state.restarting) await state.handover?.shutdown();
       state.handover = undefined;
     });
@@ -81,8 +79,7 @@ export const config = () => settings().config;
 export const $t = (key: string, options?: any): string =>
   (core().get("i18n")?.$t(key, options) ?? key) as unknown as string;
 
-// The core logger is exposed as a callable service by cordis. Instance modules
-// historically used a namespaced logger object, so keep that small adapter here.
+// Adapt the callable Cordis logger to legacy namespaced logger objects.
 export const logger = {
   info: (...args: any[]) => (core().get("logger") as any)?.info(...args),
   warn: (...args: any[]) => (core().get("logger") as any)?.warn(...args),

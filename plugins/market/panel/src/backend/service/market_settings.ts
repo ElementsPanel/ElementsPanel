@@ -6,9 +6,7 @@ import MarketSettings from "../entity/market_settings";
 const CATEGORY = "PluginMarketSettings";
 const ID = "config";
 
-// Older panel versions stored plugin market settings in SystemConfig. That file is
-// written by the core's file-backed storage, so the one-time migration reads it
-// directly rather than going through the (possibly Redis-backed) entity store.
+// Migrate legacy file-backed SystemConfig directly, even when current storage uses Redis.
 const LEGACY_CONFIG_FILE = path.join(process.cwd(), "data", "SystemConfig", "config.json");
 
 let settings = new MarketSettings();

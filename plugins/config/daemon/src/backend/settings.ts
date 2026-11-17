@@ -7,7 +7,6 @@ import type {
   DaemonSettingsSchema
 } from "../../../../../core/daemon/src/plugin";
 
-/** Configuration declarations are owned by the daemon config plugin. */
 export class SettingsFormService extends Service implements DaemonSettingsFormService {
   private readonly declarations: Array<{ id: string; declaration: DaemonSettingsDeclaration }> = [];
 

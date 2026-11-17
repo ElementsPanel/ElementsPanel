@@ -1,7 +1,6 @@
 import { useDefineApi } from "@elementspanel/epanel-plugin-console/stores/useDefineApi";
 import type { OperationLoggerItem } from "@elementspanel/epanel-plugin-console/types/operationLog";
 
-/** The panel-wide operation log shown by the monitoring page. */
 export const getOperationLog = useDefineApi<
   {
     data: {
@@ -14,7 +13,6 @@ export const getOperationLog = useDefineApi<
   method: "GET"
 });
 
-/** Operation logs for the instance console's monitor-provided log action. */
 export const getInstanceOperationLog = useDefineApi<
   {
     params: {

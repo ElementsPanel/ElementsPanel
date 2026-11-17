@@ -137,11 +137,9 @@ function msg(ctx: RouterContext, event: string, data: any) {
 
 function navigation(socket: Socket, logger: ProtocolLogger) {
   const session: any = {};
-  // Authentication marks this session; `broadcast()` uses it to reach only
-  // sockets the panel has authorised with the daemon key.
+  // Broadcast only to panel-authenticated sessions.
   socket.data.session = session;
-  // Consult the current registry for every packet. Plugin scopes can replace
-  // routes and middleware while this authenticated connection stays open.
+  // Resolve the current registry for each packet so open sockets follow plugin reloads.
   socket.use((packet, next) => {
     const protocol = packet[1] as IPacket;
     if (!protocol) {
@@ -185,11 +183,7 @@ export function delGlobalSocket(socket: Socket) {
   globalSockets.delete(socket.id);
 }
 
-/**
- * Pushes an event to every socket the panel has authenticated with the daemon
- * key. Browser terminal streams authenticate separately and carry no session
- * login, so they never receive these payloads.
- */
+/** Send only to panel-authenticated sockets; terminal streams authenticate separately. */
 export function broadcast(event: string, data: any) {
   const packet = new Packet(null, STATUS_OK, event, data);
   for (const socket of globalSockets.values()) {

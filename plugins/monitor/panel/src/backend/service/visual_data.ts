@@ -15,7 +15,6 @@ export interface RequestSample {
   runningInstance: number;
 }
 
-/** Keep rolling histories of host usage, API request rates and instance counts for monitoring charts. */
 export class VisualDataHistory {
   private readonly systemSamples: SystemSample[] = new Array(HISTORY_SIZE).fill({ cpu: 0, mem: 0 });
   private readonly requestSamples: RequestSample[] = new Array(HISTORY_SIZE).fill({
@@ -27,12 +26,10 @@ export class VisualDataHistory {
   private requestCount = 0;
 
   constructor(private readonly ctx: PanelPluginContext) {
-    // Cordis cancels these scoped timers when the plugin unloads.
     ctx.setInterval(() => this.sampleSystem(), SAMPLE_INTERVAL_MS);
     ctx.setInterval(() => void this.sampleRequests(), SAMPLE_INTERVAL_MS);
   }
 
-  /** Called by this plugin's middleware for every `/api/` request. */
   addRequestCount() {
     this.requestCount++;
   }
@@ -51,8 +48,7 @@ export class VisualDataHistory {
   }
 
   private async sampleRequests() {
-    // The instance counts come from the nodes themselves, so one sample means
-    // one round of daemon requests. An unreachable node simply contributes zero.
+    // Sample instance counts from each node; unreachable nodes contribute zero.
     let totalInstance = 0;
     let runningInstance = 0;
     const remote = this.ctx.get("remote");
@@ -70,7 +66,6 @@ export class VisualDataHistory {
         totalInstance += info.instance.total;
         runningInstance += info.instance.running;
       } catch (error) {
-        // ignore unreachable nodes
       }
     }
     this.requestSamples.shift();

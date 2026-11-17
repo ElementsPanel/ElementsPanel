@@ -122,10 +122,8 @@ export default class Instance extends EventEmitter {
   private restartResetTask?: NodeJS.Timeout;
   private stopTimeoutTask?: NodeJS.Timeout;
 
-  // Track whether the current stop was initiated by a user action (stop/kill command)
   private userRequestedStop = false;
 
-  // Construct instances with a UUID and configuration before using them.
   constructor(instanceUuid: string, config: InstanceConfig) {
     super();
 
@@ -151,7 +149,6 @@ export default class Instance extends EventEmitter {
   }
 
   parameters(cfg: any, persistence = true) {
-    // If the instance type changes, default commands and lifecycle events must be reset
     if (cfg?.type && cfg?.type != this.config.type) {
       if (!this.isStoppedOrBusy())
         throw new Error($t("TXT_CODE_INSTANCE_CONF_CANT_MODIFY_INSTANCE_TYPE"));
@@ -172,7 +169,6 @@ export default class Instance extends EventEmitter {
       this.forceExec(this.dispatcher ?? new FunctionDispatcher());
     }
 
-    // If the terminal type is changed, the default command must be reset
     if (
       cfg?.terminalOption?.pty != null &&
       cfg?.terminalOption?.pty !== this.config.terminalOption.pty

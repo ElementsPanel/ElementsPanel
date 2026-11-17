@@ -22,10 +22,7 @@ export function readAuthSettings() {
   return { ...settings, ssoClientSecret: SECRET_PLACEHOLDER };
 }
 
-/**
- * Share settings validation between the HTTP route and declared form.
- * Preserve omitted secrets and unbind SSO accounts when identity-critical fields change.
- */
+/** Validate shared settings without overwriting omitted secrets; identity changes unbind SSO accounts. */
 export async function applyAuthSettings(values: Record<string, unknown>) {
   const config = values as Partial<AuthSettings>;
   const settings = { ...authSettings() };
@@ -39,7 +36,6 @@ export async function applyAuthSettings(values: Record<string, unknown>) {
     }
     settings.totpDriftToleranceSteps = steps;
   }
-  // Snapshot identity-critical SSO fields before applying changes
   const prevSsoType = settings.ssoType || "oidc";
   const prevSsoIssuer = settings.ssoIssuer;
   const prevSsoUserinfoUrl = settings.ssoUserinfoUrl;
@@ -115,7 +111,6 @@ export async function applyAuthSettings(values: Record<string, unknown>) {
     settings.ssoUserIdField = String(config.ssoUserIdField) || "id";
   }
 
-  // Unbind all SSO users when identity-critical fields change
   const typeChanged = settings.ssoType !== prevSsoType;
   const issuerChanged = ssoType === "oidc" && settings.ssoIssuer !== prevSsoIssuer;
   const userinfoChanged =

@@ -48,7 +48,7 @@ class Config {
   public softShutdownSkipDocker = true;
   public softShutdownWaitSeconds = 30;
 
-  // Instance plugin defaults. Existing instance-specific event switches remain authoritative.
+  // Instance defaults do not override per-instance event settings.
   public instanceAutoRestartResetSeconds = 0;
   public instanceLogMaxSizeKB = 512;
   public instanceDiskCheckIntervalSeconds = 45;

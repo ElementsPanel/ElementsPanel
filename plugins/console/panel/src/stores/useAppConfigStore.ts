@@ -7,12 +7,7 @@ import { createGlobalState, useBreakpoints, useLocalStorage, usePreferredDark } 
 import { getAppearance, type PanelAppearance } from "@/services/apis/appearance";
 import { computed, onMounted, reactive, ref, watch } from "vue";
 
-/**
- * Older builds defaulted to LIGHT and wrote that value on the very first visit,
- * so an upgraded browser keeps rendering the light background even on a dark
- * system. Rewrite that one stored value to AUTO, once: a light theme picked
- * after this has run is left alone.
- */
+/** Migrate the old first-visit LIGHT default to AUTO once; preserve later user selections. */
 const migrateLegacyLightDefault = () => {
   try {
     if (localStorage.getItem(THEME_AUTO_MIGRATED_KEY)) return;
@@ -47,8 +42,6 @@ export const useAppConfigStore = createGlobalState(() => {
     return (themedLogo ?? appConfig.logoImage) || (isDarkTheme.value ? logo : logoB);
   });
 
-  // Default to AUTO so a fresh visit follows the system dark mode
-  // (index.html's loading screen already does the same).
   const currentTheme = useLocalStorage<AppTheme>(THEME_KEY, AppTheme.AUTO);
 
   const hasBgImage = ref(false);

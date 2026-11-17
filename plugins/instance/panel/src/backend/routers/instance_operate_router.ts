@@ -200,7 +200,6 @@ router.all(
       const instanceUuid = String(ctx.query.uuid);
       const parameter = ctx.request.body;
       const remoteService = remoteSubsystem().getInstance(daemonId);
-      // No permission check is required because "Parameter.TaskId" is not easily obtained.
       const result = await remoteRequest(remoteService).request("instance/stop_asynchronous", {
         instanceUuid,
         parameter
@@ -225,7 +224,6 @@ router.all(
       const taskName = String(ctx.query.task_name);
       const parameter = ctx.request.body;
       const taskId = parameter.taskId;
-      // If no taskId specified, non-admin users get empty result
       if (!taskId) {
         if (!guard().identify(ctx).elevated) {
           ctx.body = [];

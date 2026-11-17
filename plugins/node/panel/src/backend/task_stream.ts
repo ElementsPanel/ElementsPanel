@@ -1,7 +1,4 @@
-/**
- * Forward daemon task snapshots to browser sockets through one sink.
- * A separate module avoids a cycle between remote entities and the plugin entry.
- */
+/** Keep task-stream forwarding separate to avoid an import cycle with remote entities. */
 
 export interface TaskStreamTask {
   id: string;
@@ -41,11 +38,7 @@ export function publishAvailability() {
   sink?.availability();
 }
 
-/**
- * Mirrors the HTTP route's visibility rules: administrators see every task,
- * while a regular user only sees tasks of the instances assigned to them. A
- * task without an instance belongs to the panel itself and stays admin-only.
- */
+/** Admins see all tasks; users see assigned instances only, and host tasks remain admin-only. */
 export function visibleTasks(
   daemonId: string,
   tasks: TaskStreamTask[],

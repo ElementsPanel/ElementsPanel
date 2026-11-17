@@ -21,10 +21,7 @@ export class RemoteServiceConfig {
     rejectUnauthorized: false
   };
 
-  /**
-   * Convert stored mappings to the response shape. Use a method because conversion processes
-   * the list.
-   */
+  /** Convert stored mappings to the response shape. */
   public getConvertedRemoteMappings() {
     return this.remoteMappings.map((remote) => ({
       from: {
@@ -38,23 +35,14 @@ export class RemoteServiceConfig {
     }));
   }
 
-  /**
-   * IP concatenated with port.
-   */
   public get addr() {
     return `${this.ip}:${this.port}`;
   }
 
-  /**
-   * The prefix trimmed and removed trailing slash.
-   */
   public get canonicalPrefix() {
     return removeTrail(this.prefix.trim(), "/");
   }
 
-  /**
-   * Full address containing IP, port and prefix.
-   */
   public get fullAddr() {
     return this.addr + this.canonicalPrefix;
   }

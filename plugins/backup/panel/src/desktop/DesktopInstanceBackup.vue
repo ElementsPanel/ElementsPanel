@@ -14,11 +14,6 @@ import { VBtn, VIcon, VProgressCircular } from "vuetify/components";
 
 const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
 
-/**
- * The file API belongs to `plugins/file`. A backup that edits an
- * instance file needs it; without the plugin the edit path is unavailable
- * rather than broken.
- */
 const fileApi = () => {
     const service = usePluginService<FrontendFileManagerService>("file");
     if (!service) throw new Error("file plugin is not installed");

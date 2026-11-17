@@ -2,10 +2,7 @@ import { usePluginService } from "@elements-panel/sdk";
 import type { BaseUserInfo, EditUserInfo, LoginUserInfo, UserInstance } from "@/types/user";
 import type { Ref } from "vue";
 
-/**
- * Resolve the user.api service at call time for compatibility imports.
- * Guard calls with isUserPluginLoaded() or authEnabled when the user plugin is optional.
- */
+/** Resolve the optional user API at call time; callers must check provider availability. */
 
 export interface ApiCall<P, T> {
   isLoading: Ref<boolean>;

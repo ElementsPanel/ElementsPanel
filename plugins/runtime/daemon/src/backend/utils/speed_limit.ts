@@ -6,10 +6,7 @@ import path from "path";
 import { Transform, TransformCallback } from "stream";
 import { globalConfiguration } from "../entity/config";
 
-/**
- * Maintains backpressure by slowly calling callbacks to prevent large chunks of data
- * from accumulating infinitely in the JS layer.
- */
+/** Delay callbacks to maintain backpressure and bound buffered data. */
 export class ThrottleTransform extends Transform {
   private resolve: (() => void) | null = null;
   private consumerTasks: NodeJS.Timeout;
@@ -55,7 +52,7 @@ export class ThrottleTransform extends Transform {
   }
 }
 
-// Proxy the IncomingMessage object, only proxy specific methods and properties, keep other behaviors original
+// Proxy selected IncomingMessage members while preserving other stream behavior.
 export function proxyIncomingMessage(incomingMessage: IncomingMessage, rate: number) {
   let throttled: ThrottleTransform | null = null;
 

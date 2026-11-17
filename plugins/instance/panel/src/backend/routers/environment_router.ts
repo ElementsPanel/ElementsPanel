@@ -3,7 +3,6 @@ import axios from "axios";
 import { normalizeDockerPlatform } from "mcsmanager-common";
 import { middleware, remote, roles } from "../runtime";
 
-/** HTTP facade for Docker environment operations exposed by a daemon. */
 export function createEnvironmentRouter() {
   const router = new Router({ prefix: "/environment" });
   const ROLE = roles();

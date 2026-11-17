@@ -21,7 +21,6 @@ export default class InstanceConfig implements IGlobalInstanceConfig {
   public fileCode: string = "utf-8";
   public processType: ProcessType = "general";
 
-  /** The command used for executing the update command */
   public updateCommand: string = "";
 
   public runAs: string = "";

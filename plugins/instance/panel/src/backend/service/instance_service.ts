@@ -87,7 +87,7 @@ export async function getInstanceDetails(
   for (const iterator of instances) {
     const remoteService = remote().services.getInstance(iterator.daemonId);
     if (!remoteService || !remoteService.available) {
-      // If the remote service doesn't exist at all, load a deleted prompt
+      // Show a deleted-node prompt when the remote service no longer exists.
       resInstances.push({
         hostIp: "-- Unknown --",
         instanceUuid: iterator.instanceUuid,

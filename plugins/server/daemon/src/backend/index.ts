@@ -12,8 +12,7 @@ import { localeMessages } from "../i18n";
 import { KoaService } from "./koa";
 import { addGlobalSocket, delGlobalSocket, navigation, ProtocolService } from "./protocol";
 
-// Own the daemon HTTP and Socket.IO transports.
-// Provide koa and websocket here; do not declare them as injected dependencies.
+// Provide transport services here to avoid self-dependencies during startup.
 
 export const inject = ["i18n", "settings", "middleware"];
 
@@ -23,7 +22,7 @@ export function apply(ctx: DaemonPluginContext) {
   const config = ctx.settings.config;
   const $t = ctx.i18n.$t;
 
-  // Declare daemon settings for the panel form; listener changes require restart.
+  // Listener settings require a restart.
   ctx.inject(["settingsForm"], (settingsCtx) =>
     settingsCtx.settingsForm.declare({
       restartRequired: true,
@@ -180,7 +179,6 @@ export function apply(ctx: DaemonPluginContext) {
       httpServer = http.createServer(app.callback());
     }
   } catch (error) {
-    // Fail startup if the listener cannot be created.
     ctx.logger.error($t("TXT_CODE_APP_HTTP_SETUP_ERROR"));
     ctx.logger.error(error);
     return process.exit(1);
@@ -205,8 +203,7 @@ export function apply(ctx: DaemonPluginContext) {
     maxHttpBufferSize: 1e8
   });
 
-  // Handed over before anything listens; this plugin attaches its connection
-  // handler before the first client can arrive.
+  // Attach connection handlers to the transferred server before accepting clients.
   ctx.set("websocket", { io });
   let closing: Promise<void> | undefined;
   const closeTransport = () =>
@@ -231,8 +228,7 @@ export function apply(ctx: DaemonPluginContext) {
     });
   });
 
-  // Bound on `ready`, so the daemon does not accept a request before the plugin
-  // router, protocol handlers and every dependent plugin are in place.
+  // Listen only after every plugin has registered its handlers.
   ctx.on("ready", () => {
     httpServer.listen(config.port, config.ip, () => {
       if (process.connected) process.send?.({ type: "elementspanel:ready" }, () => {});
@@ -251,10 +247,8 @@ export function apply(ctx: DaemonPluginContext) {
     console.log("");
   });
 
-  // Close both transports when the server plugin unloads.
   ctx.on("dispose", async () => {
-    // Wait for Socket.IO's adapters to close and release the listening socket
-    // before a new revision tries to bind the same port.
+    // Wait for Socket.IO adapters to release the port before a replacement listener binds.
     await closeTransport();
   });
 }

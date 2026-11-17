@@ -168,8 +168,7 @@ export default class FileWriter {
       throw error;
     } finally {
       try {
-        // Keep ownership until removal/extraction completes, so a newer upload
-        // cannot start using the same path while this task is still changing it.
+        // Keep the upload lock until removal or extraction completes.
         await this.unlock();
       } catch (error) {
         failure ||= error;

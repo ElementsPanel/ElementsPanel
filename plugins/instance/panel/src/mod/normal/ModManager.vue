@@ -44,9 +44,9 @@ const headerSearchQuery = ref("");
 
 const isWindows = computed(() => {
   const config = instanceInfo.value?.config;
-  // 1. Check CRLF flag (2 is Windows)
+  // CRLF mode 2 indicates Windows.
   if (config?.crlf === 2) return true;
-  // 2. Check CWD path format (if it starts with C:\ or contains backslash \, it's Windows)
+  // Also detect Windows from drive prefixes or backslashes.
   const cwd = config?.cwd || "";
   if (/^[a-zA-Z]:\\/.test(cwd) || cwd.includes("\\")) return true;
   return false;
@@ -217,11 +217,7 @@ const {
 
 const FileEditorDialog = ref();
 
-/**
- * The file editor belongs to `plugins/file`. Resolved through a
- * `computed` so the dialog appears and disappears with the plugin; without it
- * the button that opens it simply has nothing to open.
- */
+/** Resolve the optional editor reactively so unloading removes the dialog. */
 const fileEditorComponent = computed(
   () => usePluginService<FrontendFileManagerService>("file")?.FileEditor
 );
@@ -237,12 +233,11 @@ watch(
   [hasModsFolder, hasPluginsFolder, loading],
   ([hasMods, hasPlugins, isLoading]) => {
     if (isLoading) return;
-    // If currently on a valid tab (Mod list, Plugin list, or Download page), do not auto-jump
+    // Preserve a valid selected tab.
     if (hasMods && activeKey.value === TAB_KEY_MODS) return;
     if (hasPlugins && activeKey.value === TAB_KEY_PLUGINS) return;
     if (activeKey.value === TAB_KEY_DOWNLOAD) return;
 
-    // Only perform initial jump if the current tab is invalid (e.g., just entered the page or folder status changed)
     if (hasMods) {
       activeKey.value = TAB_KEY_MODS;
       loadMods("mods");

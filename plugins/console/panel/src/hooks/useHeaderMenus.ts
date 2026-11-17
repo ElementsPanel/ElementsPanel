@@ -6,7 +6,6 @@ import { useUiStore } from "@/stores/useUiStore";
 import type { Component } from "vue";
 import { computed } from "vue";
 
-/** Sidebar item: route link */
 export type SidebarRouteEntry = {
   type: "route";
   path: string;

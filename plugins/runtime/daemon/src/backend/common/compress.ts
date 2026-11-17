@@ -43,8 +43,7 @@ const SUPPORTED_ARCHIVE_EXTENSIONS = [
 ];
 
 function getCompressErrorMsg() {
-  // Resolve these lazily: the daemon's i18n foundation is a plugin, so module
-  // evaluation can happen before that plugin has initialized i18next.
+  // Resolve translations lazily because the i18n plugin may not have initialized at module load.
   return {
     invalidName: $t("TXT_CODE_ARCHIVE_FILE_NAME_INVALID"),
     exitErr: $t("TXT_CODE_ARCHIVE_PROCESSING_FAILED"),
@@ -114,10 +113,7 @@ export async function decompress(
   return await use7zip(zipPath, dest);
 }
 
-/**
- * Read archive metadata without extracting the archive.  This is intentionally
- * limited to metadata so the file manager can safely preview large archives.
- */
+/** Preview archive metadata without extracting file contents. */
 export async function listArchiveEntries(
   archivePath: string,
   fileCode?: string
@@ -199,9 +195,6 @@ export async function listArchiveEntries(
   );
 }
 
-/**
- * Decompress a ZIP, TAR.GZ, or 7Z archive with progress tracking.
- */
 export async function decompressWithProgress(
   archivePath: string,
   dest: string,
@@ -230,9 +223,7 @@ export async function decompressWithProgress(
       file: archivePath,
       cwd: dest,
       onReadEntry: (entry) => {
-        // Do not attach a `data` listener here. tar registers this callback before
-        // its own extraction listener, so consuming data here can drain an entry
-        // before the destination file stream is ready and corrupt restored files.
+        // Do not consume entry data here; tar's extraction listener attaches later and may miss drained bytes.
         entry.once("end", () => {
           processedSize += entry.size;
           if (onProgress && totalSize > 0) {
@@ -335,9 +326,6 @@ export async function decompressWithProgress(
   }
 }
 
-/**
- * Decompress using 7zip
- */
 async function use7zip(
   sourceZip: string,
   destDir: string,
@@ -507,7 +495,6 @@ async function use7zip(
   }
 }
 
-// ./file-zip -mode 2 --zipPath aaa.zip --DistDirPath 123412124 --code GBK
 async function useUnzip(sourceZip: string, destDir: string, code = "utf-8"): Promise<boolean> {
   const params = [
     "--mode=2",
@@ -527,7 +514,6 @@ async function useUnzip(sourceZip: string, destDir: string, code = "utf-8"): Pro
   return subProcess.start();
 }
 
-// ./file-zip -mode 1 --file main.go --file file-zip --file 123 --file README.md --zipPath aaabb.zip
 async function useZip(
   distZip: string,
   files: string[],

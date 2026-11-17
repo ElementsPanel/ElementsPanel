@@ -14,11 +14,10 @@ export interface InstallDownloadOptions {
   hashMismatchMessage?: string;
   headers?: Record<string, string>;
   timeout?: number;
-  /** A public description for logs when the download URL contains credentials. */
+  /** Public log label that excludes download credentials. */
   sourceLabel?: string;
 }
 
-/** Shared instance installation lifecycle; consumers supply their own package policy. */
 export function createInstanceInstallTaskClass(
   ctx: DaemonPluginContext,
   services: Omit<DaemonInstancesService, "InstallTask">
@@ -163,7 +162,6 @@ export function createInstanceInstallTaskClass(
             (this.downloadProgress.downloadedBytes / this.downloadProgress.totalBytes) * 100
           );
         }
-        // Throttle progress output to once per second
         const now = Date.now();
         const PROGRESS_THROTTLE_MS = 1000;
         if (now - this.lastProgressOutput >= PROGRESS_THROTTLE_MS) {
@@ -178,8 +176,7 @@ export function createInstanceInstallTaskClass(
       });
 
       await new Promise<boolean>((resolve, reject) => {
-        // Open the file only once the response is available so pipeline owns
-        // its error events, including disk/permission errors during open.
+        // Open the file after the response arrives so pipeline owns file-open errors.
         this.writeStream = fs.createWriteStream(this.filePath);
         this.downloadStream = pipeline(response.data, this.writeStream!, (err) => {
           if (err) {
@@ -204,8 +201,7 @@ export function createInstanceInstallTaskClass(
 
     protected async runUpdate() {
       this.updateTask = new InstanceUpdateAction(this.instance);
-      // Attach the error listener before starting: a missing Java executable
-      // can fail before start() resolves.
+      // Attach the error listener before start() to catch immediate executable failures.
       const failure = () => {};
       this.updateTask.on("error", failure);
       try {
@@ -351,6 +347,5 @@ export function createInstanceInstallTaskClass(
   };
 }
 
-/** The produced class and its instances, for typing the plugin's references. */
 export type InstanceInstallTaskClass = ReturnType<typeof createInstanceInstallTaskClass>;
 export type InstanceInstallTask = InstanceType<InstanceInstallTaskClass>;

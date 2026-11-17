@@ -75,8 +75,7 @@ const isZipUpload = computed(
 );
 const confirming = ref(false);
 const submitting = ref(false);
-// Keep the created instance reachable if uploading fails; never create a second
-// instance just because a transfer was cancelled or retried.
+// Retain the created instance after upload failure so retries cannot create duplicates.
 const createdInstanceUuid = ref("");
 const busy = computed(() => confirming.value || submitting.value || !!createdInstanceUuid.value);
 watch(busy, (value) => emit("busy", value), { immediate: true });

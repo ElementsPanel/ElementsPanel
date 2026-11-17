@@ -229,11 +229,7 @@ export interface PanelStatus {
   };
 }
 
-/**
- * One entry of an app-market filter dropdown. Shared with the core
- * instance-detail dialog, which renders these lists when the market editor
- * reuses it to edit a package.
- */
+/** App-market filter option reused by the instance configuration editor. */
 export interface FilterOption {
   label: string;
   value: string;
