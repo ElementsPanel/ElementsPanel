@@ -13,6 +13,13 @@
   <title>ElementsPanel</title>
 
   <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
     #before-app-mounted {
       --loading-bg-color: #f3efef;
       --loading-color: #2a2828;
@@ -39,21 +46,37 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      overflow: hidden;
     }
 
     #before-app-mounted .loading-box {
       text-align: center;
-      display: flex;
-      justify-content: center;
-      flex-direction: column;
-      align-items: center;
+      display: grid;
+      place-items: center;
     }
 
     #before-app-mounted .loading-dots {
+      grid-area: 1 / 1;
       display: flex;
       justify-content: center;
       align-items: center;
       margin: 0;
+    }
+
+    #before-app-mounted .loading-dots.hide {
+      animation: loading-dots-exit 0.2s cubic-bezier(0.25, 0.10, 0.25, 1.00) both;
+    }
+
+    @keyframes loading-dots-exit {
+      from {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      to {
+        opacity: 0;
+        visibility: hidden;
+      }
     }
 
     #before-app-mounted .loading-dots div {
@@ -88,10 +111,12 @@
     }
 
     #before-app-mounted .loading-title {
+      grid-area: 1 / 1;
       display: none;
     }
 
     #before-app-mounted .loading-error {
+      grid-area: 1 / 1;
       display: none;
       flex-direction: column;
       align-items: center;
@@ -101,6 +126,33 @@
 
     #before-app-mounted .loading-error.show {
       display: flex;
+      animation: loading-error-enter 0.4s cubic-bezier(0.25, 0.10, 0.25, 1.00) 0.2s both;
+    }
+
+    @keyframes loading-error-enter {
+      from {
+        opacity: 0;
+        transform: scale(1.2);
+        visibility: hidden;
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+        visibility: visible;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #before-app-mounted .loading-dots.hide {
+        animation: none;
+        opacity: 0;
+        visibility: hidden;
+      }
+
+      #before-app-mounted .loading-error.show {
+        animation: none;
+      }
     }
 
     #before-app-mounted .error-title {
@@ -120,13 +172,19 @@
     }
 
     #before-app-mounted .error-button {
-      padding: 10px 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      height: 36px;
+      min-width: 64px;
+      padding: 0 16px;
       font-size: 14px;
       font-weight: 500;
       color: #fff;
       background-color: #3b82f6;
       border: none;
-      border-radius: 6px;
+      border-radius: 24px;
       cursor: pointer;
       transition: background-color 0.2s;
       outline: none;
@@ -159,10 +217,10 @@
         const errorBox = container.querySelector(".loading-error");
         const errorMessage = errorBox.querySelector(".error-message");
 
-        // Hide loading spinner and title
+        // Fade out loading dots before the error enters.
         const loadingDots = loadingBox.querySelector(".loading-dots");
         const loadingTitle = loadingBox.querySelector(".loading-title");
-        if (loadingDots) loadingDots.style.display = "none";
+        if (loadingDots) loadingDots.classList.add("hide");
         if (loadingTitle) loadingTitle.style.display = "none";
 
         // Show error box with message
