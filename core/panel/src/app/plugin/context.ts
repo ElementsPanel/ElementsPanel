@@ -34,6 +34,7 @@ export const ctx = new Context();
 /** What a declared setting renders as. `link` reads and writes nothing. */
 export type PanelSettingFieldType =
   | "string"
+  | "color"
   /** Multi-line string. */
   | "text"
   | "number"

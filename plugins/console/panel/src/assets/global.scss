@@ -110,7 +110,7 @@ body::-webkit-scrollbar-track {
   // Fields need their own surface: light cards are also white, and the flat
   // treatment removes the outline and shadow that would separate them.
   // Component-specific desktop surfaces can still override this locally.
-  background-color: rgb(var(--v-theme-field-surface));
+  background-color: rgb(var(--app-field-surface, var(--v-theme-field-surface)));
   box-shadow: none !important;
 }
 
@@ -493,8 +493,8 @@ body::-webkit-scrollbar-track {
   border-radius: var(--app-dialog-radius) var(--app-dialog-radius) 0 0 !important;
 }
 
-.v-overlay__content>.v-card,
-.v-overlay__content>.v-sheet {
+.v-dialog>.v-overlay__content>.v-card,
+.v-dialog>.v-overlay__content>.v-sheet {
   border-radius: inherit !important;
 }
 
@@ -694,8 +694,8 @@ body::-webkit-scrollbar-track {
   border-bottom-right-radius: 0 !important;
 }
 
-// Vuetify teleports both field dropdowns and button menus.
-.v-menu>.v-overlay__content,
+// Style list menus without overriding card or picker defaults.
+.v-menu>.v-overlay__content:has(> .v-list),
 .v-select__content,
 .v-autocomplete__content,
 .v-combobox__content {

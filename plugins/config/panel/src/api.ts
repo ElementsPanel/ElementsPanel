@@ -31,6 +31,7 @@ export interface PluginRecord {
 /** What a declared setting renders as. `link` reads and writes nothing. */
 export type SettingFieldType =
   | "string"
+  | "color"
   /** Multi-line string. */
   | "text"
   | "number"

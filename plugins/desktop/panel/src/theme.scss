@@ -194,8 +194,12 @@
  * Paint editable fields, including teleported dialogs, without painting labels or validation
  * messages.
  */
+.desktop-mode-active {
+  --app-field-surface: var(--v-theme-surface-variant);
+}
+
 .desktop-mode-active .v-field {
-  background: rgb(var(--v-theme-surface-variant)) !important;
+  background: rgb(var(--app-field-surface)) !important;
 }
 
 /* Clear legacy outer backgrounds so only the rounded field is painted. */

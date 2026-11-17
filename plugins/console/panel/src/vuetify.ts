@@ -23,6 +23,7 @@ export const vuetify = createVuetify({
     VAlert: { rounded: "xl" },
     VAutocomplete: { flat: true, rounded: "xl" },
     VBtn: { flat: true, rounded: "xl" },
+    VColorPicker: { rounded: "xl" },
     VCombobox: { flat: true, rounded: "xl" },
     VField: {
       flat: true,

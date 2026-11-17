@@ -11,8 +11,10 @@ import {
   VCard,
   VCardActions,
   VCardText,
+  VColorPicker,
   VDialog,
   VForm,
+  VMenu,
   VSelect,
   VSwitch,
   VTextField,
@@ -271,6 +273,36 @@ const open = (field: SettingField) => {
             {{ t("TXT_CODE_ae09d79d") }}
           </VBtn>
         </div>
+        <VMenu
+          v-else-if="field.type === 'color'"
+          location="bottom start"
+          :offset="8"
+          :close-on-content-click="false"
+          max-width="calc(100vw - 32px)"
+        >
+          <template #activator="{ props: menuProps }">
+            <VBtn
+              v-bind="menuProps"
+              type="button"
+              class="setting-color-preview"
+              :color="String(values[field.key!] || 'transparent')"
+              :aria-label="field.title"
+              :title="String(values[field.key!] ?? '')"
+              variant="flat"
+            >
+              {{ String(values[field.key!] ?? '').toUpperCase() }}
+            </VBtn>
+          </template>
+          <VColorPicker
+            :model-value="String(values[field.key!] ?? '')"
+            :aria-label="field.title"
+            mode="hex"
+            :modes="['hex']"
+            max-width="100%"
+            elevation="0"
+            @update:model-value="set(field, $event)"
+          />
+        </VMenu>
         <VTextField
           v-else-if="field.type === 'string' && !field.secret"
           :model-value="String(values[field.key!] ?? '')"
@@ -432,6 +464,13 @@ const open = (field: SettingField) => {
 
 .setting-control-wide {
   max-width: 320px;
+}
+
+.setting-color-preview {
+  width: 160px;
+  max-width: 100%;
+  height: 52px;
+  border: 4px solid rgb(var(--app-field-surface, var(--v-theme-field-surface))) !important;
 }
 
 .setting-file-input {

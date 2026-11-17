@@ -37,6 +37,7 @@ test("desktop wallpaper settings persist, clear images and reject invalid or fai
     "../i18n": { localeMessages: {} }
   });
   await apply(ctx);
+  assert.equal(form.fields().find(field => field.key === "wallpaperColor").type, "color");
   const route = router.stack.find(entry => entry.path === "/desktop_settings");
   assert.equal(route.stack.length, 1, "wallpaper must be readable on the desktop login screen");
   const request = {};

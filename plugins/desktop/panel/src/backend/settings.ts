@@ -32,7 +32,7 @@ export async function registerDesktopSettings(ctx: PanelPluginContext) {
         },
         {
           key: "wallpaperColor",
-          type: "string",
+          type: "color",
           title: $t("TXT_CODE_DESKTOP_WALLPAPER_COLOR"),
           description: $t("TXT_CODE_DESKTOP_WALLPAPER_COLOR_DESC"),
           placeholder: "#232429",

@@ -63,6 +63,7 @@ export interface DaemonStorageService {
 /** What a declared setting renders as. `link` reads and writes nothing. */
 export type DaemonSettingFieldType =
   | "string"
+  | "color"
   /** Multi-line string. */
   | "text"
   | "number"
