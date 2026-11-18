@@ -78,6 +78,24 @@ export interface PluginGroup {
   pluginIds: string[];
 }
 
+export interface PluginRemark {
+  id: string;
+  remarks: string;
+}
+
+export const pluginRemarkList = useDefineApi<{ params?: { daemonId?: string } }, PluginRemark[]>({
+  url: "/api/plugins/remarks",
+  method: "GET"
+});
+
+export const updatePluginRemark = useDefineApi<
+  { params?: { daemonId?: string }; data: PluginRemark },
+  PluginRemark
+>({
+  url: "/api/plugins/remarks",
+  method: "PUT"
+});
+
 /** Every installed plugin, disabled ones included. */
 export const pluginList = useDefineApi<unknown, PluginRecord[]>({
   url: "/api/plugins",

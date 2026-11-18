@@ -34,6 +34,8 @@
   "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM_TITLE": "¿Eliminar el grupo {name}?",
   "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM": "Elimina el grupo y sus asignaciones; conserva los plugins.",
   "TXT_CODE_PLUGIN_GROUP_NAME": "Nombre del grupo",
+  "TXT_CODE_PLUGIN_GROUP_MOVE_TO": "Mover al grupo",
+  "TXT_CODE_PLUGIN_REMARK_EDIT": "Editar notas",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "Nodos",
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "Panel",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "El gestor de complementos no puede desactivarse a sí mismo. Establece plugins.config.enabled en false en su data/plugin-overrides.json.",

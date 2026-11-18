@@ -34,6 +34,8 @@
   "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM_TITLE": "Supprimer le groupe {name} ?",
   "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM": "Supprime le groupe et ses attributions ; conserve les plugins.",
   "TXT_CODE_PLUGIN_GROUP_NAME": "Nom du groupe",
+  "TXT_CODE_PLUGIN_GROUP_MOVE_TO": "Déplacer vers un groupe",
+  "TXT_CODE_PLUGIN_REMARK_EDIT": "Modifier les remarques",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "Nœuds",
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "Panneau",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "Le gestionnaire d extensions ne peut pas se désactiver lui-même. Définissez plutôt plugins.config.enabled à false dans son data/plugin-overrides.json.",

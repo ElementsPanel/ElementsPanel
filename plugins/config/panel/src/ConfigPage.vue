@@ -6,7 +6,7 @@ import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen"
 import { ctx, usePluginService, type FrontendPluginMarketService } from "@elements-panel/sdk";
 import { getValidatorErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import {
   VAlert,
@@ -18,9 +18,11 @@ import {
   VCheckbox,
   VChip,
   VDialog,
+  VDivider,
   VList,
   VListItem,
   VListSubheader,
+  VMenu,
   VNavigationDrawer,
   VProgressCircular,
   VProgressLinear,
@@ -36,6 +38,7 @@ import {
   nodePluginSettings,
   pluginList,
   pluginGroupList,
+  pluginRemarkList,
   pluginSettings,
   removePlugin,
   removeNodePlugin,
@@ -45,6 +48,7 @@ import {
   updateNodePluginGroupList,
   updatePluginSettings,
   updatePluginGroupList,
+  updatePluginRemark,
   type NodePluginRecord,
   type NodeSummary,
   type PluginRecord,
@@ -153,6 +157,20 @@ interface PluginGroupView extends PluginGroup {
 
 const UNASSIGNED_GROUP_ID = "__unassigned__";
 const pluginGroupsState = ref<PluginGroup[]>([]);
+const pluginContextMenu = ref({ open: false, x: 0, y: 0, pluginId: "" });
+const pluginContextPlugin = computed(() =>
+  currentList.value.find((plugin) => plugin.id === pluginContextMenu.value.pluginId)
+);
+const pluginRemarks = ref(new Map<string, string>());
+const remarksLoading = ref(false);
+const savingRemark = ref(false);
+const remarkDialog = ref({
+  open: false,
+  pluginId: "",
+  remarks: "",
+  scope: "panel" as Scope,
+  nodeId: ""
+});
 const draggedPluginId = ref("");
 const dragOverGroupId = ref("");
 let dragPreview: HTMLElement | null = null;
@@ -228,6 +246,35 @@ const pluginGroups = computed<PluginGroupView[]>(() => {
   return groups;
 });
 
+const pluginContextGroups = computed(() => {
+  const currentGroupId =
+    pluginGroups.value.find((group) =>
+      group.plugins.some((plugin) => plugin.id === pluginContextMenu.value.pluginId)
+    )?.id ?? UNASSIGNED_GROUP_ID;
+  return [
+    ...pluginGroupsState.value.map((group) => ({ id: group.id, name: group.name })),
+    { id: UNASSIGNED_GROUP_ID, name: t("TXT_CODE_PLUGIN_GROUP_UNASSIGNED") }
+  ].map((group) => ({ ...group, current: group.id === currentGroupId }));
+});
+
+const closePluginContextMenu = () => {
+  pluginContextMenu.value.open = false;
+  pluginContextMenu.value.pluginId = "";
+};
+
+const openPluginContextMenu = async (pluginId: string, event: MouseEvent) => {
+  event.preventDefault();
+  event.stopPropagation();
+  pluginContextMenu.value = { open: false, x: event.clientX, y: event.clientY, pluginId };
+  await nextTick();
+  if (
+    pluginContextMenu.value.pluginId === pluginId &&
+    currentList.value.some((plugin) => plugin.id === pluginId)
+  ) {
+    pluginContextMenu.value.open = true;
+  }
+};
+
 const createGroupId = () =>
   `group-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -288,12 +335,22 @@ const movePluginToGroup = (pluginId: string, groupId: string) => {
   void savePluginGroups();
 };
 
+const moveContextPluginToGroup = (groupId: string) => {
+  const pluginId = pluginContextMenu.value.pluginId;
+  const group = pluginContextGroups.value.find((item) => item.id === groupId);
+  closePluginContextMenu();
+  if (!group || group.current || !currentList.value.some((plugin) => plugin.id === pluginId))
+    return;
+  movePluginToGroup(pluginId, groupId);
+};
+
 const clearDragPreview = () => {
   dragPreview?.remove();
   dragPreview = null;
 };
 
 const startPluginDrag = (pluginId: string, event?: DragEvent) => {
+  closePluginContextMenu();
   draggedPluginId.value = pluginId;
   if (!event?.dataTransfer) return;
   event.dataTransfer.setData("text/plain", pluginId);
@@ -319,6 +376,19 @@ const startPluginDrag = (pluginId: string, event?: DragEvent) => {
   event.dataTransfer.setDragImage(dragPreview, 12, 14);
 };
 
+const dragOverPluginGroup = (groupId: string, event: DragEvent) => {
+  if (!draggedPluginId.value) return;
+  event.preventDefault();
+  if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+  dragOverGroupId.value = groupId;
+};
+
+const leavePluginGroup = (groupId: string, event: DragEvent) => {
+  const group = event.currentTarget as HTMLElement;
+  if (event.relatedTarget instanceof Node && group.contains(event.relatedTarget)) return;
+  if (dragOverGroupId.value === groupId) dragOverGroupId.value = "";
+};
+
 const dropPlugin = (groupId: string) => {
   if (draggedPluginId.value) movePluginToGroup(draggedPluginId.value, groupId);
   draggedPluginId.value = "";
@@ -331,7 +401,14 @@ const endPluginDrag = () => {
   clearDragPreview();
 };
 
-watch([scope, selectedNodeId], () => void loadPluginGroups(), { immediate: true });
+watch(
+  [scope, selectedNodeId],
+  () => {
+    closePluginContextMenu();
+    void loadPluginGroups();
+  },
+  { immediate: true }
+);
 
 const currentId = computed({
   get: () => (scope.value === "panel" ? selectedId.value : nodeSelectedId.value),
@@ -342,6 +419,7 @@ const currentId = computed({
 });
 
 const selectPlugin = (id: string) => {
+  closePluginContextMenu();
   currentId.value = id;
   sidebarOpen.value = false;
 };
@@ -449,6 +527,78 @@ const notifyError = (error: unknown) => {
   console.error("Plugin configuration error:", error);
   notify(getValidatorErrorMsg(error, t("TXT_CODE_COMMON_OPERATION_FAILED")), "error");
 };
+
+let remarksRequest = 0;
+
+const loadPluginRemarks = async () => {
+  const request = ++remarksRequest;
+  pluginRemarks.value = new Map();
+  if (scope.value === "node" && !selectedNodeId.value) {
+    remarksLoading.value = false;
+    return;
+  }
+  remarksLoading.value = true;
+  try {
+    const stored = (
+      await pluginRemarkList().execute({
+        params: scope.value === "node" ? { daemonId: selectedNodeId.value } : undefined,
+        forceRequest: true
+      })
+    ).value;
+    if (request === remarksRequest) {
+      pluginRemarks.value = new Map((stored ?? []).map((entry) => [entry.id, entry.remarks]));
+    }
+  } catch (error) {
+    if (request === remarksRequest) notifyError(error);
+  } finally {
+    if (request === remarksRequest) remarksLoading.value = false;
+  }
+};
+
+const editContextPluginRemark = () => {
+  const plugin = pluginContextPlugin.value;
+  closePluginContextMenu();
+  if (!plugin || remarksLoading.value || savingRemark.value) return;
+  remarkDialog.value = {
+    open: true,
+    pluginId: plugin.id,
+    remarks: (pluginRemarks.value.get(plugin.id) ?? "").replace(/[\r\n]+/g, " "),
+    scope: scope.value,
+    nodeId: selectedNodeId.value
+  };
+};
+
+const savePluginRemark = async () => {
+  const dialog = remarkDialog.value;
+  if (!dialog.pluginId || savingRemark.value) return;
+  const remarks = String(dialog.remarks ?? "").replace(/[\r\n]+/g, " ").trim();
+  savingRemark.value = true;
+  try {
+    await updatePluginRemark().execute({
+      params: dialog.scope === "node" ? { daemonId: dialog.nodeId } : undefined,
+      data: { id: dialog.pluginId, remarks }
+    });
+    if (scope.value === dialog.scope && selectedNodeId.value === dialog.nodeId) {
+      if (remarks) pluginRemarks.value.set(dialog.pluginId, remarks);
+      else pluginRemarks.value.delete(dialog.pluginId);
+    }
+    if (remarkDialog.value === dialog) remarkDialog.value.open = false;
+    notify(t("TXT_CODE_COMMON_SAVED"), "success");
+  } catch (error) {
+    notifyError(error);
+  } finally {
+    savingRemark.value = false;
+  }
+};
+
+watch(
+  [scope, selectedNodeId],
+  () => {
+    remarkDialog.value.open = false;
+    void loadPluginRemarks();
+  },
+  { immediate: true }
+);
 
 const loadSchema = async () => {
   if (disposed) return;
@@ -646,6 +796,7 @@ onUnmounted(() => {
   disposed = true;
   schemaRequest++;
   nodePluginsRequest++;
+  remarksRequest++;
 });
 
 /** Drop page-specific query parameters while preserving the target link's values. */
@@ -923,6 +1074,12 @@ const toggleSelected = (enabled: boolean) => {
   if (selectedPlugin.value) toggle(selectedPlugin.value, enabled);
 };
 
+const toggleContextPlugin = () => {
+  const plugin = pluginContextPlugin.value;
+  closePluginContextMenu();
+  if (plugin && !pending.value) return toggle(plugin, !plugin.enabled);
+};
+
 const confirmDisable = async () => {
   const candidate = actionCandidate.value;
   if (
@@ -1065,14 +1222,16 @@ const confirmAction = async () => {
             />
           </div>
           <VList class="plugin-config-list" density="compact">
-            <template v-for="group in pluginGroups" :key="group.id">
-              <VListSubheader
-                class="plugin-config-group-heading"
-                :class="{ 'plugin-config-group-heading-over': dragOverGroupId === group.id }"
-                @dragover.prevent="dragOverGroupId = group.id"
-                @dragleave="dragOverGroupId = ''"
-                @drop.prevent="dropPlugin(group.id)"
-              >
+            <div
+              v-for="group in pluginGroups"
+              :key="group.id"
+              class="plugin-config-group"
+              :class="{ 'plugin-config-group-over': dragOverGroupId === group.id }"
+              @dragover="dragOverPluginGroup(group.id, $event)"
+              @dragleave="leavePluginGroup(group.id, $event)"
+              @drop.prevent="dropPlugin(group.id)"
+            >
+              <VListSubheader class="plugin-config-group-heading">
                 <span>{{ group.name }}</span>
                 <span v-if="!group.unassigned" class="plugin-config-group-actions">
                   <VBtn
@@ -1098,7 +1257,9 @@ const confirmAction = async () => {
                 :active="plugin.id === currentId"
                 :class="{ 'plugin-config-item-off': !plugin.enabled }"
                 :title="pluginLabel(plugin.id)"
+                :subtitle="pluginRemarks.get(plugin.id)"
                 @click="selectPlugin(plugin.id)"
+                @contextmenu="openPluginContextMenu(plugin.id, $event)"
                 @dragstart="startPluginDrag(plugin.id, $event)"
                 @dragend="endPluginDrag"
               >
@@ -1112,7 +1273,7 @@ const confirmAction = async () => {
                   ></span>
                 </template>
               </VListItem>
-            </template>
+            </div>
             <Empty v-if="!currentList.length" icon="mdi-puzzle-outline" compact />
           </VList>
         </div>
@@ -1311,6 +1472,77 @@ const confirmAction = async () => {
         <Empty v-else-if="!nodeError" icon="mdi-puzzle-outline" />
       </div>
     </div>
+
+    <VMenu
+      v-model="pluginContextMenu.open"
+      :target="[pluginContextMenu.x, pluginContextMenu.y]"
+      location="bottom start"
+    >
+      <VList v-if="pluginContextPlugin" min-width="190">
+        <VListItem
+          :title="
+            t(pluginContextPlugin.enabled ? 'TXT_CODE_PLUGIN_DISABLE' : 'TXT_CODE_PLUGIN_ENABLE')
+          "
+          prepend-icon="mdi-power"
+          :base-color="pluginContextPlugin.enabled ? 'warning' : 'success'"
+          :disabled="actionBusy || Boolean(pending)"
+          @click="toggleContextPlugin"
+        />
+        <VListItem
+          :title="t('TXT_CODE_PLUGIN_REMARK_EDIT')"
+          prepend-icon="mdi-note-edit-outline"
+          :disabled="remarksLoading || savingRemark"
+          @click="editContextPluginRemark"
+        />
+        <VDivider />
+        <VMenu submenu location="end" open-on-click :open-on-hover="false">
+          <template #activator="{ props: menuProps }">
+            <VListItem
+              v-bind="menuProps"
+              :title="t('TXT_CODE_PLUGIN_GROUP_MOVE_TO')"
+              prepend-icon="mdi-folder-move-outline"
+              append-icon="mdi-chevron-right"
+              @click.stop
+            />
+          </template>
+          <VList min-width="190">
+            <VListItem
+              v-for="group in pluginContextGroups"
+              :key="group.id"
+              :title="group.name"
+              :prepend-icon="group.current ? 'mdi-check' : 'mdi-folder-outline'"
+              :disabled="group.current"
+              @click="moveContextPluginToGroup(group.id)"
+            />
+          </VList>
+        </VMenu>
+      </VList>
+    </VMenu>
+
+    <VDialog v-model="remarkDialog.open" :persistent="savingRemark" max-width="460">
+      <VCard :title="t('TXT_CODE_PLUGIN_REMARK_EDIT')" rounded="xl">
+        <VCardText>
+          <VTextField
+            v-model="remarkDialog.remarks"
+            :label="t('TXT_CODE_COMMON_REMARKS')"
+            :hint="pluginLabel(remarkDialog.pluginId)"
+            persistent-hint
+            clearable
+            autofocus
+            :disabled="savingRemark"
+          />
+        </VCardText>
+        <VCardActions>
+          <VSpacer />
+          <VBtn variant="text" :disabled="savingRemark" @click="remarkDialog.open = false">
+            {{ t("TXT_CODE_COMMON_CANCEL") }}
+          </VBtn>
+          <VBtn color="primary" :loading="savingRemark" @click="savePluginRemark">
+            {{ t("TXT_CODE_COMMON_SAVE") }}
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
 
     <VDialog v-model="actionConfirmOpen" :persistent="actionSubmitting" max-width="460">
       <VCard
@@ -1621,15 +1853,22 @@ const confirmAction = async () => {
   justify-content: space-between;
   min-height: 28px;
   padding-inline: 8px;
+  background: transparent;
   color: var(--text-color);
   font-size: 11px;
   font-weight: 600;
   opacity: 0.55;
 }
 
-.plugin-config-list :deep(.plugin-config-group-heading-over) {
+.plugin-config-group {
   border-radius: 8px;
-  background: rgba(22, 119, 255, 0.12);
+}
+
+.plugin-config-group-over {
+  background: rgba(var(--v-theme-primary), 0.12);
+}
+
+.plugin-config-group-over :deep(.plugin-config-group-heading) {
   opacity: 1;
 }
 
@@ -1682,6 +1921,12 @@ const confirmAction = async () => {
 }
 
 .plugin-config-list :deep(.v-list-item-title) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.plugin-config-list :deep(.v-list-item-subtitle) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

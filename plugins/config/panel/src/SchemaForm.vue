@@ -172,7 +172,7 @@ const open = (field: SettingField) => {
   <component :is="nested ? 'div' : VForm" @submit.prevent="emit('save')">
     <template v-for="(field, index) in fields" :key="field.key || `link-${index}`">
       <div v-if="field.type === 'link'" class="setting-link-row">
-        <VBtn variant="outlined" type="button" @click="open(field)">{{ field.title }}</VBtn>
+        <VBtn variant="tonal" type="button" @click="open(field)">{{ field.title }}</VBtn>
       </div>
 
       <div v-else-if="visible(field)" class="setting-field">

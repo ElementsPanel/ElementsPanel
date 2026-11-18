@@ -1,4 +1,5 @@
 import type Koa from "koa";
+import { createHash } from "node:crypto";
 import { writePluginOverride } from "mcsmanager-common";
 import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
 import type SystemConfig from "../../../../runtime/panel/src/backend/entity/setting";
@@ -12,6 +13,7 @@ const SELF = "config";
 /** Keep essential management services enabled. */
 const ESSENTIAL = new Set(["console", "i18n", "storage", "runtime", "server"]);
 const PLUGIN_GROUPS_CATEGORY = "PluginGroups";
+const PLUGIN_REMARKS_CATEGORY = "PluginRemarks";
 
 interface PluginGroup {
   id: string;
@@ -21,6 +23,15 @@ interface PluginGroup {
 
 class StoredPluginGroups {
   groups: PluginGroup[] = [];
+}
+
+interface PluginRemark {
+  id: string;
+  remarks: string;
+}
+
+class StoredPluginRemarks {
+  entries: PluginRemark[] = [];
 }
 
 function normalizePluginGroups(input: unknown): PluginGroup[] {
@@ -139,6 +150,50 @@ export function apply(ctx: PanelPluginContext) {
     });
     requestCtx.body = groups;
   });
+
+  const remarksStorageId = (requestCtx: Koa.ParameterizedContext) =>
+    createHash("sha256")
+      .update(
+        JSON.stringify([
+          groupsStorageId(requestCtx),
+          String(requestCtx.request.query.daemonId ?? "")
+        ])
+      )
+      .digest("hex");
+
+  const readPluginRemarks = async (requestCtx: Koa.ParameterizedContext) => {
+    const stored = (await ctx.storage
+      .getStorage()
+      .load(
+        PLUGIN_REMARKS_CATEGORY,
+        StoredPluginRemarks,
+        remarksStorageId(requestCtx)
+      )) as StoredPluginRemarks | null;
+    return stored?.entries ?? [];
+  };
+
+  router.get("/remarks", requireAdmin, async (requestCtx) => {
+    requestCtx.body = await readPluginRemarks(requestCtx);
+  });
+
+  router.put(
+    "/remarks",
+    requireAdmin,
+    ctx.middleware.validator({ body: { id: String } }),
+    async (requestCtx: Koa.ParameterizedContext) => {
+      const { id, remarks } = requestCtx.request.body as PluginRemark;
+      if (!id.trim() || id.length > 256 || typeof remarks !== "string") {
+        throw new Error(ctx.i18n.$t("TXT_CODE_COMMON_REQUEST_BODY_ERROR"));
+      }
+      const entry = { id: id.trim(), remarks: remarks.replace(/[\r\n]+/g, " ").trim() };
+      const entries = (await readPluginRemarks(requestCtx)).filter((item) => item.id !== entry.id);
+      if (entry.remarks) entries.push(entry);
+      await ctx.storage.getStorage().store(PLUGIN_REMARKS_CATEGORY, remarksStorageId(requestCtx), {
+        entries
+      });
+      requestCtx.body = entry;
+    }
+  );
 
   router.put(
     "/enabled",

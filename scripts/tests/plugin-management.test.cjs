@@ -115,6 +115,78 @@ test("plugin management npm routes require an administrator and use the plugin l
   assert.deepEqual(calls, [{ remove: "sample" }], "a failed uninstall must keep its configuration");
 });
 
+test("plugin remarks require an administrator, persist per user and node, and allow clearing", async () => {
+  const load = createLoader({ host: "panel" });
+  const routes = new Map();
+  const stored = new Map();
+  const storage = {
+    async load(category, Class, id) {
+      const value = stored.get(`${category}/${id}`);
+      return value ? Object.assign(new Class(), structuredClone(value)) : null;
+    },
+    async store(category, id, value) {
+      stored.set(`${category}/${id}`, structuredClone(value));
+    }
+  };
+  const validator = load("plugins/runtime/panel/src/backend/middleware/validator.ts").default;
+  load("plugins/config/panel/src/backend/index.ts", {
+    "mcsmanager-common": {},
+    "../i18n": { localeMessages: {} },
+    "./settings": { SettingsFormService: class {} }
+  }).apply({
+    i18n: { define() {}, $t: key => key },
+    plugin() {},
+    get: () => ({}),
+    roles: { ADMIN: 10 },
+    identity: { of: request => ({ uuid: request.user }) },
+    storage: { getStorage: () => storage },
+    middleware: {
+      validator,
+      permission: ({ level }) => async (request, next) => {
+        if (request.role < level) request.status = 403;
+        else await next();
+      }
+    },
+    koa: { router: prefix => Object.fromEntries(["get", "put", "post", "delete"].map(method => [
+      method, (path, ...handlers) => routes.set(`${method} ${prefix}${path}`, handlers)
+    ])) },
+    inject() {}
+  });
+  const request = async (method, body, user = "one", daemonId = "", role = 10) => {
+    const query = daemonId ? { daemonId } : {};
+    const request = { role, user, query, request: { body, query } };
+    await from("panel")("koa-compose")(routes.get(`${method} /api/plugins/remarks`))(request);
+    return request;
+  };
+  assert.equal((await request("get", undefined, "one", "", 1)).status, 403);
+  assert.equal((await request("put", { id: "sample", remarks: "note" }, "one", "", 1)).status, 403);
+  assert.equal(stored.size, 0);
+  assert.deepEqual((await request("put", { id: "sample", remarks: " First\r\nnote " })).body,
+    { id: "sample", remarks: "First note" });
+  await request("put", { id: "other", remarks: "Other note" });
+  assert.equal((await request("get")).body.length, 2);
+  assert.deepEqual((await request("get", undefined, "two")).body, []);
+  assert.deepEqual((await request("get", undefined, "one", "node-one")).body, []);
+  await request("put", { id: "sample", remarks: "Node note" }, "one", "node-one");
+  assert.deepEqual((await request("get", undefined, "one", "node-one")).body,
+    [{ id: "sample", remarks: "Node note" }]);
+  assert.deepEqual((await request("get", undefined, "one", "node-two")).body, []);
+  await request("put", { id: "sample", remarks: "Updated note" });
+  assert.deepEqual((await request("get")).body,
+    [{ id: "other", remarks: "Other note" }, { id: "sample", remarks: "Updated note" }]);
+  await request("put", { id: "sample", remarks: "" });
+  assert.deepEqual((await request("get")).body, [{ id: "other", remarks: "Other note" }]);
+  assert.deepEqual((await request("get", undefined, "one", "node-one")).body,
+    [{ id: "sample", remarks: "Node note" }]);
+  for (const remarks of [null, 123]) {
+    await assert.rejects(request("put", { id: "sample", remarks }), /REQUEST_BODY_ERROR/);
+  }
+  assert.deepEqual((await request("get")).body, [{ id: "other", remarks: "Other note" }]);
+  const longRemarks = "x".repeat(201);
+  assert.deepEqual((await request("put", { id: "sample", remarks: longRemarks })).body,
+    { id: "sample", remarks: longRemarks });
+});
+
 test("daemon removal clears config only after a successful explicitly selected uninstall", async () => {
   const handlers = new Map();
   const calls = [];

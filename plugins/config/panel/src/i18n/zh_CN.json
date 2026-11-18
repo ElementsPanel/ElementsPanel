@@ -34,6 +34,8 @@
   "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM_TITLE": "删除分组“{name}”？",
   "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM": "删除分组及其归属关系，保留插件。",
   "TXT_CODE_PLUGIN_GROUP_NAME": "分组名称",
+  "TXT_CODE_PLUGIN_GROUP_MOVE_TO": "移动到分组",
+  "TXT_CODE_PLUGIN_REMARK_EDIT": "编辑备注",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "节点",
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "面板",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "插件管理自身无法被禁用，请改为在其 data/plugin-overrides.json 中把 plugins.config.enabled 设为 false。",

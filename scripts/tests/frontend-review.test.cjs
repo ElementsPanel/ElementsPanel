@@ -520,6 +520,8 @@ function pluginActionFixture(t, inventories = {}, nodeOverrides = {}, pluginMark
   }));
   const handlers = {
     pluginList: async () => panelPlugins,
+    pluginRemarkList: async () => [],
+    updatePluginRemark: async ({ data }) => data,
     nodeList: async () => nodes,
     nodePluginList: async ({ params }) => inventories[params.daemonId],
     setPluginEnabled: async () => ({ result: { application: "applied" } }),
@@ -557,6 +559,87 @@ function pluginActionFixture(t, inventories = {}, nodeOverrides = {}, pluginMark
     writes: () => calls.filter(({ name }) => /^(set|remove)/.test(name))
   };
 }
+
+test("plugin context actions target the clicked plugin and keep remarks isolated across node changes", async (t) => {
+  const f = pluginActionFixture(t);
+  const { state } = f;
+  const open = () => { state.pluginContextMenu.value = { open: true, x: 10, y: 20, pluginId: "sample" }; };
+  state.selectedId.value = "node";
+  open();
+  state.toggleContextPlugin();
+  assert.equal(state.actionCandidate.value.plugin.id, "sample");
+  assert.equal(state.actionCandidate.value.action, "disable");
+  assert.equal(state.selectedId.value, "node");
+  assert.equal(state.pluginContextMenu.value.open, false);
+  state.actionCandidate.value = null;
+  f.plugin.enabled = false;
+  open();
+  await state.toggleContextPlugin();
+  assert.deepEqual(f.writes()[0], { name: "setPluginEnabled", config: {
+    data: { id: "sample", enabled: true }
+  } });
+
+  state.pluginRemarks.value.set("sample", "Saved note");
+  open();
+  state.editContextPluginRemark();
+  assert.equal(state.remarkDialog.value.pluginId, "sample");
+  assert.equal(state.remarkDialog.value.remarks, "Saved note");
+  assert.equal(state.selectedId.value, "node");
+  state.remarkDialog.value.remarks = " New\r\nnote ";
+  f.handlers.updatePluginRemark = async () => { throw new Error("save failed"); };
+  await state.savePluginRemark();
+  assert.equal(state.remarkDialog.value.open, true);
+  assert.equal(state.pluginRemarks.value.get("sample"), "Saved note");
+  assert.match(f.notices.at(-1).text, /save failed/);
+  f.handlers.updatePluginRemark = async ({ data }) => data;
+  await state.savePluginRemark();
+  assert.equal(state.remarkDialog.value.open, false);
+  assert.equal(state.pluginRemarks.value.get("sample"), "New note");
+  open();
+  state.editContextPluginRemark();
+  state.remarkDialog.value.remarks = "";
+  await state.savePluginRemark();
+  assert.equal(state.pluginRemarks.value.has("sample"), false);
+
+  open();
+  state.editContextPluginRemark();
+  const longRemarks = "x".repeat(201);
+  state.remarkDialog.value.remarks = longRemarks;
+  await state.savePluginRemark();
+  assert.equal(state.pluginRemarks.value.get("sample"), longRemarks);
+
+  const reads = [];
+  f.handlers.pluginRemarkList = config => {
+    const wait = deferred();
+    reads.push({ ...wait, config });
+    return wait.promise;
+  };
+  const old = state.loadPluginRemarks();
+  state.scope.value = "node";
+  state.selectedNodeId.value = "one";
+  state.nodePlugins.value = [{ ...f.plugin }];
+  const current = state.loadPluginRemarks();
+  reads[1].resolve([{ id: "sample", remarks: "Node note" }]);
+  await current;
+  reads[0].resolve([{ id: "sample", remarks: "Stale panel note" }]);
+  await old;
+  assert.equal(state.pluginRemarks.value.get("sample"), "Node note");
+  assert.deepEqual(reads[1].config.params, { daemonId: "one" });
+  const pending = deferred();
+  f.handlers.updatePluginRemark = () => pending.promise;
+  open();
+  state.editContextPluginRemark();
+  state.remarkDialog.value.remarks = "Updated node note";
+  const saving = state.savePluginRemark();
+  state.selectedNodeId.value = "two";
+  state.pluginRemarks.value = new Map([["sample", "Other node note"]]);
+  pending.resolve({ id: "sample", remarks: "Updated node note" });
+  await saving;
+  assert.equal(state.pluginRemarks.value.get("sample"), "Other node note");
+  assert.deepEqual(f.calls.filter(call => call.name === "updatePluginRemark").at(-1).config, {
+    params: { daemonId: "one" }, data: { id: "sample", remarks: "Updated node note" }
+  });
+});
 
 test("confirming panel plugin actions opens a separate node picker with all matching nodes selected", async (t) => {
   for (const action of ["disable", "remove"]) await t.test(action, async (t) => {
@@ -865,6 +948,7 @@ test("plugin configuration opens its save tooltip for unsaved edits and preserve
       } },
       "./SchemaForm.vue": {},
       "./api": {
+        pluginRemarkList: () => ({ execute: async () => ({ value: [] }) }),
         pluginGroupList: () => ({ execute: async () => ({ value: [] }) }),
         nodePluginGroupList: () => ({ execute: async () => ({ value: [] }) }),
         nodeList: () => ({ execute: async () => ({ value: [{ uuid: "node", available: true }] }) }),
@@ -985,6 +1069,7 @@ test("desktop plugin configuration loads each window's node without changing the
       "@/tools/vuetifyToast": { message: { success() {}, error: assert.fail } },
       "./SchemaForm.vue": {},
       "./api": {
+        pluginRemarkList: () => ({ execute: async () => ({ value: [] }) }),
         pluginGroupList: () => ({ execute: async () => ({ value: [] }) }),
         nodePluginGroupList: () => ({ execute: async () => ({ value: [] }) }),
         nodeList: () => ({ execute: async () => ({ value: ["one", "two", "route-node"].map(

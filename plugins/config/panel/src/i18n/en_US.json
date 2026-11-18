@@ -34,6 +34,8 @@
   "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM_TITLE": "Delete group {name}?",
   "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM": "Remove the group and its memberships; keep the plugins.",
   "TXT_CODE_PLUGIN_GROUP_NAME": "Group name",
+  "TXT_CODE_PLUGIN_GROUP_MOVE_TO": "Move to group",
+  "TXT_CODE_PLUGIN_REMARK_EDIT": "Edit remarks",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "Nodes",
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "Panel",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "The plugin manager cannot disable itself. Set plugins.config.enabled to false in its data/plugin-overrides.json instead.",

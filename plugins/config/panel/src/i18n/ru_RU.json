@@ -34,6 +34,8 @@
   "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM_TITLE": "Удалить группу {name}?",
   "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM": "Удалить группу и её привязки, сохранив плагины.",
   "TXT_CODE_PLUGIN_GROUP_NAME": "Название группы",
+  "TXT_CODE_PLUGIN_GROUP_MOVE_TO": "Переместить в группу",
+  "TXT_CODE_PLUGIN_REMARK_EDIT": "Изменить примечание",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "Узлы",
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "Панель",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "Менеджер плагинов не может отключить сам себя. Укажите plugins.config.enabled: false в его data/plugin-overrides.json.",
