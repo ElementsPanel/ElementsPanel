@@ -36,4 +36,5 @@ export default class SystemConfig {
   logoImageLight: string | undefined = undefined;
   logoImageDark: string | undefined = undefined;
   backgroundImage = "";
+  backgroundImageBlur = 5;
 }

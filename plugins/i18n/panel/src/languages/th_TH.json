@@ -2222,6 +2222,7 @@
   "TXT_CODE_CONSOLE_LOGO_LIGHT": "รูปภาพโลโก้ (โหมดสว่าง)",
   "TXT_CODE_CONSOLE_LOGO_DARK": "รูปภาพโลโก้ (โหมดมืด)",
   "TXT_CODE_CONSOLE_LOGO_HINT": "ตั้งค่ารูปภาพโลโก้สำหรับโหมดนี้ เว้นว่างไว้เพื่อใช้โลโก้เริ่มต้น",
+  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_BLUR": "ระดับความเบลอของภาพพื้นหลัง",
   "TXT_CODE_INSTANCE_COMMAND_HISTORY": "ประวัติ",
   "TXT_CODE_MINECRAFT_UPLOAD": "อัปโหลดเซิร์ฟเวอร์เอง",
   "TXT_CODE_MINECRAFT_UPLOAD_HINT": "อัปโหลดไฟล์ JAR หรือไฟล์ ZIP เพื่อใช้เซิร์ฟเวอร์ของคุณเอง",

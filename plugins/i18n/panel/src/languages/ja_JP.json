@@ -2222,6 +2222,7 @@
   "TXT_CODE_CONSOLE_LOGO_LIGHT": "ロゴ画像（ライトモード）",
   "TXT_CODE_CONSOLE_LOGO_DARK": "ロゴ画像（ダークモード）",
   "TXT_CODE_CONSOLE_LOGO_HINT": "このモードで使用するロゴ画像を設定します。空欄の場合は標準のロゴを使用します。",
+  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_BLUR": "背景画像のぼかし",
   "TXT_CODE_INSTANCE_COMMAND_HISTORY": "履歴",
   "TXT_CODE_MINECRAFT_UPLOAD": "サーバーを自分でアップロード",
   "TXT_CODE_MINECRAFT_UPLOAD_HINT": "JAR ファイルまたは ZIP アーカイブをアップロードして、自分のサーバーを使用します。",

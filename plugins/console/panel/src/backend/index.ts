@@ -17,6 +17,7 @@ type AppearanceValues = {
   logoImageLight?: unknown;
   logoImageDark?: unknown;
   backgroundImage?: unknown;
+  backgroundImageBlur?: unknown;
 };
 
 type AppearanceConfig = {
@@ -25,6 +26,7 @@ type AppearanceConfig = {
   logoImageLight?: string;
   logoImageDark?: string;
   backgroundImage?: string;
+  backgroundImageBlur?: number;
 };
 
 function readAppearance(config: AppearanceConfig) {
@@ -33,7 +35,8 @@ function readAppearance(config: AppearanceConfig) {
     logoImage: config.logoImage || "",
     logoImageLight: config.logoImageLight ?? config.logoImage ?? "",
     logoImageDark: config.logoImageDark ?? config.logoImage ?? "",
-    backgroundImage: config.backgroundImage || ""
+    backgroundImage: config.backgroundImage || "",
+    backgroundImageBlur: config.backgroundImageBlur ?? 5
   };
 }
 
@@ -53,6 +56,9 @@ function writeAppearance(values: AppearanceValues, config: AppearanceConfig, sav
   }
   config.backgroundImage = String(
     valueOrCurrent(values.backgroundImage, config.backgroundImage) ?? ""
+  );
+  config.backgroundImageBlur = Number(
+    valueOrCurrent(values.backgroundImageBlur, config.backgroundImageBlur) ?? 5
   );
   return save();
 }
@@ -130,6 +136,16 @@ export function apply(ctx: PanelPluginContext) {
         title: $t("TXT_CODE_COMMON_UI_BACKGROUND_IMAGE"),
         description: $t("TXT_CODE_COMMON_THIS_FEATURE_MAY_BE_UNSTABLE_CANNOT_GUARANTEE_BEST_USER_EXPERIENCE"),
         fileUpload: true
+      },
+      {
+        key: "backgroundImageBlur",
+        type: "number",
+        control: "slider",
+        title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_BLUR"),
+        min: 0,
+        max: 50,
+        unit: "px",
+        visibleWhen: "backgroundImage"
       }
     ],
     read: () => readAppearance(settings.config),

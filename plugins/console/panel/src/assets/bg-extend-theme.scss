@@ -1,5 +1,22 @@
 @use "./text-shadows";
 
+body:is(.app-light-extend-theme, .app-dark-extend-theme) {
+  isolation: isolate;
+
+  &::before {
+    content: "";
+    position: fixed;
+    inset: calc(-3 * var(--app-background-blur, 5px));
+    z-index: -1;
+    pointer-events: none;
+    background-image: var(--app-background-image);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(var(--app-background-blur, 5px));
+  }
+}
+
 %bg-extend-css {
   .left-menu,
   .action-btn-item,

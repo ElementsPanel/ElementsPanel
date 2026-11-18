@@ -47,6 +47,7 @@ export interface SettingField {
   unit?: string;
   min?: number;
   max?: number;
+  control?: "slider";
   options?: SettingOption[];
   secret?: boolean;
   /** `string`: offer the installed file manager's upload dialog. */

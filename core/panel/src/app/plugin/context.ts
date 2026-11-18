@@ -60,6 +60,8 @@ export interface PanelSettingField {
   /** `number`: inclusive bounds, enforced by the form and by `write()`. */
   min?: number;
   max?: number;
+  /** `number`: optionally render as a slider. */
+  control?: "slider";
   /** `select`: the allowed values. */
   options?: PanelSettingOption[];
   /** `string`: render as a password input. */

@@ -16,6 +16,7 @@ import {
   VForm,
   VMenu,
   VSelect,
+  VSlider,
   VSwitch,
   VTextField,
   VTextarea
@@ -322,6 +323,25 @@ const open = (field: SettingField) => {
           hide-details
           @update:model-value="set(field, $event)"
         />
+        <VSlider
+          v-else-if="field.type === 'number' && field.control === 'slider'"
+          :model-value="Number(values[field.key!] ?? field.min ?? 0)"
+          class="setting-control setting-control-medium"
+          color="primary"
+          :aria-label="field.title"
+          :min="field.min ?? 0"
+          :max="field.max ?? 100"
+          :step="1"
+          thumb-label
+          hide-details
+          @update:model-value="setNumber(field, $event)"
+        >
+          <template #append>
+            <span class="setting-slider-value">
+              {{ Number(values[field.key!] ?? field.min ?? 0) }} {{ field.unit }}
+            </span>
+          </template>
+        </VSlider>
         <VTextField
           v-else-if="field.type === 'number'"
           :model-value="Number(values[field.key!] ?? 0)"
@@ -462,6 +482,12 @@ const open = (field: SettingField) => {
 
 .setting-control-wide {
   max-width: 320px;
+}
+
+.setting-slider-value {
+  min-width: 4em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .setting-color-preview {

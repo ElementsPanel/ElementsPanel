@@ -60,30 +60,27 @@ export const useAppConfigStore = createGlobalState(() => {
   const clearBackgroundImage = () => {
     const body = document.querySelector("body");
     if (!body) return;
-    body.style.removeProperty("background-image");
-    body.style.removeProperty("background-size");
-    body.style.removeProperty("background-position");
-    body.style.removeProperty("background-repeat");
+    body.style.removeProperty("--app-background-image");
+    body.style.removeProperty("--app-background-blur");
     body.classList.remove("app-light-extend-theme", "app-dark-extend-theme");
     hasBgImage.value = false;
   };
 
-  const setBackgroundImage = (url: string) => {
+  const setBackgroundImage = (url: string, blur = 5) => {
     if (!url) {
       clearBackgroundImage();
       return;
     }
     const body = document.querySelector("body");
     if (body) {
-      body.style.backgroundSize = "cover";
-      body.style.backgroundPosition = "center";
-      body.style.backgroundRepeat = "no-repeat";
+      const blurRadius = Number.isFinite(blur) ? Math.min(50, Math.max(0, blur)) : 5;
+      body.style.setProperty("--app-background-blur", `${blurRadius}px`);
       if (isDarkTheme.value) {
-        body.style.backgroundImage = `linear-gradient(135deg, rgba(0,0,0,0.65), rgba(0,0,0,0.65) 100%), url(${url})`;
+        body.style.setProperty("--app-background-image", `linear-gradient(135deg, rgba(0,0,0,0.65), rgba(0,0,0,0.65) 100%), url(${JSON.stringify(url)})`);
         body.classList.remove("app-light-extend-theme");
         body.classList.add("app-dark-extend-theme");
       } else {
-        body.style.backgroundImage = `linear-gradient(135deg, rgba(255,255,255,0.65), rgba(255,255,255,0.65) 100%), url(${url})`;
+        body.style.setProperty("--app-background-image", `linear-gradient(135deg, rgba(255,255,255,0.65), rgba(255,255,255,0.65) 100%), url(${JSON.stringify(url)})`);
         body.classList.remove("app-dark-extend-theme");
         body.classList.add("app-light-extend-theme");
       }
@@ -121,7 +118,7 @@ export const useAppConfigStore = createGlobalState(() => {
 
     const { value: appearance } = await getAppearance().execute();
     setLogoImages(appearance);
-    setBackgroundImage(appearance?.backgroundImage || "");
+    setBackgroundImage(appearance?.backgroundImage || "", appearance?.backgroundImageBlur);
   };
 
   const setTheme = (t: AppTheme) => {

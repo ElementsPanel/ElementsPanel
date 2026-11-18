@@ -70,7 +70,7 @@ const dom = createBrowser();
 after(() => dom.window.close());
 const vue = from("frontend")("vue");
 
-function desktopFixture(t, settings) {
+function desktopFixture(t, settings, appearance = { backgroundImage: "/website wallpaper.png" }) {
   const dark = vue.ref(false);
   let currentSettings = settings;
   let failSettings = false;
@@ -91,7 +91,7 @@ function desktopFixture(t, settings) {
     "@elementspanel/epanel-plugin-console/services/apis/appearance": { getAppearance: () => ({
       execute: async () => {
         if (failAppearance) throw new Error("appearance unavailable");
-        return { value: { backgroundImage: "/website wallpaper.png" } };
+        return { value: appearance };
       }
     }) },
     "./api": {
@@ -118,15 +118,24 @@ function desktopFixture(t, settings) {
 }
 
 test("desktop wallpaper follows the website, updates after saves and respects theme overlays", async (t) => {
-  const f = desktopFixture(t);
+  const appearance = { backgroundImage: "/website wallpaper.png", backgroundImageBlur: 32 };
+  const f = desktopFixture(t, undefined, appearance);
   await settle();
   assert.match(f.state.wallpaperStyle.backgroundImage, /website wallpaper\.png/);
   assert.match(f.state.wallpaperStyle.backgroundImage, /255,255,255,0\.2/);
+  assert.equal(f.state.wallpaperStyle.filter, "blur(32px)");
+  assert.equal(f.state.wallpaperStyle.inset, "-96px");
+  appearance.backgroundImageBlur = 0;
+  await f.refresh();
+  assert.equal(f.state.wallpaperStyle.filter, "blur(0px)");
+  assert.equal(f.state.wallpaperStyle.inset, "0px");
   f.dark.value = true;
   assert.match(f.state.wallpaperStyle.backgroundImage, /0,0,0,0\.65/);
+  appearance.backgroundImageBlur = 32;
   await f.refresh({ wallpaperMode: "image", wallpaperImage: "/custom (wallpaper).png" });
   assert.match(f.state.wallpaperStyle.backgroundImage, /custom \(wallpaper\)\.png/);
   assert.match(f.state.wallpaperStyle.backgroundImage, /rgba\(0,0,0,0\.65\)/);
+  assert.equal(f.state.wallpaperStyle.filter, "blur(0px)");
   await f.refresh({ wallpaperMode: "image", wallpaperImage: "" });
   assert.match(f.state.wallpaperStyle.backgroundColor, /#232429/);
   f.dark.value = false;
@@ -142,6 +151,7 @@ test("custom wallpapers work without site appearance and legacy panels retain th
   f.failSettings();
   await f.refresh();
   assert.match(f.state.wallpaperStyle.backgroundImage, /website wallpaper\.png/);
+  assert.equal(f.state.wallpaperStyle.filter, "blur(5px)");
   const custom = desktopFixture(t, { wallpaperMode: "image", wallpaperImage: "/custom.png" });
   custom.failAppearance();
   await custom.refresh();

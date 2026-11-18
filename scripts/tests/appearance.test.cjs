@@ -100,17 +100,18 @@ test("console appearance persists independent logos and background images after 
   assert.deepEqual(logoFields.map((field) => field.key), ["logoImageLight", "logoImageDark"]);
   assert.ok(logoFields.every((field) => field.fileUpload));
   assert.deepEqual(backend.schema.fields().map((field) => field.key),
-    ["pageTitle", "logoImageLight", "logoImageDark", "backgroundImage"]);
+    ["pageTitle", "logoImageLight", "logoImageDark", "backgroundImage", "backgroundImageBlur"]);
 
   await backend.schema.write({
     logoImageLight: "/light.png", logoImageDark: "/dark.png",
-    backgroundImage: "/background.png"
+    backgroundImage: "/background.png", backgroundImageBlur: 0
   });
   const restarted = backendFixture(storage.load("SystemConfig", SystemConfig, "config"));
   const appearance = await restarted.readPublic();
   assert.equal(appearance.logoImageLight, "/light.png");
   assert.equal(appearance.logoImageDark, "/dark.png");
   assert.equal(appearance.backgroundImage, "/background.png");
+  assert.equal(appearance.backgroundImageBlur, 0);
   assert.deepEqual(appearance, restarted.schema.read());
 });
 
@@ -179,10 +180,25 @@ test("clearing a logo restores the matching built-in image even with a legacy lo
 });
 
 test("older appearance responses without theme fields still work in both modes", async (t) => {
-  const { store } = await storeFixture(t, async () => ({ logoImage: "/legacy.png", backgroundImage: "/legacy.png" }));
+  const appearance = { logoImage: "/legacy.png", backgroundImage: "/legacy.png" };
+  const { store } = await storeFixture(t, async () => appearance);
   assert.equal(store.logoImage.value, "/legacy.png");
   store.setTheme(AppTheme.DARK);
   await store.initAppTheme();
   assert.equal(store.logoImage.value, "/legacy.png");
   assert.equal(store.hasBgImage.value, true);
+  assert.equal(document.body.style.getPropertyValue("--app-background-blur"), "5px");
+  assert.match(document.body.style.getPropertyValue("--app-background-image"), /legacy\.png/);
+  assert.equal(document.body.style.backgroundImage, "");
+  assert.equal(document.body.style.filter, "");
+
+  appearance.backgroundImageBlur = 0;
+  await store.initAppTheme();
+  assert.equal(document.body.style.getPropertyValue("--app-background-blur"), "0px");
+
+  appearance.backgroundImage = "";
+  await store.initAppTheme();
+  assert.equal(store.hasBgImage.value, false);
+  assert.equal(document.body.style.getPropertyValue("--app-background-blur"), "");
+  assert.equal(document.body.style.getPropertyValue("--app-background-image"), "");
 });

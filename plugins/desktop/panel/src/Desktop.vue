@@ -69,6 +69,7 @@ const desktopImageViewerWindow = computed(() => fileManager.value?.DesktopImageV
 const { isDarkTheme } = useAppConfigStore();
 
 const backgroundImageUrl = ref<string>("");
+const backgroundImageBlur = ref(5);
 const desktopSettings = ref(new DesktopSettings());
 
 const wallpaperStyle = computed<CSSProperties>(() => {
@@ -82,11 +83,14 @@ const wallpaperStyle = computed<CSSProperties>(() => {
     const overlay = isDarkTheme.value
         ? "rgba(0,0,0,0.65)"
         : "rgba(255,255,255,0.2)";
+    const blur = settings.wallpaperMode === "image" ? 0 : backgroundImageBlur.value;
     return {
         backgroundImage: `linear-gradient(${overlay}, ${overlay}), url(${JSON.stringify(image)})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
-        backgroundRepeat: "no-repeat"
+        backgroundRepeat: "no-repeat",
+        filter: `blur(${blur}px)`,
+        inset: `${-3 * blur}px`
     };
 });
 
@@ -103,6 +107,8 @@ const loadWallpaper = async () => {
     }
     if (appearanceResult.status === "fulfilled") {
         backgroundImageUrl.value = appearanceResult.value.value?.backgroundImage || "";
+        const blur = appearanceResult.value.value?.backgroundImageBlur ?? 5;
+        backgroundImageBlur.value = Number.isFinite(blur) ? Math.min(50, Math.max(0, blur)) : 5;
     }
 };
 
@@ -1087,7 +1093,7 @@ const isMdiIcon = (icon: Component | string): icon is `mdi-${string}` => typeof 
 
 <template>
     <div class="desktop-container" @click="onDesktopClick" @contextmenu="onDesktopContextMenu">
-        <div class="desktop-wallpaper" :style="wallpaperStyle"></div>
+        <div class="desktop-wallpaper" :style="wallpaperStyle" aria-hidden="true"></div>
         <Transition name="desktop-fade">
             <div v-if="!showLoginOverlay" class="desktop-content-wrapper" @mousemove="handleDesktopMouseMove"
                 @mouseup="handleDesktopMouseUp">
@@ -1193,6 +1199,7 @@ const isMdiIcon = (icon: Component | string): icon is `mdi-${string}` => typeof 
     position: absolute;
     inset: 0;
     z-index: 0;
+    pointer-events: none;
 }
 
 .desktop-icons {
