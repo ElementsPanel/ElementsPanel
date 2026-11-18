@@ -395,7 +395,7 @@ onMounted(() => {
                   <span>{{ detail.warnText }}</span>
                 </VTooltip>
                 <span v-else-if="detail.loading">
-                  <VProgressCircular indeterminate />
+                  <VProgressCircular indeterminate size="16" width="2" />
                 </span>
                 <span v-else-if="detail.success">
                   <span class="color-success">
