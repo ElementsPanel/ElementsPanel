@@ -667,7 +667,11 @@ onUnmounted(() => {
   align-items: center;
   gap: 6px;
 }
-.console-card {
+.console-card,
+.console-function-card,
+.console-state-card,
+.command-history-card,
+.summary-card {
   background: var(--background-color-white);
 }
 .console-card-content {
@@ -683,7 +687,6 @@ onUnmounted(() => {
   flex-direction: column;
   min-height: 0;
   margin-top: 0;
-  background: var(--background-color-white);
 }
 .console-function-content {
   flex: 1 1 auto;
@@ -694,7 +697,6 @@ onUnmounted(() => {
 .console-state-card {
   margin-top: 16px;
   margin-bottom: 20px;
-  background: var(--background-color-white);
 }
 .console-state-row {
   --console-state-card-height: 132px;
@@ -813,9 +815,6 @@ onUnmounted(() => {
 }
 .console-function-arrow {
   color: var(--color-gray-7);
-}
-.summary-card {
-  background: var(--background-color-white);
 }
 .summary-card :deep(.v-card-text) {
   padding: 10px 20px 20px;

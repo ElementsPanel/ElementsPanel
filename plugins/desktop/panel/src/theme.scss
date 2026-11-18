@@ -68,6 +68,13 @@
   background: var(--desktop-window-bg);
 }
 
+.desktop-window,
+.desktop-dialog,
+.desktop-login-window,
+.desktop-mode-active .v-overlay {
+  --background-color-white: var(--desktop-window-bg);
+}
+
 /* Fixed headers must cover scrolled rows with the same opaque window surface. */
 .desktop-window .v-table--fixed-header > .v-table__wrapper > table > thead > tr > th {
   background: var(--desktop-window-bg) !important;
