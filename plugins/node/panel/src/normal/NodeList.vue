@@ -93,14 +93,7 @@ const handleOpenDetailDialog = async () => {
         </template>
       </PageToolbar>
 
-      <Empty
-        v-if="response && !remotes.length && !refreshLoading"
-        icon="mdi-server-network-outline"
-        :title="t('TXT_CODE_NODE_LIST_EMPTY')"
-        :description="t('TXT_CODE_NO_DATA')"
-      />
-
-      <VRow v-else-if="remotes.length || refreshLoading" density="comfortable" class="node-list-row">
+      <VRow density="comfortable" class="node-list-row">
         <VCol cols="12">
           <div class="desc">
             <div class="desc-text">
@@ -114,10 +107,12 @@ const handleOpenDetailDialog = async () => {
                 :length="Math.max(1, Math.ceil(operationForm.total / operationForm.pageSize))"
                 density="compact"
                 :total-visible="isPhone ? 1 : 5"
+                :disabled="refreshLoading"
               />
               <VSelect
                 v-model="operationForm.pageSize"
                 :items="[8, 16, 24, 48]"
+                :disabled="refreshLoading"
                 class="page-size-select"
                 hide-details
               >
@@ -130,6 +125,13 @@ const handleOpenDetailDialog = async () => {
           <NodeItem :item="item" />
         </VCol>
       </VRow>
+
+      <Empty
+        v-if="response && !remotes.length && !refreshLoading"
+        icon="mdi-server-network-outline"
+        :title="t('TXT_CODE_NODE_LIST_EMPTY')"
+        :description="t('TXT_CODE_NO_DATA')"
+      />
     </VContainer>
     <NodeDetailDialog ref="nodeDetailDialog" />
   </main>

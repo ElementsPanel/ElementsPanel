@@ -151,19 +151,18 @@ defineExpose({ updateInstalled });
           <VTab value="browse">{{ t("TXT_CODE_PLUGIN_MARKET_BROWSE") }}</VTab>
           <VTab value="updates">{{ t("TXT_CODE_PLUGIN_MARKET_UPDATES") }}</VTab>
         </VTabs>
-        <div
-          v-if="activeTab === 'browse' && visiblePlugins.length"
-          class="plugin-market-pagination"
-        >
+        <div class="plugin-market-pagination">
           <VPagination
             v-model="currentPage"
             :length="totalPages"
             :total-visible="isPhone ? 1 : 5"
+            :disabled="activeTab === 'updates' ? updatesLoading : loading"
             density="compact"
           />
           <VSelect
             v-model="pageSize"
             :items="[10, 20, 50, 100]"
+            :disabled="activeTab === 'updates' ? updatesLoading : loading"
             hide-details
             class="plugin-market-page-size"
           >
@@ -177,6 +176,8 @@ defineExpose({ updateInstalled });
         ref="updateView"
         :keyword="keyword"
         :daemon-id="selectedDaemonId"
+        :page="currentPage"
+        :page-size="pageSize"
         @loading="updatesLoading = $event"
       />
 

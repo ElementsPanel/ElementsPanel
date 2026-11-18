@@ -415,9 +415,9 @@ onMounted(async () => {
           </div>
         </VCol>
         <VCol cols="12" md="5" class="pagination-wrap">
-          <VPagination v-if="instances" v-model="operationForm.currentPage" :length="instances.maxPage || 1"
-            :total-visible="isPhone ? 1 : 5" density="compact" @update:model-value="() => initInstancesData()" />
-          <VSelect v-if="instances" v-model="operationForm.pageSize" :items="[10, 20, 50, 100]" hide-details
+          <VPagination v-model="operationForm.currentPage" :length="instances?.maxPage || 1"
+            :total-visible="isPhone ? 1 : 5" :disabled="isLoading" density="compact" @update:model-value="() => initInstancesData()" />
+          <VSelect v-model="operationForm.pageSize" :items="[10, 20, 50, 100]" :disabled="isLoading" hide-details
             class="page-size-select" @update:model-value="() => initInstancesData(true)">
             <template #no-data><Empty :icon="false" compact /></template>
           </VSelect>

@@ -56,15 +56,20 @@ export function usePluginMarketList(
     );
   });
 
+  const totalItems = computed(() =>
+    activeTab.value === "updates"
+      ? updateView.value?.totalUpdates ?? 0
+      : visiblePlugins.value.length
+  );
   const totalPages = computed(() =>
-    Math.max(1, Math.ceil(visiblePlugins.value.length / pageSize.value))
+    Math.max(1, Math.ceil(totalItems.value / pageSize.value))
   );
   const pagedPlugins = computed(() => {
     const start = (currentPage.value - 1) * pageSize.value;
     return visiblePlugins.value.slice(start, start + pageSize.value);
   });
 
-  watch([keyword, pageSize], () => {
+  watch([keyword, pageSize, activeTab], () => {
     currentPage.value = 1;
   });
   watch(totalPages, (pages) => {
@@ -186,6 +191,7 @@ export function usePluginMarketList(
     updatesLoading,
     icons,
     visiblePlugins,
+    totalItems,
     totalPages,
     pagedPlugins,
     refresh,

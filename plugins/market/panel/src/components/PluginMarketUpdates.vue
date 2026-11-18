@@ -29,7 +29,10 @@ import {
   updatingPlugins
 } from "../operations";
 
-const props = defineProps<{ keyword?: string | null; daemonId?: string }>();
+const props = withDefaults(
+  defineProps<{ keyword?: string | null; daemonId?: string; page?: number; pageSize?: number }>(),
+  { page: 1, pageSize: 20 }
+);
 const emit = defineEmits<{ loading: [value: boolean] }>();
 const loading = ref(false);
 const error = ref("");
@@ -48,6 +51,11 @@ const visibleUpdates = computed(() => {
     (plugin) =>
       !query || [plugin.displayName, plugin.name].some((name) => name.toLowerCase().includes(query))
   );
+});
+const totalUpdates = computed(() => visibleUpdates.value.length);
+const pagedUpdates = computed(() => {
+  const start = (props.page - 1) * props.pageSize;
+  return visibleUpdates.value.slice(start, start + props.pageSize);
 });
 const blocked = computed(
   () =>
@@ -189,7 +197,7 @@ onBeforeUnmount(() => {
   requestId++;
   if (selectingTargets.value) activeOperations.value--;
 });
-defineExpose({ refresh, updateAll, canUpdate, preparingTargets });
+defineExpose({ refresh, updateAll, canUpdate, preparingTargets, totalUpdates });
 </script>
 
 <template>
@@ -264,7 +272,7 @@ defineExpose({ refresh, updateAll, canUpdate, preparingTargets });
         </tr>
       </thead>
       <tbody>
-        <tr v-for="plugin in visibleUpdates" :key="plugin.pluginId">
+        <tr v-for="plugin in pagedUpdates" :key="plugin.pluginId">
           <td>
             <div class="font-weight-medium">{{ plugin.displayName }}</div>
             <div class="text-caption text-medium-emphasis">{{ plugin.name }}</div>

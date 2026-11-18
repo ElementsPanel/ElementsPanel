@@ -994,7 +994,7 @@ test("market target changes preserve the routed page, search and active tab whil
   const NodeItem = control({ title: String, disabled: Boolean, active: Boolean }, ["click"]);
   const components = Object.fromEntries([
     "VAlert", "VAvatar", "VCard", "VCardActions", "VCardText", "VChip", "VCol", "VContainer",
-    "VCheckbox", "VDialog", "VIcon", "VImg", "VList", "VListItem", "VMenu", "VProgressCircular", "VProgressLinear", "VRow", "VSpacer", "VTab", "VTable"
+    "VCheckbox", "VDialog", "VIcon", "VImg", "VList", "VListItem", "VMenu", "VPagination", "VProgressCircular", "VProgressLinear", "VRow", "VSelect", "VSpacer", "VTab", "VTable"
   ].map((name) => [name, slots]));
   Object.assign(components, { VTabs: Tabs, VBtn: Button, VDialog: Dialog, VTextField: Search, VListItem: NodeItem });
   const calls = [];
@@ -1496,11 +1496,13 @@ test("desktop browsing keeps list state and wires detail installation and back e
     plugins,
     keyword,
     currentPage: vue.ref(1),
+    pageSize: vue.ref(20),
     activeTab: vue.ref("browse"),
     updateView: vue.ref(),
     updatesLoading: vue.ref(false),
     icons: vue.ref({}),
     visiblePlugins: vue.computed(() => plugins.value),
+    totalItems: vue.computed(() => plugins.value.length),
     totalPages: vue.ref(1),
     pagedPlugins: vue.computed(() => plugins.value),
     refresh() {},

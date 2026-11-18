@@ -42,11 +42,13 @@ const {
   plugins,
   keyword,
   currentPage,
+  pageSize,
   activeTab,
   updateView,
   updatesLoading,
   icons,
   visiblePlugins,
+  totalItems,
   totalPages,
   pagedPlugins,
   refresh,
@@ -172,8 +174,8 @@ const DesktopPluginDetailController = defineComponent({
             {{ t("TXT_CODE_PLUGIN_MARKET_UPDATES") }}
           </VTab>
         </VTabs>
-        <span v-if="activeTab === 'browse' && visiblePlugins.length" class="dpm-result-count">
-          {{ visiblePlugins.length }}
+        <span v-if="totalItems" class="dpm-result-count">
+          {{ totalItems }}
         </span>
       </div>
 
@@ -271,12 +273,14 @@ const DesktopPluginDetailController = defineComponent({
           ref="updateView"
           :keyword="keyword"
           :daemon-id="selectedDaemonId"
+          :page="currentPage"
+          :page-size="pageSize"
           @loading="updatesLoading = $event"
         />
       </div>
 
       <div
-        v-if="activeTab === 'browse' && visiblePlugins.length && totalPages > 1"
+        v-if="totalItems && totalPages > 1"
         class="dpm-pagination"
       >
         <VBtn
