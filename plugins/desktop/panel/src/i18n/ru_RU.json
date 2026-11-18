@@ -6,6 +6,8 @@
   "TXT_CODE_DESKTOP_MODE": "Режим рабочего стола",
   "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Удалить с рабочего стола",
   "TXT_CODE_DESKTOP_RESTORE": "Восстановить",
+  "TXT_CODE_DESKTOP_WALLPAPER_BLUR": "Размытие фона рабочего стола",
+  "TXT_CODE_DESKTOP_WALLPAPER_BLUR_FOLLOW_CONSOLE": "Использовать размытие фона из console",
   "TXT_CODE_DESKTOP_WALLPAPER_CUSTOM": "Своя картинка",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE": "Изображение обоев",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC": "Загрузите изображение или введите его URL. Оставьте пустым, чтобы использовать фон темы.",

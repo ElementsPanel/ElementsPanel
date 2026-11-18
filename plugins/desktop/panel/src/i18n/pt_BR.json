@@ -6,6 +6,8 @@
   "TXT_CODE_DESKTOP_MODE": "Modo desktop",
   "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Remover da área de trabalho",
   "TXT_CODE_DESKTOP_RESTORE": "Restaurar",
+  "TXT_CODE_DESKTOP_WALLPAPER_BLUR": "Desfoque do fundo da área de trabalho",
+  "TXT_CODE_DESKTOP_WALLPAPER_BLUR_FOLLOW_CONSOLE": "Usar o desfoque de fundo do console",
   "TXT_CODE_DESKTOP_WALLPAPER_CUSTOM": "Imagem personalizada",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE": "Imagem de fundo",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC": "Envie uma imagem ou insira sua URL. Deixe vazio para usar o fundo do tema.",

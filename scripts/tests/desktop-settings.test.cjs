@@ -37,7 +37,8 @@ test("desktop wallpaper settings persist, clear images and reject invalid or fai
     "../i18n": { localeMessages: {} }
   });
   await apply(ctx);
-  assert.deepEqual(form.fields().map(field => field.key), ["wallpaperMode", "wallpaperImage"]);
+  assert.deepEqual(form.fields().map(field => field.key),
+    ["wallpaperMode", "wallpaperImage", "wallpaperBlurFollowConsole", "wallpaperBlur"]);
   assert.deepEqual(form.fields()[0].options.map(item => item.value), ["website", "image"]);
   const route = router.stack.find(entry => entry.path === "/desktop_settings");
   assert.equal(route.stack.length, 1, "wallpaper must be readable on the desktop login screen");
@@ -47,18 +48,25 @@ test("desktop wallpaper settings persist, clear images and reject invalid or fai
     return request.body;
   };
   assert.deepEqual(await current(), {
-    wallpaperMode: "website", wallpaperImage: ""
+    wallpaperMode: "website", wallpaperImage: "", wallpaperBlurFollowConsole: true, wallpaperBlur: 5
   });
-  await form.write({ wallpaperMode: "image", wallpaperImage: "/wallpaper.png" });
+  await form.write({
+    wallpaperMode: "image", wallpaperImage: "/wallpaper.png",
+    wallpaperBlurFollowConsole: false, wallpaperBlur: 0
+  });
   assert.equal((await current()).wallpaperImage, "/wallpaper.png");
   await apply(ctx);
   assert.equal(form.read().wallpaperImage, "/wallpaper.png");
+  assert.equal(form.read().wallpaperBlurFollowConsole, false);
+  assert.equal(form.read().wallpaperBlur, 0);
   await form.write({ wallpaperImage: null });
   assert.equal((await current()).wallpaperImage, "");
   await form.write({ wallpaperMode: "website" });
   const saved = await current();
   for (const invalid of [
-    { wallpaperMode: "unknown" }, { wallpaperMode: "color" }, { wallpaperImage: 1 }
+    { wallpaperMode: "unknown" }, { wallpaperMode: "color" }, { wallpaperImage: 1 },
+    { wallpaperBlurFollowConsole: "false" }, { wallpaperBlur: -1 }, { wallpaperBlur: 51 },
+    { wallpaperBlur: Infinity }, { wallpaperBlur: "5" }, { wallpaperBlur: null }
   ]) await assert.rejects(form.write(invalid), /WALLPAPER_INVALID/);
   assert.deepEqual(await current(), saved);
   fail = true;
@@ -135,7 +143,7 @@ test("desktop wallpaper follows the website, updates after saves and respects th
   await f.refresh({ wallpaperMode: "image", wallpaperImage: "/custom (wallpaper).png" });
   assert.match(f.state.wallpaperStyle.backgroundImage, /custom \(wallpaper\)\.png/);
   assert.match(f.state.wallpaperStyle.backgroundImage, /rgba\(0,0,0,0\.65\)/);
-  assert.equal(f.state.wallpaperStyle.filter, "blur(0px)");
+  assert.equal(f.state.wallpaperStyle.filter, "blur(32px)");
   await f.refresh({ wallpaperMode: "image", wallpaperImage: "" });
   assert.match(f.state.wallpaperStyle.backgroundColor, /#232429/);
   f.dark.value = false;
@@ -146,14 +154,43 @@ test("desktop wallpaper follows the website, updates after saves and respects th
   assert.equal(f.reads(), reads);
 });
 
+test("desktop blur overrides console for both wallpaper sources and can resume following it", async (t) => {
+  const appearance = { backgroundImage: "/website.png", backgroundImageBlur: 32 };
+  const settings = { wallpaperMode: "website", wallpaperBlurFollowConsole: false, wallpaperBlur: 0 };
+  const f = desktopFixture(t, settings, appearance);
+  await settle();
+  assert.equal(f.state.wallpaperStyle.filter, "blur(0px)");
+
+  appearance.backgroundImageBlur = 40;
+  window.dispatchEvent(new CustomEvent("elementspanel:plugin-settings-changed", { detail: { id: "console" } }));
+  await settle();
+  assert.equal(f.state.wallpaperStyle.filter, "blur(0px)");
+
+  const custom = { ...settings, wallpaperMode: "image", wallpaperImage: "/custom.png", wallpaperBlur: 12 };
+  await f.refresh(custom);
+  assert.equal(f.state.wallpaperStyle.filter, "blur(12px)");
+  assert.equal(f.state.wallpaperStyle.inset, "-36px");
+
+  await f.refresh({ ...custom, wallpaperBlurFollowConsole: true });
+  assert.equal(f.state.wallpaperStyle.filter, "blur(40px)");
+  appearance.backgroundImageBlur = 8;
+  window.dispatchEvent(new CustomEvent("elementspanel:plugin-settings-changed", { detail: { id: "console" } }));
+  await settle();
+  assert.equal(f.state.wallpaperStyle.filter, "blur(8px)");
+});
+
 test("custom wallpapers work without site appearance and legacy panels retain their website background", async (t) => {
   const f = desktopFixture(t);
   f.failSettings();
   await f.refresh();
   assert.match(f.state.wallpaperStyle.backgroundImage, /website wallpaper\.png/);
   assert.equal(f.state.wallpaperStyle.filter, "blur(5px)");
-  const custom = desktopFixture(t, { wallpaperMode: "image", wallpaperImage: "/custom.png" });
+  const custom = desktopFixture(t, {
+    wallpaperMode: "image", wallpaperImage: "/custom.png",
+    wallpaperBlurFollowConsole: false, wallpaperBlur: 15
+  });
   custom.failAppearance();
   await custom.refresh();
   assert.match(custom.state.wallpaperStyle.backgroundImage, /custom\.png/);
+  assert.equal(custom.state.wallpaperStyle.filter, "blur(15px)");
 });

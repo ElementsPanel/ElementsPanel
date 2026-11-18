@@ -83,7 +83,7 @@ const wallpaperStyle = computed<CSSProperties>(() => {
     const overlay = isDarkTheme.value
         ? "rgba(0,0,0,0.65)"
         : "rgba(255,255,255,0.2)";
-    const blur = settings.wallpaperMode === "image" ? 0 : backgroundImageBlur.value;
+    const blur = settings.wallpaperBlurFollowConsole ? backgroundImageBlur.value : settings.wallpaperBlur;
     return {
         backgroundImage: `linear-gradient(${overlay}, ${overlay}), url(${JSON.stringify(image)})`,
         backgroundSize: "cover",

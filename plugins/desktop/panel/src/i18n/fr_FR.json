@@ -6,6 +6,8 @@
   "TXT_CODE_DESKTOP_MODE": "Mode bureau",
   "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Supprimer du bureau",
   "TXT_CODE_DESKTOP_RESTORE": "Restaurer",
+  "TXT_CODE_DESKTOP_WALLPAPER_BLUR": "Flou de l’arrière-plan du bureau",
+  "TXT_CODE_DESKTOP_WALLPAPER_BLUR_FOLLOW_CONSOLE": "Utiliser le flou d’arrière-plan de console",
   "TXT_CODE_DESKTOP_WALLPAPER_CUSTOM": "Image personnalisée",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE": "Image de fond",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC": "Importez une image ou saisissez son URL. Laissez vide pour utiliser le fond du thème.",

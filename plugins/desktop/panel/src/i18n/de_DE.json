@@ -6,6 +6,8 @@
   "TXT_CODE_DESKTOP_MODE": "Desktop-Modus",
   "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Vom Desktop entfernen",
   "TXT_CODE_DESKTOP_RESTORE": "Wiederherstellen",
+  "TXT_CODE_DESKTOP_WALLPAPER_BLUR": "Unschärfe des Desktop-Hintergrunds",
+  "TXT_CODE_DESKTOP_WALLPAPER_BLUR_FOLLOW_CONSOLE": "Hintergrundunschärfe von console übernehmen",
   "TXT_CODE_DESKTOP_WALLPAPER_CUSTOM": "Eigenes Bild",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE": "Hintergrundbild",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC": "Laden Sie ein Bild hoch oder geben Sie seine URL ein. Leer lassen, um den Design-Hintergrund zu verwenden.",

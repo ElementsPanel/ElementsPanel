@@ -6,6 +6,8 @@
   "TXT_CODE_DESKTOP_MODE": "Desktop Mode",
   "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Remove from Desktop",
   "TXT_CODE_DESKTOP_RESTORE": "Restore",
+  "TXT_CODE_DESKTOP_WALLPAPER_BLUR": "Desktop background blur",
+  "TXT_CODE_DESKTOP_WALLPAPER_BLUR_FOLLOW_CONSOLE": "Follow console background blur",
   "TXT_CODE_DESKTOP_WALLPAPER_CUSTOM": "Custom image",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE": "Wallpaper image",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC": "Upload an image or enter its URL. Leave empty to use the theme background.",

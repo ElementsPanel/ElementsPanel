@@ -6,6 +6,8 @@
   "TXT_CODE_DESKTOP_MODE": "โหมดเดสก์ท็อป",
   "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "ลบออกจากเดสก์ท็อป",
   "TXT_CODE_DESKTOP_RESTORE": "กู้คืน",
+  "TXT_CODE_DESKTOP_WALLPAPER_BLUR": "ระดับความเบลอของพื้นหลังเดสก์ท็อป",
+  "TXT_CODE_DESKTOP_WALLPAPER_BLUR_FOLLOW_CONSOLE": "ใช้ระดับความเบลอของพื้นหลังตาม console",
   "TXT_CODE_DESKTOP_WALLPAPER_CUSTOM": "รูปภาพที่กำหนดเอง",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE": "รูปภาพวอลเปเปอร์",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC": "อัปโหลดรูปภาพหรือป้อน URL ของรูปภาพ เว้นว่างไว้เพื่อใช้พื้นหลังของธีม",

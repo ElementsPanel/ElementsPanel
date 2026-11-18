@@ -6,6 +6,8 @@
   "TXT_CODE_DESKTOP_MODE": "Masaüstü modu",
   "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Masaüstünden kaldır",
   "TXT_CODE_DESKTOP_RESTORE": "Geri yükle",
+  "TXT_CODE_DESKTOP_WALLPAPER_BLUR": "Masaüstü arka plan bulanıklığı",
+  "TXT_CODE_DESKTOP_WALLPAPER_BLUR_FOLLOW_CONSOLE": "console arka plan bulanıklığını kullan",
   "TXT_CODE_DESKTOP_WALLPAPER_CUSTOM": "Özel görüntü",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE": "Duvar kâğıdı görüntüsü",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC": "Bir görüntü yükleyin veya URL'sini girin. Tema arka planını kullanmak için boş bırakın.",

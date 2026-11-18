@@ -6,6 +6,8 @@
   "TXT_CODE_DESKTOP_MODE": "데스크톱 모드",
   "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "바탕 화면에서 제거",
   "TXT_CODE_DESKTOP_RESTORE": "복원",
+  "TXT_CODE_DESKTOP_WALLPAPER_BLUR": "데스크톱 배경 흐림 정도",
+  "TXT_CODE_DESKTOP_WALLPAPER_BLUR_FOLLOW_CONSOLE": "console 배경 흐림 설정 따르기",
   "TXT_CODE_DESKTOP_WALLPAPER_CUSTOM": "사용자 지정 이미지",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE": "배경 이미지",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC": "이미지를 업로드하거나 이미지 URL을 입력하세요. 비워 두면 테마 배경을 사용합니다.",

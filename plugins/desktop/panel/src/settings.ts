@@ -1,6 +1,8 @@
 export class DesktopSettings {
   wallpaperMode: "website" | "image" = "website";
   wallpaperImage = "";
+  wallpaperBlurFollowConsole = true;
+  wallpaperBlur = 5;
 }
 
 export function normalizeDesktopSettings(value: unknown): DesktopSettings {
@@ -11,5 +13,14 @@ export function normalizeDesktopSettings(value: unknown): DesktopSettings {
     settings.wallpaperMode = values.wallpaperMode;
   if (typeof values.wallpaperImage === "string" && values.wallpaperImage.length <= 8192)
     settings.wallpaperImage = values.wallpaperImage;
+  if (typeof values.wallpaperBlurFollowConsole === "boolean")
+    settings.wallpaperBlurFollowConsole = values.wallpaperBlurFollowConsole;
+  if (
+    typeof values.wallpaperBlur === "number" &&
+    Number.isFinite(values.wallpaperBlur) &&
+    values.wallpaperBlur >= 0 &&
+    values.wallpaperBlur <= 50
+  )
+    settings.wallpaperBlur = values.wallpaperBlur;
   return settings;
 }

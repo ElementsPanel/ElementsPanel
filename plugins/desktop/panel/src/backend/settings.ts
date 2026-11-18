@@ -28,6 +28,21 @@ export async function registerDesktopSettings(ctx: PanelPluginContext) {
           description: $t("TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC"),
           fileUpload: true,
           visibleWhen: "wallpaperMode=image"
+        },
+        {
+          key: "wallpaperBlurFollowConsole",
+          type: "boolean",
+          title: $t("TXT_CODE_DESKTOP_WALLPAPER_BLUR_FOLLOW_CONSOLE")
+        },
+        {
+          key: "wallpaperBlur",
+          type: "number",
+          control: "slider",
+          title: $t("TXT_CODE_DESKTOP_WALLPAPER_BLUR"),
+          min: 0,
+          max: 50,
+          unit: "px",
+          visibleWhen: "wallpaperBlurFollowConsole=false"
         }
       ],
       read: () => ({ ...settings }),
