@@ -407,6 +407,7 @@ function fileManagerDialogFixture(t) {
     archivePreview: vue.ref({ show: false, title: "archive.zip", entries: [], loading: false }),
     deleteDialog: vue.ref({ show: false, loading: false, resolve: undefined }),
     getFileList: async () => {},
+    getFileStatus: async () => {},
     handleTableChange() {},
     downloadFromUrl: async (config) => { events.downloads.push(config); },
     selectedFiles: async (files, _path, overwriteHandler) => {

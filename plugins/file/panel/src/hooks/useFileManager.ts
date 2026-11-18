@@ -71,6 +71,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
   let fileListRequest = 0;
   let disposed = false;
   const fileStatus = ref<FileStatus>();
+  const currentDisk = ref("");
   const selectedRowKeys = ref<Key[]>([]);
   const selectionData = ref<DataType[]>();
   const isMultiple = computed(() => selectionData.value && selectionData.value.length > 1);
@@ -204,7 +205,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
         pushedTime: Date.now()
       });
       activeTab.value = key;
-      currentDisk.value = t("TXT_CODE_COMMON_PROGRAM_ROOT");
+      currentDisk.value = "";
       handleChangeTab(key);
     } else {
       handleRemoveTab(targetKey as string);
@@ -216,17 +217,17 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     breadcrumbs.length = 0;
 
     if (breadcrumbPaths[0] !== "/") {
-      currentDisk.value = breadcrumbPaths[0];
+      currentDisk.value = breadcrumbPaths[0].toUpperCase();
       breadcrumbPaths[0] = "/";
-      breadcrumbPaths.forEach((p) => {
+      breadcrumbPaths.forEach((p, index) => {
         breadcrumbs.push({
           path: `${currentDisk.value}:${p}`,
-          name: getLastNameFromPath(p),
+          name: index === 0 ? `${currentDisk.value}:` : getLastNameFromPath(p),
           disabled: false
         });
       });
     } else {
-      currentDisk.value = t("TXT_CODE_COMMON_PROGRAM_ROOT");
+      currentDisk.value = "";
       breadcrumbPaths.forEach((p) => {
         breadcrumbs.push({
           path: p,
@@ -429,6 +430,16 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
       if (request !== fileListRequest) return false;
       dataSource.value = res.value?.items || [];
       operationForm.value.total = res.value?.total || 0;
+      const absolutePath = res.value?.absolutePath;
+      const driveMatch = absolutePath?.match(/^([a-zA-Z]):[\\/]/);
+      if (absolutePath && driveMatch) {
+        currentDisk.value = driveMatch[1].toUpperCase();
+        if (fileStatus.value?.platform === "win32" && fileStatus.value.isGlobalInstance) {
+          updateBreadcrumbs(absolutePath);
+          thisTab.path = currentPath.value;
+          thisTab.name = breadcrumbs[breadcrumbs.length - 1].name;
+        }
+      }
       return true;
     } catch (error: any) {
       if (request !== fileListRequest) return false;
@@ -1019,21 +1030,16 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     permission.deep = false;
   };
 
-  const currentDisk = ref(t("TXT_CODE_COMMON_PROGRAM_ROOT"));
-
   const toDisk = async (disk: string) => {
-    const diskName = disk === "/" ? disk : disk + ":\\";
-    breadcrumbs.splice(0, breadcrumbs.length);
-    breadcrumbs.push({
-      path: diskName,
-      name: "/",
-      disabled: false
-    });
+    if (!fileStatus.value?.disks.includes(disk)) return;
+    const diskName = `${disk}:/`;
+    updateBreadcrumbs(diskName);
     operationForm.value.name = "";
     operationForm.value.current = 1;
     const thisTab = currentTabs.value.find((e) => e.key === activeTab.value);
     if (thisTab) {
-      thisTab.name = thisTab.path = diskName;
+      thisTab.name = `${disk}:`;
+      thisTab.path = diskName;
     }
     await getFileList();
   };

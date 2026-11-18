@@ -182,7 +182,7 @@ export default class FileManager {
       page,
       pageSize,
       total,
-      absolutePath: this.toAbsolutePath()
+      absolutePath: path.resolve(this.toAbsolutePath())
     };
   }
 

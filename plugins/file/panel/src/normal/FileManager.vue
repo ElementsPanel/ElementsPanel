@@ -95,9 +95,9 @@ const {
 
 const isShowDiskList = computed(
   () =>
-    fileStatus.value?.disks.length &&
     fileStatus.value?.platform === "win32" &&
-    fileStatus.value?.isGlobalInstance
+    fileStatus.value.isGlobalInstance &&
+    fileStatus.value.disks.includes(currentDisk.value)
 );
 
 const tableHeaders = computed(() => {
@@ -446,7 +446,7 @@ onUnmounted(() => {
 
           <template v-if="currentTabs.length">
           <div class="path-row">
-            <VSelect v-if="isShowDiskList" v-model="currentDisk" :items="['/', ...(fileStatus?.disks || [])]" class="disk-select" hide-details @update:model-value="toDisk">
+            <VSelect v-if="isShowDiskList" v-model="currentDisk" :items="(fileStatus?.disks || []).map((disk: string) => ({ title: `${disk}:`, value: disk }))" class="disk-select" density="compact" hide-details @update:model-value="toDisk">
               <template #no-data><Empty :icon="false" compact /></template>
             </VSelect>
             <div class="file-breadcrumbs">
@@ -621,6 +621,7 @@ onUnmounted(() => {
 }
 
 .path-row {
+  --file-manager-path-height: 32px;
   align-items: stretch;
   gap: 10px;
   margin-bottom: 16px;
@@ -628,6 +629,12 @@ onUnmounted(() => {
 
 .disk-select {
   flex: 0 0 125px;
+}
+
+.disk-select :deep(.v-field) {
+  --v-input-control-height: var(--file-manager-path-height);
+  --v-field-input-padding-top: 0px;
+  --v-field-input-padding-bottom: 0px;
 }
 
 .selected-count {
@@ -664,6 +671,7 @@ onUnmounted(() => {
   display: flex;
   flex: 1;
   min-width: 0;
+  min-height: var(--file-manager-path-height);
   align-items: center;
   overflow-x: auto;
   padding: 2px 8px;
@@ -717,6 +725,11 @@ onUnmounted(() => {
   .permission-grid {
     grid-template-columns: 1fr;
     flex-direction: column;
+  }
+
+  .path-row {
+    display: grid;
+    grid-auto-rows: 1fr;
   }
 
   .disk-select {

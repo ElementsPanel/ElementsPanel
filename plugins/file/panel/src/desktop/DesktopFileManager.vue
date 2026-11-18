@@ -79,9 +79,9 @@ const {
 
 const isShowDiskList = computed(
     () =>
-        fileStatus.value?.disks.length &&
         fileStatus.value?.platform === "win32" &&
-        fileStatus.value?.isGlobalInstance
+        fileStatus.value.isGlobalInstance &&
+        fileStatus.value.disks.includes(currentDisk.value)
 );
 
 const desktopFileHeaders = computed(() => {
@@ -725,6 +725,8 @@ onMounted(async () => {
     window.addEventListener('blur', handleWindowBlur);
 
     dialog.value.loading = true;
+    await getFileStatus();
+    if (disposed) return;
 
     if (currentTabs.value.length) {
         const thisTab = currentTabs.value[0];
@@ -793,7 +795,7 @@ onUnmounted(() => {
             <FileManagerTabs :active-tab="activeTab" :tabs="currentTabs" @select="handleChangeTab" @close="onEditTabs($event, 'remove')" @add="onEditTabs('', 'add')" />
             <template v-if="currentTabs.length">
             <div class="dfm-nav">
-                <VSelect v-if="isShowDiskList" v-model="currentDisk" :items="[{ title: t('TXT_CODE_COMMON_PROGRAM_ROOT'), value: '/' }, ...(fileStatus?.disks || []).map((disk: string) => ({ title: disk, value: disk }))]" width="125" variant="solo" density="compact" hide-details @update:model-value="toDisk">
+                <VSelect v-if="isShowDiskList" v-model="currentDisk" :items="(fileStatus?.disks || []).map((disk: string) => ({ title: `${disk}:`, value: disk }))" class="dfm-disk-select" width="125" variant="solo" density="compact" hide-details @update:model-value="toDisk">
                   <template #no-data><Empty :icon="false" compact /></template>
                 </VSelect>
                 <div class="dfm-breadcrumbs"><VBtn v-for="(item, index) in breadcrumbs" :key="item.path" variant="text" size="small" @click="handleChangeDir(item.path)">{{ item.name }}<span v-if="index < breadcrumbs.length - 1" class="dfm-breadcrumb-separator">&gt;</span></VBtn></div>
@@ -984,11 +986,18 @@ onUnmounted(() => {
 }
 
 .dfm-nav {
+    --file-manager-path-height: 32px;
     display: flex;
-    align-items: center;
+    align-items: stretch;
     flex-shrink: 0;
     gap: 8px;
     margin-bottom: 8px;
+}
+
+.dfm-disk-select :deep(.v-field) {
+    --v-input-control-height: var(--file-manager-path-height);
+    --v-field-input-padding-top: 0px;
+    --v-field-input-padding-bottom: 0px;
 }
 
 .dfm-breadcrumbs {
@@ -996,6 +1005,7 @@ onUnmounted(() => {
     border-radius: 6px;
     flex: 1;
     min-width: 0;
+    min-height: var(--file-manager-path-height);
 
     &__item {
         padding: 6px 8px;
@@ -1162,7 +1172,7 @@ onUnmounted(() => {
 .dfm-vuetify { min-width: 0; }
 .dfm-vuetify .dfm-toolbar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; }
 .dfm-vuetify .dfm-toolbar > .v-input { max-width: 260px; }
-.dfm-nav { display: flex; align-items: center; gap: 8px; padding: 8px 12px; }
+.dfm-nav { display: flex; align-items: stretch; gap: 8px; padding: 8px 12px; }
 .dfm-breadcrumbs { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; }
 .dfm-breadcrumb-separator { margin-left: 8px; opacity: 0.5; }
 .dfm-menu-list { display: flex; flex-direction: column; gap: 2px; padding: 8px !important; }
