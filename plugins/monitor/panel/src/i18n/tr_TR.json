@@ -1,6 +1,7 @@
 {
   "TXT_CODE_COMMON_UNIX_LOAD_AVERAGE": "Linux Yükü",
   "TXT_CODE_COMMON_NODE_JS_VERSION": "Node.js Sürümü",
+  "TXT_CODE_COMMON_BUN_VERSION": "Bun Sürümü",
   "TXT_CODE_COMMON_BROWSER_TIME": "Tarayıcı Zamanı",
   "TXT_CODE_COMMON_ONLINE_TOTAL": "Çevrimiçi / Toplam",
   "TXT_CODE_COMMON_HOSTNAME": "Hostname",

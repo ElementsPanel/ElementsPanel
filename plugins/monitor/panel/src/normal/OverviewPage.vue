@@ -83,7 +83,11 @@ const overviewItems = computed(() => {
   const freeMemory = Number((current.system.freemem / 1024 ** 3).toFixed(1));
   const usedMemory = Number(Math.max(0, totalMemory - freeMemory).toFixed(1));
   const items = [
-    { title: t("TXT_CODE_COMMON_NODE_JS_VERSION"), value: current.system.node, icon: "mdi-code-tags" },
+    {
+      title: t(current.system.bun ? "TXT_CODE_COMMON_BUN_VERSION" : "TXT_CODE_COMMON_NODE_JS_VERSION"),
+      value: current.system.bun ?? current.system.node,
+      icon: "mdi-code-tags"
+    },
     { title: t("TXT_CODE_COMMON_PANEL_VERSION"), value: current.version, icon: "mdi-view-grid-outline" },
     { title: t("TXT_CODE_COMMON_MATCHED_DAEMON_VERSION"), value: current.specifiedDaemonVersion, icon: "mdi-api" },
     { title: t("TXT_CODE_COMMON_USER_TO_RUN_THE_PROCESS_WITH"), value: current.system.user.username, icon: "mdi-account-outline" },

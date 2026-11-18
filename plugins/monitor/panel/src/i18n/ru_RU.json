@@ -1,6 +1,7 @@
 {
   "TXT_CODE_COMMON_UNIX_LOAD_AVERAGE": "Средняя загрузка Unix",
   "TXT_CODE_COMMON_NODE_JS_VERSION": "Версия Node.js",
+  "TXT_CODE_COMMON_BUN_VERSION": "Версия Bun",
   "TXT_CODE_COMMON_BROWSER_TIME": "Время браузера",
   "TXT_CODE_COMMON_ONLINE_TOTAL": "В сети / Всего",
   "TXT_CODE_COMMON_HOSTNAME": "Имя хоста",

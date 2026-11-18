@@ -1,6 +1,7 @@
 {
   "TXT_CODE_COMMON_UNIX_LOAD_AVERAGE": "ค่าเฉลี่ยการทำงานของระบบ Unix",
   "TXT_CODE_COMMON_NODE_JS_VERSION": "เวอร์ชัน Node.js",
+  "TXT_CODE_COMMON_BUN_VERSION": "เวอร์ชัน Bun",
   "TXT_CODE_COMMON_BROWSER_TIME": "เวลาในเบราว์เซอร์",
   "TXT_CODE_COMMON_ONLINE_TOTAL": "ออนไลน์ / ทั้งหมด",
   "TXT_CODE_COMMON_HOSTNAME": "ชื่อโฮสต์",

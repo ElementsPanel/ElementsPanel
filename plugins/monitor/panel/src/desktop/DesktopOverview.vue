@@ -165,8 +165,10 @@ const memColor = computed(() => {
                 </div>
                 <div class="ov-panel__body">
                     <div class="ov-info-row">
-                        <span class="ov-info-row__label">{{ t("TXT_CODE_COMMON_NODE_JS_VERSION") }}</span>
-                        <span class="ov-info-row__value">{{ systemInfo?.node }}</span>
+                        <span class="ov-info-row__label">
+                            {{ t(systemInfo?.bun ? "TXT_CODE_COMMON_BUN_VERSION" : "TXT_CODE_COMMON_NODE_JS_VERSION") }}
+                        </span>
+                        <span class="ov-info-row__value">{{ systemInfo?.bun ?? systemInfo?.node }}</span>
                     </div>
                     <div class="ov-info-row">
                         <span class="ov-info-row__label">{{ t("TXT_CODE_COMMON_PANEL_VERSION") }}</span>

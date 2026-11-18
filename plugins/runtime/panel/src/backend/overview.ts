@@ -137,6 +137,7 @@ export function registerOverview(ctx: PanelPluginContext) {
         type: selfInfo.type,
         version: os.version(),
         node: process.version,
+        bun: process.versions.bun,
         hostname: selfInfo.hostname,
         loadavg: selfInfo.loadavg,
         platform: selfInfo.platform,
