@@ -75,7 +75,7 @@ const selectedNodeLabel = computed(
         </VTabs>
       </template>
     </PageToolbar>
-    <ConfigPage ref="configPage" hide-scope-switch hide-node-select />
+    <ConfigPage ref="configPage" data-app-surface="transparent" hide-scope-switch hide-node-select />
   </VContainer>
 </template>
 

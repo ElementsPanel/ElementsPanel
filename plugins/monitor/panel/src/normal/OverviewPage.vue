@@ -373,7 +373,6 @@ onMounted(fetchData);
   border: none !important;
   outline: none;
   border-radius: 24px;
-  background: var(--background-color-white);
   box-shadow: none;
 }
 

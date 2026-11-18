@@ -13,6 +13,7 @@ const props = defineProps({
 
 <template>
   <div
+    data-app-surface="card"
     :class="{
       'card-panel': true,
       'global-card-container-shadow': true,
@@ -45,7 +46,6 @@ const props = defineProps({
 
 .card-panel {
   border: none;
-  background-color: var(--background-color-white);
   display: flex;
   flex-direction: column;
   position: relative;

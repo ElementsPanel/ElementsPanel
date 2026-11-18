@@ -1165,7 +1165,7 @@ const confirmAction = async () => {
 </script>
 
 <template>
-  <div class="plugin-config-page" @keydown.esc="sidebarOpen = false">
+  <div class="plugin-config-page" data-app-surface="card" @keydown.esc="sidebarOpen = false">
     <VProgressLinear v-if="loading" class="plugin-config-loading" color="primary" indeterminate />
 
     <Teleport to="body" :disabled="!isPhone">
@@ -1174,7 +1174,7 @@ const confirmAction = async () => {
         v-bind="navigationProps"
         @keydown.esc="sidebarOpen = false"
       >
-        <div class="plugin-config-sidebar">
+        <div class="plugin-config-sidebar" :data-app-surface="isPhone ? 'card' : 'transparent'">
           <div v-if="isPhone" class="plugin-config-sidebar-title">
             <span>{{ t("TXT_CODE_PLUGIN_CONFIG") }}</span>
             <VBtn
@@ -1221,7 +1221,7 @@ const confirmAction = async () => {
               @click="openCreateGroup"
             />
           </div>
-          <VList class="plugin-config-list" density="compact">
+          <VList class="plugin-config-list" data-app-surface="transparent" density="compact">
             <div
               v-for="group in pluginGroups"
               :key="group.id"
@@ -1698,7 +1698,6 @@ const confirmAction = async () => {
   min-height: 0;
   overflow: hidden;
   border-radius: 24px;
-  background: var(--background-color-white);
   color: var(--text-color);
 }
 
@@ -1739,7 +1738,6 @@ const confirmAction = async () => {
   min-height: 0;
   padding: 24px 16px;
   overflow: hidden;
-  background: var(--background-color-white);
 }
 
 .plugin-config-sidebar-title {
@@ -1832,7 +1830,6 @@ const confirmAction = async () => {
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: auto;
-  background: transparent;
   padding: 0 10px 4px;
 }
 

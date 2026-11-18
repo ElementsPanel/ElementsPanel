@@ -7,8 +7,8 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div class="inner-card-wrapper">
-    <div class="inner-card-container">
+  <div class="inner-card-wrapper" data-app-surface="control">
+    <div>
       <strong>
         <slot name="title"></slot>
       </strong>

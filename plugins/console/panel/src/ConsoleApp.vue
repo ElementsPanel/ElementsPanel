@@ -17,7 +17,6 @@ import InputDialogProvider from "./components/InputDialogProvider.vue";
 import { setVuetifyTheme } from "./vuetify";
 
 const {
-  hasBgImage,
   initAppTheme,
   isDarkTheme,
   isSidebarOpen,
@@ -53,7 +52,7 @@ onMounted(async () => {
 
 <template>
   <VThemeProvider :theme="vuetifyTheme">
-    <AppConfigProvider :has-bg-image="hasBgImage">
+    <AppConfigProvider>
       <VLayout class="global-app-container">
         <AppHeader v-if="!isLoginPage && !isImmersivePage" />
         <div

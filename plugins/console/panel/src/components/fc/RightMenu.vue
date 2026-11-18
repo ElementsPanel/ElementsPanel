@@ -52,7 +52,7 @@ defineExpose({
 });
 </script>
 <template>
-  <div ref="rightMenu" class="right-menu" :style="menuStyle">
+  <div ref="rightMenu" class="right-menu" data-app-surface="card" :style="menuStyle">
     <VList density="compact" min-width="160" class="right-menu-list" nav>
       <template v-for="(item, index) in props.options" :key="item.key || index">
         <VListItem
@@ -77,8 +77,6 @@ defineExpose({
   border-radius: 10px;
   overflow: hidden;
   visibility: hidden;
-
-  background: var(--background-color-white, rgb(var(--v-theme-surface)));
 }
 
 .right-menu-list {

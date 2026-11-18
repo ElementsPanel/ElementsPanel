@@ -62,7 +62,7 @@ export const useAppConfigStore = createGlobalState(() => {
     if (!body) return;
     body.style.removeProperty("--app-background-image");
     body.style.removeProperty("--app-background-blur");
-    body.classList.remove("app-light-extend-theme", "app-dark-extend-theme");
+    body.classList.remove("app-background-image");
     hasBgImage.value = false;
   };
 
@@ -75,15 +75,12 @@ export const useAppConfigStore = createGlobalState(() => {
     if (body) {
       const blurRadius = Number.isFinite(blur) ? Math.min(50, Math.max(0, blur)) : 5;
       body.style.setProperty("--app-background-blur", `${blurRadius}px`);
-      if (isDarkTheme.value) {
-        body.style.setProperty("--app-background-image", `linear-gradient(135deg, rgba(0,0,0,0.65), rgba(0,0,0,0.65) 100%), url(${JSON.stringify(url)})`);
-        body.classList.remove("app-light-extend-theme");
-        body.classList.add("app-dark-extend-theme");
-      } else {
-        body.style.setProperty("--app-background-image", `linear-gradient(135deg, rgba(255,255,255,0.65), rgba(255,255,255,0.65) 100%), url(${JSON.stringify(url)})`);
-        body.classList.remove("app-dark-extend-theme");
-        body.classList.add("app-light-extend-theme");
-      }
+      const overlay = isDarkTheme.value ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.65)";
+      body.style.setProperty(
+        "--app-background-image",
+        `linear-gradient(135deg, ${overlay}, ${overlay} 100%), url(${JSON.stringify(url)})`
+      );
+      body.classList.add("app-background-image");
 
       hasBgImage.value = true;
     }

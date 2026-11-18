@@ -41,7 +41,7 @@ defineExpose({
 
 <template>
   <div v-if="!isPhone" class="menu-body">
-    <div class="left-menu">
+    <div class="left-menu" data-app-surface="control">
       <div v-for="item in props.menus" :key="item.key" class="mb-6" @click="handleChangeMenu(item)">
         <LeftMenuBtn
           :title="item.title"

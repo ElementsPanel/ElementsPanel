@@ -146,7 +146,7 @@ const handleCreated = (instanceUuid: string) => {
 <template>
   <main class="create-instance-page" :class="{ 'create-instance-page--embedded': embedded }">
     <VContainer class="pa-0" fluid>
-      <VCard class="create-instance-card" elevation="0" rounded="xl">
+      <VCard class="create-instance-card" data-app-surface="transparent" elevation="0" rounded="xl">
         <VCardText class="pa-0">
           <VStepper v-model="step" class="create-instance-stepper" flat>
             <VStepperHeader>
@@ -215,6 +215,7 @@ const handleCreated = (instanceUuid: string) => {
                     >
                       <VCard
                         class="method-card"
+                        data-app-surface="none"
                         variant="flat"
                         elevation="0"
                         rounded="xl"
@@ -266,6 +267,7 @@ const handleCreated = (instanceUuid: string) => {
                     <VCol v-for="node in availableNodes" :key="node.uuid" cols="12" md="6">
                       <VCard
                         class="node-card"
+                        data-app-surface="none"
                         :class="{ 'node-card--selected': daemonId === node.uuid }"
                         variant="flat"
                         elevation="0"

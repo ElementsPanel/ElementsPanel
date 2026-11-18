@@ -320,7 +320,7 @@ onMounted(async () => {
           </VMenu>
         </template>
       </PageToolbar>
-      <VCard rounded="xl" flat class="user-table-card">
+      <VCard rounded="xl" flat>
         <VDataTableServer
           v-model="selectedUsers"
           :headers="headers"
@@ -463,9 +463,6 @@ onMounted(async () => {
 }
 .role-select {
   flex: 0 0 120px;
-}
-.user-table-card {
-  overflow: hidden;
 }
 .user-table {
   width: 100%;

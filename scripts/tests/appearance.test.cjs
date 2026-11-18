@@ -187,6 +187,8 @@ test("older appearance responses without theme fields still work in both modes",
   await store.initAppTheme();
   assert.equal(store.logoImage.value, "/legacy.png");
   assert.equal(store.hasBgImage.value, true);
+  assert.equal(document.body.classList.contains("app-background-image"), true);
+  assert.equal(document.body.classList.contains("app-dark-theme"), true);
   assert.equal(document.body.style.getPropertyValue("--app-background-blur"), "5px");
   assert.match(document.body.style.getPropertyValue("--app-background-image"), /legacy\.png/);
   assert.equal(document.body.style.backgroundImage, "");
@@ -199,6 +201,8 @@ test("older appearance responses without theme fields still work in both modes",
   appearance.backgroundImage = "";
   await store.initAppTheme();
   assert.equal(store.hasBgImage.value, false);
+  assert.equal(document.body.classList.contains("app-background-image"), false);
+  assert.equal(document.body.classList.contains("app-dark-theme"), true);
   assert.equal(document.body.style.getPropertyValue("--app-background-blur"), "");
   assert.equal(document.body.style.getPropertyValue("--app-background-image"), "");
 });

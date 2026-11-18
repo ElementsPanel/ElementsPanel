@@ -91,7 +91,7 @@ onMounted(refreshTableData);
         <VBtn color="primary" prepend-icon="mdi-plus" @click="assignApp">{{ t("TXT_CODE_COMMON_ASSIGN") }}</VBtn>
       </template>
     </PageToolbar>
-    <VCard rounded="xl" flat class="user-access-card">
+    <VCard rounded="xl" flat>
       <VDataTable :headers="headers" :items="dataSource" item-value="instanceUuid" :items-per-page="-1">
         <template #no-data><Empty icon="mdi-view-grid-outline" compact /></template>
         <template #item.remarks="{ item }">{{ item.hostIp }}<template v-if="item.remarks"> ({{ item.remarks }})</template></template>
@@ -111,6 +111,5 @@ onMounted(refreshTableData);
 
 <style scoped lang="scss">
 .user-access-page { width: 100%; max-width: var(--app-max-width); margin: 0 auto; padding: 20px 24px 32px; box-sizing: border-box; }
-.user-access-card { overflow: hidden; }
 @media (max-width: 992px) { .user-access-page { padding: 16px 12px 28px; } }
 </style>

@@ -449,7 +449,7 @@ onUnmounted(() => {
             <VSelect v-if="isShowDiskList" v-model="currentDisk" :items="(fileStatus?.disks || []).map((disk: string) => ({ title: `${disk}:`, value: disk }))" class="disk-select" density="compact" hide-details @update:model-value="toDisk">
               <template #no-data><Empty :icon="false" compact /></template>
             </VSelect>
-            <div class="file-breadcrumbs">
+            <div class="file-breadcrumbs" data-app-surface="control">
               <template v-for="(item, index) in breadcrumbs" :key="item.path">
                 <VBtn variant="text" size="small" class="file-breadcrumbs-item" @click="handleChangeDir(item.path)">{{ item.name }}</VBtn>
                 <span v-if="index < breadcrumbs.length - 1" class="breadcrumb-separator">&gt;</span>
@@ -574,11 +574,6 @@ onUnmounted(() => {
   overflow: hidden;
   opacity: 0;
   pointer-events: none;
-}
-
-.file-manager-card {
-  overflow: hidden;
-  background: var(--background-color-white);
 }
 
 .file-manager-card > :deep(.v-card-text) {

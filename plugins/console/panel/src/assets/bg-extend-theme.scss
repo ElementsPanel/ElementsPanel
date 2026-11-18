@@ -1,6 +1,14 @@
 @use "./text-shadows";
 
-@mixin background-image-surface {
+[data-app-surface="card"] {
+  background-color: var(--background-color-white);
+}
+
+[data-app-surface="transparent"] {
+  background-color: transparent;
+}
+
+@mixin background-image-surface($color) {
   &:not(:where(
     .desktop-window,
     .desktop-window *,
@@ -9,13 +17,28 @@
     .desktop-login-window,
     .desktop-login-window *,
     .desktop-mode-active .v-overlay,
-    .desktop-mode-active .v-overlay *
+    .desktop-mode-active .v-overlay *,
+    .v-menu,
+    .v-menu *,
+    .v-dialog,
+    .v-dialog *,
+    .v-bottom-sheet,
+    .v-bottom-sheet *,
+    .v-bottom-sheet__content,
+    .v-bottom-sheet__content *,
+    .v-select__content,
+    .v-select__content *,
+    .v-autocomplete__content,
+    .v-autocomplete__content *,
+    .v-combobox__content,
+    .v-combobox__content *
   )) {
-    @content;
+    --app-surface-color: #{$color};
+    background-color: var(--app-surface-color) !important;
   }
 }
 
-body:is(.app-light-extend-theme, .app-dark-extend-theme) {
+body.app-background-image {
   isolation: isolate;
 
   &::before {
@@ -32,48 +55,40 @@ body:is(.app-light-extend-theme, .app-dark-extend-theme) {
   }
 }
 
-%bg-extend-css {
-  .left-menu,
-  .action-btn-item,
-  .inner-card-wrapper,
-  .file-breadcrumbs,
-  .v-field {
-    @include background-image-surface {
-      background-color: var(--level-2-bg-color) !important;
-    }
+// Custom surfaces use native roles; "none" preserves their own colors.
+.app-background-image {
+  .v-field,
+  [data-app-surface="control"] {
+    @include background-image-surface(var(--app-background-control));
   }
 
-  .card-panel,
-  .v-card:has(.v-table, .v-list),
-  .plugin-market-card,
+  .v-card:where(.v-card--variant-elevated, .v-card--variant-flat):not(:where([data-app-surface], [class*="bg-"])),
   .v-table,
-  .v-list:not(.sidebar-menu, .plugin-config-list),
-  .v-menu > .v-overlay__content:has(> .v-list),
-  .v-select__content,
-  .v-autocomplete__content,
-  .v-combobox__content {
-    @include background-image-surface {
-      background-color: var(--level-1-bg-color) !important;
-    }
+  .v-list:not(:where([data-app-surface])),
+  [data-app-surface="card"] {
+    @include background-image-surface(var(--app-background-card));
   }
 
-  // Paint nested lists once so their surfaces keep the same transparency as cards.
+  // Nested lists share their container's surface instead of painting it twice.
   :is(
-    .card-panel,
     .v-card,
     .v-list,
-    .v-menu,
-    .v-select__content,
-    .v-autocomplete__content,
-    .v-combobox__content
-  ) :is(.v-table, .v-list) {
-    @include background-image-surface {
-      background-color: transparent !important;
-    }
+    [data-app-surface="card"]
+  ) :is(.v-table, .v-list),
+  [data-app-surface="transparent"] {
+    @include background-image-surface(transparent);
+  }
+
+  [data-app-surface="terminal"] {
+    @include background-image-surface(var(--app-background-terminal));
   }
 }
 
-%extend-light-css {
+.app-light-theme.app-background-image {
+  --app-background-card: #ffffffae;
+  --app-background-control: #ffffff84;
+  --app-background-terminal: #000000cc;
+
   .breadcrumbs {
     @include text-shadows.white;
   }
@@ -85,23 +100,13 @@ body:is(.app-light-extend-theme, .app-dark-extend-theme) {
       color: #ffe1e0 !important;
     }
   }
-
-  .terminal-wrapper {
-    @include background-image-surface {
-      background-color: rgba(0, 0, 0, 0.8) !important;
-    }
-  }
-
-  .app-header-content-for-phone {
-    .card-panel {
-      @include background-image-surface {
-        background-color: #000000b4 !important;
-      }
-    }
-  }
 }
 
-%extend-dark-css {
+.app-dark-theme.app-background-image {
+  --app-background-card: #000000a9;
+  --app-background-control: #1919196b;
+  --app-background-terminal: var(--app-background-card);
+
   .breadcrumbs {
     @include text-shadows.black;
   }
@@ -109,45 +114,16 @@ body:is(.app-light-extend-theme, .app-dark-extend-theme) {
   .v-btn.text-error {
     color: #ffa4a4;
   }
-
-  .terminal-wrapper {
-    @include background-image-surface {
-      background-color: var(--level-1-bg-color) !important;
-    }
-  }
-}
-
-.app-light-extend-theme {
-  --level-0-bg-color: #ffffffd0;
-  --level-1-bg-color: #ffffffae;
-  --level-2-bg-color: #ffffff84;
-  --background-color-white: var(--level-1-bg-color);
-
-  @extend %bg-extend-css;
-  @extend %extend-light-css;
-}
-
-.app-dark-extend-theme {
-  --level-0-bg-color: #000000b4;
-  --level-1-bg-color: #000000a9;
-  --level-2-bg-color: #1919196b;
-  --background-color-white: var(--level-1-bg-color);
-  @extend %bg-extend-css;
-  @extend %extend-dark-css;
 }
 
 @media (max-width: 992px) {
-  .app-dark-extend-theme {
-    --level-0-bg-color: #000000f2;
-    --level-1-bg-color: #000000dd;
-    --level-2-bg-color: #0000006b;
-    --background-color-white: var(--level-1-bg-color);
+  .app-dark-theme.app-background-image {
+    --app-background-card: #000000dd;
+    --app-background-control: #0000006b;
   }
 
-  .app-light-extend-theme {
-    --level-0-bg-color: #ffffffe8;
-    --level-1-bg-color: #ffffffc5;
-    --level-2-bg-color: #ffffff90;
-    --background-color-white: var(--level-1-bg-color);
+  .app-light-theme.app-background-image {
+    --app-background-card: #ffffffc5;
+    --app-background-control: #ffffff90;
   }
 }

@@ -357,7 +357,7 @@ onUnmounted(() => {
         </div>
       </VToolbar>
 
-      <VCard v-if="instanceId && daemonId" class="console-card" rounded="xl" flat>
+      <VCard v-if="instanceId && daemonId" rounded="xl" flat>
         <VCardText class="console-card-content"
           ><component
             :is="TerminalCore"
@@ -442,7 +442,7 @@ onUnmounted(() => {
                   md="4"
                   lg="3"
                 >
-                  <VCard class="console-function-item" rounded="xl" flat @click="item.click()">
+                  <VCard class="console-function-item" data-app-surface="none" rounded="xl" flat @click="item.click()">
                     <VCardText>
                       <VIcon :icon="item.icon" size="28" color="info" />
                       <span>{{ item.title }}</span>
@@ -666,13 +666,6 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 6px;
-}
-.console-card,
-.console-function-card,
-.console-state-card,
-.command-history-card,
-.summary-card {
-  background: var(--background-color-white);
 }
 .console-card-content {
   --console-card-padding: 12px;

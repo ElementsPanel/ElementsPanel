@@ -190,7 +190,7 @@ onMounted(async () => {
         </template>
       </PageToolbar>
 
-      <VCard class="schedule-card" rounded="xl" flat>
+      <VCard rounded="xl" flat>
         <VDataTable :headers="headers" :items="scheduleRows" :items-per-page="15" :loading="scheduleListLoading"
           :loading-text="t('TXT_CODE_COMMON_LOADING_DATA')" class="schedule-table">
           <template #no-data><Empty icon="mdi-clock-outline" /></template>
@@ -256,11 +256,6 @@ onMounted(async () => {
   max-width: var(--app-max-width);
   margin: 0 auto;
   padding: 20px 24px 32px;
-}
-
-.schedule-card {
-  overflow: hidden;
-  background: var(--background-color-white);
 }
 
 .schedule-table :deep(th),

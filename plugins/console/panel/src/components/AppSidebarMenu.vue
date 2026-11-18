@@ -135,7 +135,7 @@ const getSidebarIcon = (entry: SidebarRouteEntry): string => {
 
 <template>
   <VSheet tag="aside" class="left-sidebar" :class="{ 'left-sidebar--collapsed': collapsed }" elevation="0" rounded="0">
-    <VList class="sidebar-menu" density="comfortable" nav>
+    <VList class="sidebar-menu" data-app-surface="transparent" density="comfortable" nav>
       <VTooltip
         v-for="entry in sidebarItems"
         :key="entry.path"

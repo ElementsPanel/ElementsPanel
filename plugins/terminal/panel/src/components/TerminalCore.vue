@@ -190,7 +190,7 @@ onMounted(async () => {
         </li>
       </ul>
     </div>
-    <div class="terminal-wrapper global-card-container-shadow position-relative">
+    <div class="terminal-wrapper global-card-container-shadow position-relative" data-app-surface="terminal">
       <div class="terminal-container">
         <div
           :id="terminalDomId"
@@ -202,6 +202,7 @@ onMounted(async () => {
       <div v-show="focusHistoryList" class="history">
         <li v-for="(item, key) in history" :key="item">
           <VChip
+            data-app-surface="card"
             size="small"
             :color="key !== selectLocation ? 'info' : 'primary'"
             @click="handleClickHistoryItem(item)"
@@ -384,10 +385,6 @@ onMounted(async () => {
       position: absolute;
       top: -35px;
       left: 0;
-
-      :deep(.v-chip) {
-        background-color: var(--background-color-white) !important;
-      }
 
       li {
         list-style: none;

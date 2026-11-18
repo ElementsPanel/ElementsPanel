@@ -297,7 +297,7 @@ onMounted(() => {
                       </VIcon>
                     </span>
                   </template>
-                  <div v-if="remoteNode" class="node-compat-panel">
+                  <div v-if="remoteNode" class="node-compat-panel" data-app-surface="card">
                     <div class="node-compat-section">
                       <div class="node-compat-title">
                         {{ t("TXT_CODE_NODE_COMPAT_VERSION_TITLE") }}
@@ -425,7 +425,6 @@ onMounted(() => {
 <style lang="scss" scoped>
 
 .node-card {
-  background: var(--background-color-white);
   color: var(--text-color);
 }
 
@@ -520,7 +519,6 @@ onMounted(() => {
 .node-compat-panel {
   padding: 12px 16px;
   border-radius: 12px;
-  background: var(--background-color-white);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
   box-sizing: border-box;
   width: 420px;
