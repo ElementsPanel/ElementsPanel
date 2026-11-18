@@ -173,6 +173,17 @@ const remarkDialog = ref({
 });
 const draggedPluginId = ref("");
 const dragOverGroupId = ref("");
+const PLUGIN_DRAG_THRESHOLD = 20;
+let pluginDragPointer: {
+  pluginId: string;
+  pointerId: number;
+  x: number;
+  y: number;
+  list: HTMLElement;
+} | null = null;
+let pluginDragPosition = { x: 0, y: 0 };
+let pluginDragScrollFrame = 0;
+let suppressPluginClick = false;
 let dragPreview: HTMLElement | null = null;
 const groupDialogOpen = ref(false);
 const groupDialogMode = ref<"create" | "rename">("create");
@@ -349,21 +360,20 @@ const clearDragPreview = () => {
   dragPreview = null;
 };
 
-const startPluginDrag = (pluginId: string, event?: DragEvent) => {
+const startPluginDrag = (pluginId: string) => {
   closePluginContextMenu();
   draggedPluginId.value = pluginId;
-  if (!event?.dataTransfer) return;
-  event.dataTransfer.setData("text/plain", pluginId);
-  event.dataTransfer.effectAllowed = "move";
+  suppressPluginClick = true;
 
-  // Use a plain drag preview to avoid Chromium capturing Vuetify overlays.
   clearDragPreview();
   dragPreview = document.createElement("span");
   dragPreview.textContent = pluginId;
   Object.assign(dragPreview.style, {
     position: "fixed",
-    top: "-1000px",
-    left: "-1000px",
+    top: "0",
+    left: "0",
+    pointerEvents: "none",
+    zIndex: "21000",
     padding: "4px 10px",
     borderRadius: "14px",
     background: "rgb(var(--v-theme-surface, 255 255 255))",
@@ -373,37 +383,105 @@ const startPluginDrag = (pluginId: string, event?: DragEvent) => {
     whiteSpace: "nowrap"
   });
   document.body.appendChild(dragPreview);
-  event.dataTransfer.setDragImage(dragPreview, 12, 14);
 };
 
-const dragOverPluginGroup = (groupId: string, event: DragEvent) => {
-  if (!draggedPluginId.value) return;
+const updatePluginDragTarget = () => {
+  const group = document.elementFromPoint(pluginDragPosition.x, pluginDragPosition.y)
+    ?.closest<HTMLElement>(".plugin-config-group");
+  dragOverGroupId.value = group && pluginDragPointer?.list.contains(group)
+    ? group.dataset.pluginGroupId || ""
+    : "";
+};
+
+const scrollPluginDragList = () => {
+  pluginDragScrollFrame = 0;
+  if (!draggedPluginId.value || !pluginDragPointer) return;
+  const list = pluginDragPointer.list;
+  if (!list.contains(document.elementFromPoint(pluginDragPosition.x, pluginDragPosition.y))) return;
+  const bounds = list.getBoundingClientRect();
+  const delta = pluginDragPosition.y < bounds.top + 28 ? -8
+    : pluginDragPosition.y > bounds.bottom - 28 ? 8 : 0;
+  const previousScroll = list.scrollTop;
+  list.scrollTop += delta;
+  if (list.scrollTop !== previousScroll) {
+    updatePluginDragTarget();
+    pluginDragScrollFrame = requestAnimationFrame(scrollPluginDragList);
+  }
+};
+
+const movePluginDrag = (event: PointerEvent) => {
+  const pointer = pluginDragPointer;
+  if (!pointer || event.pointerId !== pointer.pointerId) return;
+  if (!(event.buttons & 1)) {
+    endPluginDrag();
+    return;
+  }
+  if (!draggedPluginId.value) {
+    if (Math.hypot(event.clientX - pointer.x, event.clientY - pointer.y) < PLUGIN_DRAG_THRESHOLD) return;
+    startPluginDrag(pointer.pluginId);
+  }
   event.preventDefault();
-  if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
-  dragOverGroupId.value = groupId;
-};
-
-const leavePluginGroup = (groupId: string, event: DragEvent) => {
-  const group = event.currentTarget as HTMLElement;
-  if (event.relatedTarget instanceof Node && group.contains(event.relatedTarget)) return;
-  if (dragOverGroupId.value === groupId) dragOverGroupId.value = "";
-};
-
-const dropPlugin = (groupId: string) => {
-  if (draggedPluginId.value) movePluginToGroup(draggedPluginId.value, groupId);
-  draggedPluginId.value = "";
-  dragOverGroupId.value = "";
+  pluginDragPosition = { x: event.clientX, y: event.clientY };
+  if (dragPreview) dragPreview.style.transform = `translate(${event.clientX + 12}px, ${event.clientY + 14}px)`;
+  updatePluginDragTarget();
+  if (!pluginDragScrollFrame) pluginDragScrollFrame = requestAnimationFrame(scrollPluginDragList);
 };
 
 const endPluginDrag = () => {
+  if (pluginDragPointer) {
+    window.removeEventListener("pointermove", movePluginDrag);
+    window.removeEventListener("pointerup", finishPluginDrag);
+    window.removeEventListener("pointercancel", cancelPluginDrag);
+    window.removeEventListener("blur", endPluginDrag);
+  }
+  pluginDragPointer = null;
   draggedPluginId.value = "";
   dragOverGroupId.value = "";
   clearDragPreview();
+  if (pluginDragScrollFrame) cancelAnimationFrame(pluginDragScrollFrame);
+  pluginDragScrollFrame = 0;
+};
+
+const finishPluginDrag = (event: PointerEvent) => {
+  if (!pluginDragPointer || event.pointerId !== pluginDragPointer.pointerId) return;
+  pluginDragPosition = { x: event.clientX, y: event.clientY };
+  if (draggedPluginId.value) updatePluginDragTarget();
+  const pluginId = draggedPluginId.value;
+  const groupId = dragOverGroupId.value;
+  endPluginDrag();
+  if (pluginId && groupId) movePluginToGroup(pluginId, groupId);
+};
+
+const cancelPluginDrag = (event: PointerEvent) => {
+  if (event.pointerId === pluginDragPointer?.pointerId) endPluginDrag();
+};
+
+const preparePluginDrag = (pluginId: string, event: PointerEvent) => {
+  if (!event.isPrimary || event.button !== 0 || event.pointerType === "touch" || pluginDragPointer) return;
+  const list = (event.currentTarget as HTMLElement).closest<HTMLElement>(".plugin-config-list");
+  if (!list) return;
+  suppressPluginClick = false;
+  pluginDragPointer = { pluginId, pointerId: event.pointerId, x: event.clientX, y: event.clientY, list };
+  window.addEventListener("pointermove", movePluginDrag);
+  window.addEventListener("pointerup", finishPluginDrag);
+  window.addEventListener("pointercancel", cancelPluginDrag);
+  window.addEventListener("blur", endPluginDrag);
+};
+
+const selectPluginFromList = (pluginId: string, event: MouseEvent | KeyboardEvent) => {
+  if (suppressPluginClick && event.detail) {
+    event.preventDefault();
+    event.stopPropagation();
+    suppressPluginClick = false;
+    return;
+  }
+  selectPlugin(pluginId);
 };
 
 watch(
   [scope, selectedNodeId],
   () => {
+    endPluginDrag();
     closePluginContextMenu();
     void loadPluginGroups();
   },
@@ -790,6 +868,7 @@ onMounted(() => {
   inventoryTimer = setInterval(refreshInventory, 4000);
 });
 onUnmounted(() => {
+  endPluginDrag();
   window.removeEventListener("elementspanel:plugins-changed", refreshInventory);
   clearInterval(inventoryTimer);
   pluginsRequest++;
@@ -1226,10 +1305,8 @@ const confirmAction = async () => {
               v-for="group in pluginGroups"
               :key="group.id"
               class="plugin-config-group"
+              :data-plugin-group-id="group.id"
               :class="{ 'plugin-config-group-over': dragOverGroupId === group.id }"
-              @dragover="dragOverPluginGroup(group.id, $event)"
-              @dragleave="leavePluginGroup(group.id, $event)"
-              @drop.prevent="dropPlugin(group.id)"
             >
               <VListSubheader class="plugin-config-group-heading">
                 <span>{{ group.name }}</span>
@@ -1253,15 +1330,16 @@ const confirmAction = async () => {
               <VListItem
                 v-for="plugin in group.plugins"
                 :key="plugin.id"
-                draggable="true"
+                class="plugin-config-item"
+                draggable="false"
                 :active="plugin.id === currentId"
-                :class="{ 'plugin-config-item-off': !plugin.enabled }"
+                :class="{ 'plugin-config-item-off': !plugin.enabled, 'plugin-config-item-dragging': draggedPluginId === plugin.id }"
                 :title="pluginLabel(plugin.id)"
                 :subtitle="pluginRemarks.get(plugin.id)"
-                @click="selectPlugin(plugin.id)"
+                @click="selectPluginFromList(plugin.id, $event)"
                 @contextmenu="openPluginContextMenu(plugin.id, $event)"
-                @dragstart="startPluginDrag(plugin.id, $event)"
-                @dragend="endPluginDrag"
+                @pointerdown="preparePluginDrag(plugin.id, $event)"
+                @dragstart.prevent
               >
                 <template #append>
                   <span
@@ -1903,11 +1981,12 @@ const confirmAction = async () => {
   opacity: 1;
 }
 
-.plugin-config-list :deep(.v-list-item[draggable="true"]) {
+.plugin-config-list :deep(.plugin-config-item) {
   cursor: grab;
+  user-select: none;
 }
 
-.plugin-config-list :deep(.v-list-item[draggable="true"]:active) {
+.plugin-config-list :deep(.plugin-config-item-dragging) {
   cursor: grabbing;
 }
 
