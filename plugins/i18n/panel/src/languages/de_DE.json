@@ -2139,7 +2139,6 @@
   "TXT_CODE_COMMON_USER_CREATED_THE_DAEMON_PROCESS": "Benutzer <<operator_name>> Erstellt den Daemon -Prozess <<daemon_id>>",
   "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SAVE_WORLD_ON_LAST_PLAYER_EXIT": "Rette die Welt, wenn der letzte Spieler die Verbindung trennt",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_RAID_COOLDOWN_SECONDS": "Wie lange sollten Sie warten, bis ein weiterer Raid gestartet werden kann?",
-  "TXT_CODE_COMMON_TAGS_GROUP_INSTANCES_FOR_FILTERING": "Tags gruppieren Instanzen zum Filtern.",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_AGGRESSIVE_TOWARDS_ENDERMITES": "Auf „false“ setzen, um zu verhindern, dass Enderman gegenüber allen Arten von gespawnten Endermiten aggressiv wird",
   "TXT_CODE_COMMON_UNABLE_TO_EDIT_THIS_FILE": "Das Bearbeiten dieser Datei wird derzeit nicht unterstützt",
   "TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_PISTON_DUPLICATION": "Kolbenkopie zulassen",

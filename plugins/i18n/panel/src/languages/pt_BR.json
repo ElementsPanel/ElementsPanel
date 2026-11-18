@@ -2139,7 +2139,6 @@
   "TXT_CODE_COMMON_USER_CREATED_THE_DAEMON_PROCESS": "Usuário <<operator_name>> criou o processo Daemon <<daemon_id>>",
   "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SAVE_WORLD_ON_LAST_PLAYER_EXIT": "Salvar o mundo quando o último jogador desconectar.",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_RAID_COOLDOWN_SECONDS": "Quanto tempo você deve esperar antes que outro ataque possa ser iniciado",
-  "TXT_CODE_COMMON_TAGS_GROUP_INSTANCES_FOR_FILTERING": "As etiquetas agrupam instâncias para filtragem.",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_AGGRESSIVE_TOWARDS_ENDERMITES": "Defina como false para impedir Enderman de ser agregado em relação a todos os tipos de endermitos gerados",
   "TXT_CODE_COMMON_UNABLE_TO_EDIT_THIS_FILE": "Não é possível editar este arquivo.",
   "TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_PISTON_DUPLICATION": "Permitir Duplicação de Pistão",

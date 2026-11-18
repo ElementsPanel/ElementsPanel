@@ -2139,7 +2139,6 @@
   "TXT_CODE_COMMON_USER_CREATED_THE_DAEMON_PROCESS": "<<operator_name>> <<daemon_id>> daemon işlemini oluşturdu",
   "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SAVE_WORLD_ON_LAST_PLAYER_EXIT": "Son oyuncunun bağlantısı kesildiğinde dünyayı kaydet.",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_RAID_COOLDOWN_SECONDS": "Başka bir baskın başlatılmadan önce ne kadar beklemelisiniz",
-  "TXT_CODE_COMMON_TAGS_GROUP_INSTANCES_FOR_FILTERING": "Etiketler örnekleri gruplandırıp filtreler.",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_AGGRESSIVE_TOWARDS_ENDERMITES": "Enderman'ın aggro olmasını durdurmak için false olarak ayarlanmış her türlü ortaya çıkan endermites",
   "TXT_CODE_COMMON_UNABLE_TO_EDIT_THIS_FILE": "Bu dosya düzenlenemiyor.",
   "TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_PISTON_DUPLICATION": "Piston Çoğaltmaya İzin Ver",

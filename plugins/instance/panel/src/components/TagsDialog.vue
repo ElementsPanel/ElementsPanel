@@ -93,10 +93,8 @@ defineExpose({ openDialog });
     @update:model-value="handleDialogUpdate">
     <VCard :title="t('TXT_CODE_COMMON_INSTANCE_TAG')" rounded="xl">
       <VCardText class="tags-dialog__content">
-        <p class="tags-dialog__hint">{{ t("TXT_CODE_COMMON_TAGS_GROUP_INSTANCES_FOR_FILTERING") }}</p>
-
         <section class="tags-dialog__section">
-          <p class="tags-dialog__label">{{ t("TXT_CODE_COMMON_TAG_LIST_OF_THIS_INSTANCE") }}</p>
+          <p class="tags-dialog__label tags-dialog__label--instance">{{ t("TXT_CODE_COMMON_TAG_LIST_OF_THIS_INSTANCE") }}</p>
           <div class="tag-container">
             <VChip
               v-for="tag in instanceTags"
@@ -189,6 +187,10 @@ defineExpose({ openDialog });
 .tags-dialog__label {
   color: rgb(var(--v-theme-on-surface));
   font-weight: 500;
+}
+
+.tags-dialog__label--instance {
+  margin-bottom: 12px;
 }
 
 .tags-dialog__hint {

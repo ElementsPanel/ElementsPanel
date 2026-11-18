@@ -734,7 +734,6 @@ onUnmounted(() => {
           :z-index="10007"
           @close="closeTagDialog"
         >
-          <p class="dim-dialog__desc dim-dialog__desc--left">{{ t("TXT_CODE_COMMON_TAGS_GROUP_INSTANCES_FOR_FILTERING") }}</p>
           <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--muted">
               {{ t("TXT_CODE_COMMON_TAG_LIST_OF_THIS_INSTANCE") }}
           </p>

@@ -2139,7 +2139,6 @@
   "TXT_CODE_COMMON_USER_CREATED_THE_DAEMON_PROCESS": "L'utilisateur <<operator_name>> a créé le processus de démon <<daemon_id>>",
   "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SAVE_WORLD_ON_LAST_PLAYER_EXIT": "Sauvez le monde lorsque le dernier joueur se déconnecte",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_RAID_COOLDOWN_SECONDS": "Combien de temps vous devez attendre avant qu'un autre raid puisse être initié",
-  "TXT_CODE_COMMON_TAGS_GROUP_INSTANCES_FOR_FILTERING": "Les étiquettes regroupent les instances pour les filtrer.",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_AGGRESSIVE_TOWARDS_ENDERMITES": "Réglé sur False pour empêcher l'enderman d'être agrand",
   "TXT_CODE_COMMON_UNABLE_TO_EDIT_THIS_FILE": "La modification de ce fichier n'est actuellement pas prise en charge",
   "TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_PISTON_DUPLICATION": "Autoriser la copie du piston",
