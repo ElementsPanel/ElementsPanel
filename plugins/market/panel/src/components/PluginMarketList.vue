@@ -2,11 +2,8 @@
 import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToolbar";
 import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { getValidatorErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { computeNodeName } from "@elementspanel/epanel-plugin-console/tools/nodes";
 import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
-import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import {
   VAvatar,
   VBtn,
@@ -30,170 +27,45 @@ import {
   VTabs,
   VTextField
 } from "vuetify/components";
-import { pluginMarketList, pluginMarketNodes, type MarketNode, type MarketPlugin } from "../api";
-import { usePluginIcons } from "../hooks/usePluginIcons";
+import { usePluginMarketList } from "../hooks/usePluginMarketList";
 import PluginMarketSideBadge from "./PluginMarketSideBadge.vue";
 import PluginMarketInstall from "./PluginMarketInstall.vue";
 import PluginMarketChanges from "./PluginMarketChanges.vue";
 import PluginMarketUpdates from "./PluginMarketUpdates.vue";
-import { activeOperations, applyingChanges, installedChange } from "../operations";
+import { activeOperations, applyingChanges } from "../operations";
 
 const props = defineProps<{ embedded?: boolean; daemonId?: string }>();
 const emit = defineEmits<{ select: [pluginId: string]; "target-change": [daemonId: string] }>();
-const selectedDaemonId = ref(props.daemonId ?? "");
-const nodes = ref<MarketNode[]>([]);
-const nodesLoading = ref(false);
-const currentNode = computed(() =>
-  nodes.value.find((node) => node.daemonId === selectedDaemonId.value)
-);
-const targetLabel = computed(() =>
-  selectedDaemonId.value
-    ? currentNode.value
-      ? computeNodeName(
-          currentNode.value.ip,
-          currentNode.value.available,
-          currentNode.value.remarks
-        )
-      : selectedDaemonId.value
-    : t("TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL")
-);
-const loading = ref(false);
-// Whether the last refresh failed: an empty list then means "unreachable", not "no plugins".
-const failed = ref(false);
-const failureMessage = ref("");
-const plugins = ref<MarketPlugin[]>([]);
-const keyword = ref<string | null>("");
-const currentPage = ref(1);
-const pageSize = ref(20);
 const { isPhone } = useScreen();
-const activeTab = ref<"browse" | "updates">("browse");
-const updateView = ref<InstanceType<typeof PluginMarketUpdates>>();
-const updatesLoading = ref(false);
-const { icons, load } = usePluginIcons();
-let requestId = 0;
-let nodesRequestId = 0;
-
-const visiblePlugins = computed(() => {
-  const q = (keyword.value ?? "").trim().toLowerCase();
-  if (!q) return plugins.value;
-  return plugins.value.filter((plugin) =>
-    [plugin.displayName, plugin.name, plugin.summary].some((field) =>
-      String(field ?? "")
-        .toLowerCase()
-        .includes(q)
-    )
-  );
-});
-
-const totalPages = computed(() => Math.max(1, Math.ceil(visiblePlugins.value.length / pageSize.value)));
-const pagedPlugins = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value;
-  return visiblePlugins.value.slice(start, start + pageSize.value);
-});
-
-watch([keyword, pageSize], () => {
-  currentPage.value = 1;
-});
-watch(totalPages, (pages) => {
-  currentPage.value = Math.min(currentPage.value, pages);
-});
-
-watch(
+const {
+  selectedDaemonId,
+  nodes,
+  nodesLoading,
+  targetLabel,
+  loading,
+  failed,
+  failureMessage,
+  plugins,
+  keyword,
+  currentPage,
+  pageSize,
+  activeTab,
+  updateView,
+  updatesLoading,
+  icons,
+  visiblePlugins,
+  totalPages,
   pagedPlugins,
-  (list) => {
-    for (const plugin of list) void load(plugin.id, Boolean(plugin.iconUrl), plugin.latestVersion?.version);
-  },
-  { immediate: true }
-);
-
-async function refresh() {
-  const request = ++requestId;
-  loading.value = true;
-  try {
-    const { execute } = pluginMarketList();
-    const daemonId = selectedDaemonId.value;
-    const response = await execute({ params: { daemonId }, forceRequest: true, timeout: 60000 });
-    if (request === requestId) {
-      plugins.value = (response.value ?? []).map((plugin) => ({
-        ...plugin,
-        targetDaemonId: daemonId
-      }));
-      failed.value = false;
-      failureMessage.value = "";
-    }
-  } catch (error) {
-    if (request === requestId) {
-      failed.value = true;
-      failureMessage.value = getValidatorErrorMsg(error);
-      message.error(failureMessage.value);
-    }
-  } finally {
-    if (request === requestId) loading.value = false;
-  }
-}
-
-async function refreshNodes() {
-  const request = ++nodesRequestId;
-  nodesLoading.value = true;
-  try {
-    const response = await pluginMarketNodes().execute({ forceRequest: true });
-    if (request === nodesRequestId) nodes.value = response.value ?? [];
-  } catch (error) {
-    if (request === nodesRequestId) message.error(getValidatorErrorMsg(error));
-  } finally {
-    if (request === nodesRequestId) nodesLoading.value = false;
-  }
-}
-
-function refreshActive() {
-  void refreshNodes();
-  if (activeTab.value === "updates") void updateView.value?.refresh();
-  else void refresh();
-}
-
-watch(
-  () => props.daemonId,
-  (daemonId) => {
-    if (daemonId !== undefined) selectedDaemonId.value = daemonId;
-  }
-);
-watch(selectedDaemonId, (daemonId) => {
-  currentPage.value = 1;
-  plugins.value = [];
-  failed.value = false;
-  emit("target-change", daemonId);
-  void refresh();
+  refresh,
+  refreshActive,
+  selectPlugin,
+  onCardKeydown,
+  updateInstalled
+} = usePluginMarketList(props, {
+  select: (pluginId) => emit("select", pluginId),
+  targetChange: (daemonId) => emit("target-change", daemonId)
 });
-
-function selectPlugin(plugin: MarketPlugin) {
-  if (props.embedded) emit("select", plugin.id);
-}
-
-function onCardKeydown(event: KeyboardEvent, plugin: MarketPlugin) {
-  if (event.target !== event.currentTarget) return;
-  if (!props.embedded || !["Enter", " "].includes(event.key)) return;
-  event.preventDefault();
-  selectPlugin(plugin);
-}
-
-function updateInstalled(pluginId: string, version: string | undefined) {
-  const plugin = plugins.value.find((item) => item.id === pluginId);
-  if (plugin) plugin.installedVersion = version;
-}
-
 defineExpose({ updateInstalled });
-watch(installedChange, (change) => {
-  if (change && (change.daemonId === undefined || change.daemonId === selectedDaemonId.value))
-    void refresh();
-});
-onMounted(() => {
-  void refresh();
-  void refreshNodes();
-});
-onBeforeUnmount(() => {
-  requestId++;
-  nodesRequestId++;
-});
 </script>
 
 <template>
@@ -317,9 +189,7 @@ onBeforeUnmount(() => {
           v-else-if="!plugins.length"
           :icon="failed ? 'mdi-lan-disconnect' : 'mdi-puzzle-outline'"
           :title="
-            failed
-              ? t('TXT_CODE_PLUGIN_MARKET_UNREACHABLE')
-              : t('TXT_CODE_PLUGIN_MARKET_EMPTY')
+            failed ? t('TXT_CODE_PLUGIN_MARKET_UNREACHABLE') : t('TXT_CODE_PLUGIN_MARKET_EMPTY')
           "
           :description="failed ? failureMessage : t('TXT_CODE_NO_DATA')"
         >
@@ -330,7 +200,8 @@ onBeforeUnmount(() => {
               :loading="loading"
               :disabled="applyingChanges"
               @click="refresh"
-            >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn>
+              >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn
+            >
           </template>
         </Empty>
 
