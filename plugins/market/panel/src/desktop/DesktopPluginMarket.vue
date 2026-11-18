@@ -883,6 +883,7 @@ const DesktopPluginDetailController = defineComponent({
 
 .dpm-detail-scroll {
   padding: 16px;
+  scrollbar-gutter: stable;
   overflow-wrap: anywhere;
 }
 
