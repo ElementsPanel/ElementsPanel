@@ -445,7 +445,6 @@
   "TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_ONLINE_MODE": "Онлайн (официальная) аутентификация",
   "TXT_CODE_INSTANCE_SELECTED_COUNT_LABEL": "Выбрано:",
   "TXT_CODE_COMMON_JAVA_PATH": "Путь к Java",
-  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_EFFECT_HINT": "После загрузки фонового изображения панель переключится на темную тему с размытым полупрозрачным эффектом, вы можете переключиться обратно в любое время.",
   "TXT_CODE_COMMON_USING_AN_IMAGE_FROM_DOCKER_HUB": "Использование образа с Docker Hub",
   "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_NETHERWART_MODIFIER": "Скорость роста Нижнего бородавника",
   "TXT_CODE_COMMON_UNKNOWN_OPERATION": "Неизвестная операция",

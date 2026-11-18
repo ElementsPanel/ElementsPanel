@@ -445,7 +445,6 @@
   "TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_ONLINE_MODE": "Çevrimiçi (Resmi) Kimlik Doğrulama",
   "TXT_CODE_INSTANCE_SELECTED_COUNT_LABEL": "Seçildi:",
   "TXT_CODE_COMMON_JAVA_PATH": "Java Yolu",
-  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_EFFECT_HINT": "Bir arka plan resmi yükledikten sonra, panel bulanık yarı saydam efektli koyu temaya geçecektir, istediğiniz zaman geri dönebilirsiniz.",
   "TXT_CODE_COMMON_USING_AN_IMAGE_FROM_DOCKER_HUB": "Docker Hub'dan bir görüntü kullanma",
   "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_NETHERWART_MODIFIER": "Nether Siğil Büyüme Hızı",
   "TXT_CODE_COMMON_UNKNOWN_OPERATION": "Bilinmeyen operasyon",

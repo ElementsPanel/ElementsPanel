@@ -128,7 +128,7 @@ export function apply(ctx: PanelPluginContext) {
         key: "backgroundImage",
         type: "string",
         title: $t("TXT_CODE_COMMON_UI_BACKGROUND_IMAGE"),
-        description: `${$t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_EFFECT_HINT")} ${$t("TXT_CODE_COMMON_THIS_FEATURE_MAY_BE_UNSTABLE_CANNOT_GUARANTEE_BEST_USER_EXPERIENCE")}`,
+        description: $t("TXT_CODE_COMMON_THIS_FEATURE_MAY_BE_UNSTABLE_CANNOT_GUARANTEE_BEST_USER_EXPERIENCE"),
         fileUpload: true
       }
     ],

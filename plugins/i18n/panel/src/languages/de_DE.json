@@ -445,7 +445,6 @@
   "TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_ONLINE_MODE": "Online-(echte) Verifizierung",
   "TXT_CODE_INSTANCE_SELECTED_COUNT_LABEL": "Ausgewählt:",
   "TXT_CODE_COMMON_JAVA_PATH": "Java-Pfad",
-  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_EFFECT_HINT": "Nach dem Hochladen eines Hintergrundbilds wird das Panel auf ein dunkles Thema eingestellt und unscharf und durchscheinend, und Sie können jederzeit zurückwechseln.",
   "TXT_CODE_COMMON_USING_AN_IMAGE_FROM_DOCKER_HUB": "Verwenden Sie Bilder von Docker Hub",
   "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_NETHERWART_MODIFIER": "Wachstumsrate der Netherwarze",
   "TXT_CODE_COMMON_UNKNOWN_OPERATION": "Unbekannter Betrieb",

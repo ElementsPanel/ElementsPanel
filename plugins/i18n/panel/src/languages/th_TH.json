@@ -445,7 +445,6 @@
   "TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_ONLINE_MODE": "การยืนยันตัวตนออนไลน์ (อย่างเป็นทางการ)",
   "TXT_CODE_INSTANCE_SELECTED_COUNT_LABEL": "เลือกแล้ว:",
   "TXT_CODE_COMMON_JAVA_PATH": "เส้นทาง Java",
-  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_EFFECT_HINT": "หลังจากอัปโหลดภาพพื้นหลัง แผงควบคุมจะเปลี่ยนเป็นธีมมืดพร้อมเอฟเฟกต์โปร่งแสงแบบเบลอ คุณสามารถเปลี่ยนกลับได้ตลอดเวลา",
   "TXT_CODE_COMMON_USING_AN_IMAGE_FROM_DOCKER_HUB": "ใช้อิมเมจจาก Docker Hub",
   "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_NETHERWART_MODIFIER": "ความเร็วการเติบโตของเวิร์ตเนเธอร์",
   "TXT_CODE_COMMON_UNKNOWN_OPERATION": "การดำเนินการที่ไม่รู้จัก",

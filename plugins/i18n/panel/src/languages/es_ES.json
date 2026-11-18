@@ -445,7 +445,6 @@
   "TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_ONLINE_MODE": "Verificación en línea (genuina)",
   "TXT_CODE_INSTANCE_SELECTED_COUNT_LABEL": "Seleccionado:",
   "TXT_CODE_COMMON_JAVA_PATH": "ruta de java",
-  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_EFFECT_HINT": "Después de cargar una imagen de fondo, el panel se configurará con un tema oscuro, borroso y translúcido, y podrás volver a cambiarlo en cualquier momento.",
   "TXT_CODE_COMMON_USING_AN_IMAGE_FROM_DOCKER_HUB": "Utilice imágenes de Docker Hub",
   "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_NETHERWART_MODIFIER": "Tasa de crecimiento de las verrugas inferiores",
   "TXT_CODE_COMMON_UNKNOWN_OPERATION": "Operación desconocida",

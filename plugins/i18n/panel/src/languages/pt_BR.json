@@ -445,7 +445,6 @@
   "TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_ONLINE_MODE": "Autenticação Online (Oficial)",
   "TXT_CODE_INSTANCE_SELECTED_COUNT_LABEL": "Selecionado:",
   "TXT_CODE_COMMON_JAVA_PATH": "Caminho do Java",
-  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_EFFECT_HINT": "Após enviar uma imagem de fundo, o painel mudará para o tema escuro com um efeito translúcido desfocado, você pode alternar de volta a qualquer momento.",
   "TXT_CODE_COMMON_USING_AN_IMAGE_FROM_DOCKER_HUB": "Usando uma imagem do Docker Hub",
   "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_NETHERWART_MODIFIER": "Velocidade de Crescimento do Nether Wart",
   "TXT_CODE_COMMON_UNKNOWN_OPERATION": "Operação desconhecida",

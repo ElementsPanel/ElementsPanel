@@ -445,7 +445,6 @@
   "TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_ONLINE_MODE": "Vérification en ligne (authentique)",
   "TXT_CODE_INSTANCE_SELECTED_COUNT_LABEL": "Choisi:",
   "TXT_CODE_COMMON_JAVA_PATH": "Chemin Java",
-  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_EFFECT_HINT": "Après avoir téléchargé une image d'arrière-plan, le panneau sera défini sur un thème sombre, flou et translucide, et vous pourrez revenir en arrière à tout moment.",
   "TXT_CODE_COMMON_USING_AN_IMAGE_FROM_DOCKER_HUB": "Utiliser des images de Docker Hub",
   "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_NETHERWART_MODIFIER": "Taux de croissance des verrues du Néant",
   "TXT_CODE_COMMON_UNKNOWN_OPERATION": "Opération inconnue",
