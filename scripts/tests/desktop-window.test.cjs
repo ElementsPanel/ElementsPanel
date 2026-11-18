@@ -298,6 +298,16 @@ function dialogFixture(t, shellStyleLast) {
 
 const transitionFrame = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
+function pointerEvent(type, options = {}) {
+  const event = new window.MouseEvent(type, { bubbles: true, cancelable: true, ...options });
+  Object.defineProperties(event, {
+    pointerId: { value: 1 },
+    pointerType: { value: "mouse" },
+    isPrimary: { value: true }
+  });
+  return event;
+}
+
 function viewportFixture(t, width, height) {
   const previous = { width: window.innerWidth, height: window.innerHeight };
   const resize = (width, height) => {
@@ -332,6 +342,9 @@ function boundsFixture(t, initial = {}) {
   app.mount(target);
   t.after(() => { if (target.childElementCount) app.unmount(); target.remove(); });
   const element = target.querySelector(".desktop-window");
+  // jsdom lacks pointer capture.
+  for (const handle of element.querySelectorAll(".window__titlebar, .window__resize-handle"))
+    handle.setPointerCapture = () => {};
   const bounds = () => Object.fromEntries(["left", "top", "width", "height"]
     .map((key) => [key, Number.parseFloat(element.style[key])]));
   const assertInside = () => {
@@ -343,11 +356,11 @@ function boundsFixture(t, initial = {}) {
   };
   const dragOutside = () => {
     const box = bounds();
-    element.querySelector(".window__titlebar").dispatchEvent(new MouseEvent("mousedown", {
+    element.querySelector(".window__titlebar").dispatchEvent(pointerEvent("pointerdown", {
       clientX: box.left + 40, clientY: box.top + 20, bubbles: true, button: 0
     }));
-    document.dispatchEvent(new MouseEvent("mousemove", { clientX: window.innerWidth - 24, clientY: window.innerHeight - 24 }));
-    document.dispatchEvent(new MouseEvent("mouseup"));
+    document.dispatchEvent(pointerEvent("pointermove", { clientX: window.innerWidth - 24, clientY: window.innerHeight - 24 }));
+    document.dispatchEvent(pointerEvent("pointerup"));
   };
   return { state, element, app, changes, bounds, assertInside, dragOutside };
 }
@@ -1338,7 +1351,7 @@ test("desktop confirmations preserve multiple choices and stack independently ac
   highlighted.click();
   secondWindow.querySelector(".desktop-confirm__button--danger").click();
   assert.deepEqual(second.events.actions, ["queue", "immediate"]);
-  firstWindow.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+  firstWindow.dispatchEvent(pointerEvent("pointerdown"));
   await flush();
   assert.ok(Number(firstWindow.style.zIndex) > Number(secondWindow.style.zIndex));
 });
@@ -1429,11 +1442,11 @@ test("context-menu maximization restores the latest user size and remains bounde
   const resize = viewportFixture(t, 1280, 900);
   const f = boundsFixture(t);
   await flush();
-  f.element.querySelector(".window__resize-handle--se").dispatchEvent(new MouseEvent("mousedown", {
+  f.element.querySelector(".window__resize-handle--se").dispatchEvent(pointerEvent("pointerdown", {
     clientX: 900, clientY: 560, bubbles: true, button: 0
   }));
-  document.dispatchEvent(new MouseEvent("mousemove", { clientX: 1000, clientY: 710 }));
-  document.dispatchEvent(new MouseEvent("mouseup"));
+  document.dispatchEvent(pointerEvent("pointermove", { clientX: 1000, clientY: 710 }));
+  document.dispatchEvent(pointerEvent("pointerup"));
   await flush();
   const resized = f.bounds();
   assert.deepEqual(resized, { left: 100, top: 60, width: 900, height: 650 });

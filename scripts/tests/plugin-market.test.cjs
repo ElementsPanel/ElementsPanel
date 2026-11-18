@@ -8,8 +8,21 @@ const ts = panelRequire("typescript");
 const vue = frontendRequire("vue");
 
 // Load source in memory: no project build, network listener or plugin installation.
+const marketHookSources = {
+  "../hooks/usePluginMarketList": "plugins/market/panel/src/hooks/usePluginMarketList.ts",
+  "../hooks/usePluginMarketDetail": "plugins/market/panel/src/hooks/usePluginMarketDetail.ts"
+};
 const load = createLoader({
   compiler: ts,
+  resolve: (id, { localRequire, load: loadSource, overrides }) => {
+    const source = marketHookSources[id];
+    if (!source) return localRequire(id);
+    const hookOverrides = { ...overrides };
+    if (Object.hasOwn(overrides, "../hooks/usePluginIcons")) {
+      hookOverrides["./usePluginIcons"] = overrides["../hooks/usePluginIcons"];
+    }
+    return loadSource(source, hookOverrides);
+  },
   transform: (source, filename, inlineTemplate = false) =>
     filename.endsWith(".vue") ? compileSfc(filename, { inlineTemplate }) : source
 });
@@ -1416,56 +1429,172 @@ test("market lists ignore older refreshes and responses after unmount", async ()
   assert.equal(state.plugins.value[0].id, "current");
 });
 
-test("desktop browsing keeps the list mounted and wires detail installation and back events", async () => {
-  const installed = [];
-  // Typed props, like the real components: a bare `embedded` attribute only
-  // becomes `true` when the prop is declared Boolean.
-  const List = vue.defineComponent({
-    props: { embedded: Boolean, daemonId: String },
-    emits: ["select", "target-change"],
-    setup(_props, { expose }) {
-      expose({ updateInstalled: (...args) => installed.push(args) });
-      return () => vue.h("div");
+test("desktop browsing keeps list state and wires detail installation and back events", async () => {
+  const Slots = vue.defineComponent({
+    setup(_props, { slots }) {
+      return () =>
+        vue.h(
+          "div",
+          Object.values(slots).flatMap((slot) => slot?.({ props: {} }) ?? [])
+        );
     }
   });
-  const Detail = vue.defineComponent({
-    props: { pluginId: String, embedded: Boolean, daemonId: String },
-    emits: ["back", "installed"],
+  const Button = vue.defineComponent({
+    emits: ["click"],
+    setup(_props, { slots }) {
+      return () => vue.h("button", slots.default?.());
+    }
+  });
+  const Install = vue.defineComponent({
+    props: { plugin: Object, version: Object, disabled: Boolean, installOnly: Boolean },
+    emits: ["installed", "busy"],
     render: () => vue.h("div")
   });
+  const components = Object.fromEntries(
+    [
+      "VAvatar",
+      "VChip",
+      "VIcon",
+      "VImg",
+      "VList",
+      "VListItem",
+      "VMenu",
+      "VProgressCircular",
+      "VTab",
+      "VTabs",
+      "VTextField"
+    ].map((name) => [name, Slots])
+  );
+  components.VBtn = Button;
+
+  const installed = [];
+  const plugins = vue.ref([
+    {
+      id: "one",
+      name: "one",
+      displayName: "One",
+      summary: "Plugin one",
+      category: "",
+      author: { displayName: "Author" },
+      latestVersion: version("1.0.0")
+    }
+  ]);
+  const selectedDaemonId = vue.ref("node-2");
+  const keyword = vue.ref("keep me");
+  let listEvents;
+  let listSetups = 0;
+  let detailProps;
+  let detailState;
+  const listState = {
+    selectedDaemonId,
+    nodes: vue.ref([]),
+    nodesLoading: vue.ref(false),
+    targetLabel: vue.computed(() => selectedDaemonId.value),
+    loading: vue.ref(false),
+    failed: vue.ref(false),
+    failureMessage: vue.ref(""),
+    plugins,
+    keyword,
+    currentPage: vue.ref(1),
+    activeTab: vue.ref("browse"),
+    updateView: vue.ref(),
+    updatesLoading: vue.ref(false),
+    icons: vue.ref({}),
+    visiblePlugins: vue.computed(() => plugins.value),
+    totalPages: vue.ref(1),
+    pagedPlugins: vue.computed(() => plugins.value),
+    refresh() {},
+    refreshActive() {},
+    selectPlugin(plugin) {
+      listEvents.select?.(plugin.id);
+    },
+    onCardKeydown() {},
+    updateInstalled(pluginId, release) {
+      installed.push([pluginId, release]);
+    }
+  };
+  const usePluginMarketList = (_props, events) => {
+    listSetups++;
+    listEvents = events;
+    return listState;
+  };
+  const usePluginMarketDetail = (props, onInstalled) => {
+    detailProps = props;
+    detailState = {
+      plugin: vue.ref({
+        id: props.pluginId,
+        name: props.pluginId,
+        displayName: props.pluginId,
+        summary: "",
+        category: "",
+        author: { displayName: "Author" },
+        selectedVersion: version("1.0.0"),
+        latestVersion: version("1.0.0"),
+        versions: []
+      }),
+      loading: vue.ref(false),
+      busy: vue.ref(false),
+      error: vue.ref(""),
+      activeTab: vue.ref("readme"),
+      icons: vue.ref({}),
+      icon: vue.ref(),
+      readme: vue.ref(""),
+      changelogs: vue.ref([]),
+      formatDate: String,
+      formatSize: String,
+      refresh() {},
+      trackBusy() {},
+      updateInstalled(pluginId, release) {
+        onInstalled(pluginId, release);
+      }
+    };
+    return detailState;
+  };
   const Desktop = load(
     "plugins/market/panel/src/desktop/DesktopPluginMarket.vue",
     {
-      vue,
-      "../components/PluginMarketList.vue": List,
-      "../components/PluginMarketDetail.vue": Detail
+      ...sharedViewOverrides,
+      "vuetify/components": components,
+      "../components/PluginMarketInstall.vue": Install,
+      "../components/PluginMarketChanges.vue": Slots,
+      "../components/PluginMarketSideBadge.vue": Slots,
+      "../components/PluginMarketUpdates.vue": Slots,
+      "../hooks/usePluginMarketList": { usePluginMarketList },
+      "../hooks/usePluginMarketDetail": { usePluginMarketDetail }
     },
     true
   ).default;
   const app = renderer.createApp(Desktop);
   app.mount({ children: [] });
-  const findChild = (type) =>
-    app._instance.subTree.children.find((node) => node.type === type)?.component;
+  const find = (type, node = app._instance.subTree) => {
+    if (!node || typeof node !== "object") return [];
+    const found = node.type === type ? [node.component] : [];
+    if (node.component) return [...found, ...find(type, node.component.subTree)];
+    return Array.isArray(node.children)
+      ? [...found, ...node.children.flatMap((child) => find(type, child))]
+      : found;
+  };
   try {
-    const list = findChild(List);
-    assert.equal(list.props.embedded, true);
-    list.emit("target-change", "node-2");
-    list.emit("select", "one");
+    assert.equal(listSetups, 1);
+    listEvents.select("one");
     await vue.nextTick();
-    const detail = findChild(Detail);
-    assert.equal(detail.props.pluginId, "one");
-    assert.equal(detail.props.embedded, true);
-    assert.equal(detail.props.daemonId, "node-2");
-    detail.emit("installed", "one", "1.0.0");
+    assert.equal(detailState.plugin.value.id, "one");
+    assert.equal(detailProps.daemonId, "node-2");
+    assert.equal(selectedDaemonId.value, "node-2");
+    detailState.updateInstalled("one", "1.0.0");
     assert.deepEqual(installed, [["one", "1.0.0"]]);
-    detail.emit("back");
+    const back = find(Button).find((button) =>
+      button.vnode.props.class.includes("dpm-btn--back")
+    );
+    back.emit("click");
     await vue.nextTick();
-    assert.equal(findChild(Detail), undefined);
-    assert.equal(findChild(List), list, "search and scroll state survive returning to the list");
-    assert.equal(list.props.daemonId, "node-2", "returning to the list preserves the selected node");
-    list.emit("select", "two");
+    assert.equal(listSetups, 1, "returning keeps the desktop list state mounted");
+    assert.equal(keyword.value, "keep me");
+    assert.equal(selectedDaemonId.value, "node-2");
+    listEvents.select("two");
     await vue.nextTick();
-    assert.equal(findChild(Detail).props.pluginId, "two");
+    assert.equal(detailState.plugin.value.id, "two");
+    assert.equal(detailProps.daemonId, "node-2");
   } finally {
     app.unmount();
   }
