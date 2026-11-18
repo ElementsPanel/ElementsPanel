@@ -69,15 +69,24 @@ const activeDialog = ref<DialogPanel>("none");
 const errorDialog = ref({ show: false, lines: [] as string[] });
 const confirmDialog = ref(false);
 const pendingAction = ref<(() => Promise<void>) | null>(null);
-const pendingActionTitle = ref("");
+const pendingActionMessage = ref("");
+const pendingActionDanger = ref(false);
 
-const requestAction = (item: { title: string; noConfirm?: boolean; click: () => unknown }) => {
+const requestAction = (item: {
+    title: string;
+    noConfirm?: boolean;
+    confirmMessage?: string;
+    type?: string;
+    props?: Record<string, unknown>;
+    click: () => unknown;
+}) => {
     if (item.noConfirm) {
         void item.click();
         return;
     }
     pendingAction.value = async () => { await item.click(); };
-    pendingActionTitle.value = item.title;
+    pendingActionMessage.value = item.confirmMessage || `${t("TXT_CODE_COMMON_CONFIRM_ACTION")}: ${item.title}`;
+    pendingActionDanger.value = item.type === "danger" || !!item.props?.danger;
     confirmDialog.value = true;
 };
 
@@ -148,7 +157,7 @@ const quickOperations = computed(() =>
         {
             title: t("TXT_CODE_COMMON_START"),
             icon: PlayCircleOutlined,
-            noConfirm: false,
+            noConfirm: true,
             type: "default",
             class: "button-color-success",
             click: toOpenInstance,
@@ -157,6 +166,7 @@ const quickOperations = computed(() =>
         },
         {
             title: t("TXT_CODE_COMMON_STOP"),
+            confirmMessage: t("TXT_CODE_COMMON_ARE_YOU_SURE_YOU_WANT_TO_SEND_A_SHUTDOWN_COMMAND_TO_THE_INSTANCE"),
             icon: PauseCircleOutlined,
             type: "default",
             click: async (): Promise<void> => {
@@ -183,6 +193,7 @@ const instanceOperations = computed(() =>
     arrayFilter([
         {
             title: t("TXT_CODE_COMMON_RESTART"),
+            confirmMessage: t("TXT_CODE_COMMON_ARE_YOU_SURE_YOU_WANT_TO_RESTART_THE_INSTANCE"),
             icon: RedoOutlined,
             type: "default",
             noConfirm: false,
@@ -202,6 +213,7 @@ const instanceOperations = computed(() =>
         },
         {
             title: t("TXT_CODE_COMMON_TERMINATE"),
+            confirmMessage: t("TXT_CODE_INSTANCE_FORCE_STOP_DATA_LOSS_WARNING"),
             icon: CloseOutlined,
             type: "danger",
             class: "color-warning",
@@ -467,8 +479,9 @@ onUnmounted(() => {
             </VCard>
         </VDialog>
 
-        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="confirmDialog" :title="pendingActionTitle"
-            :message="instanceInfo?.config.nickname || instanceId" :ok-text="pendingActionTitle"
+        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="confirmDialog"
+            :title="t('TXT_CODE_INSTANCE_SECONDARY_CONFIRMATION')" :height="260"
+            :message="pendingActionMessage" :danger="pendingActionDanger"
             @cancel="pendingAction = null" @confirm="confirmPendingAction" />
     </div>
 </template>
