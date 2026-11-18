@@ -147,7 +147,6 @@ const selectedNodeLabel = computed(
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-  backdrop-filter: none;
 }
 
 .plugin-config-container :deep(.plugin-config-sidebar) {

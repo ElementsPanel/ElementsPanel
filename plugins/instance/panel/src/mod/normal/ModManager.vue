@@ -431,8 +431,6 @@ onMounted(async () => {
                   justify-content: center;
                   align-items: center;
                   background-color: rgba(128, 128, 128, 0.1);
-                  backdrop-filter: blur(10px);
-                  -webkit-backdrop-filter: blur(10px);
                   z-index: 100;
                   border: 2px dashed var(--color-primary);
                   border-radius: 8px;
@@ -555,7 +553,6 @@ onMounted(async () => {
 .containerWrapper.card-panel {
   overflow: hidden;
   background: transparent !important;
-  backdrop-filter: none !important;
 }
 
 .containerWrapper :deep(.local-mod-table),

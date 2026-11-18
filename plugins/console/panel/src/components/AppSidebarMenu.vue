@@ -174,7 +174,6 @@ const getSidebarIcon = (entry: SidebarRouteEntry): string => {
   text-align: left;
   background-color: var(--app-header-bg);
   color: var(--app-header-text-color);
-  backdrop-filter: saturate(180%) blur(20px);
   padding: 0 0 20px;
 }
 

@@ -290,7 +290,6 @@ const handleMenuItemClick = (path: string) => {
   inset: 0;
   z-index: 1001;
   background: rgba(0, 0, 0, 0.28);
-  backdrop-filter: blur(2px);
 }
 
 .fab-container {
@@ -324,7 +323,6 @@ const handleMenuItemClick = (path: string) => {
   overflow-y: auto;
   border-radius: 18px;
   background: var(--bottom-nav-background-color);
-  backdrop-filter: blur(12px);
   box-shadow:
     0 8px 32px var(--card-shadow-extend-color),
     0 2px 8px var(--card-shadow-color);
@@ -348,7 +346,6 @@ const handleMenuItemClick = (path: string) => {
   align-items: center;
   justify-content: center;
   background: var(--bottom-nav-background-color);
-  backdrop-filter: blur(12px);
   box-shadow:
     0 8px 24px var(--card-shadow-extend-color),
     0 2px 8px var(--card-shadow-color);

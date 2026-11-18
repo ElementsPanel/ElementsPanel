@@ -610,8 +610,6 @@ onMounted(async () => {
     justify-content: center;
     align-items: center;
     background-color: rgba(128, 128, 128, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     border: 2px dashed var(--color-primary);
     border-radius: 8px;
     pointer-events: none;

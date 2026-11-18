@@ -1225,7 +1225,6 @@ const isMdiIcon = (icon: Component | string): icon is `mdi-${string}` => typeof 
     padding: 8px 4px;
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(8px);
     opacity: 0.65;
     transform: scale(1.05);
 }

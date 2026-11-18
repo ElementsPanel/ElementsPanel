@@ -27,11 +27,6 @@ body:is(.app-light-extend-theme, .app-dark-extend-theme) {
 
   .card-panel {
     background-color: var(--level-1-bg-color) !important;
-    backdrop-filter: saturate(180%) blur(20px) !important;
-  }
-
-  .inner-card-wrapper {
-    backdrop-filter: saturate(180%) blur(20px) !important;
   }
 }
 
@@ -50,7 +45,6 @@ body:is(.app-light-extend-theme, .app-dark-extend-theme) {
 
   .terminal-wrapper {
     background-color: rgba(0, 0, 0, 0.8) !important;
-    backdrop-filter: saturate(180%) blur(20px) !important;
   }
 
   .app-header-content-for-phone {
@@ -71,7 +65,6 @@ body:is(.app-light-extend-theme, .app-dark-extend-theme) {
 
   .terminal-wrapper {
     background-color: var(--level-1-bg-color) !important;
-    backdrop-filter: saturate(180%) blur(20px) !important;
   }
 }
 

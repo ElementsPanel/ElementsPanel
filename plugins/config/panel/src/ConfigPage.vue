@@ -1699,7 +1699,6 @@ const confirmAction = async () => {
   overflow: hidden;
   border-radius: 24px;
   background: var(--background-color-white);
-  backdrop-filter: saturate(180%) blur(20px);
   color: var(--text-color);
 }
 

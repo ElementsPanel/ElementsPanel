@@ -265,7 +265,6 @@ useEventListener("keydown", (event) => {
   background-color: var(--app-header-bg) !important;
   color: var(--app-header-text-color) !important;
   box-shadow: none;
-  backdrop-filter: saturate(180%) blur(20px);
 }
 
 .phone-toolbar-content {
@@ -317,7 +316,6 @@ useEventListener("keydown", (event) => {
   color: var(--app-header-text-color) !important;
   border-radius: 0;
   box-shadow: none;
-  backdrop-filter: saturate(180%) blur(20px);
 }
 
 .app-header-wrapper :deep(.v-toolbar__content),

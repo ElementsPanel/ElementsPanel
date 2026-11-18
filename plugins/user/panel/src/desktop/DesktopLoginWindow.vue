@@ -188,7 +188,6 @@ const handleNext = async () => {
     inset: 0;
     z-index: 500;
     background: var(--desktop-login-overlay);
-    backdrop-filter: blur(2px);
 }
 
 .desktop-login-window {
