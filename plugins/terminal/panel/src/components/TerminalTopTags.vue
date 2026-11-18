@@ -342,28 +342,7 @@ const cards = computed<PerfCardItem[]>(() => {
   }
 }
 
-.perf-card__bar--flow {
-  width: 35%;
-  background: linear-gradient(90deg,
-      transparent 0%,
-      var(--color-green-4) 40%,
-      var(--color-green-5) 60%,
-      transparent 100%);
-  animation: bar-flow 2s ease-in-out infinite;
-}
-
-@keyframes bar-flow {
-  0% {
-    transform: translateX(-100%);
-  }
-
-  100% {
-    transform: translateX(400%);
-  }
-}
-
 @keyframes bar-pulse {
-
   0%,
   100% {
     opacity: 1;
@@ -375,7 +354,6 @@ const cards = computed<PerfCardItem[]>(() => {
 }
 
 @keyframes icon-pulse {
-
   0%,
   100% {
     transform: scale(1);

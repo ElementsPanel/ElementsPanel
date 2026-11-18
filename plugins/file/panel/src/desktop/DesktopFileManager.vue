@@ -942,18 +942,6 @@ onUnmounted(() => {
     padding: 8px 12px;
     flex-shrink: 0;
     flex-wrap: wrap;
-
-    &__left,
-    &__right {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    &__left {
-        flex: 1;
-        min-width: 0;
-    }
 }
 
 .dfm-upload-progress {
@@ -965,10 +953,6 @@ onUnmounted(() => {
         align-items: center;
         gap: 4px;
         font-size: 11px;
-    }
-
-    &__bar {
-        margin: 4px 0;
     }
 }
 
@@ -992,6 +976,7 @@ onUnmounted(() => {
     flex-shrink: 0;
     gap: 8px;
     margin-bottom: 8px;
+    padding: 8px 12px;
 }
 
 .dfm-disk-select :deep(.v-field) {
@@ -1006,31 +991,25 @@ onUnmounted(() => {
     flex: 1;
     min-width: 0;
     min-height: var(--file-manager-path-height);
-
-    &__item {
-        padding: 6px 8px;
-        cursor: pointer;
-        display: inline-block;
-        transition: all 0.2s;
-        min-width: 32px;
-        text-align: center;
-        font-size: 12px;
-
-        &:hover {
-            background: var(--desktop-window-control-hover);
-        }
-    }
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2px;
 }
 
 .dfm-file-name {
     color: inherit;
     font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .dfm-permission {
     display: flex;
     gap: 24px;
     flex-wrap: wrap;
+    margin: 10px 0;
 }
 
 .dfm-table-wrapper {
@@ -1099,86 +1078,10 @@ onUnmounted(() => {
     z-index: 10;
 }
 
-.dfm-action-btn {
-    color: var(--desktop-window-text-muted);
-    font-size: 11px;
-    padding: 0 4px;
-    min-width: 20px;
-    height: 20px;
-
-    &:hover {
-        color: var(--desktop-window-text);
-        background: var(--desktop-window-control-hover);
-    }
-}
-
-.dfm-dialog__warn-icon {
-    font-size: 36px;
-    color: var(--color-warning, #faad14);
-}
-
-.dfm-dialog__desc {
-    margin: 0;
-    color: var(--desktop-window-text);
-    font-size: 14px;
-    text-align: center;
-    line-height: 1.6;
-}
-
-.dfm-overwrite-options {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 4px;
-}
-
-.dfm-btn {
-    padding: 7px 16px;
-    border: none;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s;
-    color: var(--desktop-window-text);
-    white-space: nowrap;
-
-    &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    &--primary {
-        background: var(--color-blue-5, #1677ff);
-        color: #fff;
-
-        &:hover:not(:disabled) {
-            background: var(--color-blue-6, #4096ff);
-        }
-    }
-
-    &--default {
-        background: var(--desktop-window-titlebar-bg);
-        border: 1px solid var(--desktop-window-border);
-
-        &:hover:not(:disabled) {
-            background: var(--desktop-window-control-hover);
-        }
-    }
-}
-
 .dfm-vuetify { min-width: 0; }
-.dfm-vuetify .dfm-toolbar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; }
 .dfm-vuetify .dfm-toolbar > .v-input { max-width: 260px; }
-.dfm-nav { display: flex; align-items: stretch; gap: 8px; padding: 8px 12px; }
-.dfm-breadcrumbs { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; }
 .dfm-breadcrumb-separator { margin-left: 8px; opacity: 0.5; }
 .dfm-menu-list { display: flex; flex-direction: column; gap: 2px; padding: 8px !important; }
 .dfm-menu-list .v-btn { justify-content: flex-start; }
-.dfm-file-name { display: inline-flex; align-items: center; gap: 8px; }
-.dfm-loading-dialog { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 32px; opacity: 0.65; }
 .dfm-dialog-label { margin: 12px 0 4px; font-weight: 600; }
-.dfm-permission { margin: 10px 0; }
 </style>

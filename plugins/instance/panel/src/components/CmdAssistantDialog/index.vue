@@ -155,5 +155,3 @@ const actions = [
     </VCard>
   </VDialog>
 </template>
-
-<style lang="scss" scoped></style>

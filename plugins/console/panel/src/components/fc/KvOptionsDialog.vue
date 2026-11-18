@@ -163,5 +163,3 @@ const operation = (type: "add" | "del", index = 0) => {
     </VCard>
   </VDialog>
 </template>
-
-<style lang="scss" scoped></style>

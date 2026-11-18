@@ -374,14 +374,6 @@ onMounted(async () => {
     border-bottom: 1px solid var(--desktop-window-border);
     flex-shrink: 0;
 
-    &__left {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 13px;
-        font-weight: 500;
-    }
-
     &__right {
         display: flex;
         align-items: center;
@@ -501,11 +493,7 @@ onMounted(async () => {
         border-radius: 4px;
     }
 
-    &__time {
-        font-size: 11px;
-        color: var(--desktop-window-text-muted);
-    }
-
+    &__time,
     &__count {
         font-size: 11px;
         color: var(--desktop-window-text-muted);
@@ -552,10 +540,6 @@ onMounted(async () => {
 
 .ds-action-row {
     margin-bottom: 8px;
-}
-
-.w-100 {
-    width: 100%;
 }
 
 .ds-dialog-btn {

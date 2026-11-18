@@ -1,7 +1,6 @@
 @layer vuetify-core, vuetify-components, vuetify-overrides, vuetify-utilities, vuetify-final;
 
 @layer vuetify-core.reset {
-
   h1,
   h2,
   h3,
@@ -31,7 +30,6 @@
   --font-h2: 30px;
   --font-h1: 36px;
 
-  --phone-width: 992px;
   --app-max-width: 1360px;
 
   --color-always-white: #ffffff;

@@ -362,24 +362,14 @@ onUnmounted(() => {
     }
 }
 
-.ma-select {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-
-    &__input {
-        min-width: 180px;
-        max-width: 220px;
-    }
+.ma-select__input {
+    min-width: 180px;
+    max-width: 220px;
 }
 
-.ma-search {
-    position: relative;
-
-    &__input {
-        width: 180px;
-        min-width: 0;
-    }
+.ma-search__input {
+    width: 180px;
+    min-width: 0;
 }
 
 .ma-btn {

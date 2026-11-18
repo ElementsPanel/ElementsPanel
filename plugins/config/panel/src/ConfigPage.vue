@@ -1920,12 +1920,7 @@ const confirmAction = async () => {
   overflow: hidden;
 }
 
-.plugin-config-list :deep(.v-list-item-title) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
+.plugin-config-list :deep(.v-list-item-title),
 .plugin-config-list :deep(.v-list-item-subtitle) {
   overflow: hidden;
   text-overflow: ellipsis;

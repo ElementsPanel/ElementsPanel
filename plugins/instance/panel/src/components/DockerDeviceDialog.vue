@@ -132,12 +132,4 @@ onMounted(() => {
   overflow-y: auto;
 }
 
-.flex-center {
-  display: flex;
-  align-items: center;
-}
-
-.flex-between {
-  justify-content: space-between;
-}
 </style>

@@ -676,83 +676,12 @@ const getInstanceStatusLabel = (status: number): string => {
             background: var(--desktop-window-control-hover);
         }
     }
-
-    &--danger {
-        background: var(--color-red-5, #ff4d4f);
-        color: #fff;
-
-        &:hover:not(:disabled) {
-            background: var(--color-red-6, #ff7875);
-        }
-    }
-}
-
-.du-table-wrap {
-    flex: 1;
-    overflow-y: auto;
-    border: 1px solid var(--desktop-window-border);
-    border-radius: 8px;
 }
 
 .du-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 13px;
-
-    th {
-        text-align: left;
-        padding: 10px 12px;
-        color: var(--desktop-window-text-secondary);
-        font-weight: 500;
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-        background: var(--desktop-window-titlebar-bg);
-        border-bottom: 1px solid var(--desktop-window-border);
-        white-space: nowrap;
-    }
-
-    td {
-        padding: 10px 12px;
-        color: var(--desktop-window-text);
-        border-bottom: 1px solid var(--desktop-window-border);
-    }
-
-    &__row {
-        transition: background 0.15s;
-
-        &:hover {
-            background: var(--desktop-window-control-hover);
-        }
-    }
-
-    &__col--name {
-        min-width: 140px;
-    }
-
-    &__col--perm {
-        min-width: 80px;
-    }
-
-    &__col--time {
-        min-width: 140px;
-        white-space: nowrap;
-    }
-
-    &__col--inst {
-        text-align: center;
-        min-width: 60px;
-    }
-
-    &__col--badge {
-        text-align: center;
-        min-width: 50px;
-    }
-
-    &__col--actions {
-        min-width: 120px;
-        text-align: right;
-    }
 }
 
 .du-user-name {
@@ -766,27 +695,7 @@ const getInstanceStatusLabel = (status: number): string => {
     }
 }
 
-.du-perm-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 500;
-
-    &--admin {
-        background: rgba(255, 193, 7, 0.15);
-        color: #ffc107;
-    }
-
-    &--user {
-        background: rgba(22, 119, 255, 0.15);
-        color: #1677ff;
-    }
-}
-
 .du-badge-icon {
-    font-size: 14px;
-
     &--yes {
         color: var(--color-green-5, #52c41a);
     }
@@ -819,16 +728,6 @@ const getInstanceStatusLabel = (status: number): string => {
     &:hover {
         background: var(--desktop-window-control-hover);
         color: var(--desktop-window-text);
-    }
-
-    &--delete:hover {
-        background: rgba(255, 77, 79, 0.15);
-        color: #ff4d4f;
-    }
-
-    &--assign:hover {
-        background: rgba(22, 119, 255, 0.15);
-        color: #1677ff;
     }
 }
 
@@ -930,43 +829,6 @@ const getInstanceStatusLabel = (status: number): string => {
 .du-radio-group {
     display: flex;
     gap: 8px;
-}
-
-.du-radio {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 8px 12px;
-    background: var(--desktop-window-titlebar-bg);
-    border: 1px solid var(--desktop-window-border);
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.15s;
-    font-size: 13px;
-    color: var(--desktop-window-text-secondary);
-
-    input {
-        display: none;
-    }
-
-    &--active {
-        border-color: var(--color-blue-5, #1677ff);
-        background: rgba(22, 119, 255, 0.1);
-        color: var(--desktop-window-text);
-    }
-
-    &:hover {
-        border-color: var(--desktop-window-border);
-    }
-}
-
-.du-delete-text {
-    font-size: 13px;
-    color: var(--desktop-window-text);
-    line-height: 1.6;
-    margin: 0;
 }
 
 .du-assign-layout {
@@ -1095,11 +957,7 @@ const getInstanceStatusLabel = (status: number): string => {
             color: #faad14;
         }
 
-        &--1 {
-            background: rgba(255, 77, 79, 0.15);
-            color: #ff4d4f;
-        }
-
+        &--1,
         &---1 {
             background: rgba(255, 77, 79, 0.15);
             color: #ff4d4f;
@@ -1203,19 +1061,6 @@ const getInstanceStatusLabel = (status: number): string => {
     gap: 8px;
     padding: 8px;
     border-top: 1px solid var(--desktop-window-border);
-}
-
-.du-table-wrap::-webkit-scrollbar {
-    width: 4px;
-}
-
-.du-table-wrap::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.du-table-wrap::-webkit-scrollbar-thumb {
-    background: var(--desktop-window-border);
-    border-radius: 2px;
 }
 
 .du-assign-panel__body::-webkit-scrollbar {

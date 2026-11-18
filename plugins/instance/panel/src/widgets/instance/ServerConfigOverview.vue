@@ -96,7 +96,7 @@ onMounted(async () => {
 
       <VRow density="compact" class="server-config-row">
         <VCol cols="12">
-          <CardPanel style="height: 100%">
+          <CardPanel>
           <template #body>
             <VProgressLinear v-if="isLoading" indeterminate color="primary" class="mb-2" />
             <VList v-if="realFiles && realFiles.length > 0" lines="three" class="app-responsive-list">
@@ -137,26 +137,5 @@ onMounted(async () => {
 </template>
 
 <style lang="scss" scoped>
-.server-config-page {
-  width: 100%;
-  min-height: 100%;
-  overflow-x: hidden;
-}
-
-.server-config-page-container {
-  max-width: var(--app-max-width);
-  margin: 0 auto;
-  padding: 20px 24px 32px;
-}
-
-.server-config-row {
-  width: 100%;
-  margin: 0;
-}
-
-@media (max-width: 992px) {
-  .server-config-page-container {
-    padding: 16px 12px 28px;
-  }
-}
+@use "./server-config-page";
 </style>

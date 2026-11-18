@@ -108,7 +108,7 @@ onMounted(async () => {});
 
       <VRow density="compact" class="node-image-row">
         <VCol cols="12">
-        <CardPanel style="height: 100%">
+        <CardPanel>
           <template #body>
             <div>
                 <p class="text-body-medium text-medium-emphasis">
@@ -163,28 +163,7 @@ onMounted(async () => {});
 </template>
 
 <style lang="scss" scoped>
-.node-image-page {
-  width: 100%;
-  min-height: 100%;
-  overflow-x: hidden;
-}
-
-.node-image-page-container {
-  max-width: var(--app-max-width);
-  margin: 0 auto;
-  padding: 20px 24px 32px;
-}
-
-.node-image-row {
-  width: 100%;
-  margin: 0;
-}
-
-@media (max-width: 992px) {
-  .node-image-page-container {
-    padding: 16px 12px 28px;
-  }
-}
+@use "./page";
 
 .images-button {
   padding: 16px;
@@ -199,7 +178,4 @@ onMounted(async () => {});
   }
 }
 
-.drawer {
-  width: 500px;
-}
 </style>

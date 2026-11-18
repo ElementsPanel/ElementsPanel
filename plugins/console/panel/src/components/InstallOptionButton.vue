@@ -32,9 +32,6 @@ const handleClick = (e: Event, action: (e: Event) => void) => {
 
 <style lang="scss" scoped>
 .install-option-button {
-  --ai-gradient-from: #8b5cf6;
-  --ai-gradient-via: #06b6d4;
-  --ai-gradient-to: #3b82f6;
   cursor: pointer;
   border-radius: 12px;
   padding: 1px;
@@ -89,13 +86,6 @@ const handleClick = (e: Event, action: (e: Event) => void) => {
     font-size: 13px;
     color: var(--color-gray-7);
     line-height: 1.35;
-  }
-
-  .button-cta {
-    flex-shrink: 0;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--color-blue-6);
   }
 }
 </style>

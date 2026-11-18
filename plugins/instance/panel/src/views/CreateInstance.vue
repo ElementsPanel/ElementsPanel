@@ -405,17 +405,6 @@ const handleCreated = (instanceUuid: string) => {
 .node-card {
   height: 100%;
   cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    background-color 0.2s ease,
-    transform 0.2s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-  }
-}
-
-.method-card {
   border: 0 !important;
   background-color: var(
     --desktop-window-titlebar-bg,
@@ -432,7 +421,9 @@ const handleCreated = (instanceUuid: string) => {
     ) !important;
     box-shadow: none !important;
   }
+}
 
+.method-card {
   .v-card-text {
     display: flex;
     min-height: 190px;
@@ -466,23 +457,6 @@ const handleCreated = (instanceUuid: string) => {
 }
 
 .node-card {
-  border: 0 !important;
-  background-color: var(
-    --desktop-window-titlebar-bg,
-    rgba(var(--v-theme-surface-variant), 0.72)
-  ) !important;
-  box-shadow: none !important;
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    transform: none;
-    background-color: var(
-      --desktop-window-control-hover,
-      rgba(var(--v-theme-surface-variant), 0.88)
-    ) !important;
-    box-shadow: none !important;
-  }
-
   &.node-card--selected:hover {
     background-color: rgba(var(--v-theme-primary), 0.22) !important;
   }

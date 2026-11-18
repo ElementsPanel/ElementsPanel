@@ -237,10 +237,6 @@ useEventListener("keydown", (event) => {
   background-color: rgba(255, 193, 7, 0.34) !important;
 }
 
-.nav-button-success:hover {
-  background-color: rgba(64, 156, 216, 0.12) !important;
-}
-
 .nav-button-danger:hover {
   background-color: #ff19116f !important;
 }
@@ -414,16 +410,7 @@ useEventListener("keydown", (event) => {
   padding: 8px;
 }
 
-.icon-button {
-  font-size: 16px !important;
-}
-
 .nav-button:hover {
   background-color: rgba(215, 215, 215, 0.261);
-}
-
-.pro-mode-order-container {
-  @extend .nav-button;
-  @extend .nav-button-success;
 }
 </style>

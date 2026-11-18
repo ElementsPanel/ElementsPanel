@@ -285,21 +285,6 @@ const handleNext = async () => {
         background-color: var(--desktop-window-control-hover);
         color: var(--desktop-window-text);
     }
-
-    &--close:hover {
-        background-color: var(--desktop-window-control-close-hover-bg);
-        color: var(--desktop-window-control-close-hover-text);
-    }
-
-    &--disabled {
-        opacity: 0.3;
-        cursor: not-allowed;
-
-        &:hover {
-            background-color: transparent;
-            color: var(--desktop-window-text-secondary);
-        }
-    }
 }
 
 .desktop-login-body {
@@ -315,58 +300,11 @@ const handleNext = async () => {
     margin: 0 0 20px;
 }
 
-.desktop-login-form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
+.desktop-login-form,
 .desktop-login-fields-group {
     display: flex;
     flex-direction: column;
     gap: 12px;
-}
-
-.desktop-login-field {
-    display: flex;
-    align-items: center;
-    background: var(--desktop-login-input-bg);
-    border: 1px solid var(--desktop-login-input-border);
-    border-radius: 8px;
-    padding: 0 12px;
-    transition: all 0.2s;
-
-    &:focus-within {
-        border-color: var(--desktop-login-input-border-focus);
-        background: var(--desktop-login-input-bg);
-    }
-
-    .field-icon {
-        color: var(--desktop-window-text-muted);
-        font-size: 15px;
-        flex-shrink: 0;
-    }
-
-    input {
-        flex: 1;
-        background: transparent;
-        border: none;
-        outline: none;
-        padding: 11px 10px;
-        color: var(--desktop-login-input-text);
-        font-size: 14px;
-
-        &::placeholder {
-            color: var(--desktop-login-input-placeholder);
-        }
-
-        &:-webkit-autofill {
-            -webkit-text-fill-color: var(--desktop-login-input-text) !important;
-            -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
-            background-color: transparent !important;
-            transition: background-color 99999s ease-in-out 0s;
-        }
-    }
 }
 
 .desktop-login-btn {
@@ -415,54 +353,4 @@ const handleNext = async () => {
     }
 }
 
-.desktop-login-center {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 180px;
-    gap: 16px;
-
-    p {
-        color: var(--desktop-window-text-secondary);
-        font-size: 14px;
-        margin: 0;
-    }
-}
-
-.login-state-icon {
-    font-size: 48px;
-
-    &.spinning {
-        color: #1677ff;
-        animation: spin 1s linear infinite;
-    }
-
-    &.success {
-        color: #52c41a;
-        animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-}
-
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-@keyframes popIn {
-    from {
-        transform: scale(0);
-        opacity: 0;
-    }
-
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
 </style>

@@ -55,7 +55,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <CardPanel class="StatusBlock" style="height: 100%">
+  <CardPanel class="StatusBlock">
     <template #title>{{ realStatus?.title }}</template>
     <template #body>
       <div class="value">{{ realStatus?.value }}</div>

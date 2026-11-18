@@ -1,0 +1,22 @@
+.server-config-page {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+.server-config-page-container {
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  padding: 20px 24px 32px;
+}
+
+.server-config-row {
+  width: 100%;
+  margin: 0;
+}
+
+@media (max-width: 992px) {
+  .server-config-page-container {
+    padding: 16px 12px 28px;
+  }
+}

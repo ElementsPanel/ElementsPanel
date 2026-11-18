@@ -524,20 +524,10 @@ onMounted(async () => {
     border-bottom: 1px solid var(--desktop-window-border);
     flex-shrink: 0;
 
-    &__left,
     &__right {
         display: flex;
         align-items: center;
         gap: 8px;
-    }
-
-    &__title {
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--desktop-window-text);
-        display: flex;
-        align-items: center;
-        gap: 6px;
     }
 }
 
@@ -579,11 +569,6 @@ onMounted(async () => {
     &--sm {
         padding: 4px 10px;
         font-size: 11px;
-    }
-
-    &--icon {
-        padding: 4px 8px;
-        font-size: 14px;
     }
 
     &--primary {

@@ -1,3 +1,4 @@
+@use "./text-shadows";
 
 .cursor-pointer {
   cursor: pointer;
@@ -13,15 +14,11 @@
 }
 
 .text-black-shadow {
-  text-shadow:
-    6px -4px 15px #303030,
-    -7px 7px 15px #161616;
+  @include text-shadows.black;
 }
 
 .text-white-shadow {
-  text-shadow:
-    6px -4px 15px #e6dede,
-    -7px 7px 15px #e2e2e2;
+  @include text-shadows.white;
 }
 
 .text-center {
@@ -63,14 +60,6 @@
 
 .flex-row {
   flex-direction: row;
-}
-
-.justify-start {
-  justify-content: flex-start;
-}
-
-.justify-end {
-  justify-content: flex-end;
 }
 
 .flex-center {

@@ -423,11 +423,6 @@ onMounted(() => {
 </template>
 
 <style lang="scss" scoped>
-.search-input {
-  transition: all 0.4s;
-  text-align: center;
-  width: 50%;
-}
 
 .node-card {
   background: var(--background-color-white);
@@ -579,12 +574,6 @@ onMounted(() => {
 }
 
 @media (max-width: 992px) {
-  .search-input {
-    transition: all 0.4s;
-    text-align: center;
-    width: 100% !important;
-  }
-
   .node-card-title {
     padding: 16px 16px 8px;
   }
@@ -644,7 +633,4 @@ onMounted(() => {
   }
 }
 
-.search-input:hover {
-  width: 100%;
-}
 </style>

@@ -29,6 +29,8 @@ html {
 }
 
 // Hide the page shell scrollbar at the viewport edge while preserving feature-panel scrollbars.
+html,
+body,
 #app-mount-point,
 .main-content.app-layout-sidebar-only {
   scrollbar-width: none;
@@ -55,14 +57,6 @@ html {
   box-shadow: none !important;
 }
 
-// Hide the root scrollbar when html or body becomes the scrolling element.
-html,
-body {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  scrollbar-color: transparent transparent;
-}
-
 html::-webkit-scrollbar,
 body::-webkit-scrollbar,
 html::-webkit-scrollbar-thumb,
@@ -79,7 +73,6 @@ body::-webkit-scrollbar-track {
 // Sidebar mode scrolls the main column, so the mount point must not add another scrollbar.
 #app-mount-point:has(.app-layout-sidebar-only) {
   overflow-y: hidden;
-  scrollbar-gutter: auto;
 }
 
 .global-text-color {
@@ -355,23 +348,10 @@ body::-webkit-scrollbar-track {
   overflow-x: hidden;
   scrollbar-gutter: auto;
 
-  .breadcrumbs,
-  .main-layout-container {
+  .breadcrumbs {
     margin: 0 auto;
     width: calc(100% - 48px) !important;
     max-width: var(--app-max-width) !important;
-  }
-
-  .main-layout-container {
-    box-sizing: border-box;
-    padding-left: 12px;
-    padding-right: 12px;
-
-    >.v-row {
-      width: 100%;
-      margin-left: 0 !important;
-      margin-right: 0 !important;
-    }
   }
 }
 
@@ -498,16 +478,6 @@ body::-webkit-scrollbar-track {
   padding: var(--app-dialog-actions-padding);
 }
 
-.main-layout-container>.v-row {
-  width: 100%;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-}
-
-.main-layout-container {
-  min-width: 0;
-}
-
 // Set tooltip contrast independently because overlays are teleported.
 .v-tooltip>.v-overlay__content {
   background: #262626 !important;
@@ -585,110 +555,10 @@ body::-webkit-scrollbar-track {
   transform: translateX(-50%);
 }
 
-.package-card-content {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  justify-content: space-between;
-  height: 100%;
-  transition: all 0.3s ease;
-}
-
-.package-image-container {
-  overflow: hidden;
-  border-radius: 12px;
-}
-
-.package-info {
-  flex: 1;
-}
-
-.package-action {
-  display: flex;
-  justify-content: center;
-}
-
-.download-button {
-  margin: 0 auto;
-  transition: all 0.3s ease;
-  max-width: 140px;
-}
-
-.package-image {
-  user-select: none;
-  position: relative;
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
-  height: 160px;
-  background-color: var(--color-gray-1);
-}
-
-.v-card:hover .download-button {
-  transform: scale(1.08);
-  box-shadow:
-    0 8px 20px rgba(24, 144, 255, 0.4),
-    0 0 15px rgba(24, 144, 255, 0.2);
-  background: linear-gradient(45deg, #1890ff, #40a9ff);
-  border: none;
-  animation: pulse-glow 2s infinite;
-}
-
-.package-subtitle {
-  cursor: pointer;
-  background-color: var(--card-bottom-background-color);
-  color: rgb(255, 255, 255) !important;
-  padding: 8px;
-  font-size: 14px !important;
-  font-weight: 400 !important;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  text-align: center;
-  z-index: 1;
-  margin: 0;
-}
-
-.package-image-container-summary {
-  position: relative;
-}
-
 .selected {
   box-shadow: inset 0 0 0 1px var(--color-blue-6) !important;
   user-select: none;
   transition: all 0.3s;
-
-  &:hover {
-    box-shadow: inset 0 0 0 1.5px var(--color-blue-6);
-  }
-}
-
-@keyframes pulse-glow {
-
-  0%,
-  100% {
-    box-shadow:
-      0 8px 20px rgba(24, 144, 255, 0.4),
-      0 0 15px rgba(24, 144, 255, 0.2);
-  }
-
-  50% {
-    box-shadow:
-      0 8px 25px rgba(24, 144, 255, 0.6),
-      0 0 25px rgba(24, 144, 255, 0.4);
-  }
-}
-
-.compact-btn-right {
-  border-top-left-radius: 0 !important;
-  border-bottom-left-radius: 0 !important;
-}
-
-.compact-btn-left {
-  border-top-right-radius: 0 !important;
-  border-bottom-right-radius: 0 !important;
 }
 
 // Style list menus without overriding card or picker defaults.

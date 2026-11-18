@@ -92,20 +92,6 @@ onUnmounted(() => {
   </div>
 </template>
 
-<style scoped>
-.msl-attribution {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 12px;
-  color: rgb(var(--v-theme-primary));
-  font-size: 13px;
-  text-decoration: none;
-}
-.msl-attribution:hover {
-  text-decoration: underline;
-}
-.msl-attribution img {
-  object-fit: contain;
-}
+<style lang="scss" scoped>
+@use "../../assets/msl-attribution";
 </style>

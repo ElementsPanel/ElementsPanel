@@ -1278,26 +1278,6 @@ const isMdiIcon = (icon: Component | string): icon is `mdi-${string}` => typeof 
     height: 100%;
     display: flex;
     flex-direction: column;
-
-    &__header {
-        margin-bottom: 20px;
-
-        h3 {
-            font-size: 20px;
-            font-weight: 600;
-            color: #fff;
-            margin: 0 0 8px 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        p {
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.6);
-            margin: 0;
-        }
-    }
 }
 
 .desktop-content-wrapper {

@@ -39,8 +39,6 @@ const props = defineProps({
 </template>
 
 <style lang="scss" scoped>
-@import "@/assets/global.scss";
-
 .padding {
   padding: 16px;
 }

@@ -76,7 +76,7 @@ const handleNext = (key: string) => {
             </div>
           </VCol>
           <VCol lg="6">
-            <div class="text-left" style="text-align: left">
+            <div class="text-left">
               <h3 class="mb-24">
                 {{ formData.title }}
               </h3>
@@ -142,11 +142,6 @@ const handleNext = (key: string) => {
 
 .card-wrapper {
   min-height: 500px;
-}
-.btn-area {
-  position: absolute;
-  bottom: 16px;
-  right: 16px;
 }
 
 .quickstart-icon {

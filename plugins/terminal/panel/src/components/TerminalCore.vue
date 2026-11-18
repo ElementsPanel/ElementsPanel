@@ -363,7 +363,6 @@ onMounted(async () => {
     background-color: #1e1e1e;
     padding: 8px;
     border-radius: 12px;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
     .terminal-container {

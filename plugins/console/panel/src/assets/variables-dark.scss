@@ -1,5 +1,5 @@
 .app-dark-theme {
-  @extend .app-dark-base-color;
+  @extend %app-dark-base-color;
 
   color-scheme: dark;
 
@@ -10,29 +10,21 @@
   --background-color-white: var(--vscode-bg-color);
 
   --bottom-nav-background-color: rgb(40, 40, 40);
-  --bottom-nav-background-color-hover: #6864648f;
-  --float-box-bg-color: rgba(235, 235, 235, 0.2);
-  --gray-border-color: var(--color-gray-10);
 
   --login-panel-bg: rgba(56, 56, 56, 0.8);
 
   --app-header-bg: rgba(30, 30, 30, 0.6);
-  --app-header-bg-extend: rgba(30, 30, 30, 1);
   --app-header-text-color: var(--color-gray-9);
 
   --text-color: var(--color-gray-8);
 
-  --card-border-color: rgba(0, 0, 0, 0);
   --card-shadow-color: rgba(0, 0, 0, 0);
   --card-shadow-extend-color: rgba(0, 0, 0, 0);
 
-  --card-bottom-background-color: rgba(12, 12, 12, 0.8);
-
   --inner-card-hover-bg: linear-gradient(135deg, #2e2e2e 0%, #222 100%);
-
 }
 
-.app-dark-base-color {
+%app-dark-base-color {
   // https://ant.design/docs/spec/colors-cn
   --color-red-1: #2a1215;
   --color-red-2: #431418;

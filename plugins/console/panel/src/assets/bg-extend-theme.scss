@@ -1,10 +1,6 @@
-@import "./tools.scss";
+@use "./text-shadows";
 
-.bg-extend-css {
-  .card-panel {
-    backdrop-filter: saturate(180%) blur(20px);
-  }
-
+%bg-extend-css {
   .left-menu,
   .action-btn-item,
   .inner-card-wrapper,
@@ -20,12 +16,11 @@
   .inner-card-wrapper {
     backdrop-filter: saturate(180%) blur(20px) !important;
   }
-
 }
 
-.extend-light-css {
+%extend-light-css {
   .breadcrumbs {
-    @extend .text-white-shadow;
+    @include text-shadows.white;
   }
 
   .v-btn.text-error {
@@ -48,9 +43,9 @@
   }
 }
 
-.extend-dark-css {
+%extend-dark-css {
   .breadcrumbs {
-    @extend .text-black-shadow;
+    @include text-shadows.black;
   }
 
   .v-btn.text-error {
@@ -67,23 +62,19 @@
   --level-0-bg-color: #ffffffd0;
   --level-1-bg-color: #ffffffae;
   --level-2-bg-color: #ffffff84;
-  --primary-btn-color: #1669dccf;
-  --danger-btn-color: #d32f2fac;
   --background-color-white: var(--level-1-bg-color);
 
-  @extend .bg-extend-css;
-  @extend .extend-light-css;
+  @extend %bg-extend-css;
+  @extend %extend-light-css;
 }
 
 .app-dark-extend-theme {
   --level-0-bg-color: #000000b4;
   --level-1-bg-color: #000000a9;
   --level-2-bg-color: #1919196b;
-  --primary-btn-color: #1669dccf;
-  --danger-btn-color: #d32f2fac;
   --background-color-white: var(--level-1-bg-color);
-  @extend .bg-extend-css;
-  @extend .extend-dark-css;
+  @extend %bg-extend-css;
+  @extend %extend-dark-css;
 }
 
 @media (max-width: 992px) {

@@ -490,9 +490,6 @@ onUnmounted(() => {
         pointer-events: none;
         will-change: transform, opacity;
     }
-
-    &--maximized {
-    }
 }
 
 .desktop-window-enter-from,

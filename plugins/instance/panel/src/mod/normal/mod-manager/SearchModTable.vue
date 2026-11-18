@@ -47,8 +47,9 @@ const emitPageChange = (page: number, itemsPerPage: number) => emit("change", { 
 <style scoped>
 .search-mod-name, .search-mod-version { display: flex; flex-direction: column; min-width: 0; text-align: left; }
 .search-mod-name strong, .search-mod-version code, .search-mod-version small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.search-mod-name small { opacity: 0.6; font-size: 11px; }
 .search-mod-name small {
+  opacity: 0.6;
+  font-size: 11px;
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;

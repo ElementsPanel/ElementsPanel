@@ -715,7 +715,10 @@ onUnmounted(() => {
   margin: 0;
   flex-direction: column;
 }
-.console-state-title {
+.console-state-title,
+.command-history-title,
+.console-function-title,
+.summary-card :deep(.v-card-title) {
   display: flex;
   align-items: center;
   padding: 18px 20px 8px;
@@ -746,13 +749,6 @@ onUnmounted(() => {
 }
 .console-state-empty {
   padding: 0;
-}
-.command-history-title {
-  display: flex;
-  align-items: center;
-  padding: 18px 20px 8px;
-  color: var(--text-color);
-  font-size: 16px;
 }
 .command-history-content {
   display: flex;
@@ -789,12 +785,7 @@ onUnmounted(() => {
   order: 1;
 }
 .console-function-title {
-  display: flex;
   flex-shrink: 0;
-  align-items: center;
-  padding: 18px 20px 8px;
-  color: var(--text-color);
-  font-size: 16px;
 }
 .console-function-item {
   height: 100%;
@@ -825,13 +816,6 @@ onUnmounted(() => {
 }
 .summary-card {
   background: var(--background-color-white);
-}
-.summary-card :deep(.v-card-title) {
-  display: flex;
-  align-items: center;
-  padding: 18px 20px 8px;
-  color: var(--text-color);
-  font-size: 16px;
 }
 .summary-card :deep(.v-card-text) {
   padding: 10px 20px 20px;

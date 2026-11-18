@@ -275,10 +275,6 @@ const disable2FACode = async () => {
     margin-top: 4px;
 }
 
-.mr-8 {
-    margin-right: 8px;
-}
-
 .two-fa-setup {
     background: var(--desktop-window-titlebar-bg);
     padding: 16px;

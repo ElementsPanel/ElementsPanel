@@ -1,34 +1,26 @@
 .app-light-theme {
-  @extend .app-light-base-color;
+  @extend %app-light-base-color;
 
   color-scheme: light;
 
   --background-color: rgb(245, 245, 245);
   --background-color-white: var(--color-gray-1);
-  --float-box-bg-color: rgba(235, 235, 235, 0.2);
-  --gray-border-color: var(--color-gray-10);
   --bottom-nav-background-color: rgb(255, 255, 255);
-  --bottom-nav-background-color-hover: rgba(167, 162, 162, 0.26);
 
   --login-panel-bg: rgb(255, 255, 255, 1);
 
   --app-header-bg: rgba(255, 255, 255, 0.8);
-  --app-header-bg-extend: rgba(255, 255, 255, 0.8);
   --app-header-text-color: var(--color-gray-10);
 
   --text-color: var(--color-gray-10);
 
-  --card-border-color: rgba(0, 0, 0, 0);
   --card-shadow-color: rgba(0, 0, 0, 0);
   --card-shadow-extend-color: rgba(0, 0, 0, 0);
 
-  --card-bottom-background-color: rgba(12, 12, 12, 0.6);
-
   --inner-card-hover-bg: linear-gradient(135deg, #e8e8e8 0%, #d4d4d4 100%);
-
 }
 
-.app-light-base-color {
+%app-light-base-color {
   // https://ant.design/docs/spec/colors-cn
   --color-red-1: #fff1f0;
   --color-red-2: #ffccc7;

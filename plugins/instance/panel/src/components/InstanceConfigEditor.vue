@@ -48,7 +48,7 @@ const parsedConfig = computed(() => jsonToMap(props.config));
   </template>
   <template v-else>
   <VCol cols="12">
-    <CardPanel style="height: 100%" class="config-editor-panel">
+    <CardPanel class="config-editor-panel">
       <template #body>
           <p v-if="data">
             {{ data?.desc }}
@@ -60,7 +60,7 @@ const parsedConfig = computed(() => jsonToMap(props.config));
     </CardPanel>
   </VCol>
   <VCol v-if="data" cols="12">
-    <CardPanel style="height: 100%" class="config-editor-panel">
+    <CardPanel class="config-editor-panel">
       <template #body>
         <VRow v-if="!isEmpty(props.config)" class="config-option-grid">
           <VCol v-for="(item, index) in parsedConfig" :key="index" cols="12" sm="6" lg="4">

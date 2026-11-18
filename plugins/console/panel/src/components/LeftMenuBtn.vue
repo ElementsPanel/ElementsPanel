@@ -24,7 +24,6 @@ defineProps<{
   color: var(--color-blue-5) !important;
 }
 .btn {
-  display: flex;
   text-align: center;
   display: flex;
   align-items: center;

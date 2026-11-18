@@ -38,16 +38,6 @@ defineExpose({
   height: 100%;
 }
 
-.iframe-modal :deep(.app-dialog-content) {
-  padding-top: 0;
-}
-
-.iframe-modal :deep(.app-dialog-card) {
-  height: min(90vh, 960px);
-  display: flex;
-  flex-direction: column;
-}
-
 .iframe-modal-content {
   width: 100%;
   height: 80vh;

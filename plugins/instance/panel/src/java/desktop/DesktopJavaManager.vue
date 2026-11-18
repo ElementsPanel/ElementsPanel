@@ -381,19 +381,6 @@ onUnmounted(() => {
         &:hover:not(:disabled) {
             background: rgba(22, 119, 255, 0.2);
         }
-
-        &--primary:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-    }
-
-    &--default {
-        background: var(--desktop-window-titlebar-bg);
-
-        &:hover:not(:disabled) {
-            background: var(--desktop-window-control-hover);
-        }
     }
 }
 </style>

@@ -819,12 +819,6 @@ onUnmounted(() => {
     align-items: center;
     gap: 6px;
 
-    &__label {
-        color: var(--desktop-window-text-secondary);
-        font-size: 12px;
-        white-space: nowrap;
-    }
-
     &__input {
         max-width: 200px;
     }

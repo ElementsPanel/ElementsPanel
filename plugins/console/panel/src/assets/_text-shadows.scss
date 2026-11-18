@@ -1,0 +1,11 @@
+@mixin black {
+  text-shadow:
+    6px -4px 15px #303030,
+    -7px 7px 15px #161616;
+}
+
+@mixin white {
+  text-shadow:
+    6px -4px 15px #e6dede,
+    -7px 7px 15px #e2e2e2;
+}

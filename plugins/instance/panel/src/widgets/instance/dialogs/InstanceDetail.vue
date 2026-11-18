@@ -474,7 +474,6 @@ defineExpose({ openDialog });
 <style scoped>
 .field-title,
 .section-title { color: var(--text-color); font-size: 15px; font-weight: 600; margin-bottom: 8px; }
-.cursor-pointer { cursor: pointer; }
 .template-cover { height: 180px; overflow: hidden; border-radius: 12px; background: rgb(var(--v-theme-surface-variant)); }
 .template-cover-placeholder { height: 100%; display: flex; align-items: center; justify-content: center; color: rgba(var(--v-theme-on-surface-variant), 0.5); }
 </style>

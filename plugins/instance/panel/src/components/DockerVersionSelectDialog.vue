@@ -79,6 +79,4 @@ defineExpose({
   text-align: right;
 }
 
-.docker-card {
-}
 </style>

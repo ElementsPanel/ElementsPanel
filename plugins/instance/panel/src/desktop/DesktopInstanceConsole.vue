@@ -748,12 +748,6 @@ onUnmounted(() => {
         overflow: auto;
         padding: 16px;
     }
-
-    &--full {
-        .dim-dialog__body {
-            padding: 0;
-        }
-    }
 }
 
 .dim-placeholder {

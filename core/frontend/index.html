@@ -24,17 +24,6 @@
       --loading-bg-color: #f3efef;
       --loading-color: #2a2828;
       --loading-subtitle-color: #3b3939;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      #before-app-mounted {
-        --loading-bg-color: #242323;
-        --loading-color: #f3efef;
-        --loading-subtitle-color: #9d9999;
-      }
-    }
-
-    #before-app-mounted {
       background: var(--loading-bg-color);
       color: var(--loading-color);
       position: fixed;
@@ -47,6 +36,14 @@
       justify-content: center;
       align-items: center;
       overflow: hidden;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      #before-app-mounted {
+        --loading-bg-color: #242323;
+        --loading-color: #f3efef;
+        --loading-subtitle-color: #9d9999;
+      }
     }
 
     #before-app-mounted .loading-box {
@@ -98,7 +95,6 @@
     }
 
     @keyframes loading-dots-bounce {
-
       0%,
       80%,
       100% {

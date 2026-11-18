@@ -598,88 +598,12 @@ const reconnectNode = async (node: NodeStatus) => {
       background: var(--desktop-window-control-hover);
     }
   }
-
-  &--danger {
-    background: var(--color-red-5, #ff4d4f);
-    color: #fff;
-
-    &:hover:not(:disabled) {
-      background: var(--color-red-6, #ff7875);
-    }
-  }
-}
-
-.dn-table-wrap {
-  flex: 1;
-  overflow-y: auto;
-  border: 1px solid var(--desktop-window-border);
-  border-radius: 8px;
 }
 
 .dn-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
-
-  th {
-    text-align: left;
-    padding: 10px 12px;
-    color: var(--desktop-window-text-secondary);
-    font-weight: 500;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    background: var(--desktop-window-titlebar-bg);
-    border-bottom: 1px solid var(--desktop-window-border);
-    white-space: nowrap;
-  }
-
-  td {
-    padding: 10px 12px;
-    color: var(--desktop-window-text);
-    border-bottom: 1px solid var(--desktop-window-border);
-  }
-
-  &__row {
-    transition: background 0.15s;
-
-    &:hover {
-      background: var(--desktop-window-control-hover);
-    }
-  }
-
-  &__col--status {
-    min-width: 40px;
-  }
-
-  &__col--socket {
-    min-width: 40px;
-  }
-
-  &__col--version {
-    min-width: 40px;
-  }
-
-  &__col--name {
-    min-width: 140px;
-  }
-
-  &__col--ip {
-    min-width: 120px;
-  }
-
-  &__col--port {
-    min-width: 80px;
-  }
-
-  &__col--prefix {
-    min-width: 100px;
-  }
-
-  &__col--actions {
-    min-width: 80px;
-    text-align: right;
-  }
 }
 
 .dn-node-name {
@@ -694,8 +618,6 @@ const reconnectNode = async (node: NodeStatus) => {
 }
 
 .dn-badge-icon {
-  font-size: 14px;
-
   &--yes {
     color: var(--color-green-5, #52c41a);
   }
@@ -706,14 +628,6 @@ const reconnectNode = async (node: NodeStatus) => {
 
   &--warn {
     color: var(--color-warning, #faad14);
-  }
-
-  &--loading {
-    color: var(--desktop-window-text-muted);
-  }
-
-  &--dash {
-    color: var(--desktop-window-text-muted);
   }
 }
 
@@ -740,16 +654,6 @@ const reconnectNode = async (node: NodeStatus) => {
   &:hover {
     background: var(--desktop-window-control-hover);
     color: var(--desktop-window-text);
-  }
-
-  &--reconnect:hover {
-    background: rgba(22, 119, 255, 0.15);
-    color: #1677ff;
-  }
-
-  &--delete:hover {
-    background: rgba(255, 77, 79, 0.15);
-    color: #ff4d4f;
   }
 }
 
@@ -813,23 +717,4 @@ const reconnectNode = async (node: NodeStatus) => {
   margin-top: 8px;
 }
 
-.dn-delete-text {
-  font-size: 13px;
-  color: var(--desktop-window-text);
-  line-height: 1.6;
-  margin: 0;
-}
-
-.dn-table-wrap::-webkit-scrollbar {
-  width: 4px;
-}
-
-.dn-table-wrap::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.dn-table-wrap::-webkit-scrollbar-thumb {
-  background: var(--desktop-window-border);
-  border-radius: 2px;
-}
 </style>

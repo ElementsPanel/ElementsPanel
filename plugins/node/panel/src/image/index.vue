@@ -201,7 +201,7 @@ onMounted(async () => {
 
       <VRow density="compact" class="node-image-row">
         <VCol cols="12">
-        <CardPanel style="height: 100%">
+        <CardPanel>
           <template #title>
             {{ t("TXT_CODE_COMMON_REMOTE_DAEMON_IMAGE_LIST") }}
           </template>
@@ -221,7 +221,7 @@ onMounted(async () => {
       </VCol>
 
       <VCol cols="12">
-        <CardPanel style="height: 100%">
+        <CardPanel>
           <template #title>
             {{ t("TXT_CODE_COMMON_REMOTE_HOST_CONTAINER_LIST") }}
           </template>
@@ -243,26 +243,5 @@ onMounted(async () => {
 </template>
 
 <style lang="scss" scoped>
-.node-image-page {
-  width: 100%;
-  min-height: 100%;
-  overflow-x: hidden;
-}
-
-.node-image-page-container {
-  max-width: var(--app-max-width);
-  margin: 0 auto;
-  padding: 20px 24px 32px;
-}
-
-.node-image-row {
-  width: 100%;
-  margin: 0;
-}
-
-@media (max-width: 992px) {
-  .node-image-page-container {
-    padding: 16px 12px 28px;
-  }
-}
+@use "./page";
 </style>
