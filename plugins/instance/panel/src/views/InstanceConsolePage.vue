@@ -29,6 +29,7 @@ import { parseTimestamp } from "@elementspanel/epanel-plugin-console/tools/time"
 import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
 import { INSTANCE_CRASH_TIMEOUT, INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@elementspanel/epanel-plugin-console/types/const";
+import { useElementSize } from "@vueuse/core";
 import { computed, onUnmounted, ref, watch, type ComponentPublicInstance } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
@@ -90,6 +91,10 @@ const instanceGameServerInfo = computed(() => {
     players: `${instanceInfo.value.info.currentPlayers} / ${instanceInfo.value.info.maxPlayers}`,
     version: instanceInfo.value.info.version
   };
+});
+const basicInfoCard = ref<InstanceType<typeof VCard>>();
+const { height: basicInfoHeight } = useElementSize(basicInfoCard, undefined, {
+  box: "border-box"
 });
 const crashTimer = ref<ReturnType<typeof setTimeout>>();
 const terminalCoreRef = ref<{ focusCommandInput?: () => void }>();
@@ -416,12 +421,18 @@ onUnmounted(() => {
 
       <VRow v-if="instanceInfo" class="console-summary" density="comfortable">
         <VCol cols="12" lg="7" class="console-function-column">
-          <VCard v-if="instanceFunctionItems.length" class="console-function-card" rounded="xl" flat>
+          <VCard
+            v-if="instanceFunctionItems.length"
+            class="console-function-card"
+            :style="{ height: basicInfoHeight ? `${basicInfoHeight}px` : undefined }"
+            rounded="xl"
+            flat
+          >
             <VCardTitle class="console-function-title">
               <VIcon icon="mdi-view-grid-outline" color="info" class="mr-4" />
               {{ t("TXT_CODE_COMMON_MANAGE_INSTANCE") }}
             </VCardTitle>
-            <VCardText>
+            <VCardText class="console-function-content">
               <VRow class="console-function-grid" density="comfortable">
                 <VCol
                   v-for="(item, index) in instanceFunctionItems"
@@ -444,7 +455,7 @@ onUnmounted(() => {
           </VCard>
         </VCol>
         <VCol cols="12" lg="5" class="console-basic-column">
-          <VCard class="summary-card" rounded="xl" flat>
+          <VCard ref="basicInfoCard" class="summary-card" rounded="xl" flat>
             <VCardTitle
               ><VIcon icon="mdi-information-outline" color="info" class="mr-4" />{{
                 t("TXT_CODE_COMMON_BASIC_INFORMATION")
@@ -668,9 +679,17 @@ onUnmounted(() => {
   border-radius: calc(var(--app-dialog-radius) - var(--console-card-padding));
 }
 .console-function-card {
-  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   margin-top: 0;
   background: var(--background-color-white);
+}
+.console-function-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 .console-state-card {
   margin-top: 16px;
@@ -771,6 +790,7 @@ onUnmounted(() => {
 }
 .console-function-title {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   padding: 18px 20px 8px;
   color: var(--text-color);
@@ -804,7 +824,6 @@ onUnmounted(() => {
   color: var(--color-gray-7);
 }
 .summary-card {
-  height: 100%;
   background: var(--background-color-white);
 }
 .summary-card :deep(.v-card-title) {
