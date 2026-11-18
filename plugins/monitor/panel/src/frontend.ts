@@ -1,4 +1,4 @@
-import { isScopedInstance } from "@elementspanel/epanel-plugin-console/hooks/useInstanceActionAvailability";
+import { hasInstanceContext } from "@elementspanel/epanel-plugin-console/hooks/useInstanceActionAvailability";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import type { PanelFrontendPluginContext } from "@elements-panel/sdk";
 import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
@@ -28,7 +28,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
     mdiIcon: "mdi-file-document-outline",
     normalComponent: InstanceOperationLogAction,
     desktopComponent: DesktopInstanceOperationLog,
-    condition: (context) => isScopedInstance(context) && isAdmin.value,
+    condition: (context) => hasInstanceContext(context) && isAdmin.value,
     desktopInitialWidth: 680,
     desktopInitialHeight: 500
   });

@@ -1,5 +1,5 @@
 import type { PanelFrontendInstanceActionContext, PanelFrontendPluginContext } from "@elements-panel/sdk";
-import { isScopedInstance } from "@elementspanel/epanel-plugin-console/hooks/useInstanceActionAvailability";
+import { hasInstanceContext } from "@elementspanel/epanel-plugin-console/hooks/useInstanceActionAvailability";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
 import * as fileManagerApi from "./api";
@@ -23,7 +23,7 @@ const ROLE_USER = 1;
 const ROLE_ADMIN = 10;
 
 const isFileManagerAvailable = (context: PanelFrontendInstanceActionContext) => {
-  if (!isScopedInstance(context)) return false;
+  if (!hasInstanceContext(context)) return false;
   const { state, isAdmin } = useAppStateStore();
   return state.settings.canFileManager || isAdmin.value;
 };

@@ -1,13 +1,14 @@
 import type { PanelFrontendInstanceActionContext } from "@elements-panel/sdk";
 import { TYPE_MINECRAFT_BEDROCK, TYPE_MINECRAFT_JAVA } from "@/hooks/useInstance";
 
-/** Exclude global terminals from actions that require an instance. */
-export const isScopedInstance = ({
+export const hasInstanceContext = ({
   instanceId,
-  daemonId,
-  isGlobalTerminal
-}: PanelFrontendInstanceActionContext) =>
-  !isGlobalTerminal && Boolean(instanceId && daemonId);
+  daemonId
+}: PanelFrontendInstanceActionContext) => Boolean(instanceId && daemonId);
+
+/** Exclude global terminals from actions that require an instance. */
+export const isScopedInstance = (context: PanelFrontendInstanceActionContext) =>
+  !context.isGlobalTerminal && hasInstanceContext(context);
 
 export const hasNodeFeature = (
   { daemon }: PanelFrontendInstanceActionContext,

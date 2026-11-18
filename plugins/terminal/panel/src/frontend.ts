@@ -1,5 +1,5 @@
 import type { PanelFrontendPluginContext } from "@elements-panel/sdk";
-import { isScopedInstance } from "@elementspanel/epanel-plugin-console/hooks/useInstanceActionAvailability";
+import { hasInstanceContext } from "@elementspanel/epanel-plugin-console/hooks/useInstanceActionAvailability";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import * as terminalApi from "./api";
 import TerminalCore from "./components/TerminalCore.vue";
@@ -47,7 +47,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
     mdiIcon: "mdi-code-tags",
     normalComponent: TermConfig,
     desktopComponent: DesktopTermConfig,
-    condition: isScopedInstance,
+    condition: hasInstanceContext,
     desktopInitialWidth: 700,
     desktopInitialHeight: 500
   });
