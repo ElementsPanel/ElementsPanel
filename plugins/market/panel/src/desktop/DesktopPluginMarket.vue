@@ -308,13 +308,14 @@ const DesktopPluginDetailController = defineComponent({
         <div class="dpm-toolbar dpm-detail-toolbar">
           <div class="dpm-detail-toolbar__left">
             <VBtn
-              class="dpm-btn dpm-btn--back"
+              class="dpm-btn dpm-btn--icon dpm-btn--back"
               variant="text"
               :disabled="detail.busy"
+              :title="t('TXT_CODE_PLUGIN_MARKET_BACK')"
+              :aria-label="t('TXT_CODE_PLUGIN_MARKET_BACK')"
               @click="selectedPluginId = ''"
             >
               <VIcon icon="mdi-arrow-left" />
-              {{ t("TXT_CODE_PLUGIN_MARKET_BACK") }}
             </VBtn>
           </div>
           <div class="dpm-toolbar__actions">

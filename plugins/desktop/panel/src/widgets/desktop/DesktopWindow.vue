@@ -241,9 +241,17 @@ const DRAG_THRESHOLD = 20;
 
 const isDragThresholdMet = ref(false);
 const dragStartPos = ref({ x: 0, y: 0 });
+let activePointerId: number | undefined;
 
-const onMouseDownTitlebar = (e: MouseEvent) => {
-    if (e.button !== 0) return;
+const capturePointer = (e: PointerEvent) => {
+    const element = e.currentTarget;
+    if (element instanceof HTMLElement) element.setPointerCapture(e.pointerId);
+};
+
+const onPointerDownTitlebar = (e: PointerEvent) => {
+    if (e.button !== 0 || !e.isPrimary || activePointerId !== undefined) return;
+    activePointerId = e.pointerId;
+    capturePointer(e);
     if (props.maximized) {
         dragStartPos.value = { x: e.clientX, y: e.clientY };
         isDragThresholdMet.value = false;
@@ -260,15 +268,30 @@ const onMouseDownTitlebar = (e: MouseEvent) => {
     e.preventDefault();
 };
 
-const isOutsideBrowser = (e: MouseEvent) => {
+const isOutsideBrowser = (e: PointerEvent) => {
     return e.clientX <= 0 || e.clientX >= window.innerWidth - 1 ||
         e.clientY <= 0 || e.clientY >= window.innerHeight - 1;
 };
 
-const onMouseMove = (e: MouseEvent) => {
-    if (isOutsideBrowser(e)) {
+const finishPointerInteraction = (pointerId?: number) => {
+    if (pointerId !== undefined && activePointerId !== pointerId) return;
+    activePointerId = undefined;
+    if (isDragging.value) {
+        isDragging.value = false;
+        emit("moved", props.id, x.value, y.value);
+    }
+    if (isResizing.value) {
+        isResizing.value = false;
+        emit("resized", props.id, x.value, y.value, width.value, height.value);
+    }
+};
+const onPointerEnd = (e: PointerEvent) => finishPointerInteraction(e.pointerId);
+
+const onPointerMove = (e: PointerEvent) => {
+    if (activePointerId !== e.pointerId) return;
+    if (e.pointerType === "mouse" && isOutsideBrowser(e)) {
         if (isDragging.value || isResizing.value) {
-            onMouseUp();
+            finishPointerInteraction(e.pointerId);
         }
         return;
     }
@@ -339,19 +362,10 @@ const onMouseMove = (e: MouseEvent) => {
     }
 };
 
-const onMouseUp = () => {
-    if (isDragging.value) {
-        isDragging.value = false;
-        emit("moved", props.id, x.value, y.value);
-    }
-    if (isResizing.value) {
-        isResizing.value = false;
-        emit("resized", props.id, x.value, y.value, width.value, height.value);
-    }
-};
-
-const onResizeStart = (e: MouseEvent, dir: string) => {
-    if (props.maximized || !props.resizable) return;
+const onResizeStart = (e: PointerEvent, dir: string) => {
+    if (e.button !== 0 || !e.isPrimary || activePointerId !== undefined || props.maximized || !props.resizable) return;
+    activePointerId = e.pointerId;
+    capturePointer(e);
     isResizing.value = true;
     resizeDirection.value = dir;
     resizeStart.value = {
@@ -383,15 +397,18 @@ const onContextMenuTitlebar = (e: MouseEvent) => {
 onMounted(() => {
     if (boundsDiffer(requestedBounds, initialBounds)) reportBounds();
     window.addEventListener("resize", onViewportResize);
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    document.addEventListener("pointermove", onPointerMove);
+    document.addEventListener("pointerup", onPointerEnd);
+    document.addEventListener("pointercancel", onPointerEnd);
 });
 
 onUnmounted(() => {
     stopVisibilityAnimation();
     window.removeEventListener("resize", onViewportResize);
-    document.removeEventListener("mousemove", onMouseMove);
-    document.removeEventListener("mouseup", onMouseUp);
+    document.removeEventListener("pointermove", onPointerMove);
+    document.removeEventListener("pointerup", onPointerEnd);
+    document.removeEventListener("pointercancel", onPointerEnd);
+    activePointerId = undefined;
 });
 </script>
 
@@ -402,9 +419,9 @@ onUnmounted(() => {
         'desktop-window--dragging': isDragging,
         'desktop-window--resizing': isResizing,
         'desktop-window--animating': isAnimatingVisibility
-    }" :style="[windowStyle, { display: visible && renderWindow ? undefined : 'none' }]" @mousedown="handleFocus">
+    }" :style="[windowStyle, { display: visible && renderWindow ? undefined : 'none' }]" @pointerdown="handleFocus">
         <div class="window__frame">
-            <div class="window__titlebar" @mousedown="onMouseDownTitlebar" @dblclick="handleMaximize"
+            <div class="window__titlebar" @pointerdown="onPointerDownTitlebar" @dblclick="handleMaximize"
                 @contextmenu.stop.prevent="onContextMenuTitlebar">
                 <div class="window__titlebar-left">
                     <span v-if="icon" class="window__icon">
@@ -414,7 +431,7 @@ onUnmounted(() => {
                     </span>
                     <span :id="`${id}-title`" class="window__title"><slot name="title">{{ title }}</slot></span>
                 </div>
-                <div class="window__controls" @mousedown.stop>
+                <div class="window__controls" @pointerdown.stop>
                     <VBtn v-if="showMinimize" class="window__control window__control--minimize" icon="mdi-minus"
                         variant="text" density="compact" size="small" :aria-label="`Minimize ${title}`"
                         @click.stop="emit('minimize', id)" />
@@ -436,10 +453,10 @@ onUnmounted(() => {
         </div>
 
         <template v-if="!maximized && resizable">
-            <div class="window__resize-handle window__resize-handle--nw" @mousedown="onResizeStart($event, 'nw')"></div>
-            <div class="window__resize-handle window__resize-handle--ne" @mousedown="onResizeStart($event, 'ne')"></div>
-            <div class="window__resize-handle window__resize-handle--sw" @mousedown="onResizeStart($event, 'sw')"></div>
-            <div class="window__resize-handle window__resize-handle--se" @mousedown="onResizeStart($event, 'se')"></div>
+            <div class="window__resize-handle window__resize-handle--nw" @pointerdown="onResizeStart($event, 'nw')"></div>
+            <div class="window__resize-handle window__resize-handle--ne" @pointerdown="onResizeStart($event, 'ne')"></div>
+            <div class="window__resize-handle window__resize-handle--sw" @pointerdown="onResizeStart($event, 'sw')"></div>
+            <div class="window__resize-handle window__resize-handle--se" @pointerdown="onResizeStart($event, 'se')"></div>
         </template>
     </div>
 </template>
@@ -501,6 +518,7 @@ onUnmounted(() => {
     padding: 0 8px 0 12px;
     background: var(--desktop-window-titlebar-bg);
     cursor: default;
+    touch-action: none;
     user-select: none;
     flex-shrink: 0;
 
@@ -534,6 +552,8 @@ onUnmounted(() => {
 }
 
 .window__controls {
+    position: relative;
+    z-index: 11;
     display: flex;
     align-items: center;
     gap: 2px;
@@ -575,32 +595,35 @@ onUnmounted(() => {
 }
 
 .window__resize-handle {
+    --resize-handle-offset: -8px;
+
     position: absolute;
     width: 12px;
     height: 12px;
     z-index: 10;
+    touch-action: none;
 
     &--nw {
-        top: 0;
-        left: 0;
+        top: var(--resize-handle-offset);
+        left: var(--resize-handle-offset);
         cursor: nwse-resize;
     }
 
     &--ne {
-        top: 0;
-        right: 0;
+        top: var(--resize-handle-offset);
+        right: var(--resize-handle-offset);
         cursor: nesw-resize;
     }
 
     &--sw {
-        bottom: 0;
-        left: 0;
+        bottom: var(--resize-handle-offset);
+        left: var(--resize-handle-offset);
         cursor: nesw-resize;
     }
 
     &--se {
-        bottom: 0;
-        right: 0;
+        bottom: var(--resize-handle-offset);
+        right: var(--resize-handle-offset);
         cursor: nwse-resize;
 
         &::after {
@@ -612,6 +635,15 @@ onUnmounted(() => {
             height: 8px;
             background: transparent;
         }
+    }
+}
+
+@media (any-pointer: coarse) {
+    .window__resize-handle {
+        --resize-handle-offset: -20px;
+
+        width: 28px;
+        height: 28px;
     }
 }
 </style>
