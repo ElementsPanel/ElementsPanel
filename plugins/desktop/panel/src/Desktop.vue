@@ -23,7 +23,7 @@ import DesktopTaskbar from "./widgets/desktop/DesktopTaskbar.vue";
 import DesktopWindow from "./widgets/desktop/DesktopWindow.vue";
 import { migrateLegacyInstanceWindow } from "./legacyWindows";
 import { VIcon } from "vuetify/components";
-import { computed, markRaw, onMounted, onUnmounted, reactive, ref, watch, type Component, type CSSProperties } from "vue";
+import { computed, markRaw, nextTick, onMounted, onUnmounted, reactive, ref, watch, type Component, type CSSProperties } from "vue";
 import { useRouter } from "vue-router";
 
 const CloseOutlined = "mdi-close";
@@ -942,6 +942,28 @@ const ctxMenu = reactive({
     targetShortcutId: null as string | null,
     isTitlebar: false
 });
+let contextMenuRequest = 0;
+
+const closeContextMenu = () => {
+    contextMenuRequest++;
+    ctxMenu.visible = false;
+};
+
+const openContextMenu = async (
+    event: MouseEvent,
+    target: { windowId?: string; shortcutId?: string; titlebar?: boolean } = {}
+) => {
+    event.preventDefault();
+    const request = ++contextMenuRequest;
+    ctxMenu.visible = false;
+    ctxMenu.x = event.clientX;
+    ctxMenu.y = event.clientY;
+    ctxMenu.targetWindowId = target.windowId ?? null;
+    ctxMenu.targetShortcutId = target.shortcutId ?? null;
+    ctxMenu.isTitlebar = target.titlebar ?? false;
+    await nextTick();
+    if (request === contextMenuRequest && !showLoginOverlay.value) ctxMenu.visible = true;
+};
 
 const ctxMenuItems = computed<ContextMenuItem[]>(() => {
     const items: ContextMenuItem[] = [];
@@ -1006,43 +1028,20 @@ const ctxMenuItems = computed<ContextMenuItem[]>(() => {
 
 const onDesktopContextMenu = (e: MouseEvent) => {
     if (showLoginOverlay.value) return;
-    e.preventDefault();
-    ctxMenu.x = e.clientX;
-    ctxMenu.y = e.clientY;
-    ctxMenu.targetWindowId = null;
-    ctxMenu.targetShortcutId = null;
-    ctxMenu.isTitlebar = false;
-    ctxMenu.visible = true;
+    void openContextMenu(e);
 };
 
 const onTaskbarContextMenu = (e: MouseEvent, id: string) => {
-    e.preventDefault();
-    ctxMenu.x = e.clientX;
-    ctxMenu.y = e.clientY;
-    ctxMenu.targetWindowId = id;
-    ctxMenu.targetShortcutId = null;
-    ctxMenu.isTitlebar = false;
-    ctxMenu.visible = true;
+    void openContextMenu(e, { windowId: id });
 };
 
 const onTitlebarContextMenu = (e: MouseEvent, id: string) => {
-    e.preventDefault();
-    ctxMenu.x = e.clientX;
-    ctxMenu.y = e.clientY;
-    ctxMenu.targetWindowId = id;
-    ctxMenu.targetShortcutId = null;
-    ctxMenu.isTitlebar = true;
-    ctxMenu.visible = true;
+    void openContextMenu(e, { windowId: id, titlebar: true });
 };
 
 const onIconContextMenu = (e: MouseEvent, id: string) => {
     selectedIconId.value = id;
-    ctxMenu.x = e.clientX;
-    ctxMenu.y = e.clientY;
-    ctxMenu.targetWindowId = null;
-    ctxMenu.targetShortcutId = id;
-    ctxMenu.isTitlebar = false;
-    ctxMenu.visible = true;
+    void openContextMenu(e, { shortcutId: id });
 };
 
 const onDesktopKeyDown = (event: KeyboardEvent) => {
@@ -1053,7 +1052,7 @@ const onDesktopKeyDown = (event: KeyboardEvent) => {
 
     event.preventDefault();
     removeDesktopShortcut(selectedIconId.value);
-    ctxMenu.visible = false;
+    closeContextMenu();
 };
 
 onMounted(() => {
@@ -1066,13 +1065,9 @@ onUnmounted(() => {
     if (saveLayoutTimer) clearTimeout(saveLayoutTimer);
 });
 
-const closeContextMenu = () => {
-    ctxMenu.visible = false;
-};
-
 const onDesktopClick = () => {
     selectedIconId.value = null;
-    ctxMenu.visible = false;
+    closeContextMenu();
 };
 
 const exitDesktop = () => {
