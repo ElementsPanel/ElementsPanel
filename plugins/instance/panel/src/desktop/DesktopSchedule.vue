@@ -323,25 +323,27 @@ onMounted(async () => {
             </div>
         </template>
 
-        <div class="ds-form-group">
+        <div class="ds-form-group ds-actions">
             <div class="ds-actions-header">
                 <span>{{ t("TXT_CODE_COMMON_TASK_PAYLOAD") }}</span>
-                <VBtn size="small" variant="text" @click="addEmptyAction">
-                    <VIcon icon="mdi-plus-circle-outline" />
+                <VBtn size="small" variant="text" prepend-icon="mdi-plus-circle-outline" @click="addEmptyAction">
                     {{ t("TXT_CODE_COMMON_ADD_CONFIGURATION") }}
                 </VBtn>
             </div>
-            <div v-for="(action, index) in formTask.actions" :key="index" class="ds-action-row">
+            <div class="ds-actions-list">
+                <div v-for="(action, index) in formTask.actions" :key="index" class="ds-action-row">
                     <VSelect v-model="action.type" :items="actionTypeItems" variant="solo" density="compact" hide-details
+                        class="ds-action-type"
                         @update:model-value="action.payload = ''">
                       <template #no-data><Empty :icon="false" compact /></template>
                     </VSelect>
                     <VTextField v-model="action.payload" variant="solo" density="compact" hide-details
                         :placeholder="getInputPlaceholder(action) || t('TXT_CODE_COMMON_UNAVAILABLE')"
                         :disabled="!getInputPlaceholder(action)" />
-                    <VBtn icon variant="text" color="error" @click="delAction(index)">
+                    <VBtn icon size="small" variant="text" color="error" @click="delAction(index)">
                         <VIcon :icon="MinusCircleOutlined" />
                     </VBtn>
+                </div>
             </div>
         </div>
       <template #footer>
@@ -530,16 +532,49 @@ onMounted(async () => {
     color: var(--desktop-window-text-muted);
 }
 
+.ds-actions {
+    min-width: 0;
+    margin-top: 16px;
+    container-type: inline-size;
+}
+
 .ds-actions-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    margin-bottom: 12px;
     font-weight: 500;
 }
 
+.ds-actions-list {
+    display: grid;
+    gap: 12px;
+}
+
 .ds-action-row {
-    margin-bottom: 8px;
+    display: grid;
+    grid-template-columns: minmax(160px, 1fr) minmax(0, 2fr) max-content;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    background: var(--desktop-window-titlebar-bg);
+
+    > .v-input {
+        min-width: 0;
+    }
+}
+
+@container (max-width: 520px) {
+    .ds-action-row {
+        grid-template-columns: minmax(0, 1fr) max-content;
+    }
+
+    .ds-action-type {
+        grid-column: 1 / -1;
+    }
 }
 
 .ds-dialog-btn {
