@@ -56,7 +56,7 @@ defineExpose({
         <pre class="warning-dialog__message">{{ props.subTitle }}</pre>
         <VCheckbox v-model="checkbox" :label="props.checkText" hide-details density="comfortable" />
       </VCardText>
-      <VCardActions class="warning-dialog__actions">
+      <VCardActions>
         <VSpacer />
         <VBtn color="error" variant="text" rounded="xl" :disabled="!checkbox" @click="confirm">
           {{ t("TXT_CODE_COMMON_CONFIRM") }}
@@ -85,7 +85,4 @@ defineExpose({
   overflow-wrap: anywhere;
 }
 
-.warning-dialog__actions {
-  padding: 8px 16px 16px;
-}
 </style>

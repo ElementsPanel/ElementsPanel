@@ -145,6 +145,6 @@ defineExpose({ getElement: () => dialogElement.value?.$el });
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  padding: 12px 20px;
+  padding: var(--app-dialog-actions-padding, 8px);
 }
 </style>

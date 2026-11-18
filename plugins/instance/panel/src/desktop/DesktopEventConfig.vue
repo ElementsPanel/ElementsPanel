@@ -125,7 +125,7 @@ watch(instanceInfo, (val) => {
     &__footer {
         display: flex;
         justify-content: flex-end;
-        padding: 12px 16px;
+        padding: var(--app-dialog-actions-padding, 8px);
         border-top: 1px solid var(--desktop-window-border);
         flex-shrink: 0;
     }

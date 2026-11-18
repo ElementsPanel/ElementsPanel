@@ -383,7 +383,7 @@ onUnmounted(() => {
 }
 
 .ds-backup-footer {
-    padding: 12px 20px;
+    padding: var(--app-dialog-actions-padding, 8px);
     display: flex;
     justify-content: flex-end;
     gap: 8px;

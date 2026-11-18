@@ -307,7 +307,6 @@ defineExpose({ open });
         v-model:open="visible"
         :title="t('TXT_CODE_INSTANCE_BACKUP')"
         :max-width="800"
-        :footer="null"
         @after-close="afterClose"
     >
         <div class="instance-backup-container">
@@ -362,23 +361,23 @@ defineExpose({ open });
                   compact
                 />
             </div>
-            <div class="backup-footer">
-                <VBtn variant="text" @click="close">
-                    {{ t("TXT_CODE_COMMON_STOP") }}
-                </VBtn>
-                <VBtn variant="text" @click="handleEditEpbaklst">
-                    {{ t("TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST") }}
-                </VBtn>
-                <VBtn
-                    color="primary"
-                    :loading="loading"
-                    :disabled="taskStatus === 1"
-                    @click="startBackup"
-                >
-                    {{ t("TXT_CODE_INSTANCE_BACKUP_CREATE") }}
-                </VBtn>
-            </div>
         </div>
+        <template #footer>
+            <VBtn variant="text" @click="close">
+                {{ t("TXT_CODE_COMMON_STOP") }}
+            </VBtn>
+            <VBtn variant="text" @click="handleEditEpbaklst">
+                {{ t("TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST") }}
+            </VBtn>
+            <VBtn
+                color="primary"
+                :loading="loading"
+                :disabled="taskStatus === 1"
+                @click="startBackup"
+            >
+                {{ t("TXT_CODE_INSTANCE_BACKUP_CREATE") }}
+            </VBtn>
+        </template>
     </AppDialog>
 
     <component :is="fileEditorComponent" v-if="fileEditorComponent && daemonId && instanceUuid" ref="fileEditorDialog" :daemon-id="daemonId"
@@ -441,20 +440,10 @@ defineExpose({ open });
     justify-content: center;
 }
 
-.backup-footer {
-    display: flex;
-    justify-content: flex-end;
-    padding-top: 16px;
-    gap: 8px;
-}
-
 @media (max-width: 720px) {
     .backup-item-actions {
         flex-wrap: wrap;
     }
 
-    .backup-footer {
-        flex-wrap: wrap;
-    }
 }
 </style>

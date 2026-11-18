@@ -464,6 +464,7 @@ body::-webkit-scrollbar-track {
 
 :root {
   --app-dialog-radius: 24px;
+  --app-dialog-actions-padding: 8px;
   --app-list-inset: 16px;
 }
 
@@ -488,6 +489,13 @@ body::-webkit-scrollbar-track {
 .v-dialog>.v-overlay__content>.v-card,
 .v-dialog>.v-overlay__content>.v-sheet {
   border-radius: inherit !important;
+}
+
+.v-dialog>.v-overlay__content>.v-card>.v-card-actions,
+.v-dialog>.v-overlay__content>form>.v-card>.v-card-actions {
+  min-height: 0;
+  flex-wrap: wrap;
+  padding: var(--app-dialog-actions-padding);
 }
 
 .main-layout-container>.v-row {

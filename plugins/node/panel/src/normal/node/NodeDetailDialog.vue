@@ -152,7 +152,7 @@ defineExpose({ openDialog });
           />
         </VForm>
       </VCardText>
-      <VCardActions class="node-dialog-actions">
+      <VCardActions>
         <VBtn
           v-if="editMode"
           color="error"
@@ -175,10 +175,6 @@ defineExpose({ openDialog });
 .node-dialog-content {
   max-height: min(72vh, 760px);
   padding: 8px 24px 20px;
-}
-
-.node-dialog-actions {
-  padding: 8px 16px 12px;
 }
 
 .actions-spacer {

@@ -152,7 +152,7 @@ defineExpose({ openDialog });
           </div>
         </section>
       </VCardText>
-      <VCardActions class="tags-dialog__actions">
+      <VCardActions>
         <VSpacer />
         <VBtn variant="text" rounded="xl" @click="cancel">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn>
         <VBtn color="primary" variant="text" rounded="xl" :loading="saveLoading" @click="submit">
@@ -218,7 +218,4 @@ defineExpose({ openDialog });
   cursor: pointer;
 }
 
-.tags-dialog__actions {
-  padding: 8px 16px 12px 24px;
-}
 </style>
