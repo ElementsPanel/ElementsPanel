@@ -252,7 +252,15 @@ const fetchNodes = async () => {
         if (res.value) {
             nodes.value = res.value;
             if (nodes.value.length > 0 && !selectedNodeId.value) {
-                selectedNodeId.value = nodes.value[0].uuid;
+                let savedNodeId: string | undefined;
+                try {
+                    const saved = JSON.parse(localStorage.getItem("pageSelectedRemote") || "null");
+                    if (typeof saved?.uuid === "string") savedNodeId = saved.uuid;
+                } catch {
+                    // Invalid storage must not block selecting a node.
+                }
+                selectedNodeId.value =
+                    nodes.value.find((node) => node.uuid === savedNodeId)?.uuid || nodes.value[0].uuid;
             }
         }
     } catch (err) {
@@ -513,7 +521,15 @@ const handleInstanceDblClick = (instance: InstanceDetail) => {
     }
 };
 
-watch(selectedNodeId, () => {
+watch(selectedNodeId, (nodeId) => {
+    const node = nodes.value.find((item) => item.uuid === nodeId);
+    if (node) {
+        try {
+            localStorage.setItem("pageSelectedRemote", JSON.stringify(node));
+        } catch {
+            // Switching nodes still works when local storage is unavailable.
+        }
+    }
     currentPage.value = 1;
     fetchInstances();
 });
