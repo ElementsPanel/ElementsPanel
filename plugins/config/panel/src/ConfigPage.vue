@@ -1889,6 +1889,10 @@ const confirmAction = async () => {
   opacity: 0.72;
 }
 
+.plugin-config-heading:first-child {
+  margin-top: 0;
+}
+
 .plugin-config-list {
   min-height: 0;
   flex: 1;
