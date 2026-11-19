@@ -138,6 +138,7 @@ function createBrowser(html = "<!doctype html><html><head></head><body></body></
     "SVGElement",
     "ShadowRoot",
     "MouseEvent",
+    "MutationObserver",
     "Node",
     "getComputedStyle",
     "CustomEvent",
