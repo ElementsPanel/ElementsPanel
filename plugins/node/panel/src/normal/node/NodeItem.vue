@@ -273,6 +273,7 @@ onMounted(() => {
                   origin="top"
                   offset="6"
                   scroll-strategy="reposition"
+                  content-class="node-compat-menu"
                 >
                   <template #activator="{ props: menuProps }">
                     <span v-bind="menuProps" class="node-compat-toggle" role="button">
@@ -516,9 +517,13 @@ onMounted(() => {
   opacity: 0.7;
 }
 
+:global(.node-compat-menu) {
+  border-radius: 12px;
+}
+
 .node-compat-panel {
   padding: 12px 16px;
-  border-radius: 12px;
+  border-radius: inherit;
   box-sizing: border-box;
   width: 420px;
   max-width: calc(100vw - 24px);
