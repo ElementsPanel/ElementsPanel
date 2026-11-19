@@ -2224,7 +2224,6 @@
   "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_PER_THEME": "กำหนดภาพพื้นหลังแยกสำหรับแต่ละธีม",
   "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_LIGHT": "ภาพพื้นหลังส่วนติดต่อผู้ใช้ (โหมดสว่าง)",
   "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_DARK": "ภาพพื้นหลังส่วนติดต่อผู้ใช้ (โหมดมืด)",
-  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_THEME_HINT": "กำหนดภาพพื้นหลังสำหรับโหมดนี้ เว้นว่างไว้เพื่อไม่แสดงภาพพื้นหลัง",
   "TXT_CODE_INSTANCE_COMMAND_HISTORY": "ประวัติ",
   "TXT_CODE_MINECRAFT_UPLOAD": "อัปโหลดเซิร์ฟเวอร์เอง",
   "TXT_CODE_MINECRAFT_UPLOAD_HINT": "อัปโหลดไฟล์ JAR หรือไฟล์ ZIP เพื่อใช้เซิร์ฟเวอร์ของคุณเอง",

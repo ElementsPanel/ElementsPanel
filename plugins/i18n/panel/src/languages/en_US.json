@@ -2224,7 +2224,6 @@
   "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_PER_THEME": "Configure background images separately for each theme",
   "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_LIGHT": "UI background image (light mode)",
   "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_DARK": "UI background image (dark mode)",
-  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_THEME_HINT": "Set the background image for this mode. Leave blank to show no background image.",
   "TXT_CODE_INSTANCE_COMMAND_HISTORY": "History",
   "TXT_CODE_MINECRAFT_UPLOAD": "Upload your server",
   "TXT_CODE_MINECRAFT_UPLOAD_HINT": "Upload a JAR file or ZIP archive to use your own server.",

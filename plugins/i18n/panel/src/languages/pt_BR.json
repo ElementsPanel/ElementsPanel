@@ -2224,7 +2224,6 @@
   "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_PER_THEME": "Configurar imagens de fundo separadamente para cada tema",
   "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_LIGHT": "Imagem de fundo da interface (modo claro)",
   "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_DARK": "Imagem de fundo da interface (modo escuro)",
-  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_THEME_HINT": "Defina a imagem de fundo para este modo. Deixe vazio para não exibir uma imagem de fundo.",
   "TXT_CODE_INSTANCE_COMMAND_HISTORY": "Histórico",
   "TXT_CODE_MINECRAFT_UPLOAD": "Enviar seu servidor",
   "TXT_CODE_MINECRAFT_UPLOAD_HINT": "Envie um arquivo JAR ou ZIP para usar seu próprio servidor.",

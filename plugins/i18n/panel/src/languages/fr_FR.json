@@ -2224,7 +2224,6 @@
   "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_PER_THEME": "Configurer les images d’arrière-plan séparément pour chaque thème",
   "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_LIGHT": "Image d’arrière-plan de l’interface (mode clair)",
   "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_DARK": "Image d’arrière-plan de l’interface (mode sombre)",
-  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE_THEME_HINT": "Définissez l’image d’arrière-plan pour ce mode. Laissez vide pour ne pas afficher d’image d’arrière-plan.",
   "TXT_CODE_INSTANCE_COMMAND_HISTORY": "Historique",
   "TXT_CODE_MINECRAFT_UPLOAD": "Importer votre serveur",
   "TXT_CODE_MINECRAFT_UPLOAD_HINT": "Importez un fichier JAR ou une archive ZIP pour utiliser votre propre serveur.",

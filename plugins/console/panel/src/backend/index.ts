@@ -192,7 +192,7 @@ export function apply(ctx: PanelPluginContext) {
         key: "backgroundImageLight",
         type: "string",
         title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_LIGHT"),
-        description: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_THEME_HINT"),
+        description: $t("TXT_CODE_COMMON_THIS_FEATURE_MAY_BE_UNSTABLE_CANNOT_GUARANTEE_BEST_USER_EXPERIENCE"),
         fileUpload: true,
         visibleWhen: "backgroundImagePerTheme"
       },
@@ -200,7 +200,7 @@ export function apply(ctx: PanelPluginContext) {
         key: "backgroundImageDark",
         type: "string",
         title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_DARK"),
-        description: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_THEME_HINT"),
+        description: $t("TXT_CODE_COMMON_THIS_FEATURE_MAY_BE_UNSTABLE_CANNOT_GUARANTEE_BEST_USER_EXPERIENCE"),
         fileUpload: true,
         visibleWhen: "backgroundImagePerTheme"
       },
