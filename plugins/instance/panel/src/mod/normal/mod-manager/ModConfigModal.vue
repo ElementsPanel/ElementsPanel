@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import AppDialog from "@elementspanel/epanel-plugin-console/components/AppDialog";
-import { VBtn, VIcon, VList, VListItem, VListItemSubtitle, VListItemTitle, VProgressLinear } from "vuetify/components";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { VBtn, VIcon, VList, VListItem, VProgressLinear } from "vuetify/components";
 
 defineProps<{
   visible: boolean;
@@ -22,6 +23,7 @@ const emit = defineEmits(["update:visible", "edit"]);
         <template #prepend><VIcon icon="mdi-file-document-outline" /></template>
         <template #append><VBtn variant="text" @click="emit('edit', item)">{{ t("TXT_CODE_EDIT") }}</VBtn></template>
       </VListItem>
+      <Empty v-if="!configFiles.length" icon="mdi-file-document-outline" compact />
     </VList>
   </AppDialog>
 </template>
