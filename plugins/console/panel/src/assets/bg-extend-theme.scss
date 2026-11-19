@@ -1,5 +1,3 @@
-@use "./text-shadows";
-
 [data-app-surface="card"] {
   background-color: var(--background-color-white);
 }
@@ -18,6 +16,8 @@
     .desktop-login-window *,
     .desktop-mode-active .v-overlay,
     .desktop-mode-active .v-overlay *,
+    .v-navigation-drawer,
+    .v-navigation-drawer *,
     .v-menu,
     .v-menu *,
     .v-dialog,
@@ -88,20 +88,12 @@ body.app-background-image {
   --app-background-card: #ffffffae;
   --app-background-control: #ffffff84;
   --app-background-terminal: #000000cc;
-
-  .breadcrumbs {
-    @include text-shadows.white;
-  }
 }
 
 .app-dark-theme.app-background-image {
   --app-background-card: #000000a9;
   --app-background-control: #1919196b;
   --app-background-terminal: var(--app-background-card);
-
-  .breadcrumbs {
-    @include text-shadows.black;
-  }
 }
 
 @media (max-width: 992px) {

@@ -564,6 +564,12 @@ body::-webkit-scrollbar-track {
   transition: all 0.3s;
 }
 
+// Match drawer backgrounds and outer panels to the mobile menu.
+body .v-navigation-drawer,
+.v-navigation-drawer > .v-navigation-drawer__content > :is(.v-card, .v-sheet, [data-app-surface="card"]):not(:where([data-app-surface="none"], [data-app-surface="transparent"], [class*="bg-"])) {
+  background-color: var(--app-header-bg) !important;
+}
+
 // Style list menus without overriding card or picker defaults.
 .v-menu>.v-overlay__content:has(> .v-list),
 .v-select__content,

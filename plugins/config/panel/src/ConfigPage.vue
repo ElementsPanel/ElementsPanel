@@ -2158,6 +2158,10 @@ const confirmAction = async () => {
     padding: 16px 16px 20px;
   }
 
+  .plugin-config-body {
+    padding-inline: 8px;
+  }
+
   .plugin-config-title-row {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, auto);
