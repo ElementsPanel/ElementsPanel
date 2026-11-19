@@ -7,6 +7,11 @@ export class DesktopSettings {
   wallpaperImageDark: string | undefined = undefined;
   wallpaperBlurFollowConsole = true;
   wallpaperBlur = 5;
+  startButtonIcon = "";
+  startButtonIconPerTheme = false;
+  // Missing theme values inherit the shared icon; empty strings use the built-in icon.
+  startButtonIconLight: string | undefined = undefined;
+  startButtonIconDark: string | undefined = undefined;
 }
 
 export function normalizeDesktopSettings(value: unknown): DesktopSettings {
@@ -19,7 +24,12 @@ export function normalizeDesktopSettings(value: unknown): DesktopSettings {
     settings.wallpaperImage = values.wallpaperImage;
   if (typeof values.wallpaperImagePerTheme === "boolean")
     settings.wallpaperImagePerTheme = values.wallpaperImagePerTheme;
-  for (const key of ["wallpaperImageLight", "wallpaperImageDark"] as const) {
+  if (typeof values.startButtonIconPerTheme === "boolean")
+    settings.startButtonIconPerTheme = values.startButtonIconPerTheme;
+  for (const key of [
+    "wallpaperImageLight", "wallpaperImageDark",
+    "startButtonIcon", "startButtonIconLight", "startButtonIconDark"
+  ] as const) {
     const image = values[key];
     if (typeof image === "string" && image.length <= 8192) settings[key] = image;
   }

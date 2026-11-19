@@ -49,7 +49,12 @@ const props = defineProps<{
     apps: TaskbarApp[];
     username: string;
     userAvatar?: Component | string;
+    startButtonIcon?: string;
 }>();
+
+const startButtonIconUrl = computed(() =>
+    props.startButtonIcon || (isDarkTheme.value ? desktopIconUrl : desktopIconDarkUrl)
+);
 
 const emit = defineEmits<{
     (e: "toggle-window", id: string): void;
@@ -184,7 +189,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
         <VBtn class="taskbar__start" :class="{ 'taskbar__start--active': startMenuOpen }" icon variant="text"
             :aria-label="t('TXT_CODE_UI_START_MENU')" @click="toggleStartMenu">
             <span class="taskbar__start-icon">
-                <img :src="isDarkTheme ? desktopIconUrl : desktopIconDarkUrl" alt="" />
+                <img :src="startButtonIconUrl" alt="" />
             </span>
         </VBtn>
 
@@ -334,6 +339,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
         img {
             width: 20px;
             height: 20px;
+            object-fit: contain;
         }
     }
 }

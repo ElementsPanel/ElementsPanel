@@ -15,7 +15,7 @@ const { resolveBackgroundImage } = load("plugins/console/panel/src/services/apis
   "@/stores/useDefineApi": { useDefineApi: () => () => ({}) }
 });
 
-test("desktop wallpaper settings persist, clear images and reject invalid or failed writes", async () => {
+test("desktop appearance settings persist, clear images and reject invalid or failed writes", async () => {
   const router = new (from("panel")("@koa/router"))();
   let stored;
   let fail = false;
@@ -41,9 +41,14 @@ test("desktop wallpaper settings persist, clear images and reject invalid or fai
   });
   await apply(ctx);
   assert.deepEqual(form.fields().map(field => field.key),
-    ["wallpaperMode", "wallpaperImagePerTheme", "wallpaperImage", "wallpaperImageLight",
+    ["startButtonIconPerTheme", "startButtonIcon", "startButtonIconLight", "startButtonIconDark",
+      "wallpaperMode", "wallpaperImagePerTheme", "wallpaperImage", "wallpaperImageLight",
       "wallpaperImageDark", "wallpaperBlurFollowConsole", "wallpaperBlur"]);
-  assert.deepEqual(form.fields()[0].options.map(item => item.value), ["website", "image"]);
+  assert.deepEqual(form.fields().find(field => field.key === "wallpaperMode").options.map(item => item.value), ["website", "image"]);
+  const iconFields = form.fields().filter(field => field.key.startsWith("startButtonIcon") && field.type === "string");
+  assert.ok(iconFields.every(field => field.fileUpload));
+  assert.deepEqual(iconFields.map(field => field.visibleWhen),
+    ["startButtonIconPerTheme=false", "startButtonIconPerTheme", "startButtonIconPerTheme"]);
   const route = router.stack.find(entry => entry.path === "/desktop_settings");
   assert.equal(route.stack.length, 1, "wallpaper must be readable on the desktop login screen");
   const request = {};
@@ -53,17 +58,21 @@ test("desktop wallpaper settings persist, clear images and reject invalid or fai
   };
   assert.deepEqual(await current(), {
     wallpaperMode: "website", wallpaperImage: "", wallpaperImagePerTheme: false,
-    wallpaperImageLight: "", wallpaperImageDark: "", wallpaperBlurFollowConsole: true, wallpaperBlur: 5
+    wallpaperImageLight: "", wallpaperImageDark: "", wallpaperBlurFollowConsole: true, wallpaperBlur: 5,
+    startButtonIcon: "", startButtonIconPerTheme: false, startButtonIconLight: "", startButtonIconDark: ""
   });
   await form.write({
     wallpaperMode: "image", wallpaperImage: "/wallpaper.png",
-    wallpaperBlurFollowConsole: false, wallpaperBlur: 0
+    wallpaperBlurFollowConsole: false, wallpaperBlur: 0, startButtonIcon: "/start.png"
   });
   assert.equal((await current()).wallpaperImage, "/wallpaper.png");
   assert.equal((await current()).wallpaperImageLight, "/wallpaper.png");
   assert.equal((await current()).wallpaperImageDark, "/wallpaper.png");
+  assert.equal((await current()).startButtonIconLight, "/start.png");
+  assert.equal((await current()).startButtonIconDark, "/start.png");
   await form.write({
-    wallpaperImagePerTheme: true, wallpaperImageLight: "/light.png", wallpaperImageDark: "/dark.png"
+    wallpaperImagePerTheme: true, wallpaperImageLight: "/light.png", wallpaperImageDark: "/dark.png",
+    startButtonIconPerTheme: true, startButtonIconLight: "/start-light.png", startButtonIconDark: "/start-dark.png"
   });
   await apply(ctx);
   assert.equal(form.read().wallpaperImage, "/wallpaper.png");
@@ -72,6 +81,14 @@ test("desktop wallpaper settings persist, clear images and reject invalid or fai
   assert.equal(form.read().wallpaperImagePerTheme, true);
   assert.equal(form.read().wallpaperImageLight, "/light.png");
   assert.equal(form.read().wallpaperImageDark, "/dark.png");
+  assert.equal(form.read().startButtonIcon, "/start.png");
+  assert.equal(form.read().startButtonIconPerTheme, true);
+  assert.equal(form.read().startButtonIconLight, "/start-light.png");
+  assert.equal(form.read().startButtonIconDark, "/start-dark.png");
+  await form.write({ startButtonIconLight: null, startButtonIcon: null });
+  assert.equal((await current()).startButtonIconLight, "");
+  assert.equal((await current()).startButtonIcon, "");
+  assert.equal((await current()).startButtonIconDark, "/start-dark.png");
   await form.write({ wallpaperImageLight: null });
   assert.equal((await current()).wallpaperImageLight, "");
   assert.equal((await current()).wallpaperImageDark, "/dark.png");
@@ -84,11 +101,15 @@ test("desktop wallpaper settings persist, clear images and reject invalid or fai
     { wallpaperBlurFollowConsole: "false" }, { wallpaperBlur: -1 }, { wallpaperBlur: 51 },
     { wallpaperBlur: Infinity }, { wallpaperBlur: "5" }, { wallpaperBlur: null },
     { wallpaperImagePerTheme: "true" }, { wallpaperImageLight: 1 }, { wallpaperImageDark: false },
-    { wallpaperImageLight: "/".repeat(8193) }, { wallpaperImageDark: "/".repeat(8193) }
-  ]) await assert.rejects(form.write(invalid), /WALLPAPER_INVALID/);
+    { wallpaperImageLight: "/".repeat(8193) }, { wallpaperImageDark: "/".repeat(8193) },
+    { startButtonIconPerTheme: "true" }, { startButtonIcon: 1 }, { startButtonIconLight: false },
+    { startButtonIconDark: 1 }, { startButtonIcon: "/".repeat(8193) },
+    { startButtonIconLight: "/".repeat(8193) }, { startButtonIconDark: "/".repeat(8193) }
+  ]) await assert.rejects(form.write(invalid), /DESKTOP_SETTINGS_INVALID/);
   assert.deepEqual(await current(), saved);
   fail = true;
   await assert.rejects(form.write({ wallpaperImage: "/new.png" }), /disk full/);
+  await assert.rejects(form.write({ startButtonIconDark: "/new-start.png" }), /disk full/);
   assert.deepEqual(await current(), saved);
 });
 
@@ -142,6 +163,65 @@ function desktopFixture(t, settings, appearance = { backgroundImage: "/website w
     failSettings: () => { failSettings = true; }, failAppearance: () => { failAppearance = true; }
   };
 }
+
+test("taskbar Start icons follow shared and per-theme settings, refresh after saves and restore built-in icons", async (t) => {
+  const f = desktopFixture(t);
+  await settle();
+  const Vuetify = from("frontend")("vuetify/dist/vuetify.js");
+  const file = "plugins/desktop/panel/src/widgets/desktop/DesktopTaskbar.vue";
+  const Taskbar = load(file, {
+    "@elementspanel/epanel-plugin-console/config/router": { router: { push() {} } },
+    "@elementspanel/epanel-plugin-i18n": { t: key => key },
+    "@elementspanel/epanel-plugin-console/stores/useAppConfigStore": { useAppConfigStore: () => ({ isDarkTheme: f.dark }) },
+    "@elementspanel/epanel-plugin-console/hooks/useThemeSwitch": { useThemeSwitch: () => ({}) },
+    "@elementspanel/epanel-plugin-console/components/ActionRipple": {},
+    "@elements-panel/sdk": { ctx: { slots: { entries: () => [] } } },
+    "../../assets": { desktopIconUrl: "/builtin-dark.svg", desktopIconDarkUrl: "/builtin-light.svg" },
+    "vuetify/components": Vuetify.components
+  }, compileSfc(file, { inlineTemplate: true })).default;
+  const target = document.createElement("div");
+  document.body.appendChild(target);
+  const app = vue.createApp({ render: () => vue.h(Taskbar, {
+    windows: [], apps: [], username: "test", startButtonIcon: f.state.startButtonIcon
+  }) });
+  app.use(Vuetify.createVuetify());
+  app.mount(target);
+  t.after(() => { app.unmount(); target.remove(); });
+  const icon = () => target.querySelector(".taskbar__start img").getAttribute("src");
+  assert.equal(icon(), "/builtin-light.svg");
+  f.dark.value = true;
+  await vue.nextTick();
+  assert.equal(icon(), "/builtin-dark.svg");
+
+  const settings = { startButtonIcon: "/shared-start.png" };
+  await f.refresh(settings);
+  assert.equal(icon(), "/shared-start.png");
+  f.dark.value = false;
+  await vue.nextTick();
+  assert.equal(icon(), "/shared-start.png");
+  await f.refresh({ ...settings, startButtonIconPerTheme: true, startButtonIconLight: "/light-start.png" });
+  assert.equal(icon(), "/light-start.png");
+  f.dark.value = true;
+  await vue.nextTick();
+  assert.equal(icon(), "/shared-start.png");
+
+  const themed = { ...settings, startButtonIconPerTheme: true,
+    startButtonIconLight: "/light-start.png", startButtonIconDark: "/dark-start.png" };
+  await f.refresh(themed);
+  assert.equal(icon(), "/dark-start.png");
+  f.dark.value = false;
+  await vue.nextTick();
+  assert.equal(icon(), "/light-start.png");
+  await f.refresh({ ...themed, startButtonIconLight: "" });
+  assert.equal(icon(), "/builtin-light.svg");
+  f.dark.value = true;
+  await vue.nextTick();
+  assert.equal(icon(), "/dark-start.png");
+  await f.refresh({ ...themed, startButtonIconPerTheme: false });
+  assert.equal(icon(), "/shared-start.png");
+  await f.refresh({ ...themed, startButtonIconPerTheme: false, startButtonIcon: "" });
+  assert.equal(icon(), "/builtin-dark.svg");
+});
 
 test("desktop wallpaper follows website and custom theme images, updates after saves and respects overlays", async (t) => {
   const appearance = {

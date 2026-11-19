@@ -77,6 +77,13 @@ const backgroundImageUrl = computed(() => resolveBackgroundImage(appearance.valu
 const backgroundImageBlur = ref(5);
 const desktopSettings = ref(new DesktopSettings());
 
+const startButtonIcon = computed(() => {
+    const settings = desktopSettings.value;
+    if (!settings.startButtonIconPerTheme) return settings.startButtonIcon;
+    const icon = isDarkTheme.value ? settings.startButtonIconDark : settings.startButtonIconLight;
+    return icon ?? settings.startButtonIcon;
+});
+
 const customWallpaperImage = computed(() => {
     const settings = desktopSettings.value;
     if (!settings.wallpaperImagePerTheme) return settings.wallpaperImage;
@@ -108,14 +115,14 @@ const wallpaperStyle = computed<CSSProperties>(() => {
     };
 });
 
-let wallpaperRequest = 0;
-const loadWallpaper = async () => {
-    const request = ++wallpaperRequest;
+let appearanceRequest = 0;
+const loadDesktopAppearance = async () => {
+    const request = ++appearanceRequest;
     const [settingsResult, appearanceResult] = await Promise.allSettled([
         getDesktopSettings().execute(),
         getAppearance().execute()
     ]);
-    if (request !== wallpaperRequest) return;
+    if (request !== appearanceRequest) return;
     if (settingsResult.status === "fulfilled") {
         desktopSettings.value = normalizeDesktopSettings(settingsResult.value.value);
     }
@@ -128,15 +135,15 @@ const loadWallpaper = async () => {
 
 const onPluginSettingsChanged = (event: Event) => {
     const id = (event as CustomEvent<{ id: string }>).detail?.id;
-    if (id === "desktop" || id === "console") void loadWallpaper();
+    if (id === "desktop" || id === "console") void loadDesktopAppearance();
 };
 
 onMounted(() => {
     window.addEventListener("elementspanel:plugin-settings-changed", onPluginSettingsChanged);
-    void loadWallpaper();
+    void loadDesktopAppearance();
 });
 onUnmounted(() => {
-    wallpaperRequest++;
+    appearanceRequest++;
     window.removeEventListener("elementspanel:plugin-settings-changed", onPluginSettingsChanged);
 });
 
@@ -1186,6 +1193,7 @@ const isMdiIcon = (icon: Component | string): icon is `mdi-${string}` => typeof 
                 </TransitionGroup>
                 <DesktopTaskbar :windows="taskbarWindows" :apps="availableDesktopApps" :username="username"
                     :user-avatar="desktopStartMenuAvatar"
+                    :start-button-icon="startButtonIcon"
                     @toggle-window="toggleWindow" @open-app="openWindow"
                     @add-shortcut="handleTaskbarAppDrop"
                     @exit-desktop="exitDesktop" @open-user-info="openUserInfoWindow"
