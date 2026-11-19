@@ -404,12 +404,18 @@ defineExpose({ updateInstalled });
 
 @media (max-width: 992px) {
   .plugin-market-pagination {
-    justify-content: flex-start;
+    width: 100%;
+    justify-content: space-between;
   }
 
   .plugin-market-navigation {
-    flex-wrap: wrap;
-    gap: 8px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .plugin-market-tabs {
+    flex: none;
   }
 
   .plugin-market-container {
