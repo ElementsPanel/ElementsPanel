@@ -72,7 +72,6 @@ useEventListener("keydown", (event) => {
     v-if="!isPhone"
     tag="header"
     class="app-header-wrapper"
-    :class="{ 'app-header-wrapper--fixed': !isAdmin }"
     color="transparent"
     flat
     elevation="0"
@@ -82,8 +81,7 @@ useEventListener("keydown", (event) => {
       <div
         class="header-leading"
         :class="{
-          'header-leading--sidebar-open': isAdmin && isSidebarOpen,
-          'header-leading--user': !isAdmin
+          'header-leading--sidebar-open': isAdmin && isSidebarOpen
         }"
       >
         <VBtn
@@ -317,13 +315,6 @@ useEventListener("keydown", (event) => {
   color: var(--app-header-text-color) !important;
   border-radius: 0;
   box-shadow: none;
-
-  &--fixed {
-    position: fixed;
-    top: 0;
-    right: 0;
-    left: 0;
-  }
 }
 
 .app-header-wrapper :deep(.v-toolbar__content),
@@ -370,8 +361,8 @@ useEventListener("keydown", (event) => {
   width: 240px;
 }
 
-.header-leading--user {
-  padding-left: 12px;
+.header-leading:not(:has(> .sidebar-toggle-button)) {
+  padding-inline-start: 10px;
 }
 
 .sidebar-toggle-button {

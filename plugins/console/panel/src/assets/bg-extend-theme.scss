@@ -57,6 +57,12 @@ body.app-background-image {
 
 // Custom surfaces use native roles; "none" preserves their own colors.
 .app-background-image {
+  .app-header-wrapper,
+  .app-header-content-for-phone,
+  .app-sidebar-shell > .left-sidebar {
+    background-color: color-mix(in srgb, var(--app-header-bg) 80%, transparent) !important;
+  }
+
   .v-field,
   [data-app-surface="control"] {
     @include background-image-surface(var(--app-background-control));

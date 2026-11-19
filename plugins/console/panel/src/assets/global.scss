@@ -29,8 +29,8 @@ html {
   scrollbar-gutter: auto;
 }
 
-// Sidebar mode scrolls the main column, so the mount point must not add another scrollbar.
-#app-mount-point:has(.app-layout-sidebar-only) {
+// Desktop pages scroll the main column, so the mount point must not add another scrollbar.
+#app-mount-point:has(.app-layout-desktop) {
   overflow-y: hidden;
 }
 
@@ -277,12 +277,7 @@ html {
   height: 100svh;
   margin: auto;
 
-  &:has(> .app-header-wrapper--fixed) {
-    box-sizing: border-box;
-    padding-top: 64px;
-  }
-
-  &:has(.app-layout-sidebar-only) {
+  &:has(.app-layout-desktop) {
     max-width: 100%;
   }
 }
@@ -292,7 +287,7 @@ html {
   min-height: 0;
 }
 
-.app-shell-content--sidebar {
+.app-shell-content--desktop {
   display: flex;
   min-width: 0;
 }
@@ -319,7 +314,7 @@ html {
   }
 }
 
-.app-layout-sidebar-only {
+.app-layout-desktop {
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-gutter: auto;
@@ -331,7 +326,7 @@ html {
   }
 }
 
-.main-content.app-layout-sidebar-only {
+.main-content.app-layout-desktop {
   flex: 1 1 auto;
   min-width: 0;
   box-sizing: border-box;
@@ -345,7 +340,7 @@ html {
     margin: 0 24px;
   }
 
-  .global-app-container:has(.app-layout-sidebar-only) {
+  .global-app-container:has(.app-layout-desktop) {
     margin: 0;
   }
 }

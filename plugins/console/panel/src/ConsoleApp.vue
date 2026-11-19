@@ -31,9 +31,10 @@ const OVERLAY_COMPONENTS = computed(() => ctx.slots.entries("shell.overlay", {})
 
 const isLoginPage = computed(() => route.path === "/login");
 const isImmersivePage = computed(() => route.meta.immersive === true);
-const showSidebar = computed(
-  () => isAdmin.value && useSidebarLayout.value && !isLoginPage.value && !isImmersivePage.value
+const useDesktopLayout = computed(
+  () => useSidebarLayout.value && !isLoginPage.value && !isImmersivePage.value
 );
+const showSidebar = computed(() => isAdmin.value && useDesktopLayout.value);
 const vuetifyTheme = computed(() => (isDarkTheme.value ? "dark" : "light"));
 
 // Synchronize the global Vuetify theme for dialogs mounted outside the main provider.
@@ -58,7 +59,7 @@ onMounted(async () => {
         <div
           class="app-shell-content"
           :class="{
-            'app-shell-content--sidebar': showSidebar
+            'app-shell-content--desktop': useDesktopLayout
           }"
         >
           <div
@@ -72,7 +73,7 @@ onMounted(async () => {
           <main
             class="main-content"
             :class="{
-              'app-layout-sidebar-only': showSidebar
+              'app-layout-desktop': useDesktopLayout
             }"
           >
             <div class="app-main-body">
