@@ -13,8 +13,6 @@ import {
   VListItem,
   VMenu,
   VProgressCircular,
-  VTab,
-  VTabs,
   VTextField
 } from "vuetify/components";
 import PluginMarketChanges from "../components/PluginMarketChanges.vue";
@@ -25,6 +23,15 @@ import { usePluginMarketDetail } from "../hooks/usePluginMarketDetail";
 import { usePluginMarketList } from "../hooks/usePluginMarketList";
 import { activeOperations, applyingChanges } from "../operations";
 
+const listTabs = [
+  { id: "browse", title: "TXT_CODE_PLUGIN_MARKET_BROWSE" },
+  { id: "updates", title: "TXT_CODE_PLUGIN_MARKET_UPDATES" }
+] as const;
+const detailTabs = [
+  { id: "readme", title: "TXT_CODE_PLUGIN_MARKET_README" },
+  { id: "versions", title: "TXT_CODE_PLUGIN_MARKET_VERSIONS" },
+  { id: "updates", title: "TXT_CODE_PLUGIN_MARKET_UPDATES" }
+] as const;
 const selectedPluginId = ref("");
 
 function openPlugin(pluginId: string) {
@@ -160,20 +167,20 @@ const DesktopPluginDetailController = defineComponent({
       </div>
 
       <div class="dpm-navigation">
-        <VTabs
-          v-model="activeTab"
-          class="dpm-tabs"
-          density="compact"
-          color="primary"
-          :disabled="applyingChanges || Boolean(activeOperations)"
-        >
-          <VTab value="browse">
-            {{ t("TXT_CODE_PLUGIN_MARKET_BROWSE") }}
-          </VTab>
-          <VTab value="updates">
-            {{ t("TXT_CODE_PLUGIN_MARKET_UPDATES") }}
-          </VTab>
-        </VTabs>
+        <nav class="dpm-tabs" :aria-label="t('TXT_CODE_PLUGIN_MARKET')">
+          <VBtn
+            v-for="tab in listTabs"
+            :key="tab.id"
+            class="dpm-tab"
+            variant="text"
+            :class="{ 'dpm-tab--active': activeTab === tab.id }"
+            :aria-pressed="activeTab === tab.id"
+            :disabled="applyingChanges || Boolean(activeOperations)"
+            @click="activeTab = tab.id"
+          >
+            {{ t(tab.title) }}
+          </VBtn>
+        </nav>
         <span v-if="totalItems" class="dpm-result-count">
           {{ totalItems }}
         </span>
@@ -279,10 +286,7 @@ const DesktopPluginDetailController = defineComponent({
         />
       </div>
 
-      <div
-        v-if="totalItems && totalPages > 1"
-        class="dpm-pagination"
-      >
+      <div v-if="totalItems && totalPages > 1" class="dpm-pagination">
         <VBtn
           class="dpm-btn dpm-btn--icon"
           variant="text"
@@ -429,17 +433,20 @@ const DesktopPluginDetailController = defineComponent({
               />
             </header>
 
-            <VTabs
-              v-model="detail.activeTab"
-              class="dpm-detail-tabs"
-              density="compact"
-              color="primary"
-              :disabled="detail.busy"
-            >
-              <VTab value="readme">{{ t("TXT_CODE_PLUGIN_MARKET_README") }}</VTab>
-              <VTab value="versions">{{ t("TXT_CODE_PLUGIN_MARKET_VERSIONS") }}</VTab>
-              <VTab value="updates">{{ t("TXT_CODE_PLUGIN_MARKET_UPDATES") }}</VTab>
-            </VTabs>
+            <nav class="dpm-tabs dpm-detail-tabs" :aria-label="detail.plugin.displayName">
+              <VBtn
+                v-for="tab in detailTabs"
+                :key="tab.id"
+                class="dpm-tab"
+                variant="text"
+                :class="{ 'dpm-tab--active': detail.activeTab === tab.id }"
+                :aria-pressed="detail.activeTab === tab.id"
+                :disabled="detail.busy"
+                @click="detail.activeTab = tab.id"
+              >
+                {{ t(tab.title) }}
+              </VBtn>
+            </nav>
 
             <div class="dpm-detail-body">
               <section class="dpm-detail-main">
@@ -689,17 +696,24 @@ const DesktopPluginDetailController = defineComponent({
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 0 14px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--desktop-window-border);
 }
 
 .dpm-tabs {
   min-width: 0;
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+}
 
-  :deep(.v-tab) {
-    min-width: 112px;
-    font-size: 12px;
-    text-transform: none;
+.dpm-tab {
+  color: var(--desktop-window-text-secondary);
+  flex-shrink: 0;
+
+  &--active {
+    color: rgb(var(--v-theme-primary));
+    background: rgba(var(--v-theme-primary), 0.1);
   }
 }
 
@@ -954,14 +968,9 @@ const DesktopPluginDetailController = defineComponent({
 }
 
 .dpm-detail-tabs {
+  padding: 8px 12px;
   border-top: 1px solid var(--desktop-window-border);
   border-bottom: 1px solid var(--desktop-window-border);
-
-  :deep(.v-tab) {
-    min-width: 100px;
-    font-size: 12px;
-    text-transform: none;
-  }
 }
 
 .dpm-detail-body {
