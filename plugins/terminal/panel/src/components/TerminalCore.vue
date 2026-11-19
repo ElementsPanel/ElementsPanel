@@ -168,7 +168,7 @@ onMounted(async () => {
 <template>
   <div class="console-wrapper">
     <div v-if="!isConnect && !socketError" class="terminal-loading">
-      <VProgressCircular indeterminate />
+      <VProgressCircular indeterminate color="white" />
     </div>
     <div v-show="!socketError" class="terminal-button-group position-absolute-right position-absolute-top">
       <ul>

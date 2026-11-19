@@ -72,6 +72,7 @@ useEventListener("keydown", (event) => {
     v-if="!isPhone"
     tag="header"
     class="app-header-wrapper"
+    :class="{ 'app-header-wrapper--fixed': !isAdmin }"
     color="transparent"
     flat
     elevation="0"
@@ -316,6 +317,13 @@ useEventListener("keydown", (event) => {
   color: var(--app-header-text-color) !important;
   border-radius: 0;
   box-shadow: none;
+
+  &--fixed {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+  }
 }
 
 .app-header-wrapper :deep(.v-toolbar__content),

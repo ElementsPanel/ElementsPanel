@@ -277,6 +277,11 @@ html {
   height: 100svh;
   margin: auto;
 
+  &:has(> .app-header-wrapper--fixed) {
+    box-sizing: border-box;
+    padding-top: 64px;
+  }
+
   &:has(.app-layout-sidebar-only) {
     max-width: 100%;
   }
