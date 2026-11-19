@@ -157,6 +157,7 @@ interface PluginGroupView extends PluginGroup {
 
 const UNASSIGNED_GROUP_ID = "__unassigned__";
 const pluginGroupsState = ref<PluginGroup[]>([]);
+const pluginGroupsLoading = ref(true);
 const pluginContextMenu = ref({ open: false, x: 0, y: 0, pluginId: "" });
 const pluginContextPlugin = computed(() =>
   currentList.value.find((plugin) => plugin.id === pluginContextMenu.value.pluginId)
@@ -196,8 +197,12 @@ let groupsRequest = 0;
 
 const loadPluginGroups = async () => {
   const request = ++groupsRequest;
+  pluginGroupsLoading.value = true;
   pluginGroupsState.value = [];
-  if (scope.value === "node" && !selectedNodeId.value) return;
+  if (scope.value === "node" && !selectedNodeId.value) {
+    pluginGroupsLoading.value = false;
+    return;
+  }
   try {
     const stored =
       scope.value === "panel"
@@ -212,6 +217,8 @@ const loadPluginGroups = async () => {
     if (request !== groupsRequest) return;
     pluginGroupsState.value = [];
     console.error("Failed to load plugin groups:", error);
+  } finally {
+    if (request === groupsRequest) pluginGroupsLoading.value = false;
   }
 };
 
@@ -508,6 +515,9 @@ const selectedPlugin = computed(() =>
 
 const schema = ref<SettingsSchema | null>(null);
 const savedSettings = ref("");
+const savedValues = computed<Record<string, unknown> | undefined>(() =>
+  savedSettings.value ? JSON.parse(savedSettings.value) : undefined
+);
 const settingsDirty = computed(
   () => !!schema.value && JSON.stringify(schema.value.values) !== savedSettings.value
 );
@@ -872,6 +882,7 @@ onUnmounted(() => {
   window.removeEventListener("elementspanel:plugins-changed", refreshInventory);
   clearInterval(inventoryTimer);
   pluginsRequest++;
+  groupsRequest++;
   disposed = true;
   schemaRequest++;
   nodePluginsRequest++;
@@ -924,22 +935,17 @@ watch(
 );
 
 watch(
-  plugins,
-  (value) => {
-    if (!value.some((item) => item.id === selectedId.value)) {
-      selectedId.value =
-        value.find((item) => item.id === preferredPluginId.value)?.id || value[0]?.id || "";
-    }
+  [currentList, pluginGroups, pluginGroupsLoading],
+  () => {
+    if (pluginGroupsLoading.value) return;
+    const list = currentList.value;
+    if (list.some((item) => item.id === currentId.value)) return;
+    currentId.value =
+      list.find((item) => item.id === preferredPluginId.value)?.id ||
+      pluginGroups.value.find((group) => group.plugins.length)?.plugins[0]?.id || "";
   },
   { immediate: true }
 );
-
-watch(nodePlugins, (value) => {
-  if (!value.some((item) => item.id === nodeSelectedId.value)) {
-    nodeSelectedId.value =
-      value.find((item) => item.id === preferredPluginId.value)?.id || value[0]?.id || "";
-  }
-});
 
 watch(
   () => [
@@ -967,11 +973,11 @@ watch(
 /** Update plugin URLs without navigation; leave the browser URL unchanged for desktop windows. */
 let lastSyncedPath = "";
 const syncRoute = () => {
-  if (route.path !== "/plugins/config") return;
+  if (route.path !== "/plugins/config" || pluginGroupsLoading.value) return;
   const query: Record<string, string> = { scope: scope.value };
   if (scope.value === "node" && selectedNodeId.value) query.daemonId = selectedNodeId.value;
   if (currentId.value) query.plugin = currentId.value;
-  preferredPluginId.value = currentId.value;
+  if (currentId.value) preferredPluginId.value = currentId.value;
   const fullPath = router.resolve({ query }).fullPath;
   if (fullPath === lastSyncedPath) return;
   lastSyncedPath = fullPath;
@@ -979,7 +985,7 @@ const syncRoute = () => {
   window.history.replaceState(window.history.state, "", `${pathname}${search}#${fullPath}`);
 };
 
-watch([scope, currentId, selectedNodeId], syncRoute);
+watch([scope, currentId, selectedNodeId, pluginGroupsLoading], syncRoute);
 
 /** Re-read inventories to include plugins installed outside the market. */
 const checkNodePlugins = async (candidate: PluginActionCandidate) => {
@@ -1543,7 +1549,12 @@ const confirmAction = async () => {
             <VProgressCircular indeterminate />
           </div>
           <div v-else-if="schema && schema.fields.length" class="plugin-config-form">
-            <SchemaForm :fields="schema.fields" :values="schema.values" @save="saveSettings" />
+            <SchemaForm
+              :fields="schema.fields"
+              :values="schema.values"
+              :saved-values="savedValues"
+              @save="saveSettings"
+            />
           </div>
           <Empty v-else icon="mdi-cog-outline" :title="t('TXT_CODE_PLUGIN_NO_CONFIG')" />
         </template>

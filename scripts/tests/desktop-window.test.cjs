@@ -162,6 +162,80 @@ const desktopService = vue.shallowReactive({ window: DesktopWindow, confirmation
 const { VSelect, VDialog } = Vuetify.components;
 const flush = async () => { for (let i = 0; i < 8; i++) await vue.nextTick(); };
 
+test("plugin configuration marks unsaved fields and nested entries with a left border in both themes", async (t) => {
+  const filename = path.join(root, "plugins/config/panel/src/SchemaForm.vue");
+  const { descriptor } = parse(fs.readFileSync(filename, "utf8"), { filename });
+  const Form = loadSfc("plugins/config/panel/src/SchemaForm.vue", {
+    "@/lang/i18n": translations,
+    "@/plugin/context": { usePluginService: () => undefined },
+    "@/config/router": { router: {} }
+  });
+  Form.__scopeId = "data-v-setting-highlight-test";
+  const style = document.createElement("style");
+  style.textContent = compileStyle({
+    source: descriptor.styles[0].content, filename, id: Form.__scopeId, scoped: true
+  }).code;
+  document.head.appendChild(style);
+  t.after(() => style.remove());
+  for (const theme of ["light", "dark"]) await t.test(theme, async (t) => {
+    const values = vue.reactive({ label: "Saved", enabled: false, entries: [{ label: "Saved entry" }] });
+    const savedValues = vue.ref(JSON.parse(JSON.stringify(values)));
+    const fields = [
+      { key: "label", type: "string", title: "Label" },
+      { key: "enabled", type: "boolean", title: "Enabled" },
+      { key: "entries", type: "list", title: "Entries", fields: [
+        { key: "label", type: "string", title: "Entry label" }
+      ] }
+    ];
+    const target = document.createElement("div");
+    target.style.backgroundColor = theme === "dark" ? "#232429" : "#ffffff";
+    document.body.appendChild(target);
+    const app = vue.createApp({ render: () => vue.h(Form, {
+      fields, values, savedValues: savedValues.value
+    }) });
+    app.use(Vuetify.createVuetify({ theme: { defaultTheme: theme } }));
+    app.mount(target);
+    t.after(() => { app.unmount(); target.remove(); });
+    const field = (title) => [...target.querySelectorAll(".setting-field-title")]
+      .find(element => element.textContent === title).closest(".setting-field");
+    const modified = () => ["Label", "Enabled", "Entries", "Entry label"]
+      .map(title => field(title).classList.contains("setting-field--modified"));
+    await flush();
+    assert.deepEqual(modified(), [false, false, false, false]);
+    assert.equal(getComputedStyle(field("Label").querySelector(".setting-field-marker")).backgroundColor, "rgba(0, 0, 0, 0)");
+    const input = field("Label").querySelector("input");
+    input.value = "Edited";
+    input.dispatchEvent(new window.Event("input", { bubbles: true }));
+    values.entries[0].label = "Edited entry";
+    await flush();
+    assert.deepEqual(modified(), [true, false, true, true]);
+    const modifiedStyle = getComputedStyle(field("Label"));
+    const markerStyle = getComputedStyle(field("Label").querySelector(".setting-field-marker"));
+    assert.equal(markerStyle.width, "6px");
+    assert.equal(markerStyle.borderRadius, "3px");
+    assert.equal(markerStyle.backgroundColor, "rgb(255, 152, 0)");
+    assert.equal(modifiedStyle.backgroundColor, "rgba(0, 0, 0, 0)");
+    values.label = "Saved";
+    values.entries[0].label = "Saved entry";
+    await flush();
+    assert.deepEqual(modified(), [false, false, false, false]);
+    values.enabled = true;
+    await flush();
+    assert.deepEqual(modified(), [false, true, false, false]);
+    savedValues.value = JSON.parse(JSON.stringify(values));
+    await flush();
+    assert.deepEqual(modified(), [false, false, false, false]);
+    values.entries.push({ label: "New entry" });
+    await flush();
+    assert.equal(field("Entries").classList.contains("setting-field--modified"), true);
+    assert.equal(target.querySelectorAll(".setting-list-item")[1]
+      .querySelector(".setting-field--modified") != null, true);
+    values.entries.pop();
+    await flush();
+    assert.deepEqual(modified(), [false, false, false, false]);
+  });
+});
+
 function fixture(t) {
   const closed = vue.ref(false);
   const transitions = { enters: 0, leaves: 0 };

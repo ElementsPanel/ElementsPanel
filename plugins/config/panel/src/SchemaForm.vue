@@ -26,6 +26,7 @@ import type { SettingField } from "./api";
 const props = defineProps<{
   fields: SettingField[];
   values: Record<string, unknown>;
+  savedValues?: Record<string, unknown>;
   nested?: boolean;
 }>();
 
@@ -41,6 +42,18 @@ const visible = (field: SettingField, values = props.values) => {
     const value = values[key];
     return expected === undefined ? Boolean(value) : String(value ?? "") === expected;
   });
+};
+
+const fieldModified = (field: SettingField) =>
+  Boolean(
+    props.savedValues && field.key && field.type !== "link" &&
+    JSON.stringify(props.values[field.key]) !== JSON.stringify(props.savedValues[field.key])
+  );
+
+const savedItem = (field: SettingField, index: number): Record<string, unknown> | undefined => {
+  if (!props.savedValues || !field.key) return undefined;
+  const entries = props.savedValues[field.key];
+  return Array.isArray(entries) ? entries[index] ?? {} : {};
 };
 
 const fileManager = computed(() => usePluginService<FrontendFileManagerService>("file"));
@@ -84,6 +97,13 @@ const editor = ref<{
   draft: Record<string, unknown>;
 }>();
 const editorOpen = ref(false);
+const editorSavedValues = computed(() => {
+  const current = editor.value;
+  if (!current || !props.savedValues) return undefined;
+  return current.original
+    ? savedItem(current.field, items(current.field).indexOf(current.original))
+    : {};
+});
 // Clone the full JSON item to preserve IDs and secret flags without applying cancelled edits.
 const copyItem = (item: Record<string, unknown>) =>
   JSON.parse(JSON.stringify(item)) as Record<string, unknown>;
@@ -176,7 +196,12 @@ const open = (field: SettingField) => {
         <VBtn variant="tonal" type="button" @click="open(field)">{{ field.title }}</VBtn>
       </div>
 
-      <div v-else-if="visible(field)" class="setting-field">
+      <div
+        v-else-if="visible(field)"
+        class="setting-field"
+        :class="{ 'setting-field--modified': fieldModified(field) }"
+      >
+        <span class="setting-field-marker" aria-hidden="true" />
         <div class="setting-field-title">{{ field.title }}</div>
         <div v-if="field.description" class="setting-field-description">
           {{ field.description }}
@@ -223,6 +248,7 @@ const open = (field: SettingField) => {
               v-if="field.listEditor !== 'dialog'"
               :fields="field.fields || []"
               :values="item"
+              :saved-values="savedItem(field, itemIndex)"
               nested
             />
           </section>
@@ -385,7 +411,12 @@ const open = (field: SettingField) => {
     >
       <VForm @submit.stop.prevent="confirmEditor">
         <VCardText class="setting-list-editor-content">
-          <SchemaForm :fields="editor.field.fields || []" :values="editor.draft" nested />
+          <SchemaForm
+            :fields="editor.field.fields || []"
+            :values="editor.draft"
+            :saved-values="editorSavedValues"
+            nested
+          />
         </VCardText>
         <VCardActions class="justify-end">
           <VBtn type="button" @click="cancelEditor">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn>
@@ -452,6 +483,26 @@ const open = (field: SettingField) => {
 .setting-field,
 .setting-link-row {
   margin-bottom: 20px;
+  padding-left: 16px;
+}
+
+.setting-field {
+  position: relative;
+}
+
+.setting-field-marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 6px;
+  border-radius: 3px;
+  pointer-events: none;
+  transition: background-color 0.15s;
+}
+
+.setting-field--modified > .setting-field-marker {
+  background-color: #ff9800;
 }
 
 .setting-field-title {

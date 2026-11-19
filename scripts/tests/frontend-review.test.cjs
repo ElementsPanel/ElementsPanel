@@ -896,6 +896,92 @@ test("panels without node management and actions in the node scope do not scan o
   } }]);
 });
 
+test("plugin configuration defaults follow grouped order after loading and preserve explicit selections", async (t) => {
+  for (const targetScope of ["panel", "node"]) {
+    for (const scenario of ["inventory-first", "groups-first", "preferred-plugin"]) {
+      await t.test(`${targetScope}: ${scenario}`, async (t) => {
+        const originalWindow = global.window;
+        global.window = {
+          location: { pathname: "/", search: "" },
+          history: { state: null, replaceState() {} }
+        };
+        t.after(() => { global.window = originalWindow; });
+        const effect = vue.effectScope();
+        t.after(() => effect.stop());
+        const inventory = deferred();
+        const groups = deferred();
+        const records = ["first", "third", "second"].map(id => ({ id, enabled: true }));
+        const grouped = [
+          { id: "empty", name: "Empty", pluginIds: ["missing"] },
+          { id: "top", name: "Top", pluginIds: ["second", "third"] },
+          { id: "bottom", name: "Bottom", pluginIds: ["first"] }
+        ];
+        const readSchema = async ({ params }) => ({ value: {
+          id: params.id, fields: [], values: {}
+        } });
+        const pluginId = scenario === "preferred-plugin" ? "second" : undefined;
+        const state = effect.run(() => setupSfc("plugins/config/panel/src/ConfigPage.vue", {
+          vue: { ...vue, onMounted() {}, onUnmounted() {} },
+          "vue-router": {
+            useRoute: () => ({ path: "/plugins/config", query: {
+              scope: targetScope, daemonId: targetScope === "node" ? "node" : undefined,
+              plugin: pluginId
+            } }),
+            useRouter: () => ({ resolve: ({ query }) => ({
+              fullPath: `/plugins/config?${new URLSearchParams(query)}`
+            }) }),
+            onBeforeRouteLeave() {}
+          },
+          "@/plugin/context": { ctx: { plugins: { loaded: [] } } },
+          "@/tools/validator": { getValidatorErrorMsg: String },
+          "@/tools/vuetifyToast": { message: { success() {}, error: assert.fail } },
+          "./SchemaForm.vue": {},
+          "./api": {
+            pluginRemarkList: () => ({ execute: async () => ({ value: [] }) }),
+            pluginGroupList: () => ({ execute: () => targetScope === "panel"
+              ? groups.promise : Promise.resolve({ value: [] }) }),
+            nodePluginGroupList: () => ({ execute: () => groups.promise }),
+            pluginList: () => ({ execute: () => inventory.promise }),
+            nodeList: () => ({ execute: async () => ({ value: [{ uuid: "node", available: true }] }) }),
+            nodePluginList: () => ({ execute: () => inventory.promise }),
+            pluginSettings: () => ({ execute: readSchema }),
+            nodePluginSettings: () => ({ execute: readSchema })
+          }
+        }));
+        const pendingLoad = targetScope === "panel" ? state.load() : undefined;
+        await vue.nextTick();
+        if (scenario === "groups-first") groups.resolve({ value: grouped });
+        else inventory.resolve({ value: records });
+        await settle();
+        assert.equal(state.currentId.value, "", "the default must wait for both groups and inventory");
+        groups.resolve({ value: grouped });
+        inventory.resolve({ value: records });
+        await pendingLoad;
+        await settle();
+        assert.equal(state.pluginGroups.value.find(group => group.plugins.length).plugins[0].id, "third");
+        assert.equal(state.currentId.value, pluginId || "third");
+        assert.equal(state.schema.value.id, pluginId || "third");
+
+        state.selectPlugin("first");
+        state.pluginGroupsState.value = [{ id: "top", name: "Top", pluginIds: ["second"] }];
+        await settle();
+        assert.equal(state.currentId.value, "first", "regrouping must preserve a valid user selection");
+        const list = targetScope === "panel" ? state.plugins : state.nodePlugins;
+        list.value = records.filter(plugin => plugin.id !== "first");
+        await settle();
+        assert.equal(state.currentId.value, "second", "a removed selection must fall back to the first visible plugin");
+        list.value = [];
+        state.pluginGroupsState.value = [];
+        await settle();
+        assert.equal(state.currentId.value, "");
+        list.value = [records[0]];
+        await settle();
+        assert.equal(state.currentId.value, "first", "ungrouped plugins must also supply the default");
+      });
+    }
+  }
+});
+
 test("plugin configuration opens its save tooltip for unsaved edits and preserves edits across saves", async (t) => {
   for (const targetScope of ["panel", "node"]) await t.test(targetScope, async (t) => {
     const originalWindow = global.window;
@@ -962,6 +1048,20 @@ test("plugin configuration opens its save tooltip for unsaved edits and preserve
     state.plugins.value = inventory;
     await settle();
     assert.equal(state.schema.value.id, "settings");
+    const fields = [
+      { key: "name", type: "string", title: "Name" },
+      { key: "entries", type: "list", title: "Entries" }
+    ];
+    const form = setupSfc("plugins/config/panel/src/SchemaForm.vue", {
+      "@/plugin/context": { usePluginService: () => undefined },
+      "@/config/router": { router: {} }
+    }, {
+      fields,
+      get values() { return state.schema.value?.values || {}; },
+      get savedValues() { return state.savedValues.value; }
+    });
+    const modified = () => fields.map(field => form.fieldModified(field));
+    assert.deepEqual(modified(), [false, false]);
     assert.equal(state.settingsDirty.value, false);
     assert.equal(state.saveTooltipOpen.value, false, "loading the form must not show a save reminder");
     state.saveTooltipOpen.value = true;
@@ -971,6 +1071,8 @@ test("plugin configuration opens its save tooltip for unsaved edits and preserve
 
     state.schema.value.values.entries[0].name = "edited";
     await vue.nextTick();
+    assert.deepEqual(modified(), [false, true]);
+    assert.equal(state.savedValues.value.entries[0].name, "first", "nested edits must not mutate the saved baseline");
     assert.equal(state.settingsDirty.value, true);
     assert.equal(state.saveTooltipOpen.value, true, "editing must open the tooltip without hovering");
     state.saveTooltipOpen.value = false;
@@ -999,6 +1101,7 @@ test("plugin configuration opens its save tooltip for unsaved edits and preserve
     assert.equal(state.saveTooltipOpen.value, true);
     state.schema.value.values.entries = [{ name: "first" }];
     await vue.nextTick();
+    assert.deepEqual(modified(), [false, false]);
     assert.equal(state.settingsDirty.value, false);
     assert.equal(state.saveTooltipOpen.value, false);
 
@@ -1007,6 +1110,7 @@ test("plugin configuration opens its save tooltip for unsaved edits and preserve
     failSave = true;
     await state.saveSettings();
     assert.deepEqual(errors, ["save failed"]);
+    assert.deepEqual(modified(), [true, false]);
     assert.deepEqual(settingsEvents, []);
     assert.equal(state.settingsDirty.value, true, "a failed save must retain the unsaved state");
     assert.equal(state.saveTooltipOpen.value, true);
@@ -1014,6 +1118,7 @@ test("plugin configuration opens its save tooltip for unsaved edits and preserve
     await state.saveSettings();
     await vue.nextTick();
     assert.deepEqual(settingsEvents, targetScope === "panel" ? ["settings"] : []);
+    assert.deepEqual(modified(), [false, false]);
     assert.equal(state.settingsDirty.value, false);
     assert.equal(state.saveTooltipOpen.value, false, "saving must close the reminder");
 
@@ -1027,6 +1132,8 @@ test("plugin configuration opens its save tooltip for unsaved edits and preserve
     await vue.nextTick();
     assert.equal(writes.at(-1).data.name, "submitted", "the request must use the submitted snapshot");
     assert.equal(state.schema.value.values.name, "newer edit");
+    assert.equal(state.savedValues.value.name, "submitted");
+    assert.deepEqual(modified(), [true, false]);
     assert.equal(state.settingsDirty.value, true, "edits made during a save must remain unsaved");
     assert.equal(state.saveTooltipOpen.value, true);
     pendingSave = undefined;
@@ -1043,6 +1150,7 @@ test("plugin configuration opens its save tooltip for unsaved edits and preserve
     state.selectPlugin("other");
     await settle();
     assert.equal(state.currentId.value, "other");
+    assert.deepEqual(modified(), [false, false]);
     assert.equal(state.sidebarOpen.value, false, "choosing another plugin must close the sidebar");
     assert.equal(state.settingsDirty.value, false, "another plugin must receive a fresh baseline");
     assert.equal(state.saveTooltipOpen.value, false);
