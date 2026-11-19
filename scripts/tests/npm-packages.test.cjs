@@ -291,6 +291,9 @@ test("workspace packaging includes runnable entry points and excludes user data 
   assert.ok(fs.existsSync(path.join(f.outputRoot, "init-elementspanel/workspace.cjs")));
   assert.ok(fs.existsSync(path.join(f.outputRoot, "init-elementspanel/development.cjs")));
   assert.ok(create.files.includes("development.cjs"));
+  const buildTemplate = path.join(f.outputRoot, "init-elementspanel/templates/scripts/build.cjs");
+  assert.ok(fs.existsSync(buildTemplate));
+  assert.ok(create.files.includes("templates/"));
   const initializer = require(path.join(f.outputRoot, "init-elementspanel/index.cjs"));
   const workspace = require(path.join(f.outputRoot, "init-elementspanel/workspace.cjs"));
   const project = path.join(f.directory, "initialized-project");
@@ -310,8 +313,11 @@ test("workspace packaging includes runnable entry points and excludes user data 
   assert.equal(generated.elementspanel.id, "example");
   assert.equal(generated.elementspanel.dual, true);
   assert.equal(generated.version, "0.1.0");
-  assert.ok(generated.scripts.build.startsWith('node -e "'));
-  assert.doesNotMatch(generated.scripts.build, /epanel-workspace|scripts\/build/);
+  assert.equal(generated.scripts.build, "node scripts/build.cjs");
+  assert.equal(
+    fs.readFileSync(path.join(generatedRoot, "scripts/build.cjs"), "utf8"),
+    fs.readFileSync(buildTemplate, "utf8")
+  );
   assert.equal(generated.scripts.prepack, "npm run build");
   assert.deepEqual(generated.elementspanel.panel.frontendInject, ["console", "i18n"]);
   for (const side of ["panel", "daemon"]) {

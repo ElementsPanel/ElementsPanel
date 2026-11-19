@@ -45,10 +45,9 @@ test("initialized projects create npm plugin workspaces outside the runtime sour
   assert.equal(plugin.version, "0.1.0");
   assert.equal(plugin.description, "ElementsPanel example plugin");
   assert.deepEqual(plugin.elementspanel.panel.frontendInject, ["console", "i18n"]);
-  assert.ok(plugin.scripts.build.startsWith('node -e "'));
-  assert.ok(plugin.scripts.build.endsWith('"'));
-  assert.doesNotMatch(plugin.scripts.build, /epanel-workspace|scripts\/build/);
-  assert.doesNotThrow(() => new vm.Script(plugin.scripts.build.slice(9, -1)));
+  assert.equal(plugin.scripts.build, "node scripts/build.cjs");
+  const buildSource = fs.readFileSync(path.join(project, "external/example/scripts/build.cjs"), "utf8");
+  assert.doesNotThrow(() => new vm.Script(buildSource));
   assert.equal(plugin.scripts.prepack, "npm run build");
   for (const tool of ["esbuild", "vite", "@vitejs/plugin-vue", "@vitejs/plugin-vue-jsx", "vue"])
     assert.ok(plugin.devDependencies[tool], tool);
@@ -152,12 +151,17 @@ test("plugin packages own their build commands and workspace commands only invok
   });
   const entry = await setupWorkspace(project, ["@example/owned", "--daemon", "--no-install"]);
   assert.equal(entry.manifest.peerDependencies["@elementspanel/daemon"], "^2.3.4");
-  assert.match(fs.readFileSync(path.join(entry.root, "README.md"), "utf8"), /--workspace @example\/epanel-plugin-owned/);
+  const readme = fs.readFileSync(path.join(entry.root, "README.md"), "utf8");
+  assert.match(readme, /scripts\/build\.cjs/);
+  assert.match(readme, /--workspace @example\/epanel-plugin-owned/);
   assert.deepEqual(Object.keys(entry.manifest.devDependencies), ["esbuild"]);
   const buildScript = entry.manifest.scripts.build;
+  const buildFile = path.join(entry.root, "scripts/build.cjs");
+  const buildSource = fs.readFileSync(buildFile, "utf8");
   const compileCalls = [];
-  const simulatedProcess = { cwd: () => entry.root };
-  await vm.runInNewContext(buildScript.slice(9, -1), {
+  const simulatedProcess = { cwd: () => project };
+  await vm.runInNewContext(buildSource, {
+    __dirname: path.dirname(buildFile),
     require: (id) =>
       id === "esbuild" ? { build: async (options) => compileCalls.push(options) } : require(id),
     process: simulatedProcess,
@@ -186,10 +190,12 @@ test("plugin packages own their build commands and workspace commands only invok
   legacy.scripts.build = "epanel-workspace build owned";
   delete legacy.devDependencies;
   fs.writeFileSync(packageFile, JSON.stringify(legacy));
+  fs.unlinkSync(buildFile);
   await buildCommand(project, ["owned"]);
   const updated = JSON.parse(fs.readFileSync(packageFile));
   assert.equal(updated.version, entry.manifest.version);
   assert.equal(updated.scripts.build, buildScript);
+  assert.equal(fs.readFileSync(buildFile, "utf8"), buildSource);
   assert.deepEqual(Object.keys(updated.devDependencies), ["esbuild"]);
   assert.deepEqual(
     fs

@@ -352,7 +352,8 @@ export async function packageNpm({
       "development.cjs",
       "i18n.cjs",
       "select.cjs",
-      "workspace.cjs"
+      "workspace.cjs",
+      "templates"
     ])
       copyTree(path.join(createSource, filename), path.join(createOutput, filename));
     await fs.chmod(path.join(createOutput, "bin.cjs"), 0o755);

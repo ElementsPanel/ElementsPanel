@@ -21,6 +21,7 @@
     "i18n.cjs",
     "select.cjs",
     "workspace.cjs",
+    "templates/",
     "LICENSE"
   ],
   "dependencies": {
