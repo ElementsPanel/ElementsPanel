@@ -32,6 +32,8 @@ export default class SystemConfig {
 
   pageTitle = "ElementsPanel";
   logoImage = "";
+  // Missing switches preserve existing per-theme logos; new settings default to a shared logo.
+  logoImagePerTheme: boolean | undefined = undefined;
   // Missing theme values inherit the legacy logo; empty strings use the built-in logo.
   logoImageLight: string | undefined = undefined;
   logoImageDark: string | undefined = undefined;

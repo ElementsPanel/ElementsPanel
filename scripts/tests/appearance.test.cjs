@@ -100,14 +100,21 @@ test("console appearance persists independent logos and background images after 
   Storage.DATA_PATH = directory;
   const storage = new Storage();
   const backend = backendFixture({}, undefined, (config) => storage.store("SystemConfig", "config", config));
-  const logoFields = backend.schema.fields().filter((field) => field.key.startsWith("logoImage"));
-  assert.deepEqual(logoFields.map((field) => field.key), ["logoImageLight", "logoImageDark"]);
+  const logoFields = backend.schema.fields().filter(
+    (field) => field.key.startsWith("logoImage") && field.type === "string"
+  );
+  assert.deepEqual(logoFields.map((field) => field.key), ["logoImage", "logoImageLight", "logoImageDark"]);
   assert.ok(logoFields.every((field) => field.fileUpload));
+  assert.equal(backend.schema.read().logoImagePerTheme, false);
+  assert.deepEqual(logoFields.map((field) => field.visibleWhen),
+    ["logoImagePerTheme=false", "logoImagePerTheme", "logoImagePerTheme"]);
   assert.deepEqual(backend.schema.fields().map((field) => field.key),
-    ["pageTitle", "logoImageLight", "logoImageDark", "backgroundImagePerTheme", "backgroundImage",
+    ["pageTitle", "logoImagePerTheme", "logoImage", "logoImageLight", "logoImageDark",
+      "backgroundImagePerTheme", "backgroundImage",
       "backgroundImageLight", "backgroundImageDark", "backgroundImageBlur"]);
 
   await backend.schema.write({
+    logoImagePerTheme: true, logoImage: "/shared-logo.png",
     logoImageLight: "/light.png", logoImageDark: "/dark.png",
     backgroundImage: "/background.png", backgroundImageBlur: 0,
     backgroundImagePerTheme: true, backgroundImageLight: "/background-light.png",
@@ -115,6 +122,8 @@ test("console appearance persists independent logos and background images after 
   });
   const restarted = backendFixture(storage.load("SystemConfig", SystemConfig, "config"));
   const appearance = await restarted.readPublic();
+  assert.equal(appearance.logoImagePerTheme, true);
+  assert.equal(appearance.logoImage, "/shared-logo.png");
   assert.equal(appearance.logoImageLight, "/light.png");
   assert.equal(appearance.logoImageDark, "/dark.png");
   assert.equal(appearance.backgroundImage, "/background.png");
@@ -127,6 +136,7 @@ test("console appearance persists independent logos and background images after 
 
 test("old single images remain available while cleared themes stop inheriting them", async () => {
   const backend = backendFixture({ logoImage: "/legacy.png", backgroundImage: "/background.png" });
+  assert.equal(backend.schema.read().logoImagePerTheme, false);
   assert.equal(backend.schema.read().logoImageLight, "/legacy.png");
   assert.equal(backend.schema.read().logoImageDark, "/legacy.png");
   assert.equal(backend.schema.read().backgroundImagePerTheme, false);
@@ -136,6 +146,7 @@ test("old single images remain available while cleared themes stop inheriting th
   backend.schema.write({ logoImageDark: "/dark.png" });
   backend.schema.write({ logoImageLight: null });
   let appearance = await backend.readPublic();
+  assert.equal(appearance.logoImagePerTheme, true);
   assert.equal(appearance.logoImageLight, "");
   assert.equal(appearance.logoImageDark, "/dark.png");
   assert.equal(appearance.backgroundImage, "/background.png");
@@ -161,6 +172,9 @@ test("legacy layout logos migrate without overwriting explicitly cleared theme s
   const cleared = backendFixture({ logoImageLight: "", logoImageDark: "" }, layout);
   assert.equal(cleared.schema.read().logoImageLight, "");
   assert.equal(cleared.schema.read().logoImageDark, "");
+  const clearedSharedLogo = backendFixture({ logoImagePerTheme: false }, layout);
+  assert.equal(clearedSharedLogo.schema.read().logoImagePerTheme, false);
+  assert.equal(clearedSharedLogo.schema.read().logoImage, "");
   const backgroundLayout = [{ page: "__settings__", theme: { backgroundImage: "/layout-bg.png" } }];
   assert.equal(backendFixture({}, backgroundLayout).schema.read().backgroundImageLight, "/layout-bg.png");
   const clearedBackground = backendFixture({ backgroundImageLight: "", backgroundImageDark: "" }, backgroundLayout);
@@ -217,7 +231,7 @@ test("clearing a logo restores the matching built-in image even with a legacy lo
   const backend = backendFixture({ logoImage: "/legacy.png" });
   const { store } = await storeFixture(t, backend.readPublic);
   assert.equal(store.logoImage.value, "/legacy.png");
-  backend.schema.write({ logoImageLight: null, logoImageDark: "/dark.png" });
+  backend.schema.write({ logoImagePerTheme: true, logoImageLight: null, logoImageDark: "/dark.png" });
   await store.initAppTheme();
   assert.equal(store.logoImage.value, "builtin-light.svg");
 
@@ -226,6 +240,25 @@ test("clearing a logo restores the matching built-in image even with a legacy lo
   backend.schema.write({ logoImageDark: null });
   await store.initAppTheme();
   assert.equal(store.logoImage.value, "builtin-dark.svg");
+
+  await backend.schema.write({
+    logoImagePerTheme: false, logoImage: "/shared.png",
+    logoImageLight: "/saved-light.png", logoImageDark: "/saved-dark.png"
+  });
+  await store.initAppTheme();
+  assert.equal(store.logoImage.value, "/shared.png");
+  store.setTheme(AppTheme.LIGHT);
+  assert.equal(store.logoImage.value, "/shared.png");
+  await backend.schema.write({ logoImage: null });
+  await store.initAppTheme();
+  assert.equal(store.logoImage.value, "builtin-light.svg");
+  store.setTheme(AppTheme.DARK);
+  assert.equal(store.logoImage.value, "builtin-dark.svg");
+  await backend.schema.write({ logoImagePerTheme: true });
+  await store.initAppTheme();
+  assert.equal(store.logoImage.value, "/saved-dark.png");
+  store.setTheme(AppTheme.LIGHT);
+  assert.equal(store.logoImage.value, "/saved-light.png");
 });
 
 test("older appearance responses without theme fields still work in both modes", async (t) => {
@@ -254,4 +287,10 @@ test("older appearance responses without theme fields still work in both modes",
   assert.equal(document.body.classList.contains("app-dark-theme"), true);
   assert.equal(document.body.style.getPropertyValue("--app-background-blur"), "");
   assert.equal(document.body.style.getPropertyValue("--app-background-image"), "");
+  appearance.logoImageLight = "/old-light.png";
+  appearance.logoImageDark = "/old-dark.png";
+  await store.initAppTheme();
+  assert.equal(store.logoImage.value, "/old-dark.png");
+  store.setTheme(AppTheme.LIGHT);
+  assert.equal(store.logoImage.value, "/old-light.png");
 });

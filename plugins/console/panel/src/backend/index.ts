@@ -14,6 +14,7 @@ const LEGACY_SETTINGS_PAGE = "__settings__";
 type AppearanceValues = {
   pageTitle?: unknown;
   logoImage?: unknown;
+  logoImagePerTheme?: unknown;
   logoImageLight?: unknown;
   logoImageDark?: unknown;
   backgroundImage?: unknown;
@@ -26,6 +27,7 @@ type AppearanceValues = {
 type AppearanceConfig = {
   pageTitle?: string;
   logoImage?: string;
+  logoImagePerTheme?: boolean;
   logoImageLight?: string;
   logoImageDark?: string;
   backgroundImage?: string;
@@ -39,6 +41,9 @@ function readAppearance(config: AppearanceConfig) {
   return {
     pageTitle: config.pageTitle || DEFAULT_PAGE_TITLE,
     logoImage: config.logoImage || "",
+    logoImagePerTheme:
+      config.logoImagePerTheme ??
+      (config.logoImageLight !== undefined || config.logoImageDark !== undefined),
     logoImageLight: config.logoImageLight ?? config.logoImage ?? "",
     logoImageDark: config.logoImageDark ?? config.logoImage ?? "",
     backgroundImage: config.backgroundImage || "",
@@ -57,6 +62,9 @@ function writeAppearance(values: AppearanceValues, config: AppearanceConfig, sav
     String(valueOrCurrent(values.pageTitle, config.pageTitle ?? DEFAULT_PAGE_TITLE)).trim() ||
     DEFAULT_PAGE_TITLE;
   config.logoImage = String(valueOrCurrent(values.logoImage, config.logoImage) ?? "");
+  if (values.logoImagePerTheme !== undefined) {
+    config.logoImagePerTheme = values.logoImagePerTheme === true;
+  }
   if (values.logoImageLight !== undefined) {
     config.logoImageLight = String(values.logoImageLight ?? "");
   }
@@ -86,6 +94,7 @@ async function migrateLegacyAppearance(config: AppearanceConfig, save: () => Pro
   const customized =
     (config.pageTitle && config.pageTitle !== DEFAULT_PAGE_TITLE) ||
     config.logoImage ||
+    config.logoImagePerTheme !== undefined ||
     config.logoImageLight !== undefined ||
     config.logoImageDark !== undefined ||
     config.backgroundImage ||
@@ -138,18 +147,33 @@ export function apply(ctx: PanelPluginContext) {
         description: $t("TXT_CODE_COMMON_THIS_CHANGES_THE_PAGE_TITLE_OF_THE_BROWSER_TAB_LEAVE_BLANK_TO_RESET_TO_DEFAULT")
       },
       {
+        key: "logoImagePerTheme",
+        type: "boolean",
+        title: $t("TXT_CODE_CONSOLE_LOGO_PER_THEME")
+      },
+      {
+        key: "logoImage",
+        type: "string",
+        title: $t("TXT_CODE_CONSOLE_LOGO"),
+        description: $t("TXT_CODE_CONSOLE_LOGO_SHARED_HINT"),
+        fileUpload: true,
+        visibleWhen: "logoImagePerTheme=false"
+      },
+      {
         key: "logoImageLight",
         type: "string",
         title: $t("TXT_CODE_CONSOLE_LOGO_LIGHT"),
         description: $t("TXT_CODE_CONSOLE_LOGO_HINT"),
-        fileUpload: true
+        fileUpload: true,
+        visibleWhen: "logoImagePerTheme"
       },
       {
         key: "logoImageDark",
         type: "string",
         title: $t("TXT_CODE_CONSOLE_LOGO_DARK"),
         description: $t("TXT_CODE_CONSOLE_LOGO_HINT"),
-        fileUpload: true
+        fileUpload: true,
+        visibleWhen: "logoImagePerTheme"
       },
       {
         key: "backgroundImagePerTheme",

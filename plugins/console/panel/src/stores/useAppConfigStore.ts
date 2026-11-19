@@ -31,6 +31,7 @@ export const useAppConfigStore = createGlobalState(() => {
 
   const appConfig = reactive({
     logoImage: "",
+    logoImagePerTheme: undefined as boolean | undefined,
     logoImageLight: undefined as string | undefined,
     logoImageDark: undefined as string | undefined
   });
@@ -42,8 +43,12 @@ export const useAppConfigStore = createGlobalState(() => {
   });
 
   const logoImage = computed(() => {
+    const perTheme =
+      appConfig.logoImagePerTheme ??
+      (appConfig.logoImageLight !== undefined || appConfig.logoImageDark !== undefined);
     const themedLogo = isDarkTheme.value ? appConfig.logoImageDark : appConfig.logoImageLight;
-    return (themedLogo ?? appConfig.logoImage) || (isDarkTheme.value ? logo : logoB);
+    const image = perTheme ? themedLogo ?? appConfig.logoImage : appConfig.logoImage;
+    return image || (isDarkTheme.value ? logo : logoB);
   });
 
   const currentTheme = useLocalStorage<AppTheme>(THEME_KEY, AppTheme.AUTO);
@@ -152,6 +157,7 @@ export const useAppConfigStore = createGlobalState(() => {
 
   const setLogoImages = (appearance?: PanelAppearance) => {
     setLogoImage(appearance?.logoImage || "");
+    appConfig.logoImagePerTheme = appearance?.logoImagePerTheme;
     appConfig.logoImageLight = appearance?.logoImageLight;
     appConfig.logoImageDark = appearance?.logoImageDark;
   };

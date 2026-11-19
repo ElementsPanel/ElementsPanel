@@ -3,6 +3,7 @@ import { useDefineApi } from "@/stores/useDefineApi";
 export interface PanelAppearance {
   pageTitle: string;
   logoImage: string;
+  logoImagePerTheme?: boolean;
   logoImageLight?: string;
   logoImageDark?: string;
   backgroundImage: string;
