@@ -123,13 +123,23 @@ body::-webkit-scrollbar-track {
   opacity: 0.55 !important;
 }
 
-// Theme neutral buttons without overriding explicit semantic colors.
 @layer vuetify-overrides {
+  // Theme neutral buttons without overriding explicit semantic colors.
   .v-btn--variant-text,
   .v-btn--variant-plain,
   .v-btn--variant-tonal,
   .v-btn--variant-outlined {
     color: var(--text-color);
+  }
+
+  @media (forced-colors: none) {
+    // Keep inactive switches distinct from light surfaces and white thumbs.
+    .v-switch.v-theme--light
+      .v-selection-control:not(.v-selection-control--dirty, .v-selection-control--error)
+      .v-switch__track {
+      background-color: var(--color-gray-7);
+      opacity: 1;
+    }
   }
 }
 
