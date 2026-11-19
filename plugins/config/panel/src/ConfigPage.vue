@@ -1244,7 +1244,7 @@ const confirmAction = async () => {
 </script>
 
 <template>
-  <div class="plugin-config-page" data-app-surface="card" @keydown.esc="sidebarOpen = false">
+  <div class="plugin-config-page" data-app-surface="transparent" @keydown.esc="sidebarOpen = false">
     <VProgressLinear v-if="loading" class="plugin-config-loading" color="primary" indeterminate />
 
     <Teleport to="body" :disabled="!isPhone">
@@ -1776,18 +1776,12 @@ const confirmAction = async () => {
   min-height: 0;
   overflow: hidden;
   border-radius: 24px;
+  background: transparent;
   color: var(--text-color);
 }
 
 :global(.desktop-container .plugin-config-page) {
-  --plugin-config-surface-color: #ffffff;
-
   height: 100%;
-  background: var(--plugin-config-surface-color);
-}
-
-:global(.app-dark-theme .desktop-container .plugin-config-page) {
-  --plugin-config-surface-color: #1f1f27;
 }
 
 .plugin-config-navigation {
@@ -1826,11 +1820,6 @@ const confirmAction = async () => {
   gap: 12px;
   margin-bottom: 12px;
   font-weight: 600;
-}
-
-:global(.desktop-container .plugin-config-sidebar),
-:global(.desktop-container .plugin-config-content) {
-  background: var(--plugin-config-surface-color);
 }
 
 .plugin-config-scope {
@@ -1912,6 +1901,8 @@ const confirmAction = async () => {
 }
 
 .plugin-config-list :deep(.v-list-item) {
+  --v-activated-opacity: 0;
+
   min-height: 36px;
   margin: 0 0 6px;
   padding-top: 2px;
