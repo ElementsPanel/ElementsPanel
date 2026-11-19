@@ -140,7 +140,7 @@ onMounted(async () => {
     </VAlert>
     <VCard
       class="login-panel"
-      data-app-surface="none"
+      data-app-surface="card"
       elevation="0"
       rounded="xl"
     >
