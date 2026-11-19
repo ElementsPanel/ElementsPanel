@@ -33,6 +33,12 @@ export function useLineChart(
 ) {
   // Chart instances must stay outside Vue's deep reactive proxies.
   const instance = shallowRef<HistoryChart>();
+  let themeObserver: MutationObserver | undefined;
+  const getTickColor = () => {
+    if (!canvas.value || typeof getComputedStyle !== "function") return "#666";
+    const style = getComputedStyle(canvas.value);
+    return style.getPropertyValue("--text-color").trim() || style.color || "#666";
+  };
   const snapshot = (data: LineChartData) => ({
     labels: [...data.labels],
     values: data.values.map((value) => Number.isFinite(value) ? value : null),
@@ -42,6 +48,7 @@ export function useLineChart(
   onMounted(() => {
     if (!canvas.value) return;
     const data = snapshot(readData());
+    const tickColor = getTickColor();
     let gradient: CanvasGradient | undefined;
     let gradientTop: number | undefined;
     let gradientBottom: number | undefined;
@@ -108,7 +115,7 @@ export function useLineChart(
               autoSkip: true,
               maxTicksLimit: 6,
               maxRotation: 0,
-              color: "rgba(160, 180, 210, 0.7)",
+              color: tickColor,
               font: { size: 10 },
               padding: 4
             }
@@ -123,7 +130,7 @@ export function useLineChart(
               stepSize: percentage ? 50 : undefined,
               precision: 0,
               maxTicksLimit: compact ? 3 : 6,
-              color: "rgba(160, 180, 210, 0.7)",
+              color: tickColor,
               font: { size: 10 },
               padding: 4,
               callback: (value) => percentage ? `${value}%` : value
@@ -133,6 +140,20 @@ export function useLineChart(
       }
     };
     instance.value = new Chart(canvas.value, config);
+    if (typeof MutationObserver !== "undefined" && typeof document !== "undefined" && document.body) {
+      themeObserver = new MutationObserver(() => {
+        const chart = instance.value;
+        if (!chart) return;
+        const color = getTickColor();
+        const x = chart.options.scales?.x;
+        const y = chart.options.scales?.y;
+        if (x?.ticks?.color === color && y?.ticks?.color === color) return;
+        if (x?.ticks) x.ticks.color = color;
+        if (y?.ticks) y.ticks.color = color;
+        chart.update("none");
+      });
+      themeObserver.observe(document.body, { attributes: true, attributeFilter: ["class", "style"] });
+    }
   });
 
   watch(readData, (value) => {
@@ -147,6 +168,7 @@ export function useLineChart(
   }, { deep: true, flush: "post" });
 
   onBeforeUnmount(() => {
+    themeObserver?.disconnect();
     instance.value?.destroy();
     instance.value = undefined;
   });

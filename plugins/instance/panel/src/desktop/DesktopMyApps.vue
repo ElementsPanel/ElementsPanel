@@ -604,13 +604,8 @@ onUnmounted(() => {
     border-radius: 6px;
     font-size: 14px;
     cursor: pointer;
-    transition: background-color 0.2s;
-    background: var(--desktop-window-titlebar-bg);
+    background: transparent;
     line-height: 1;
-
-    &:hover:not(:disabled) {
-        background: var(--desktop-window-control-hover);
-    }
 
     &:disabled {
         opacity: 0.3;
