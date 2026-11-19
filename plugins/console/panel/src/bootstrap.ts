@@ -5,6 +5,7 @@ import { getI18nInstance } from "@elementspanel/epanel-plugin-i18n";
 import { router } from "./config/router";
 import { useAppStateStore } from "./stores/useAppStateStore";
 import { setLoadingTitle } from "./tools/dom";
+import { installOverlayScrollbars } from "./tools/overlayScrollbars";
 import ConsoleApp from "./ConsoleApp.vue";
 import {
   ActionsService,
@@ -40,6 +41,7 @@ export async function prepareApplication(ctx: PanelFrontendPluginContext) {
   });
 
   let mounted = false;
+  let disposeScrollbars: (() => void) | undefined;
   ctx.on("plugins/loaded", async () => {
     const user = ctx.get("user");
     if (user) await user.restoreSession();
@@ -47,9 +49,11 @@ export async function prepareApplication(ctx: PanelFrontendPluginContext) {
     setLoadingTitle("Rendering Application...");
     app.use(router);
     app.mount("#app-mount-point");
+    disposeScrollbars = installOverlayScrollbars();
     mounted = true;
   });
   ctx.on("dispose", () => {
+    disposeScrollbars?.();
     if (mounted) app.unmount();
   });
   return { app, ctx: applicationContext };

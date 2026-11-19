@@ -23,6 +23,9 @@ export function frontendAliases() {
     "@instance": path.join(repository, "plugins/instance/panel/src"),
     "@": path.join(repository, "plugins/console/panel/src"),
     "@mdi/font/css/materialdesignicons.css": require.resolve("@mdi/font/css/materialdesignicons.css"),
+    "overlayscrollbars/overlayscrollbars.css": require.resolve(
+      "overlayscrollbars/overlayscrollbars.css"
+    ),
     "wavesurfer.js": require.resolve("wavesurfer.js")
   };
 }
