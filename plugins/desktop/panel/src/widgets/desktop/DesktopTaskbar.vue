@@ -467,10 +467,6 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
     overflow-x: auto;
     overflow-y: hidden;
     padding: 0 4px;
-
-    &::-webkit-scrollbar {
-        height: 0;
-    }
 }
 
 .taskbar__window-btn {

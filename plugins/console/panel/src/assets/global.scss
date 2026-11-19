@@ -29,48 +29,6 @@ html {
   scrollbar-gutter: auto;
 }
 
-// Hide the page shell scrollbar at the viewport edge while preserving feature-panel scrollbars.
-html,
-body,
-#app-mount-point,
-.main-content.app-layout-sidebar-only {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  scrollbar-color: transparent transparent;
-}
-
-#app-mount-point::-webkit-scrollbar,
-.main-content.app-layout-sidebar-only::-webkit-scrollbar {
-  width: 0 !important;
-  height: 0 !important;
-  display: none;
-  background: transparent !important;
-  border: 0 !important;
-  box-shadow: none !important;
-}
-
-#app-mount-point::-webkit-scrollbar-thumb,
-#app-mount-point::-webkit-scrollbar-track,
-.main-content.app-layout-sidebar-only::-webkit-scrollbar-thumb,
-.main-content.app-layout-sidebar-only::-webkit-scrollbar-track {
-  background: transparent !important;
-  border: 0 !important;
-  box-shadow: none !important;
-}
-
-html::-webkit-scrollbar,
-body::-webkit-scrollbar,
-html::-webkit-scrollbar-thumb,
-body::-webkit-scrollbar-thumb,
-html::-webkit-scrollbar-track,
-body::-webkit-scrollbar-track {
-  width: 0 !important;
-  height: 0 !important;
-  background: transparent !important;
-  border: 0 !important;
-  box-shadow: none !important;
-}
-
 // Sidebar mode scrolls the main column, so the mount point must not add another scrollbar.
 #app-mount-point:has(.app-layout-sidebar-only) {
   overflow-y: hidden;
@@ -516,19 +474,31 @@ body::-webkit-scrollbar-track {
   opacity: 1;
 }
 
+// Use native thin scrollbars where WebKit styling is unavailable.
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--color-gray-7, #8c8c8c) 45%, transparent) transparent;
+  }
+}
+
 *::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 4px;
+  height: 4px;
+  background: transparent;
 }
 
 *::-webkit-scrollbar-thumb {
-  border-radius: 4px;
-  box-shadow: inset 0 0 5px rgba(69, 69, 69, 0.082);
-  background: #74717167;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-gray-7, #8c8c8c) 45%, transparent);
 }
 
-*::-webkit-scrollbar-track {
-  border-radius: 4px;
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-8, #595959);
+}
+
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
   background: transparent;
 }
 
@@ -639,17 +609,6 @@ body .v-navigation-drawer,
 // Limit field sizing and text-color overrides to selection menus.
 :is(.v-select__content, .v-autocomplete__content, .v-combobox__content) {
   max-width: min(420px, calc(100vw - 32px));
-
-  // Keep scrollbar gutters from shortening selection highlights.
-  .v-list {
-    scrollbar-width: none;
-
-    &::-webkit-scrollbar {
-      display: none;
-      width: 0;
-      height: 0;
-    }
-  }
 
   :is(.v-list-item, .v-list-item-title, .v-list-item-subtitle, .v-icon) {
     color: var(--text-color) !important;

@@ -306,7 +306,6 @@ if (props.desktop) {
   overflow-anchor: none;
   overscroll-behavior: contain;
   padding: 20px;
-  scrollbar-width: thin;
 }
 .task-history-toggle {
   flex: 0 1 auto;

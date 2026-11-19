@@ -996,19 +996,6 @@ onUnmounted(() => {
     &--loading {
         opacity: 0.7;
     }
-
-    &::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background: var(--desktop-window-text-muted);
-        border-radius: 3px;
-    }
-
-    &::-webkit-scrollbar-track {
-        background: transparent;
-    }
 }
 
 .dim-loading {

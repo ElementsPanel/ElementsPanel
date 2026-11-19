@@ -1070,17 +1070,4 @@ const getInstanceStatusLabel = (status: number): string => {
     padding: 8px;
     border-top: 1px solid var(--desktop-window-border);
 }
-
-.du-assign-panel__body::-webkit-scrollbar {
-    width: 4px;
-}
-
-.du-assign-panel__body::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.du-assign-panel__body::-webkit-scrollbar-thumb {
-    background: var(--desktop-window-border);
-    border-radius: 2px;
-}
 </style>

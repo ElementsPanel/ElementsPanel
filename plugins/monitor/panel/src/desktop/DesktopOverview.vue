@@ -473,17 +473,4 @@ const memColor = computed(() => {
         background: var(--desktop-window-text-muted);
     }
 }
-
-.desktop-overview::-webkit-scrollbar {
-    width: 4px;
-}
-
-.desktop-overview::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.desktop-overview::-webkit-scrollbar-thumb {
-    background: var(--desktop-window-border);
-    border-radius: 2px;
-}
 </style>

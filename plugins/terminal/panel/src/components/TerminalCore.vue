@@ -380,7 +380,8 @@ onMounted(async () => {
       display: flex;
       gap: 8px;
       max-width: 100%;
-      overflow: scroll;
+      overflow-x: auto;
+      overflow-y: hidden;
       z-index: 10;
       position: absolute;
       top: -35px;
@@ -395,11 +396,6 @@ onMounted(async () => {
           text-overflow: ellipsis;
           cursor: pointer;
         }
-      }
-
-      &::-webkit-scrollbar {
-        width: 0 !important;
-        height: 0 !important;
       }
     }
   }

@@ -217,17 +217,4 @@ const openConsole = (node: NodeStatus) => {
     font-size: 14px;
     color: var(--desktop-window-text-muted);
 }
-
-.dts-list-wrap::-webkit-scrollbar {
-    width: 6px;
-}
-
-.dts-list-wrap::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.dts-list-wrap::-webkit-scrollbar-thumb {
-    background: var(--desktop-window-border);
-    border-radius: 3px;
-}
 </style>
