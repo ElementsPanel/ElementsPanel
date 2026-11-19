@@ -5,11 +5,14 @@
 }
 
 .os-theme-app {
-  --os-size: 4px;
+  --os-size: 12px;
+  --os-padding-perpendicular: 4px;
+  --os-padding-axis: 4px;
   --os-handle-border-radius: 999px;
   --os-handle-interactive-area-offset: 4px;
   --os-handle-bg: color-mix(in srgb, var(--color-gray-7, #8c8c8c) 45%, transparent);
   --os-handle-bg-hover: var(--color-gray-8, #595959);
   --os-handle-bg-active: var(--color-gray-8, #595959);
+  box-sizing: border-box;
   z-index: 1;
 }
