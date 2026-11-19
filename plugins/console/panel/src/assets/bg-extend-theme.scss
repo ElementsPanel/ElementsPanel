@@ -95,15 +95,3 @@ body.app-background-image {
   --app-background-control: #1919196b;
   --app-background-terminal: var(--app-background-card);
 }
-
-@media (max-width: 992px) {
-  .app-dark-theme.app-background-image {
-    --app-background-card: #000000dd;
-    --app-background-control: #0000006b;
-  }
-
-  .app-light-theme.app-background-image {
-    --app-background-card: #ffffffc5;
-    --app-background-control: #ffffff90;
-  }
-}
