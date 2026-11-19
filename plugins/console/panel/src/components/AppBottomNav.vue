@@ -356,7 +356,8 @@ const handleMenuItemClick = (path: string) => {
   -webkit-tap-highlight-color: transparent;
 }
 
-.fab-ball:hover {
+.fab-ball:hover,
+.fab-ball--expanded {
   box-shadow:
     0 12px 32px var(--card-shadow-extend-color),
     0 4px 12px var(--card-shadow-color);
@@ -374,12 +375,6 @@ const handleMenuItemClick = (path: string) => {
 
 .fab-ball--idle.fab-ball--left {
   transform: translateX(-36px);
-}
-
-.fab-ball--expanded {
-  box-shadow:
-    0 12px 32px var(--card-shadow-extend-color),
-    0 4px 12px var(--card-shadow-color);
 }
 
 .fab-ball-icon {
