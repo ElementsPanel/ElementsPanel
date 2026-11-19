@@ -234,7 +234,6 @@ declare global {
       type: string;
       version: string;
       node: string;
-      bun?: string;
       hostname: string;
       loadavg: number[];
       platform: string;

@@ -1,7 +1,6 @@
 {
   "TXT_CODE_COMMON_UNIX_LOAD_AVERAGE": "Linuxの負荷",
   "TXT_CODE_COMMON_NODE_JS_VERSION": "Node.jsのバージョン",
-  "TXT_CODE_COMMON_BUN_VERSION": "Bunのバージョン",
   "TXT_CODE_COMMON_BROWSER_TIME": "ブラウザ時間",
   "TXT_CODE_COMMON_ONLINE_TOTAL": "オンラインノード/総ノード数",
   "TXT_CODE_COMMON_HOSTNAME": "ホスト名",

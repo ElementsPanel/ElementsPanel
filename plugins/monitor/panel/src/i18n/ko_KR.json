@@ -1,7 +1,6 @@
 {
   "TXT_CODE_COMMON_UNIX_LOAD_AVERAGE": "리눅스 로드",
   "TXT_CODE_COMMON_NODE_JS_VERSION": "노드 환경 버전",
-  "TXT_CODE_COMMON_BUN_VERSION": "Bun 환경 버전",
   "TXT_CODE_COMMON_BROWSER_TIME": "브라우저 시간",
   "TXT_CODE_COMMON_ONLINE_TOTAL": "온라인 노드/전체 노드",
   "TXT_CODE_COMMON_HOSTNAME": "호스트 이름",

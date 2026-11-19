@@ -84,8 +84,8 @@ const overviewItems = computed(() => {
   const usedMemory = Number(Math.max(0, totalMemory - freeMemory).toFixed(1));
   const items = [
     {
-      title: t(current.system.bun ? "TXT_CODE_COMMON_BUN_VERSION" : "TXT_CODE_COMMON_NODE_JS_VERSION"),
-      value: current.system.bun ?? current.system.node,
+      title: t("TXT_CODE_COMMON_NODE_JS_VERSION"),
+      value: current.system.node,
       icon: "mdi-code-tags"
     },
     { title: t("TXT_CODE_COMMON_PANEL_VERSION"), value: current.version, icon: "mdi-view-grid-outline" },

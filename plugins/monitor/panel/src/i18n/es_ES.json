@@ -1,7 +1,6 @@
 {
   "TXT_CODE_COMMON_UNIX_LOAD_AVERAGE": "Carga de linux",
   "TXT_CODE_COMMON_NODE_JS_VERSION": "Versión del entorno de nodo",
-  "TXT_CODE_COMMON_BUN_VERSION": "Versión del entorno Bun",
   "TXT_CODE_COMMON_BROWSER_TIME": "tiempo del navegador",
   "TXT_CODE_COMMON_ONLINE_TOTAL": "Nodos en línea/nodos totales",
   "TXT_CODE_COMMON_HOSTNAME": "nombre de host",

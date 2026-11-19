@@ -1,7 +1,6 @@
 {
   "TXT_CODE_COMMON_UNIX_LOAD_AVERAGE": "Durchschnittliche Systemlast",
   "TXT_CODE_COMMON_NODE_JS_VERSION": "Node.js Version",
-  "TXT_CODE_COMMON_BUN_VERSION": "Bun-Version",
   "TXT_CODE_COMMON_BROWSER_TIME": "Browserzeit",
   "TXT_CODE_COMMON_ONLINE_TOTAL": "Online-Knoten/Gesamtknoten",
   "TXT_CODE_COMMON_HOSTNAME": "Hostname",

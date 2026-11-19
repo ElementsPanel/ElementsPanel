@@ -1,7 +1,6 @@
 {
   "TXT_CODE_COMMON_UNIX_LOAD_AVERAGE": "Charge Linux",
   "TXT_CODE_COMMON_NODE_JS_VERSION": "Version de l'environnement du nœud",
-  "TXT_CODE_COMMON_BUN_VERSION": "Version de l'environnement Bun",
   "TXT_CODE_COMMON_BROWSER_TIME": "Temps du navigateur",
   "TXT_CODE_COMMON_ONLINE_TOTAL": "Nœuds en ligne/nœuds totaux",
   "TXT_CODE_COMMON_HOSTNAME": "Nom d'hôte",

@@ -1,7 +1,6 @@
 {
   "TXT_CODE_COMMON_UNIX_LOAD_AVERAGE": "Unix Load Average",
   "TXT_CODE_COMMON_NODE_JS_VERSION": "Node.js Version",
-  "TXT_CODE_COMMON_BUN_VERSION": "Bun Version",
   "TXT_CODE_COMMON_BROWSER_TIME": "Browser Time",
   "TXT_CODE_COMMON_ONLINE_TOTAL": "Online / Total",
   "TXT_CODE_COMMON_HOSTNAME": "Hostname",
