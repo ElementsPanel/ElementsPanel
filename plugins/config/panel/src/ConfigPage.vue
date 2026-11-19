@@ -1960,7 +1960,6 @@ const confirmAction = async () => {
   height: 16px;
   min-height: 16px;
   padding: 0;
-  color: var(--text-color);
   opacity: 0.62;
 }
 
@@ -2047,7 +2046,6 @@ const confirmAction = async () => {
 
 .plugin-config-title-row h2 {
   margin: 0;
-  color: var(--text-color);
   font-size: 20px;
 }
 
@@ -2078,7 +2076,6 @@ const confirmAction = async () => {
 }
 
 .plugin-config-version {
-  color: var(--text-color);
   font-size: 12px;
   opacity: 0.62;
 }

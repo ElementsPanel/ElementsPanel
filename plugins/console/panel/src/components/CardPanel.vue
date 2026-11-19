@@ -49,11 +49,10 @@ const props = defineProps({
   display: flex;
   flex-direction: column;
   position: relative;
+  color: var(--text-color);
 
   .card-panel-title {
     font-weight: 600;
-    color: var(--text-color);
-
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -68,7 +67,6 @@ const props = defineProps({
   }
   .card-panel-content {
     flex-grow: 1;
-    color: var(--text-color);
     position: relative;
   }
 }

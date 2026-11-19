@@ -33,6 +33,7 @@ withDefaults(
   min-height: 56px;
   align-content: flex-start;
   margin-bottom: 20px;
+  color: var(--text-color);
 }
 
 .page-toolbar > .v-col {
@@ -45,13 +46,8 @@ withDefaults(
   align-self: flex-start;
   align-items: center;
   gap: 10px;
-  color: var(--text-color);
   font-size: 20px;
   font-weight: 600;
-}
-
-.page-toolbar-icon {
-  color: var(--text-color);
 }
 
 .page-toolbar-search,
@@ -59,24 +55,10 @@ withDefaults(
   display: flex;
   align-items: center;
   min-width: 0;
-  color: var(--text-color);
 }
 
 .page-toolbar-search {
   justify-content: center;
-
-  :deep(.v-field),
-  :deep(.v-field__input),
-  :deep(.v-field__input input),
-  :deep(.v-select__selection-text) {
-    color: var(--text-color) !important;
-  }
-
-  :deep(.v-field__input input)::placeholder,
-  :deep(textarea)::placeholder {
-    color: var(--text-color) !important;
-    opacity: 0.55 !important;
-  }
 }
 
 .page-toolbar-actions {
