@@ -9,7 +9,7 @@ import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 import type { FrontendFileManagerService } from "@elements-panel/sdk";
 import { usePluginService } from "@elements-panel/sdk";
-import { VAlert, VBadge, VBtn, VCol, VIcon, VRow, VSelect, VTab, VTabs, VTextField, VWindow, VWindowItem } from "vuetify/components";
+import { VAlert, VBadge, VBtn, VCol, VIcon, VProgressCircular, VRow, VSelect, VTab, VTabs, VTextField, VWindow, VWindowItem } from "vuetify/components";
 import LocalModTable from "./mod-manager/LocalModTable.vue";
 import ModConfigModal from "./mod-manager/ModConfigModal.vue";
 import ModVersionModal from "./mod-manager/ModVersionModal.vue";
@@ -416,26 +416,11 @@ onMounted(async () => {
 
     <VRow density="compact">
       <VCol cols="12">
-        <CardPanel class="containerWrapper" :padding="false">
+        <CardPanel class="containerWrapper" :padding="false" :full-height="false">
           <template #body>
-            <div :class="isPhone ? 'p-2' : 'p-4'" style="position: relative" @dragover.prevent="handleDragover"
+            <div class="mod-manager-content" @dragover.prevent="handleDragover"
               @dragleave.prevent="handleDragleave" @drop.prevent="handleDrop">
-              <div v-if="opacity" class="drag-upload-mask" style="
-                  position: absolute;
-                  top: 0;
-                  left: 0;
-                  width: 100%;
-                  height: 100%;
-                  z-index: 100;
-                  display: flex;
-                  justify-content: center;
-                  align-items: center;
-                  background-color: rgba(128, 128, 128, 0.1);
-                  z-index: 100;
-                  border: 2px dashed var(--color-primary);
-                  border-radius: 8px;
-                  pointer-events: none;
-                ">
+              <div v-if="opacity" class="drag-upload-mask">
                 <div class="text-center">
                   <VIcon icon="mdi-upload" size="48" color="primary" />
                   <div class="mt-2 text-lg font-bold" style="color: var(--color-primary)">
@@ -444,7 +429,7 @@ onMounted(async () => {
                 </div>
               </div>
 
-              <VAlert v-if="isWindows && isRunning" type="warning" variant="tonal" class="mb-4 mt-2 mod-manager-alert">
+              <VAlert v-if="isWindows && isRunning" type="warning" variant="tonal" class="mod-manager-alert">
                 <template #text>
                   <div class="text-left">
                     <div class="font-bold">{{ t("TXT_CODE_MOD_WIN_FILE_LOCK_TITLE") }}</div>
@@ -456,13 +441,21 @@ onMounted(async () => {
               </VAlert>
 
               <VTabs v-model="activeKey" class="mod-manager-tabs" @update:model-value="handleTabChange">
-                <VTab v-if="hasModsFolder" :value="TAB_KEY_MODS">{{ t("TXT_CODE_MOD_LIST") }} <VBadge v-if="!loading" inline :content="filteredMods.length" color="secondary" /><VIcon v-if="loading || loadingExtra" icon="mdi-loading" size="14" class="loading-icon" /></VTab>
-                <VTab v-if="hasPluginsFolder" :value="TAB_KEY_PLUGINS">{{ t("TXT_CODE_PLUGIN_LIST") }} <VBadge v-if="!loading" inline :content="filteredPlugins.length" color="secondary" /><VIcon v-if="loading || loadingExtra" icon="mdi-loading" size="14" class="loading-icon" /></VTab>
+                <VTab v-if="hasModsFolder" :value="TAB_KEY_MODS">
+                  {{ t("TXT_CODE_MOD_LIST") }}
+                  <VBadge v-if="!loading" inline :content="filteredMods.length" color="secondary" />
+                  <VProgressCircular v-if="loading || loadingExtra" indeterminate size="14" width="2" class="ms-2" />
+                </VTab>
+                <VTab v-if="hasPluginsFolder" :value="TAB_KEY_PLUGINS">
+                  {{ t("TXT_CODE_PLUGIN_LIST") }}
+                  <VBadge v-if="!loading" inline :content="filteredPlugins.length" color="secondary" />
+                  <VProgressCircular v-if="loading || loadingExtra" indeterminate size="14" width="2" class="ms-2" />
+                </VTab>
                 <VTab :value="TAB_KEY_DOWNLOAD">{{ t("TXT_CODE_COMMON_DOWNLOAD_MODULES_PLUGINS") }}</VTab>
               </VTabs>
               <VWindow v-model="activeKey" :touch="false">
                 <VWindowItem v-if="hasModsFolder" :value="TAB_KEY_MODS">
-                  <div :class="isPhone ? 'p-2' : 'p-10'">
+                  <div class="mod-manager-panel">
                     <LocalModTable :key="TAB_KEY_MODS" :loading="loading" :data-source="filteredMods" :columns="columns"
                       :pagination="tablePagination" @change="handleTableChange" @toggle="onToggle" @delete="onDelete"
                       @config="openConfig" @open-external="openExternal" @refresh="loadMods" />
@@ -470,7 +463,7 @@ onMounted(async () => {
                 </VWindowItem>
 
                 <VWindowItem v-if="hasPluginsFolder" :value="TAB_KEY_PLUGINS">
-                  <div :class="isPhone ? 'p-2' : 'p-10'">
+                  <div class="mod-manager-panel">
                     <LocalModTable :key="TAB_KEY_PLUGINS" :loading="loading" :data-source="filteredPlugins"
                       :columns="columns" :pagination="tablePagination" @change="handleTableChange" @toggle="onToggle"
                       @delete="onDelete" @config="openConfig" @open-external="openExternal" @refresh="loadMods" />
@@ -478,9 +471,9 @@ onMounted(async () => {
                 </VWindowItem>
 
                 <VWindowItem :value="TAB_KEY_DOWNLOAD">
-                  <div :class="isPhone ? 'p-2' : 'p-10'">
-                    <div>
-                      <VRow density="compact" class="search-form mt-2">
+                  <div class="mod-manager-panel">
+                    <div class="mod-manager-search">
+                      <VRow density="compact" class="search-form">
                         <VCol cols="12" :md="4"><VTextField v-model="searchFilters.query" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')" prepend-inner-icon="mdi-magnify" density="compact" hide-details @keyup.enter="onSearch" /></VCol>
                         <VCol cols="6" :md="2"><VSelect v-model="searchFilters.source" :items="[{ title: t('TXT_CODE_COMMON_ALL_PLATFORMS'), value: 'all' }, { title: 'Modrinth', value: 'modrinth' }, { title: 'CurseForge', value: 'curseforge' }, { title: 'SpigotMC', value: 'spigotmc' }]" density="compact" hide-details>
                           <template #no-data><Empty :icon="false" compact /></template>
@@ -498,7 +491,7 @@ onMounted(async () => {
                           <template #no-data><Empty :icon="false" compact /></template>
                         </VSelect></VCol>
                       </VRow>
-                      <div class="d-flex ga-2 justify-end mt-2">
+                      <div class="d-flex flex-wrap ga-2 justify-end">
                         <VBtn color="primary" :loading="searchLoading" @click="onSearch"><VIcon start icon="mdi-magnify" />{{ t("TXT_CODE_SEARCH") }}</VBtn>
                         <VBtn variant="tonal" @click="resetSearch">{{ t("TXT_CODE_COMMON_RESET_FILTER_CONDITIONS") }}</VBtn>
                       </div>
@@ -552,24 +545,49 @@ onMounted(async () => {
 
 .containerWrapper.card-panel {
   overflow: hidden;
-  background: transparent !important;
+}
+
+.mod-manager-content {
+  position: relative;
+  padding: 20px;
+}
+
+.drag-upload-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(128, 128, 128, 0.1);
+  border: 2px dashed var(--color-primary);
+  border-radius: var(--app-dialog-radius);
+  pointer-events: none;
 }
 
 .containerWrapper :deep(.local-mod-table),
 .containerWrapper :deep(.search-mod-table) {
+  --app-list-inset: 0px;
   background: transparent;
 }
 
-.mod-manager-tabs {
-  margin-bottom: 0;
-  padding: 0 20px;
+.mod-manager-panel {
+  padding-top: 16px;
 }
 
-.search-form {
+.mod-manager-search {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   margin-bottom: 20px;
 }
 
+.search-form {
+  margin: 0;
+}
+
 .mod-manager-alert {
+  margin-bottom: 16px;
   padding: 10px 18px !important;
 }
 
@@ -579,5 +597,11 @@ onMounted(async () => {
 
 .search-form :deep(.v-field__input) {
   text-align: left !important;
+}
+
+@media (max-width: 992px) {
+  .mod-manager-content {
+    padding: 16px 12px;
+  }
 }
 </style>
