@@ -6,7 +6,8 @@ import { useOverviewInfo, type ComputedNodeInfo } from "@elementspanel/epanel-pl
 import { QUICKSTART_METHOD } from "@elementspanel/epanel-plugin-console/hooks/widgets/quickStartFlow";
 import { INSTANCE_TYPE_TRANSLATION } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
 import CreateInstanceForm from "../widgets/setupApp/CreateInstanceForm.vue";
-import { computed, ref, watchEffect } from "vue";
+import { useResizeObserver } from "@vueuse/core";
+import { computed, ref, watch, watchEffect, type ComponentPublicInstance } from "vue";
 import {
   VAlert,
   VAutocomplete,
@@ -36,6 +37,24 @@ const emit = defineEmits<{
 }>();
 
 const step = ref(1);
+const stepperHeader = ref<ComponentPublicInstance>();
+const scrollCurrentStep = () => {
+  const header = stepperHeader.value?.$el as HTMLElement | undefined;
+  if (!header?.clientWidth || header.scrollWidth <= header.clientWidth) return;
+  const current = header.querySelector<HTMLElement>(".v-stepper-item--selected");
+  if (!current) return;
+  const headerBounds = header.getBoundingClientRect();
+  const currentBounds = current.getBoundingClientRect();
+  header.scrollTo({
+    left:
+      header.scrollLeft + currentBounds.left - headerBounds.left -
+      (header.clientWidth - currentBounds.width) / 2,
+    behavior: "smooth"
+  });
+};
+watch([step, stepperHeader], scrollCurrentStep, { flush: "post" });
+useResizeObserver(stepperHeader, scrollCurrentStep);
+
 const instanceType = ref("");
 const formBusy = ref(false);
 const instanceTypeOptions = computed(() =>
@@ -149,7 +168,7 @@ const handleCreated = (instanceUuid: string) => {
       <VCard class="create-instance-card" data-app-surface="transparent" elevation="0" rounded="xl">
         <VCardText class="pa-0">
           <VStepper v-model="step" class="create-instance-stepper" flat>
-            <VStepperHeader>
+            <VStepperHeader ref="stepperHeader">
               <VStepperItem :value="1" :title="t('TXT_CODE_COMMON_INSTANCE_TYPE')" icon="mdi-shape-outline" />
               <VDivider />
               <VStepperItem
