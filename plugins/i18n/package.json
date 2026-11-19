@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-i18n",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Panel translations and plugin localization.",
   "elementspanel": {
     "id": "i18n",

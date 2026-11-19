@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-runtime",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "Panel initialization and shared runtime services.",
   "elementspanel": {
     "id": "runtime",
