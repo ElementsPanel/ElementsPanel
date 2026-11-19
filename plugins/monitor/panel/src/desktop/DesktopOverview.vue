@@ -211,7 +211,7 @@ const memColor = computed(() => {
                     <Empty
                       v-if="remoteNodes.length === 0"
                       icon="mdi-server-network-outline"
-                      :title="t('TXT_CODE_OVERVIEW_NO_AVAILABLE_NODES_HINT')"
+                      :title="t('TXT_CODE_COMMON_NO_AVAILABLE_NODES_HINT')"
                       compact
                     />
                     <div v-for="node in remoteNodes" :key="node.uuid" class="ov-node-item">

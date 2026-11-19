@@ -119,6 +119,19 @@ function sourceFiles(root, directory) {
   return files;
 }
 
+function assertUniqueTranslations(catalogues, location) {
+  const values = new Map();
+  for (const key of Object.keys(catalogues[0])) {
+    // Merge only keys whose translations match in every language.
+    const signature = JSON.stringify(catalogues.map((messages) => messages[key]));
+    const existing = values.get(signature);
+    if (existing !== undefined) {
+      throw new Error(`${location}: duplicate translations for ${existing} and ${key}; reuse one key.`);
+    }
+    values.set(signature, key);
+  }
+}
+
 function validateCatalogues(root, { checkReferences = true } = {}) {
   const catalogues = findCatalogues(root);
   const available = { panel: new Set(), daemon: new Set() };
@@ -137,9 +150,11 @@ function validateCatalogues(root, { checkReferences = true } = {}) {
     const expectedKeys = Object.keys(english).sort();
     const side = directory.split("/")[2];
     for (const key of expectedKeys) available[side].add(key);
+    const localizedMessages = [];
     for (const language of LANGUAGES) {
       const filename = path.join(root, directory, `${language}.json`);
       const messages = readCatalogue(filename);
+      localizedMessages.push(messages);
       const keys = Object.keys(messages).sort();
       const missing = expectedKeys.filter((key) => !Object.hasOwn(messages, key));
       const extra = keys.filter((key) => !Object.hasOwn(english, key));
@@ -154,6 +169,7 @@ function validateCatalogues(root, { checkReferences = true } = {}) {
         }
       }
     }
+    assertUniqueTranslations(localizedMessages, directory);
   }
   const initializer = path.join(root, "packages/init-elementspanel/i18n.cjs");
   if (fs.existsSync(initializer)) {
@@ -179,6 +195,7 @@ function validateCatalogues(root, { checkReferences = true } = {}) {
       }
       initializerFiles++;
     }
+    assertUniqueTranslations(Object.values(localeMessages), initializer);
   }
   if (checkReferences) {
     for (const directory of [

@@ -78,7 +78,7 @@ defineExpose({
         <Empty
           v-if="availableNodes.length === 0"
           icon="mdi-server-network-outline"
-          :title="t('TXT_CODE_INSTANCE_NO_AVAILABLE_NODES_HINT')"
+          :title="t('TXT_CODE_COMMON_NO_AVAILABLE_NODES_HINT')"
           class="node-select-empty"
           compact
         >

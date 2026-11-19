@@ -254,7 +254,7 @@ const handleCreated = (instanceUuid: string) => {
                   <Empty
                     v-else-if="availableNodes.length === 0"
                     icon="mdi-server-network-outline"
-                    :title="t('TXT_CODE_INSTANCE_NO_AVAILABLE_NODES_HINT')"
+                    :title="t('TXT_CODE_COMMON_NO_AVAILABLE_NODES_HINT')"
                     compact
                   >
                     <template #actions>

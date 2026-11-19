@@ -71,7 +71,7 @@ const submit = async () => {
     if (editMode.value)
       await updateNode(dialog.uuid, { ...dialog.data, apiKey: dialog.data.apiKey || undefined });
     else await addNode(dialog.data);
-    message.success(t("TXT_CODE_NODE_SETTINGS_SAVED"));
+    message.success(t("TXT_CODE_COMMON_SAVED"));
     const wasEdit = editMode.value;
     closeDialog();
     if (wasEdit) setTimeout(() => window.location.reload(), 150);

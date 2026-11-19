@@ -155,7 +155,7 @@ export function apply(ctx: PanelPluginContext) {
         key: "logoImage",
         type: "string",
         title: $t("TXT_CODE_CONSOLE_LOGO"),
-        description: $t("TXT_CODE_CONSOLE_LOGO_SHARED_HINT"),
+        description: $t("TXT_CODE_CONSOLE_LOGO_HINT"),
         fileUpload: true,
         visibleWhen: "logoImagePerTheme=false"
       },

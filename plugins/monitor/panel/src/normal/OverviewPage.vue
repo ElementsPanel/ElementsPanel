@@ -305,7 +305,7 @@ onMounted(fetchData);
               <Empty
                 v-if="remoteNodes.length === 0"
                 icon="mdi-server-network-outline"
-                :title="t('TXT_CODE_OVERVIEW_NO_AVAILABLE_NODES_HINT')"
+                :title="t('TXT_CODE_COMMON_NO_AVAILABLE_NODES_HINT')"
                 compact
               />
               <VList v-else lines="two" density="comfortable" class="app-responsive-list">

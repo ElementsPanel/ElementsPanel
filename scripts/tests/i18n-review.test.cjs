@@ -162,6 +162,23 @@ test("catalogue checks reject missing languages, keys, empty values, duplicates 
     assert.throws(() => validateCatalogues(directory), error);
   }
   fs.writeFileSync(filename, original);
+  for (const language of LANGUAGES) {
+    const catalogue = path.join(directory, feature, `${language}.json`);
+    const messages = JSON.parse(fs.readFileSync(catalogue, "utf8"));
+    messages.TXT_CODE_FEATURE_DUPLICATE = messages.TXT_CODE_FEATURE_ONLY;
+    fs.writeFileSync(catalogue, JSON.stringify(messages));
+  }
+  assert.throws(() => validateCatalogues(directory), /duplicate translations/);
+  const localized = JSON.parse(fs.readFileSync(filename, "utf8"));
+  localized.TXT_CODE_FEATURE_DUPLICATE = "別の機能 {name}";
+  fs.writeFileSync(filename, JSON.stringify(localized));
+  assert.doesNotThrow(() => validateCatalogues(directory));
+  for (const language of LANGUAGES) {
+    const catalogue = path.join(directory, feature, `${language}.json`);
+    const messages = JSON.parse(fs.readFileSync(catalogue, "utf8"));
+    delete messages.TXT_CODE_FEATURE_DUPLICATE;
+    fs.writeFileSync(catalogue, JSON.stringify(messages));
+  }
   fs.unlinkSync(path.join(directory, feature, "en_US.json"));
   assert.throws(() => validateCatalogues(directory), /expected these language files/);
 });

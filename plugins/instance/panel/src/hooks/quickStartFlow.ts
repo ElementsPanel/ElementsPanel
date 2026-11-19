@@ -72,7 +72,7 @@ export function useQuickStartFlow() {
     formData.appType = appType;
 
     formData.step = 2;
-    formData.emptyActionsText = t("TXT_CODE_OVERVIEW_NO_AVAILABLE_NODES_HINT");
+    formData.emptyActionsText = t("TXT_CODE_COMMON_NO_AVAILABLE_NODES_HINT");
     currentIcon.value = "mdi-database-outline";
     await execute();
     formData.actions = remoteNodes.value

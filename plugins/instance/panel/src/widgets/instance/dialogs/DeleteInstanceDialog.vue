@@ -38,5 +38,5 @@ const onCancel = () => { isOpen.value = false; props.emitResult(false); props.de
     <p>{{ t("TXT_CODE_COMMON_IF_YOU_CHOOSE_TO_DELETE_THE_INSTANCE_RELATED_FILES_AT_THE_SAME_TIME_THE_ENTIRE_DIRECTORY") }}</p>
     <VCheckbox v-model="deleteFiles" :label="t('TXT_CODE_COMMON_DELETE_INSTANCE_RELATED_FILES_SIMULTANEOUSLY')" hide-details />
   </AppDialog>
-  <AppDialog v-model:open="confirmOpen" :title="t('TXT_CODE_COMMON_DELETE_INSTANCE_AND_RELATED_FILES')" compact ok-color="error" :ok-text="t('TXT_CODE_INSTANCE_DELETE_CONFIRM')" @ok="confirmDelete"><div>{{ t('TXT_CODE_INSTANCE_DELETE_DIRECTORY_DIALOG_WARNING') }}</div></AppDialog>
+  <AppDialog v-model:open="confirmOpen" :title="t('TXT_CODE_COMMON_DELETE_INSTANCE_AND_RELATED_FILES')" compact ok-color="error" :ok-text="t('TXT_CODE_COMMON_CONFIRM_DELETION')" @ok="confirmDelete"><div>{{ t('TXT_CODE_INSTANCE_DELETE_DIRECTORY_WARNING') }}</div></AppDialog>
 </template>
