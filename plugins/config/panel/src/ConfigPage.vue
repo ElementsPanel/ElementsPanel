@@ -1260,16 +1260,6 @@ const confirmAction = async () => {
         @keydown.esc="sidebarOpen = false"
       >
         <div class="plugin-config-sidebar" :data-app-surface="isPhone ? 'card' : 'transparent'">
-          <div v-if="isPhone" class="plugin-config-sidebar-title">
-            <span>{{ t("TXT_CODE_PLUGIN_CONFIG") }}</span>
-            <VBtn
-              icon="mdi-close"
-              size="small"
-              variant="text"
-              :aria-label="t('TXT_CODE_COMMON_STOP')"
-              @click="sidebarOpen = false"
-            />
-          </div>
           <VBtnToggle
             v-if="!props.hideScopeSwitch"
             v-model="scope"
@@ -1821,16 +1811,6 @@ const confirmAction = async () => {
   min-height: 0;
   padding: 24px 16px;
   overflow: hidden;
-}
-
-.plugin-config-sidebar-title {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
-  font-weight: 600;
 }
 
 .plugin-config-scope {

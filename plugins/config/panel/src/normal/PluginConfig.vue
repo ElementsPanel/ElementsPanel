@@ -172,8 +172,36 @@ const selectedNodeLabel = computed(
     margin-bottom: 0;
   }
 
+  :global(.app-shell-content:has(.plugin-config-container)),
+  :global(.main-content:has(.plugin-config-container)),
+  :global(.app-main-body:has(> .plugin-config-container)) {
+    display: block;
+    overflow: visible;
+  }
+
   .plugin-config-container {
+    flex: none;
     padding: 16px 12px 28px;
+    overflow: visible;
+  }
+
+  .plugin-config-container > .plugin-config-card {
+    background: transparent !important;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .plugin-config-card,
+  .plugin-config-container :deep(.plugin-config-page),
+  .plugin-config-container :deep(.plugin-config-content),
+  .plugin-config-container :deep(.plugin-config-body) {
+    flex: none;
+    height: auto;
+  }
+
+  .plugin-config-container :deep(.plugin-config-body) {
+    overflow: visible;
   }
 
   .plugin-config-node-name {
