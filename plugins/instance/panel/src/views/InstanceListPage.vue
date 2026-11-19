@@ -645,12 +645,9 @@ onMounted(async () => {
   width: 100%;
   flex: 1 1 auto;
   min-height: 220px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
   flex-direction: column;
 }
 
-.instance-card:hover,
 .instance-card.selected {
   --app-surface-color: rgba(var(--v-theme-primary), 0.07);
   background: rgba(var(--v-theme-primary), 0.07);

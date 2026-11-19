@@ -30,7 +30,7 @@ defineExpose({
       <VCardText>
     <div class="cards">
       <VCard :title="t('TXT_CODE_DOCKER_VERSION_SELECT_DOCKER_TITLE')" prepend-icon="mdi-docker"
-        class="choose-card docker-card" hoverable @click="selectDockerVersion">
+        class="choose-card docker-card" @click="selectDockerVersion">
         <VCardText class="text-medium-emphasis">
           {{ t("TXT_CODE_DOCKER_VERSION_SELECT_DOCKER_SUBTITLE") }}
         </VCardText>
@@ -42,7 +42,7 @@ defineExpose({
       </VCard>
 
       <VCard :title="t('TXT_CODE_DOCKER_VERSION_SELECT_NORMAL_TITLE')" prepend-icon="mdi-apps"
-        class="choose-card normal-card" hoverable @click="selectNormalVersion">
+        class="choose-card normal-card" @click="selectNormalVersion">
         <VCardText class="text-medium-emphasis">
           {{ t("TXT_CODE_DOCKER_VERSION_SELECT_NORMAL_SUBTITLE") }}
         </VCardText>
@@ -67,11 +67,6 @@ defineExpose({
 
 .choose-card {
   flex: 1;
-  transition: all 0.2s ease;
-}
-
-.choose-card:hover {
-  transform: translateY(-2px);
 }
 
 .card-action {

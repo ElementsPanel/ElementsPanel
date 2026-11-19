@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { VIcon } from "vuetify/components";
+import { VCard, VIcon } from "vuetify/components";
 import { computed, type Component } from "vue";
 
 const props = defineProps<{
@@ -14,7 +14,7 @@ const isMdiIcon = computed(() => typeof props.icon === "string" || !props.icon);
 <template>
   <div class="actions-button w-100">
     <div class="action-col">
-      <div class="action-btn-item w-100 flex" data-app-surface="control" @click="click">
+      <VCard class="action-btn-item w-100 flex" data-app-surface="control" variant="text" rounded="6px" @click="click">
         <div>
           <VIcon v-if="isMdiIcon" :icon="(icon as string) || 'mdi-link-variant'" />
           <component :is="icon" v-else />
@@ -22,7 +22,7 @@ const isMdiIcon = computed(() => typeof props.icon === "string" || !props.icon);
         <div class="ml-8">
           {{ title }}
         </div>
-      </div>
+      </VCard>
     </div>
   </div>
 </template>
@@ -33,14 +33,6 @@ const isMdiIcon = computed(() => typeof props.icon === "string" || !props.icon);
   border: 1px solid var(--color-gray-3);
   background-color: var(--color-gray-2);
 
-  cursor: pointer;
   user-select: none;
-  transition: all 0.4s;
-  border-radius: 6px;
-
-  &:hover {
-    border: 1px solid var(--color-gray-8);
-    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.16);
-  }
 }
 </style>

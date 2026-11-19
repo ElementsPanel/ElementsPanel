@@ -90,12 +90,6 @@ onMounted(() => {
 .line-option-wrapper {
   width: 100%;
   margin-bottom: 6px;
-  .line-option-card {
-    transition: all 0.4s;
-  }
-  .line-option-card:hover {
-    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.16);
-  }
 }
 
 // Stack card options inside tiles for responsive grid layouts.

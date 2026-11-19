@@ -406,23 +406,12 @@ const handleCreated = (instanceUuid: string) => {
 .method-card,
 .node-card {
   height: 100%;
-  cursor: pointer;
   border: 0 !important;
   background-color: var(
     --desktop-window-titlebar-bg,
     rgba(var(--v-theme-surface-variant), 0.72)
   ) !important;
   box-shadow: none !important;
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    transform: none;
-    background-color: var(
-      --desktop-window-control-hover,
-      rgba(var(--v-theme-surface-variant), 0.88)
-    ) !important;
-    box-shadow: none !important;
-  }
 }
 
 .method-card {
@@ -456,12 +445,6 @@ const handleCreated = (instanceUuid: string) => {
 
 .node-card.node-card--selected {
   background-color: rgba(var(--v-theme-primary), 0.16) !important;
-}
-
-.node-card {
-  &.node-card--selected:hover {
-    background-color: rgba(var(--v-theme-primary), 0.22) !important;
-  }
 }
 
 .node-card-header {

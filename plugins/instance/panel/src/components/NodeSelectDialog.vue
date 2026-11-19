@@ -88,13 +88,15 @@ defineExpose({
             </VBtn>
           </template>
         </Empty>
-        <div
+        <VCard
           v-for="item in sortedNodes"
           v-else
           :key="item.uuid + item.remarks + item.ip"
           :data-ip="item.ip"
           :data-uuid="item.uuid"
           class="node-item"
+          variant="text"
+          rounded="8px"
           :class="{ 'node-unsupported': props.targetPlatforms && props.targetPlatforms.length > 0 && !isNodeSupported(item) }"
           @click="selectNode(item)"
         >
@@ -129,7 +131,7 @@ defineExpose({
               <span>{{ t("TXT_CODE_COMMON_IP") }}: {{ item.ip }}:{{ item.port }}</span>
             </div>
           </div>
-        </div>
+        </VCard>
       </div>
     </div>
       </VCardText>
@@ -157,17 +159,9 @@ defineExpose({
   }
 
   .node-item {
-    cursor: pointer;
     padding: 12px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
     background-color: var(--color-gray-2);
     border: 1px solid var(--color-gray-3);
-
-    &:hover {
-      background-color: var(--color-gray-4);
-      border-color: var(--color-gray-5);
-    }
 
     &.node-unsupported {
       border-color: var(--color-warning);

@@ -784,12 +784,7 @@ onUnmounted(() => {
 }
 .console-function-item {
   height: 100%;
-  cursor: pointer;
   background: var(--color-gray-2);
-  transition: background-color 0.2s ease;
-}
-.console-function-item:hover {
-  background: rgba(var(--v-theme-primary), 0.07);
 }
 .console-function-item :deep(.v-card-text) {
   display: flex;
