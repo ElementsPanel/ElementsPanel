@@ -16,6 +16,24 @@ function resultLine(title, value, status) {
   return `${icon}${title} ${paint("›", DIM)} ${colored}`;
 }
 
+async function withSpinner(message, task) {
+  if (!process.stdout.isTTY) return task();
+  const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+  let frame = 0;
+  const render = () => {
+    process.stdout.write(`\r${paint(frames[frame++ % frames.length], CYAN)} ${message}`);
+  };
+  render();
+  const timer = setInterval(render, 80);
+  try {
+    return await task();
+  } finally {
+    clearInterval(timer);
+    readline.cursorTo(process.stdout, 0);
+    readline.clearLine(process.stdout, 0);
+  }
+}
+
 async function selectMenu({ title, options, hint = "", defaultIndex = 0 }) {
   if (!options?.length) throw new Error("selectMenu requires at least one option");
   return new Promise((resolve) => {
@@ -114,4 +132,4 @@ function textPrompt({ title, placeholder = "" }) {
   });
 }
 
-module.exports = { selectMenu, textPrompt };
+module.exports = { selectMenu, textPrompt, withSpinner };

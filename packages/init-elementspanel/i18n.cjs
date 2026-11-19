@@ -26,6 +26,7 @@ const messages = {
     TXT_CODE_INIT_DIRECTORY_TITLE: "Installation directory",
     TXT_CODE_INIT_PORT_TITLE: "{side} listening port",
     TXT_CODE_INIT_MODE_UNKNOWN: "Unknown installation mode: {mode}",
+    TXT_CODE_INIT_VERSION_LOOKUP_LOADING: "Fetching version numbers...",
     TXT_CODE_INIT_VERSION_LOOKUP_FAILED:
       "Could not query the latest version of {name} from npm. Check your registry and network connection and try again.",
     TXT_CODE_INIT_PLUGIN_ASSETS_MISMATCH:
@@ -65,6 +66,7 @@ const messages = {
     TXT_CODE_INIT_DIRECTORY_TITLE: "安装目录",
     TXT_CODE_INIT_PORT_TITLE: "{side} 监听端口",
     TXT_CODE_INIT_MODE_UNKNOWN: "未知安装模式：{mode}",
+    TXT_CODE_INIT_VERSION_LOOKUP_LOADING: "正在获取版本号...",
     TXT_CODE_INIT_VERSION_LOOKUP_FAILED:
       "无法从 npm 查询 {name} 的最新版本，请检查 registry 配置和网络连接后重试。",
     TXT_CODE_INIT_PLUGIN_ASSETS_MISMATCH:

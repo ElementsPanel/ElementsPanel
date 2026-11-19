@@ -5,7 +5,7 @@ const { registerHooks } = require("node:module");
 const { promisify } = require("node:util");
 const metadata = require("./package.json");
 const { createTranslator, normalizeLanguage } = require("./i18n.cjs");
-const { selectMenu, textPrompt } = require("./select.cjs");
+const { selectMenu, textPrompt, withSpinner } = require("./select.cjs");
 
 const modes = ["full", "panel", "daemon"];
 const defaultPorts = { panel: 23333, daemon: 24444 };
@@ -315,7 +315,14 @@ async function packageMetadata(name, version, language) {
   }
 }
 
-async function resolveBuiltinPlugins(mode, versions, language) {
+function resolveBuiltinPlugins(mode, versions, language) {
+  return withSpinner(
+    createTranslator(language)("TXT_CODE_INIT_VERSION_LOOKUP_LOADING"),
+    () => fetchBuiltinPlugins(mode, versions, language)
+  );
+}
+
+async function fetchBuiltinPlugins(mode, versions, language) {
   const selected = ["panel", "daemon"].filter((side) => mode === "full" || mode === side);
   const runtimes = Object.fromEntries(
     await Promise.all(
