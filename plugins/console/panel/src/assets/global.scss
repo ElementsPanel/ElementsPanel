@@ -12,6 +12,7 @@ html {
   padding: 0;
   overflow: hidden;
   background-color: var(--background-color);
+  color: var(--text-color);
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -123,11 +124,13 @@ body::-webkit-scrollbar-track {
 }
 
 // Theme neutral buttons without overriding explicit semantic colors.
-.v-btn--variant-text:not([class*="text-"]):not([class*="bg-"]),
-.v-btn--variant-plain:not([class*="text-"]):not([class*="bg-"]),
-.v-btn--variant-tonal:not([class*="text-"]):not([class*="bg-"]),
-.v-btn--variant-outlined:not([class*="text-"]):not([class*="bg-"]) {
-  color: var(--text-color) !important;
+@layer vuetify-overrides {
+  .v-btn--variant-text,
+  .v-btn--variant-plain,
+  .v-btn--variant-tonal,
+  .v-btn--variant-outlined {
+    color: var(--text-color);
+  }
 }
 
 .v-field::before,

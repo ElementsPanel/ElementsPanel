@@ -722,12 +722,20 @@ const getInstanceStatusLabel = (status: number): string => {
     cursor: pointer;
     font-size: 13px;
     transition: all 0.15s;
-    color: var(--desktop-window-text-secondary);
     background: transparent;
 
     &:hover {
         background: var(--desktop-window-control-hover);
-        color: var(--desktop-window-text);
+    }
+}
+
+@layer vuetify-overrides {
+    .du-action-btn {
+        color: var(--desktop-window-text-secondary);
+
+        &:hover {
+            color: var(--desktop-window-text);
+        }
     }
 }
 

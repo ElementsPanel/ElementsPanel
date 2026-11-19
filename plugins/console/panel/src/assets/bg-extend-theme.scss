@@ -92,14 +92,6 @@ body.app-background-image {
   .breadcrumbs {
     @include text-shadows.white;
   }
-
-  .v-btn.text-error {
-    color: #fff;
-
-    &:not(:disabled):hover {
-      color: #ffe1e0 !important;
-    }
-  }
 }
 
 .app-dark-theme.app-background-image {
@@ -109,10 +101,6 @@ body.app-background-image {
 
   .breadcrumbs {
     @include text-shadows.black;
-  }
-
-  .v-btn.text-error {
-    color: #ffa4a4;
   }
 }
 
