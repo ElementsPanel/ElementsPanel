@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-desktop",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Desktop interface and personal layouts.",
   "elementspanel": {
     "id": "desktop",
