@@ -14,7 +14,7 @@ import { useLocalMods } from "../normal/mod-manager/useLocalMods";
 import { useModConfig } from "../normal/mod-manager/useModConfig";
 import { useModSearch } from "./mod-manager/useModSearch";
 import { useModUpload } from "../normal/mod-manager/useModUpload";
-import { VAlert, VBadge, VBtn, VIcon, VSelect, VTabs, VTab, VTextField, VWindow, VWindowItem } from "vuetify/components";
+import { VAlert, VBadge, VBtn, VIcon, VProgressCircular, VSelect, VTabs, VTab, VTextField, VWindow, VWindowItem } from "vuetify/components";
 
 const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
 
@@ -409,12 +409,12 @@ onMounted(async () => {
                     <VTab v-if="hasModsFolder" :value="TAB_KEY_MODS">
                         {{ t("TXT_CODE_MOD_LIST") }}
                         <VBadge v-if="!loading && activeKey === TAB_KEY_MODS" :content="filteredMods.length" inline color="grey" />
-                        <VIcon icon="mdi-loading" v-if="loading || loadingExtra" size="small" />
+                        <VProgressCircular v-if="loading || loadingExtra" indeterminate size="14" width="2" class="ms-2" />
                     </VTab>
                     <VTab v-if="hasPluginsFolder" :value="TAB_KEY_PLUGINS">
                         {{ t("TXT_CODE_PLUGIN_LIST") }}
                         <VBadge v-if="!loading && activeKey === TAB_KEY_PLUGINS" :content="filteredPlugins.length" inline color="grey" />
-                        <VIcon icon="mdi-loading" v-if="loading || loadingExtra" size="small" />
+                        <VProgressCircular v-if="loading || loadingExtra" indeterminate size="14" width="2" class="ms-2" />
                     </VTab>
                     <VTab :value="TAB_KEY_DOWNLOAD">{{ t('TXT_CODE_COMMON_DOWNLOAD_MODULES_PLUGINS') }}</VTab>
                 </VTabs>

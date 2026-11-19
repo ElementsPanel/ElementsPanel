@@ -4,7 +4,7 @@ import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
-import { VBtn, VContainer, VIcon, VList, VListItem, VMenu, VTab, VTabs } from "vuetify/components";
+import { VBtn, VCard, VContainer, VIcon, VList, VListItem, VMenu, VTab, VTabs } from "vuetify/components";
 import ConfigPage from "../ConfigPage.vue";
 
 const route = useRoute();
@@ -75,7 +75,9 @@ const selectedNodeLabel = computed(
         </VTabs>
       </template>
     </PageToolbar>
-    <ConfigPage ref="configPage" data-app-surface="transparent" hide-scope-switch hide-node-select />
+    <VCard class="plugin-config-card" flat rounded="xl">
+      <ConfigPage ref="configPage" data-app-surface="transparent" hide-scope-switch hide-node-select />
+    </VCard>
   </VContainer>
 </template>
 
@@ -140,6 +142,13 @@ const selectedNodeLabel = computed(
   white-space: nowrap;
 }
 
+.plugin-config-card {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+}
+
 .plugin-config-container :deep(.plugin-config-page) {
   flex: 1 1 0;
   height: 100%;
@@ -150,12 +159,12 @@ const selectedNodeLabel = computed(
 }
 
 .plugin-config-container :deep(.plugin-config-sidebar) {
-  padding: 0 16px 0 0;
+  padding: 20px 12px;
   background: transparent;
 }
 
 .plugin-config-container :deep(.plugin-config-content) {
-  padding: 0 0 0 24px;
+  padding: 20px;
 }
 
 @media (max-width: 992px) {
@@ -173,7 +182,7 @@ const selectedNodeLabel = computed(
 
   .plugin-config-container :deep(.plugin-config-content) {
     width: 100%;
-    padding: 0;
+    padding: 16px 12px;
   }
 
   .plugin-config-container :deep(.plugin-config-sidebar) {
