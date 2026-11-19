@@ -16,3 +16,8 @@
   box-sizing: border-box;
   z-index: 1;
 }
+
+// Keep hidden tracks hoverable.
+.os-theme-app.os-scrollbar-auto-hide-hidden {
+  visibility: visible;
+}

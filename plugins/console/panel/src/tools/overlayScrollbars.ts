@@ -47,7 +47,15 @@ export function installOverlayScrollbars() {
         element,
         OverlayScrollbars(
           { target: element, elements: { viewport: element } },
-          { overflow, scrollbars: { theme: "os-theme-app", clickScroll: "instant" } }
+          {
+            overflow,
+            scrollbars: {
+              theme: "os-theme-app",
+              clickScroll: "instant",
+              autoHide: "scroll",
+              autoHideDelay: 800
+            }
+          }
         )
       );
     }
