@@ -17,6 +17,9 @@ type AppearanceValues = {
   logoImageLight?: unknown;
   logoImageDark?: unknown;
   backgroundImage?: unknown;
+  backgroundImagePerTheme?: unknown;
+  backgroundImageLight?: unknown;
+  backgroundImageDark?: unknown;
   backgroundImageBlur?: unknown;
 };
 
@@ -26,6 +29,9 @@ type AppearanceConfig = {
   logoImageLight?: string;
   logoImageDark?: string;
   backgroundImage?: string;
+  backgroundImagePerTheme?: boolean;
+  backgroundImageLight?: string;
+  backgroundImageDark?: string;
   backgroundImageBlur?: number;
 };
 
@@ -36,6 +42,9 @@ function readAppearance(config: AppearanceConfig) {
     logoImageLight: config.logoImageLight ?? config.logoImage ?? "",
     logoImageDark: config.logoImageDark ?? config.logoImage ?? "",
     backgroundImage: config.backgroundImage || "",
+    backgroundImagePerTheme: config.backgroundImagePerTheme ?? false,
+    backgroundImageLight: config.backgroundImageLight ?? config.backgroundImage ?? "",
+    backgroundImageDark: config.backgroundImageDark ?? config.backgroundImage ?? "",
     backgroundImageBlur: config.backgroundImageBlur ?? 5
   };
 }
@@ -57,6 +66,15 @@ function writeAppearance(values: AppearanceValues, config: AppearanceConfig, sav
   config.backgroundImage = String(
     valueOrCurrent(values.backgroundImage, config.backgroundImage) ?? ""
   );
+  if (values.backgroundImagePerTheme !== undefined) {
+    config.backgroundImagePerTheme = values.backgroundImagePerTheme === true;
+  }
+  if (values.backgroundImageLight !== undefined) {
+    config.backgroundImageLight = String(values.backgroundImageLight ?? "");
+  }
+  if (values.backgroundImageDark !== undefined) {
+    config.backgroundImageDark = String(values.backgroundImageDark ?? "");
+  }
   config.backgroundImageBlur = Number(
     valueOrCurrent(values.backgroundImageBlur, config.backgroundImageBlur) ?? 5
   );
@@ -70,7 +88,10 @@ async function migrateLegacyAppearance(config: AppearanceConfig, save: () => Pro
     config.logoImage ||
     config.logoImageLight !== undefined ||
     config.logoImageDark !== undefined ||
-    config.backgroundImage;
+    config.backgroundImage ||
+    config.backgroundImagePerTheme ||
+    config.backgroundImageLight !== undefined ||
+    config.backgroundImageDark !== undefined;
   if (customized) return;
   try {
     if (!fs.existsSync(LEGACY_LAYOUT_FILE)) return;
@@ -131,11 +152,33 @@ export function apply(ctx: PanelPluginContext) {
         fileUpload: true
       },
       {
+        key: "backgroundImagePerTheme",
+        type: "boolean",
+        title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_PER_THEME")
+      },
+      {
         key: "backgroundImage",
         type: "string",
         title: $t("TXT_CODE_COMMON_UI_BACKGROUND_IMAGE"),
         description: $t("TXT_CODE_COMMON_THIS_FEATURE_MAY_BE_UNSTABLE_CANNOT_GUARANTEE_BEST_USER_EXPERIENCE"),
-        fileUpload: true
+        fileUpload: true,
+        visibleWhen: "backgroundImagePerTheme=false"
+      },
+      {
+        key: "backgroundImageLight",
+        type: "string",
+        title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_LIGHT"),
+        description: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_THEME_HINT"),
+        fileUpload: true,
+        visibleWhen: "backgroundImagePerTheme"
+      },
+      {
+        key: "backgroundImageDark",
+        type: "string",
+        title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_DARK"),
+        description: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_THEME_HINT"),
+        fileUpload: true,
+        visibleWhen: "backgroundImagePerTheme"
       },
       {
         key: "backgroundImageBlur",
@@ -144,8 +187,7 @@ export function apply(ctx: PanelPluginContext) {
         title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_BLUR"),
         min: 0,
         max: 50,
-        unit: "px",
-        visibleWhen: "backgroundImage"
+        unit: "px"
       }
     ],
     read: () => readAppearance(settings.config),

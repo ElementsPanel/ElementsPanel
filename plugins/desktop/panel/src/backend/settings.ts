@@ -7,6 +7,11 @@ const UUID = "config";
 export async function registerDesktopSettings(ctx: PanelPluginContext) {
   const storage = ctx.storage.getStorage();
   let settings = normalizeDesktopSettings(await storage.load(CATEGORY, DesktopSettings, UUID));
+  const readSettings = () => ({
+    ...settings,
+    wallpaperImageLight: settings.wallpaperImageLight ?? settings.wallpaperImage,
+    wallpaperImageDark: settings.wallpaperImageDark ?? settings.wallpaperImage
+  });
 
   ctx.inject(["settingsForm"], (scope) => {
     const $t = scope.i18n.$t;
@@ -22,12 +27,34 @@ export async function registerDesktopSettings(ctx: PanelPluginContext) {
           ]
         },
         {
+          key: "wallpaperImagePerTheme",
+          type: "boolean",
+          title: $t("TXT_CODE_DESKTOP_WALLPAPER_IMAGE_PER_THEME"),
+          visibleWhen: "wallpaperMode=image"
+        },
+        {
           key: "wallpaperImage",
           type: "string",
           title: $t("TXT_CODE_DESKTOP_WALLPAPER_IMAGE"),
           description: $t("TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC"),
           fileUpload: true,
-          visibleWhen: "wallpaperMode=image"
+          visibleWhen: ["wallpaperMode=image", "wallpaperImagePerTheme=false"]
+        },
+        {
+          key: "wallpaperImageLight",
+          type: "string",
+          title: $t("TXT_CODE_DESKTOP_WALLPAPER_IMAGE_LIGHT"),
+          description: $t("TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC"),
+          fileUpload: true,
+          visibleWhen: ["wallpaperMode=image", "wallpaperImagePerTheme"]
+        },
+        {
+          key: "wallpaperImageDark",
+          type: "string",
+          title: $t("TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DARK"),
+          description: $t("TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC"),
+          fileUpload: true,
+          visibleWhen: ["wallpaperMode=image", "wallpaperImagePerTheme"]
         },
         {
           key: "wallpaperBlurFollowConsole",
@@ -45,10 +72,12 @@ export async function registerDesktopSettings(ctx: PanelPluginContext) {
           visibleWhen: "wallpaperBlurFollowConsole=false"
         }
       ],
-      read: () => ({ ...settings }),
+      read: readSettings,
       write: async (values) => {
         const candidate = { ...settings, ...values };
-        if (candidate.wallpaperImage === null) candidate.wallpaperImage = "";
+        for (const key of ["wallpaperImage", "wallpaperImageLight", "wallpaperImageDark"] as const) {
+          if (candidate[key] === null) candidate[key] = "";
+        }
         const next = normalizeDesktopSettings(candidate);
         if (
           (Object.keys(next) as Array<keyof DesktopSettings>).some(
@@ -61,5 +90,5 @@ export async function registerDesktopSettings(ctx: PanelPluginContext) {
       }
     });
   });
-  return () => ({ ...settings });
+  return readSettings;
 }

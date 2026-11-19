@@ -11,6 +11,9 @@
   "TXT_CODE_DESKTOP_WALLPAPER_CUSTOM": "사용자 지정 이미지",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE": "배경 이미지",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC": "이미지를 업로드하거나 이미지 URL을 입력하세요. 비워 두면 테마 배경을 사용합니다.",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_PER_THEME": "테마별로 바탕 화면 배경 설정",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_LIGHT": "바탕 화면 배경 이미지 (라이트 모드)",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DARK": "바탕 화면 배경 이미지 (다크 모드)",
   "TXT_CODE_DESKTOP_WALLPAPER_INVALID": "데스크톱 배경 설정이 올바르지 않습니다",
   "TXT_CODE_DESKTOP_WALLPAPER_MODE": "데스크톱 배경",
   "TXT_CODE_DESKTOP_WALLPAPER_WEBSITE": "웹사이트 배경 사용"

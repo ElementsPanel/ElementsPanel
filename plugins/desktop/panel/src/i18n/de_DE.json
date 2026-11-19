@@ -11,6 +11,9 @@
   "TXT_CODE_DESKTOP_WALLPAPER_CUSTOM": "Eigenes Bild",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE": "Hintergrundbild",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC": "Laden Sie ein Bild hoch oder geben Sie seine URL ein. Leer lassen, um den Design-Hintergrund zu verwenden.",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_PER_THEME": "Desktop-Hintergrundbilder für jeden Modus separat einstellen",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_LIGHT": "Desktop-Hintergrundbild (heller Modus)",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DARK": "Desktop-Hintergrundbild (dunkler Modus)",
   "TXT_CODE_DESKTOP_WALLPAPER_INVALID": "Ungültige Desktop-Hintergrundeinstellungen",
   "TXT_CODE_DESKTOP_WALLPAPER_MODE": "Desktop-Hintergrund",
   "TXT_CODE_DESKTOP_WALLPAPER_WEBSITE": "Website-Hintergrund verwenden"

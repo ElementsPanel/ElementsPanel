@@ -4,7 +4,11 @@ import logoB from "@/assets/logo_b.svg";
 import { getCurrentLang, setLanguage } from "@elementspanel/epanel-plugin-i18n";
 import { AppTheme, THEME_AUTO_MIGRATED_KEY, THEME_KEY } from "@/types/const";
 import { createGlobalState, useBreakpoints, useLocalStorage, usePreferredDark } from "@vueuse/core";
-import { getAppearance, type PanelAppearance } from "@/services/apis/appearance";
+import {
+  getAppearance,
+  resolveBackgroundImage,
+  type PanelAppearance
+} from "@/services/apis/appearance";
 import { computed, onMounted, reactive, ref, watch } from "vue";
 
 /** Migrate the old first-visit LIGHT default to AUTO once; preserve later user selections. */
@@ -45,6 +49,7 @@ export const useAppConfigStore = createGlobalState(() => {
   const currentTheme = useLocalStorage<AppTheme>(THEME_KEY, AppTheme.AUTO);
 
   const hasBgImage = ref(false);
+  const backgroundAppearance = ref<PanelAppearance>();
 
   /** Desktop uses the sidebar/header layout; phones keep the compact navigation. */
   const breakpoints = useBreakpoints({ sidebar: 993 });
@@ -86,6 +91,15 @@ export const useAppConfigStore = createGlobalState(() => {
     }
   };
 
+  const applyBackgroundImage = () => {
+    setBackgroundImage(
+      resolveBackgroundImage(backgroundAppearance.value, isDarkTheme.value),
+      backgroundAppearance.value?.backgroundImageBlur
+    );
+  };
+
+  watch(isDarkTheme, applyBackgroundImage);
+
   const setLight = () => {
     document.body.classList.add("app-light-theme");
     document.body.classList.remove("app-dark-theme");
@@ -115,7 +129,8 @@ export const useAppConfigStore = createGlobalState(() => {
 
     const { value: appearance } = await getAppearance().execute();
     setLogoImages(appearance);
-    setBackgroundImage(appearance?.backgroundImage || "", appearance?.backgroundImageBlur);
+    backgroundAppearance.value = appearance;
+    applyBackgroundImage();
   };
 
   const setTheme = (t: AppTheme) => {
@@ -151,6 +166,8 @@ export const useAppConfigStore = createGlobalState(() => {
     try {
       const { value: appearance } = await getAppearance().execute();
       setLogoImages(appearance);
+      backgroundAppearance.value = appearance;
+      applyBackgroundImage();
     } catch (error) {
       console.error("Failed to load appearance settings:", error);
     }

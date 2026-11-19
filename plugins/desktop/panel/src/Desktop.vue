@@ -14,7 +14,11 @@ import type { FrontendFileManagerService, FrontendUserService } from "@elements-
 import { logoutUser } from "@elementspanel/epanel-plugin-console/services/apis";
 import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
 import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
-import { getAppearance } from "@elementspanel/epanel-plugin-console/services/apis/appearance";
+import {
+    getAppearance,
+    resolveBackgroundImage,
+    type PanelAppearance
+} from "@elementspanel/epanel-plugin-console/services/apis/appearance";
 import DesktopContextMenu from "./widgets/desktop/DesktopContextMenu.vue";
 import type { ContextMenuItem } from "./widgets/desktop/DesktopContextMenu.vue";
 import DesktopIcon from "./widgets/desktop/DesktopIcon.vue";
@@ -68,13 +72,23 @@ const desktopFileEditorWindow = computed(() => fileManager.value?.DesktopFileEdi
 const desktopImageViewerWindow = computed(() => fileManager.value?.DesktopImageViewer);
 const { isDarkTheme } = useAppConfigStore();
 
-const backgroundImageUrl = ref<string>("");
+const appearance = ref<PanelAppearance>();
+const backgroundImageUrl = computed(() => resolveBackgroundImage(appearance.value, isDarkTheme.value));
 const backgroundImageBlur = ref(5);
 const desktopSettings = ref(new DesktopSettings());
 
+const customWallpaperImage = computed(() => {
+    const settings = desktopSettings.value;
+    if (!settings.wallpaperImagePerTheme) return settings.wallpaperImage;
+    const image = isDarkTheme.value ? settings.wallpaperImageDark : settings.wallpaperImageLight;
+    return image ?? settings.wallpaperImage;
+});
+
 const wallpaperStyle = computed<CSSProperties>(() => {
     const settings = desktopSettings.value;
-    const image = settings.wallpaperMode === "image" ? settings.wallpaperImage : backgroundImageUrl.value;
+    const image = settings.wallpaperMode === "image"
+        ? customWallpaperImage.value
+        : backgroundImageUrl.value;
     if (!image) {
         // Match the active theme while waiting for the desktop stylesheet to load.
         const fallback = isDarkTheme.value ? "#232429" : "#f5f5f5";
@@ -106,7 +120,7 @@ const loadWallpaper = async () => {
         desktopSettings.value = normalizeDesktopSettings(settingsResult.value.value);
     }
     if (appearanceResult.status === "fulfilled") {
-        backgroundImageUrl.value = appearanceResult.value.value?.backgroundImage || "";
+        appearance.value = appearanceResult.value.value;
         const blur = appearanceResult.value.value?.backgroundImageBlur ?? 5;
         backgroundImageBlur.value = Number.isFinite(blur) ? Math.min(50, Math.max(0, blur)) : 5;
     }

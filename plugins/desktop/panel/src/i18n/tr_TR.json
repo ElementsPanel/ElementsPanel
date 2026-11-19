@@ -11,6 +11,9 @@
   "TXT_CODE_DESKTOP_WALLPAPER_CUSTOM": "Özel görüntü",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE": "Duvar kâğıdı görüntüsü",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC": "Bir görüntü yükleyin veya URL'sini girin. Tema arka planını kullanmak için boş bırakın.",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_PER_THEME": "Her tema için duvar kâğıtlarını ayrı yapılandır",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_LIGHT": "Duvar kâğıdı görüntüsü (açık mod)",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DARK": "Duvar kâğıdı görüntüsü (koyu mod)",
   "TXT_CODE_DESKTOP_WALLPAPER_INVALID": "Geçersiz masaüstü duvar kâğıdı ayarları",
   "TXT_CODE_DESKTOP_WALLPAPER_MODE": "Masaüstü duvar kâğıdı",
   "TXT_CODE_DESKTOP_WALLPAPER_WEBSITE": "Web sitesi arka planını kullan"

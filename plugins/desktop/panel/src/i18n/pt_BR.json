@@ -11,6 +11,9 @@
   "TXT_CODE_DESKTOP_WALLPAPER_CUSTOM": "Imagem personalizada",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE": "Imagem de fundo",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC": "Envie uma imagem ou insira sua URL. Deixe vazio para usar o fundo do tema.",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_PER_THEME": "Configurar papéis de parede separadamente para cada tema",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_LIGHT": "Imagem do papel de parede (modo claro)",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DARK": "Imagem do papel de parede (modo escuro)",
   "TXT_CODE_DESKTOP_WALLPAPER_INVALID": "Configurações de papel de parede inválidas",
   "TXT_CODE_DESKTOP_WALLPAPER_MODE": "Papel de parede da área de trabalho",
   "TXT_CODE_DESKTOP_WALLPAPER_WEBSITE": "Usar o fundo do site"

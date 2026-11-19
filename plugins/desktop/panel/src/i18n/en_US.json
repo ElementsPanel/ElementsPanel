@@ -11,6 +11,9 @@
   "TXT_CODE_DESKTOP_WALLPAPER_CUSTOM": "Custom image",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE": "Wallpaper image",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC": "Upload an image or enter its URL. Leave empty to use the theme background.",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_PER_THEME": "Configure wallpapers separately for each theme",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_LIGHT": "Wallpaper image (light mode)",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DARK": "Wallpaper image (dark mode)",
   "TXT_CODE_DESKTOP_WALLPAPER_INVALID": "Invalid desktop wallpaper settings",
   "TXT_CODE_DESKTOP_WALLPAPER_MODE": "Desktop wallpaper",
   "TXT_CODE_DESKTOP_WALLPAPER_WEBSITE": "Follow website background"

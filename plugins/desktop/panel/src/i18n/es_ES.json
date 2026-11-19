@@ -11,6 +11,9 @@
   "TXT_CODE_DESKTOP_WALLPAPER_CUSTOM": "Imagen personalizada",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE": "Imagen de fondo",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC": "Sube una imagen o introduce su URL. Déjalo vacío para usar el fondo del tema.",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_PER_THEME": "Configurar fondos de escritorio por separado para cada tema",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_LIGHT": "Imagen de fondo de escritorio (modo claro)",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DARK": "Imagen de fondo de escritorio (modo oscuro)",
   "TXT_CODE_DESKTOP_WALLPAPER_INVALID": "Configuración del fondo de escritorio no válida",
   "TXT_CODE_DESKTOP_WALLPAPER_MODE": "Fondo de escritorio",
   "TXT_CODE_DESKTOP_WALLPAPER_WEBSITE": "Usar el fondo del sitio web"

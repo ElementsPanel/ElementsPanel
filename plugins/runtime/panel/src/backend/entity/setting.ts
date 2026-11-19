@@ -36,5 +36,9 @@ export default class SystemConfig {
   logoImageLight: string | undefined = undefined;
   logoImageDark: string | undefined = undefined;
   backgroundImage = "";
+  backgroundImagePerTheme = false;
+  // Missing theme values inherit the shared image; empty strings disable the background.
+  backgroundImageLight: string | undefined = undefined;
+  backgroundImageDark: string | undefined = undefined;
   backgroundImageBlur = 5;
 }

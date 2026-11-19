@@ -18,6 +18,9 @@ const { default: SystemConfig } = load("plugins/runtime/panel/src/backend/entity
 const i18n = { t: (key) => key, getCurrentLang: () => "en_us", setLanguage() {} };
 const constants = load("plugins/console/panel/src/types/const.ts", { "@/lang/i18n": i18n });
 const { AppTheme } = constants;
+const { resolveBackgroundImage } = load("plugins/console/panel/src/services/apis/appearance.ts", {
+  "@/stores/useDefineApi": { useDefineApi: () => () => ({}) }
+});
 
 function backendFixture(initial = {}, legacyLayout, save = () => {}) {
   const config = Object.assign(new SystemConfig(), initial);
@@ -72,6 +75,7 @@ async function storeFixture(t, readAppearance) {
     "@/lang/i18n": i18n,
     "@/types/const": constants,
     "@/services/apis/appearance": {
+      resolveBackgroundImage,
       getAppearance: () => ({ execute: async () => ({ value: await readAppearance() }) })
     },
     vue: { ...vue, onMounted: (callback) => mounted.push(callback) },
@@ -100,25 +104,34 @@ test("console appearance persists independent logos and background images after 
   assert.deepEqual(logoFields.map((field) => field.key), ["logoImageLight", "logoImageDark"]);
   assert.ok(logoFields.every((field) => field.fileUpload));
   assert.deepEqual(backend.schema.fields().map((field) => field.key),
-    ["pageTitle", "logoImageLight", "logoImageDark", "backgroundImage", "backgroundImageBlur"]);
+    ["pageTitle", "logoImageLight", "logoImageDark", "backgroundImagePerTheme", "backgroundImage",
+      "backgroundImageLight", "backgroundImageDark", "backgroundImageBlur"]);
 
   await backend.schema.write({
     logoImageLight: "/light.png", logoImageDark: "/dark.png",
-    backgroundImage: "/background.png", backgroundImageBlur: 0
+    backgroundImage: "/background.png", backgroundImageBlur: 0,
+    backgroundImagePerTheme: true, backgroundImageLight: "/background-light.png",
+    backgroundImageDark: "/background-dark.png"
   });
   const restarted = backendFixture(storage.load("SystemConfig", SystemConfig, "config"));
   const appearance = await restarted.readPublic();
   assert.equal(appearance.logoImageLight, "/light.png");
   assert.equal(appearance.logoImageDark, "/dark.png");
   assert.equal(appearance.backgroundImage, "/background.png");
+  assert.equal(appearance.backgroundImagePerTheme, true);
+  assert.equal(appearance.backgroundImageLight, "/background-light.png");
+  assert.equal(appearance.backgroundImageDark, "/background-dark.png");
   assert.equal(appearance.backgroundImageBlur, 0);
   assert.deepEqual(appearance, restarted.schema.read());
 });
 
-test("old single logos remain available while cleared themes stop inheriting them", async () => {
+test("old single images remain available while cleared themes stop inheriting them", async () => {
   const backend = backendFixture({ logoImage: "/legacy.png", backgroundImage: "/background.png" });
   assert.equal(backend.schema.read().logoImageLight, "/legacy.png");
   assert.equal(backend.schema.read().logoImageDark, "/legacy.png");
+  assert.equal(backend.schema.read().backgroundImagePerTheme, false);
+  assert.equal(backend.schema.read().backgroundImageLight, "/background.png");
+  assert.equal(backend.schema.read().backgroundImageDark, "/background.png");
 
   backend.schema.write({ logoImageDark: "/dark.png" });
   backend.schema.write({ logoImageLight: null });
@@ -131,6 +144,12 @@ test("old single logos remain available while cleared themes stop inheriting the
   appearance = await backendFixture(JSON.parse(JSON.stringify(backend.config))).readPublic();
   assert.equal(appearance.logoImageLight, "");
   assert.equal(appearance.logoImageDark, "");
+  await backend.schema.write({ backgroundImagePerTheme: true, backgroundImageLight: null });
+  appearance = await backendFixture(JSON.parse(JSON.stringify(backend.config))).readPublic();
+  assert.equal(appearance.backgroundImageLight, "");
+  assert.equal(appearance.backgroundImageDark, "/background.png");
+  assert.equal(resolveBackgroundImage(appearance, false), "");
+  assert.equal(resolveBackgroundImage(appearance, true), "/background.png");
 });
 
 test("legacy layout logos migrate without overwriting explicitly cleared theme settings", () => {
@@ -142,26 +161,56 @@ test("legacy layout logos migrate without overwriting explicitly cleared theme s
   const cleared = backendFixture({ logoImageLight: "", logoImageDark: "" }, layout);
   assert.equal(cleared.schema.read().logoImageLight, "");
   assert.equal(cleared.schema.read().logoImageDark, "");
+  const backgroundLayout = [{ page: "__settings__", theme: { backgroundImage: "/layout-bg.png" } }];
+  assert.equal(backendFixture({}, backgroundLayout).schema.read().backgroundImageLight, "/layout-bg.png");
+  const clearedBackground = backendFixture({ backgroundImageLight: "", backgroundImageDark: "" }, backgroundLayout);
+  assert.equal(clearedBackground.schema.read().backgroundImageLight, "");
+  assert.equal(clearedBackground.schema.read().backgroundImageDark, "");
 });
 
-test("logos follow explicit themes and system preference in automatic mode", async (t) => {
-  const backend = backendFixture({ logoImageLight: "/light.png", logoImageDark: "/dark.png" });
+test("logos and backgrounds follow explicit themes and system preference in automatic mode", async (t) => {
+  const backend = backendFixture({
+    logoImageLight: "/light.png", logoImageDark: "/dark.png", backgroundImage: "/shared-bg.png",
+    backgroundImagePerTheme: true, backgroundImageLight: "/light-bg.png", backgroundImageDark: "/dark-bg.png"
+  });
   const { store, preferredDark } = await storeFixture(t, backend.readPublic);
+  const background = () => document.body.style.getPropertyValue("--app-background-image");
   assert.equal(store.logoImage.value, "/light.png");
+  assert.match(background(), /light-bg\.png/);
 
   store.setTheme(AppTheme.DARK);
   assert.equal(store.logoImage.value, "/dark.png");
+  await vue.nextTick();
+  assert.match(background(), /dark-bg\.png/);
   store.setTheme(AppTheme.LIGHT);
   preferredDark.value = true;
   await vue.nextTick();
   assert.equal(store.logoImage.value, "/light.png");
+  assert.match(background(), /light-bg\.png/);
 
   store.setTheme(AppTheme.AUTO);
   assert.equal(store.logoImage.value, "/dark.png");
+  await vue.nextTick();
+  assert.match(background(), /dark-bg\.png/);
   preferredDark.value = false;
   await vue.nextTick();
   assert.equal(store.logoImage.value, "/light.png");
   await store.initAppTheme();
+  assert.match(background(), /light-bg\.png/);
+
+  await backend.schema.write({ backgroundImageLight: null });
+  await store.initAppTheme();
+  assert.equal(store.hasBgImage.value, false);
+  assert.equal(background(), "");
+  await backend.schema.write({ backgroundImagePerTheme: false });
+  await store.initAppTheme();
+  assert.match(background(), /shared-bg\.png/);
+  store.setTheme(AppTheme.DARK);
+  await store.initAppTheme();
+  assert.match(background(), /shared-bg\.png/);
+  await backend.schema.write({ backgroundImagePerTheme: true });
+  await store.initAppTheme();
+  assert.match(background(), /dark-bg\.png/);
 });
 
 test("clearing a logo restores the matching built-in image even with a legacy logo present", async (t) => {
