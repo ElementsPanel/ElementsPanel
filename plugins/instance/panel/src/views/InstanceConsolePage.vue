@@ -442,7 +442,7 @@ onUnmounted(() => {
                   md="4"
                   lg="3"
                 >
-                  <VCard class="console-function-item" data-app-surface="none" rounded="xl" flat @click="item.click()">
+                  <VCard class="console-function-item" data-app-surface="control" rounded="xl" flat @click="item.click()">
                     <VCardText>
                       <VIcon :icon="item.icon" size="28" color="info" />
                       <span>{{ item.title }}</span>
