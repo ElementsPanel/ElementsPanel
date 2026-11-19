@@ -347,7 +347,7 @@ html {
 
 @media (max-width: 992px) {
   .global-app-container {
-    margin: 0 0 60px;
+    margin: 0;
 
     &:has(> .app-header-content-for-phone) {
       box-sizing: border-box;

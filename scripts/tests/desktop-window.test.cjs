@@ -1247,7 +1247,6 @@ test("the shell supplies layout to the native task drawer and closing it preserv
   const route = vue.shallowRef({ path: "/instances", fullPath: "/instances", meta: {} });
   const empty = { render: () => null };
   const Shell = loadSfc("plugins/console/panel/src/ConsoleApp.vue", {
-    "@/hooks/useScreen": { useScreen: () => ({ isPhone: vue.ref(false) }) },
     "@/stores/useAppStateStore": { useAppStateStore: () => ({ isAdmin: vue.ref(true) }) },
     "@/stores/useAppConfigStore": {
       useAppConfigStore: () => ({
@@ -1260,7 +1259,7 @@ test("the shell supplies layout to the native task drawer and closing it preserv
     "vue-router": { RouterView: empty, useRoute: () => route.value },
     "./vuetify": { setVuetifyTheme() {} },
     "./components/AppConfigProvider.vue": { default: { inheritAttrs: false, render() { return this.$slots.default?.(); } } },
-    ...Object.fromEntries(["AppHeader", "AppBottomNav", "AppSidebarMenu", "Breadcrumbs", "InputDialogProvider"]
+    ...Object.fromEntries(["AppHeader", "AppSidebarMenu", "Breadcrumbs", "InputDialogProvider"]
       .map(name => [`./components/${name}.vue`, { default: empty }]))
   });
   const target = document.createElement("div");

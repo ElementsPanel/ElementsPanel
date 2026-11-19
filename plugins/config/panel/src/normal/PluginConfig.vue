@@ -168,10 +168,6 @@ const selectedNodeLabel = computed(
 }
 
 @media (max-width: 992px) {
-  :global(.global-app-container:has(.plugin-config-container)) {
-    margin-bottom: 0;
-  }
-
   :global(.app-shell-content:has(.plugin-config-container)),
   :global(.main-content:has(.plugin-config-container)),
   :global(.app-main-body:has(> .plugin-config-container)) {
