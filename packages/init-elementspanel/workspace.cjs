@@ -143,9 +143,9 @@ async function promptSetupOptions(projectRoot, options, prompt) {
     const type = await prompt.select({
       title: t("TXT_CODE_INIT_WORKSPACE_TYPE_TITLE"),
       options: [
-        { value: "panel", label: t("TXT_CODE_INIT_WORKSPACE_TYPE_PANEL") },
-        { value: "daemon", label: t("TXT_CODE_INIT_WORKSPACE_TYPE_DAEMON") },
-        { value: "both", label: t("TXT_CODE_INIT_WORKSPACE_TYPE_BOTH") }
+        { value: "panel", label: t("TXT_CODE_INIT_MODE_PANEL") },
+        { value: "daemon", label: t("TXT_CODE_INIT_MODE_DAEMON") },
+        { value: "both", label: t("TXT_CODE_INIT_MODE_FULL") }
       ],
       hint: t("TXT_CODE_INIT_SELECT_HINT"),
       defaultIndex: 0

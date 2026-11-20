@@ -150,8 +150,8 @@ async function promptOptions(options, prompt) {
       options.directory = await validateDestination(answer || "my-panel", options.language);
       input?.mark("done", options.directory);
     } catch (error) {
-      input?.mark("error", answer || "my-panel");
-      console.error(error.message);
+      if (input?.mark) input.mark("error", error.message);
+      else console.error(error.message);
     }
   }
   const choices = {
@@ -163,7 +163,6 @@ async function promptOptions(options, prompt) {
     daemon: "daemon"
   };
   if (useMenu && !options.mode) {
-    const t = createTranslator(options.language);
     options.mode = await prompt.select({
       title: t("TXT_CODE_INIT_MODE_TITLE"),
       options: modeChoices(t),
@@ -183,7 +182,7 @@ async function promptOptions(options, prompt) {
     while (options[key] === undefined) {
       const input = useMenu
         ? await prompt.text({
-            title: t("TXT_CODE_INIT_PORT_TITLE", { side, port: defaultPorts[side] }),
+            title: t("TXT_CODE_INIT_PORT_TITLE", { side }),
             placeholder: String(defaultPorts[side])
           })
         : undefined;
@@ -202,14 +201,13 @@ async function promptOptions(options, prompt) {
         options[key] = port;
         input?.mark("done", String(port));
       } catch (error) {
-        input?.mark("error", answer || String(defaultPorts[side]));
-        console.error(error.message);
+        if (input?.mark) input.mark("error", error.message);
+        else console.error(error.message);
       }
     }
   }
   validatePorts(options.mode, options.panelPort, options.daemonPort, options.language);
   if (useMenu && options.install === undefined) {
-    const t = createTranslator(options.language);
     options.install = await prompt.select({
       title: t("TXT_CODE_INIT_INSTALL_TITLE"),
       options: [
@@ -323,6 +321,7 @@ function resolveBuiltinPlugins(mode, versions, language) {
 }
 
 async function fetchBuiltinPlugins(mode, versions, language) {
+  const t = createTranslator(language);
   const selected = ["panel", "daemon"].filter((side) => mode === "full" || mode === side);
   const runtimes = Object.fromEntries(
     await Promise.all(
@@ -333,17 +332,17 @@ async function fetchBuiltinPlugins(mode, versions, language) {
     )
   );
   const names = new Set();
-  for (const runtime of Object.values(runtimes)) {
+  for (const [side, runtime] of Object.entries(runtimes)) {
     const plugins = runtime.elementspanel?.plugins;
     if (!plugins || typeof plugins !== "object" || Array.isArray(plugins))
-      throw new Error("Missing built-in plugin catalogue in runtime metadata.");
+      throw new Error(t("TXT_CODE_INIT_PLUGIN_CATALOGUE_MISSING", { side }));
     for (const [id, name] of Object.entries(plugins)) {
       if (
         !/^[a-z][a-z0-9_-]{1,63}$/.test(id) ||
         typeof name !== "string" ||
         !/^@elementspanel\/epanel-plugin-[a-z0-9_-]+$/.test(name)
       )
-        throw new Error("Invalid built-in plugin identity in runtime metadata.");
+        throw new Error(t("TXT_CODE_INIT_PLUGIN_CATALOGUE_INVALID", { side }));
       names.add(name);
     }
   }
@@ -359,7 +358,7 @@ async function fetchBuiltinPlugins(mode, versions, language) {
     for (const [id, name] of Object.entries(runtime.elementspanel.plugins)) {
       const plugin = packages.get(name);
       if (plugin.elementspanel?.id !== id || !plugin.elementspanel[side])
-        throw new Error(`Invalid ${side} metadata in ${name}.`);
+        throw new Error(t("TXT_CODE_INIT_PLUGIN_METADATA_INVALID", { side, name }));
       if (side === "panel") {
         const { frontendCompatibilityError } = require("./frontend-modules.cjs");
         if (
@@ -497,7 +496,7 @@ async function updateBuiltinPlugins({
       (!mode || mode === "full" || mode === side) &&
       manifest.dependencies?.[`@elementspanel/${side}`]
   );
-  if (!sides.length) throw new Error("No selected ElementsPanel runtime in this project.");
+  if (!sides.length) throw new Error(createTranslator(language)("TXT_CODE_INIT_RUNTIME_NOT_FOUND"));
   const originals = Object.fromEntries(
     await Promise.all(
       sides.map(async (side) => [
@@ -542,7 +541,7 @@ function printNextSteps(result, installed, language) {
       directory: result.directory
     })}`
   );
-  console.log(`\n${t("TXT_CODE_INIT_NEXT_STEPS")}`);
+  console.log();
   if (result.directory !== path.resolve(process.cwd()))
     console.log(`  cd ${quoteDirectory(result.directory)}`);
   if (!installed) console.log("  npm install");

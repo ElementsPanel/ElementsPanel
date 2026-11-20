@@ -292,7 +292,7 @@ test("isolated plugin installation is independent of host asset hashes and check
   npm.metadata("@elementspanel/panel", host);
   await assert.rejects(
     initializer.initialize({ directory: path.join(f.root, "missing-api"), mode: "panel", install: false }),
-    /frontend modules or legacy assets unavailable/
+    /Incompatible panel assets/
   );
   assert.equal(fs.existsSync(path.join(f.root, "missing-api")), false);
 });
@@ -325,13 +325,13 @@ test("registry failures and incompatible plugin builds leave manifests untouched
           panel: { frontendAssets: ["assets/i18n-old.js"] }
         }
       },
-      /frontend modules or legacy assets unavailable/
+      /Incompatible panel assets/
     ],
     [
       "old asset metadata is absent",
       name,
       { ...plugin, elementspanel: { ...plugin.elementspanel, panel: {} } },
-      /frontend modules or legacy assets unavailable/
+      /Incompatible panel assets/
     ],
     [
       "daemon metadata is absent",
@@ -343,7 +343,7 @@ test("registry failures and incompatible plugin builds leave manifests untouched
       "old runtime catalogue is absent",
       "@elementspanel/panel",
       { version: "1.0.1", dependencies: { [name]: "0.1.0" } },
-      /Missing built-in plugin catalogue/
+      /Missing panel plugin catalogue/
     ]
   ]) {
     await t.test(label, async (t) => {
@@ -453,7 +453,7 @@ test("initializer rejects failed and invalid npm version queries before writing 
           language: "zh",
           installer: async () => { installed = true; }
         }),
-        /无法从 npm 查询 @elementspanel\/panel 的最新版本/
+        /无法获取 @elementspanel\/panel 的 npm 版本/
       );
       assert.equal(fs.existsSync(directory), false);
       assert.equal(installed, false);
@@ -525,7 +525,7 @@ for (const [mode, choice] of [
     for (const side of ["panel", "daemon"]) {
       const selected = mode === "full" || mode === side;
       assert.equal(
-        prompt.questions.some((question) => question.startsWith(`${side} listening port`)),
+        prompt.questions.some((question) => question.startsWith(`${side} port`)),
         selected
       );
       assert.equal(fs.existsSync(path.join(directory, side)), selected);
@@ -583,6 +583,53 @@ test("initializer wizard retries invalid directories, choices, ports and install
   assert.equal(errors.mock.callCount(), 8);
 });
 
+test("initializer menu keeps concise labels and reports each validation error once", async (t) => {
+  const f = temporary(t);
+  const existing = path.join(f.root, "existing");
+  const directory = path.join(f.root, "chosen");
+  write(path.join(existing, "keep.txt"), "keep");
+  const inputs = [existing, directory, "invalid", "31001", "31001", "31002"];
+  const marks = [];
+  const titles = [];
+  const errors = t.mock.method(console, "error", () => {});
+  const options = await initializer.promptOptions(initializer.parseArgs(["--language", "en"]), {
+    async text(config) {
+      titles.push(config.title);
+      assert.ok(inputs.length, "Each prompt must finish after a valid input");
+      return { value: inputs.shift(), mark: (...args) => marks.push(args) };
+    },
+    async select(config) {
+      titles.push(config.title);
+      if (config.title === "Services") {
+        assert.deepEqual(config.options.map(item => item.label), [
+          "panel + daemon", "panel", "daemon"
+        ]);
+        return "full";
+      }
+      assert.equal(config.title, "Install dependencies");
+      assert.deepEqual(config.options.map(item => item.label), ["Yes", "No"]);
+      return false;
+    }
+  });
+  assert.equal(options.directory, directory);
+  assert.equal(options.panelPort, 31001);
+  assert.equal(options.daemonPort, 31002);
+  assert.equal(options.install, false);
+  assert.deepEqual(titles, [
+    "Directory", "Directory", "Services", "panel port", "panel port",
+    "daemon port", "daemon port", "Install dependencies"
+  ]);
+  assert.deepEqual(marks.map(([status]) => status), [
+    "error", "done", "error", "done", "error", "done"
+  ]);
+  assert.match(marks[0][1], /not empty/);
+  assert.match(marks[2][1], /integer/);
+  assert.match(marks[4][1], /must be different/);
+  assert.equal(errors.mock.callCount(), 0, "Marked errors must not also print a duplicate message");
+  assert.equal(fs.existsSync(directory), false);
+  assert.equal(fs.readFileSync(path.join(existing, "keep.txt"), "utf8"), "keep");
+});
+
 test("initializer wizard follows the system locale and translates Chinese prompts, errors and completion", async (t) => {
   const f = temporary(t);
   mockNpmView(t);
@@ -610,13 +657,13 @@ test("initializer wizard follows the system locale and translates Chinese prompt
   const options = await initializer.promptOptions(initializer.parseArgs([]), prompt);
   assert.equal(options.language, "zh");
   assert.equal(options.install, false);
-  assert.match(prompt.questions[0], /安装目录/);
-  assert.ok(prompt.questions.some((question) => question.startsWith("安装内容")));
-  assert.ok(prompt.questions.some((question) => question.startsWith("panel 监听端口")));
-  assert.ok(prompt.questions.some((question) => question.startsWith("daemon 监听端口")));
-  assert.ok(prompt.questions.some((question) => question.startsWith("是否立即安装依赖")));
+  assert.match(prompt.questions[0], /目录/);
+  assert.ok(prompt.questions.some((question) => question.startsWith("服务")));
+  assert.ok(prompt.questions.some((question) => question.startsWith("panel 端口")));
+  assert.ok(prompt.questions.some((question) => question.startsWith("daemon 端口")));
+  assert.ok(prompt.questions.some((question) => question.startsWith("安装依赖")));
   assert.equal(errors.mock.callCount(), 5);
-  for (const [index, pattern] of [/安装目录非空/, /请选择/, /整数/, /不能相同/, /请输入/].entries())
+  for (const [index, pattern] of [/目录非空/, /请选择/, /整数/, /不能相同/, /请输入/].entries())
     assert.match(errors.mock.calls[index].arguments[0], pattern);
   await initializer.initialize(options);
   for (const side of ["panel", "daemon"]) {
@@ -637,8 +684,8 @@ test("initializer wizard follows the system locale and translates Chinese prompt
     "--no-install"
   ]).closed;
   assert.equal(result.code, 0, result.output);
-  assert.match(result.output, /已成功初始化面板/);
-  assert.match(result.output, /如需启动，请执行：/);
+  assert.match(result.output, /已初始化项目/);
+  assert.doesNotMatch(result.output, /如需启动，请执行：/);
   assert.match(result.output, /\n  npm install\n  npm start/);
   assert.equal(
     JSON.parse(fs.readFileSync(path.join(f.root, "中文 CLI/daemon/data/Config/global.json")))
@@ -652,7 +699,7 @@ test("initializer wizard follows the system locale and translates Chinese prompt
     "zh"
   ]).closed;
   assert.equal(invalid.code, 1, invalid.output);
-  assert.match(invalid.output, /监听端口必须是/);
+  assert.match(invalid.output, /端口必须为/);
 });
 
 test("initializer rejects invalid or conflicting ports before creating the project", async (t) => {
