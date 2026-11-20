@@ -212,6 +212,19 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     }
   };
 
+  const handleReorderTabs = (keys: string[]) => {
+    const tabs = currentTabs.value;
+    if (keys.length !== tabs.length || new Set(keys).size !== tabs.length) return;
+    const byKey = new Map(tabs.map((tab) => [tab.key, tab]));
+    const reordered: TabItem[] = [];
+    for (const key of keys) {
+      const tab = byKey.get(key);
+      if (!tab) return;
+      reordered.push(tab);
+    }
+    tabs.splice(0, tabs.length, ...reordered);
+  };
+
   const updateBreadcrumbs = (path: string) => {
     const breadcrumbPaths = parsePath(path);
     breadcrumbs.length = 0;
@@ -1073,6 +1086,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     currentTabs,
     activeTab,
     onEditTabs,
+    handleReorderTabs,
     handleChangeTab,
     openDialog,
     getFileList,

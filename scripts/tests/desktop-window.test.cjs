@@ -506,6 +506,7 @@ function fileManagerDialogFixture(t) {
     "@/plugin/context": { usePluginService: () => desktopService },
     "@/lang/i18n": { t: (key) => key },
     "../components/FileManagerTabs.vue": { default: { props: ["activeTab", "tabs"], render: () => vue.h("div") } },
+    "../components/FileManagerPathBar.vue": { default: loadSfc("plugins/file/panel/src/components/FileManagerPathBar.vue") },
     "../components/ArchivePreview.vue": { default: { props: ["compact", "entries", "loading"], render: () => vue.h("div", { class: "archive-content" }) } },
     "../services/uploadService": { default: { uiData: vue.ref({}) } },
     "../tools/fileManager": {},
@@ -721,6 +722,124 @@ for (const shellStyleLast of [true, false]) {
     assert.equal(element.isConnected, false);
   });
 }
+
+function folderTabsFixture(t) {
+  const FileManagerTabs = loadSfc("plugins/file/panel/src/components/FileManagerTabs.vue", {
+    "@/lang/i18n": { t: (key) => key }
+  });
+  const tabs = vue.ref(["a", "b", "c"].map((key) => ({ key, name: key })));
+  const active = vue.ref("b");
+  const events = { reordered: [], selected: [], closed: [], uploads: 0 };
+  const target = document.createElement("div");
+  document.body.appendChild(target);
+  target.addEventListener("dragover", () => events.uploads++);
+  target.addEventListener("drop", () => events.uploads++);
+  const app = vue.createApp({ render: () => vue.h(FileManagerTabs, {
+    tabs: tabs.value,
+    activeTab: active.value,
+    onSelect: (key) => { active.value = key; events.selected.push(key); },
+    onClose: (key) => { events.closed.push(key); },
+    onReorder: (keys) => {
+      events.reordered.push(keys);
+      tabs.value = keys.map((key) => tabs.value.find((tab) => tab.key === key));
+    }
+  }) });
+  app.use(Vuetify.createVuetify());
+  app.mount(target);
+  t.after(() => { app.unmount(); target.remove(); });
+  const tab = (key) => target.querySelector(`[data-tab-key="${key}"]`);
+  const transfer = { types: ["text/plain"], files: [], setData() {}, effectAllowed: "", dropEffect: "" };
+  const drag = (type, key, clientX = 25, dataTransfer = transfer) => {
+    tab(key).getBoundingClientRect = () => ({ left: 0, width: 100, right: 100 });
+    const event = new window.Event(type, { bubbles: true, cancelable: true });
+    Object.defineProperties(event, {
+      dataTransfer: { value: dataTransfer }, clientX: { value: clientX }
+    });
+    tab(key).querySelector(".file-tab-label").dispatchEvent(event);
+    return event;
+  };
+  const displayed = () => [...target.querySelectorAll("[data-tab-key]")].map((tab) => tab.dataset.tabKey);
+  const outsideDrag = (type, dataTransfer = transfer) => {
+    const event = new window.Event(type, { bubbles: true, cancelable: true });
+    Object.defineProperty(event, "dataTransfer", { value: dataTransfer });
+    target.dispatchEvent(event);
+    return event;
+  };
+  return { tabs, active, events, target, tab, drag, displayed, outsideDrag };
+}
+
+test("folder tabs make room during drag and save the preview order on drop without selecting tabs or triggering uploads", async (t) => {
+  const f = folderTabsFixture(t);
+  await flush();
+  f.drag("dragstart", "c");
+  assert.equal(f.drag("dragover", "a").defaultPrevented, true);
+  await flush();
+  assert.deepEqual(f.displayed(), ["c", "a", "b"]);
+  assert.deepEqual(f.tabs.value.map((tab) => tab.key), ["a", "b", "c"]);
+  assert.deepEqual(f.events.reordered, []);
+  f.drag("drop", "a");
+  await flush();
+  assert.deepEqual(f.tabs.value.map((tab) => tab.key), ["c", "a", "b"]);
+  assert.equal(f.active.value, "b");
+  assert.equal(f.tab("b").getAttribute("aria-selected"), "true");
+  assert.equal(f.target.querySelector(".file-folder-tab--dragging"), null);
+
+  f.drag("dragstart", "c");
+  f.drag("dragover", "b", 75);
+  await flush();
+  assert.deepEqual(f.displayed(), ["a", "b", "c"]);
+  assert.deepEqual(f.tabs.value.map((tab) => tab.key), ["c", "a", "b"]);
+  f.drag("drop", "b", 75);
+  await flush();
+  assert.deepEqual(f.tabs.value.map((tab) => tab.key), ["a", "b", "c"]);
+  assert.deepEqual(f.events.selected, []);
+  assert.equal(f.events.uploads, 0);
+  f.tab("c").querySelector(".file-tab-close").click();
+  await flush();
+  assert.deepEqual(f.events.closed, ["c"]);
+  assert.equal(f.active.value, "b");
+});
+
+test("folder tabs save drops outside the bar, restore cancelled drags and keep file uploads working", async (t) => {
+  const f = folderTabsFixture(t);
+  await flush();
+  const container = f.target.querySelector(".v-slide-group__container");
+  Object.defineProperties(container, { scrollWidth: { value: 500 }, clientWidth: { value: 100 } });
+  container.getBoundingClientRect = () => ({ left: 0, right: 100 });
+  container.scrollLeft = 50;
+  f.drag("dragstart", "a");
+  f.drag("dragover", "c", 75);
+  assert.equal(container.scrollLeft, 70);
+  await flush();
+  assert.deepEqual(f.displayed(), ["b", "c", "a"]);
+  assert.deepEqual(f.tabs.value.map((tab) => tab.key), ["a", "b", "c"]);
+  f.drag("dragend", "a");
+  await flush();
+  assert.equal(f.target.querySelector(".file-folder-tab--dragging"), null);
+  assert.deepEqual(f.displayed(), ["a", "b", "c"]);
+  assert.deepEqual(f.events.reordered, []);
+
+  f.drag("dragstart", "a");
+  f.drag("dragover", "c", 75);
+  await flush();
+  assert.deepEqual(f.displayed(), ["b", "c", "a"]);
+  f.drag("dragleave", "a");
+  assert.equal(f.outsideDrag("dragover").defaultPrevented, true);
+  assert.equal(f.outsideDrag("drop").defaultPrevented, true);
+  f.drag("dragend", "a");
+  await flush();
+  assert.deepEqual(f.tabs.value.map((tab) => tab.key), ["b", "c", "a"]);
+  assert.deepEqual(f.displayed(), ["b", "c", "a"]);
+  assert.deepEqual(f.events.reordered, [["b", "c", "a"]]);
+  assert.equal(f.active.value, "b");
+  assert.equal(f.events.uploads, 0);
+
+  const files = { types: ["Files"], files: [{}] };
+  assert.equal(f.drag("dragover", "b", 25, files).defaultPrevented, false);
+  assert.equal(f.drag("drop", "b", 25, files).defaultPrevented, false);
+  assert.equal(f.events.uploads, 2);
+  assert.deepEqual(f.events.reordered, [["b", "c", "a"]]);
+});
 
 test("file manager operations, archive preview and deletion use desktop subwindows with working cancellation", async (t) => {
   const f = fileManagerDialogFixture(t);

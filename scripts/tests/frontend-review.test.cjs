@@ -420,6 +420,46 @@ test("closing inactive folders preserves selection of the active tab and closing
   await settle();
 });
 
+test("reordering folder tabs persists their order without changing the active directory or reloading files", async (t) => {
+  let requests = 0;
+  const savedTabs = { instancenode: ["a", "b", "c"].map((key, index) => ({
+    key, name: key, path: `/${key}/`, closable: index > 0, pushedTime: 0
+  })) };
+  const fixture = fileManagerFixture({
+    fileList: () => ({ execute: async () => {
+      requests++;
+      return { value: { items: [{ name: "report.txt" }], total: 1 } };
+    } })
+  }, savedTabs);
+  t.after(fixture.dispose);
+  const { manager } = fixture;
+  await manager.handleChangeTab("b");
+  manager.selectedRowKeys.value = ["report.txt"];
+  manager.operationForm.value.current = 3;
+  manager.operationForm.value.name = "report";
+  const originalTabs = [...manager.currentTabs.value];
+  const files = manager.dataSource.value;
+  const form = { ...manager.operationForm.value };
+
+  manager.handleReorderTabs(["c", "a", "b"]);
+  assert.deepEqual(manager.currentTabs.value.map((tab) => tab.key), ["c", "a", "b"]);
+  assert.equal(manager.currentTabs.value[0], originalTabs[2]);
+  assert.equal(manager.activeTab.value, "b");
+  assert.equal(manager.currentPath.value, "/b/");
+  assert.deepEqual(manager.selectedRowKeys.value, ["report.txt"]);
+  assert.equal(manager.dataSource.value, files);
+  assert.deepEqual(manager.operationForm.value, form);
+  assert.equal(requests, 1);
+
+  for (const keys of [["a", "b"], ["a", "a", "c"], ["a", "b", "missing"]]) {
+    manager.handleReorderTabs(keys);
+    assert.deepEqual(manager.currentTabs.value.map((tab) => tab.key), ["c", "a", "b"]);
+  }
+  const restored = fileManagerFixture({}, JSON.parse(JSON.stringify(manager.tabList.value)));
+  t.after(restored.dispose);
+  assert.deepEqual(restored.manager.currentTabs.value.map((tab) => tab.key), ["c", "a", "b"]);
+});
+
 test("download links encode reserved filename characters and do not turn them into query/fragment syntax", async (t) => {
   const response = vue.ref({ addr: "https://node", password: "key" });
   const fixture = fileManagerFixture({

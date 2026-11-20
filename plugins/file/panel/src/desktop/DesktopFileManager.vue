@@ -9,9 +9,10 @@ import type { DataType } from "@elementspanel/epanel-plugin-console/types/fileMa
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import dayjs from "dayjs";
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
-import { VBtn, VCard, VCardText, VCheckbox, VDataTableServer, VIcon, VList, VListItem, VMenu, VProgressCircular, VProgressLinear, VRadio, VRadioGroup, VSelect, VSpacer, VTextField } from "vuetify/components";
+import { VBtn, VCard, VCardText, VCheckbox, VDataTableServer, VIcon, VList, VListItem, VMenu, VProgressCircular, VProgressLinear, VRadio, VRadioGroup, VSpacer, VTextField } from "vuetify/components";
 import ArchivePreview from "../components/ArchivePreview.vue";
 import FileManagerTabs from "../components/FileManagerTabs.vue";
+import FileManagerPathBar from "../components/FileManagerPathBar.vue";
 import { useFileManager } from "../hooks/useFileManager";
 import uploadService from "../services/uploadService";
 import { filterFileName, getFileExtName, isCompressFile } from "../tools/fileManager";
@@ -48,6 +49,7 @@ const {
     activeTab,
     currentTabs,
     onEditTabs,
+    handleReorderTabs,
     handleChangeTab,
     getFileList,
     touchFile,
@@ -76,13 +78,6 @@ const {
     closeArchivePreview,
     deleteDialog
 } = useFileManager(props.instanceId, props.daemonId, props.sessionId || "");
-
-const isShowDiskList = computed(
-    () =>
-        fileStatus.value?.platform === "win32" &&
-        fileStatus.value.isGlobalInstance &&
-        fileStatus.value.disks.includes(currentDisk.value)
-);
 
 const desktopFileHeaders = computed(() => {
     const headers = [
@@ -143,6 +138,7 @@ usePolling(getFileStatus, 3000);
 
 const opacity = ref(false);
 const handleDragover = (e: DragEvent) => {
+    if (!e.dataTransfer?.types.includes("Files")) return;
     e.preventDefault();
     if (!currentTabs.value.length) return;
     opacity.value = true;
@@ -495,9 +491,8 @@ const onTableMouseDown = (e: MouseEvent) => {
         target.closest('.v-input') ||
         target.closest('.v-pagination') ||
         target.closest('.v-tabs') ||
-        target.closest('.dfm-breadcrumbs') ||
+        target.closest('.file-path-bar') ||
         target.closest('.dfm-toolbar') ||
-        target.closest('.dfm-nav') ||
         target.closest('.dfm-upload-progress')) {
         return;
     }
@@ -792,14 +787,9 @@ onUnmounted(() => {
                 <div class="dfm-upload-progress__info"><span>{{ `${uploadData.currentFile} ${uploadInstanceTag}`.trim() }}</span><span>({{ uploadData.files[0] }}/{{ uploadData.files[1] }})</span><VBtn icon variant="text" size="small" @click="uploadData.suspending ? uploadService.unsuspend() : uploadService.suspend()"><VIcon :icon="uploadData.suspending ? 'mdi-play' : 'mdi-pause'" /></VBtn><VBtn icon variant="text" size="small" @click="uploadService.stop()"><VIcon icon="mdi-close" /></VBtn></div>
             </div>
             <div class="dfm-body" :style="{ opacity: opacity ? 0.4 : undefined }" @dragover.prevent="handleDragover" @dragleave.prevent="handleDragleave" @drop.prevent="handleDrop">
-            <FileManagerTabs :active-tab="activeTab" :tabs="currentTabs" @select="handleChangeTab" @close="onEditTabs($event, 'remove')" @add="onEditTabs('', 'add')" />
+            <FileManagerTabs :active-tab="activeTab" :tabs="currentTabs" @select="handleChangeTab" @close="onEditTabs($event, 'remove')" @add="onEditTabs('', 'add')" @reorder="handleReorderTabs" />
             <template v-if="currentTabs.length">
-            <div class="dfm-nav">
-                <VSelect v-if="isShowDiskList" v-model="currentDisk" :items="(fileStatus?.disks || []).map((disk: string) => ({ title: `${disk}:`, value: disk }))" class="dfm-disk-select" width="125" variant="solo" density="compact" hide-details @update:model-value="toDisk">
-                  <template #no-data><Empty :icon="false" compact /></template>
-                </VSelect>
-                <div class="dfm-breadcrumbs"><VBtn v-for="(item, index) in breadcrumbs" :key="item.path" variant="text" size="small" @click="handleChangeDir(item.path)">{{ item.name }}<span v-if="index < breadcrumbs.length - 1" class="dfm-breadcrumb-separator">&gt;</span></VBtn></div>
-            </div>
+            <FileManagerPathBar :breadcrumbs="breadcrumbs" :current-disk="currentDisk" :file-status="fileStatus" compact @select="handleChangeDir" @disk="toDisk" />
 
             <div class="dfm-table-wrapper" @mousedown="onTableMouseDown">
             <VDataTableServer v-model="selectedRowKeys" class="dfm-table" :headers="desktopFileHeaders" :items="dataSource || []" item-value="name" :loading="spinning" :items-length="operationForm.total" :items-per-page="operationForm.pageSize || 20" :page="operationForm.current || 1" :items-per-page-options="[25, 50, 100, 200]" show-select fixed-header density="compact" :row-props="getDesktopRowProps" @update:model-value="onDesktopSelectionChange" @update:page="(page) => handleTableChange({ current: page, pageSize: operationForm.pageSize || 20 })" @update:items-per-page="(size) => handleTableChange({ current: operationForm.current || 1, pageSize: size })">
@@ -969,34 +959,6 @@ onUnmounted(() => {
     flex: 0 0 auto;
 }
 
-.dfm-nav {
-    --file-manager-path-height: 32px;
-    display: flex;
-    align-items: stretch;
-    flex-shrink: 0;
-    gap: 8px;
-    margin-bottom: 8px;
-    padding: 8px 12px;
-}
-
-.dfm-disk-select :deep(.v-field) {
-    --v-input-control-height: var(--file-manager-path-height);
-    --v-field-input-padding-top: 0px;
-    --v-field-input-padding-bottom: 0px;
-}
-
-.dfm-breadcrumbs {
-    border: 1px solid var(--desktop-window-border);
-    border-radius: 6px;
-    flex: 1;
-    min-width: 0;
-    min-height: var(--file-manager-path-height);
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 2px;
-}
-
 .dfm-file-name {
     color: inherit;
     font-size: 12px;
@@ -1080,7 +1042,6 @@ onUnmounted(() => {
 
 .dfm-vuetify { min-width: 0; }
 .dfm-vuetify .dfm-toolbar > .v-input { max-width: 260px; }
-.dfm-breadcrumb-separator { margin-left: 8px; opacity: 0.5; }
 .dfm-menu-list { display: flex; flex-direction: column; gap: 2px; padding: 8px !important; }
 .dfm-menu-list .v-btn { justify-content: flex-start; }
 .dfm-dialog-label { margin: 12px 0 4px; font-weight: 600; }

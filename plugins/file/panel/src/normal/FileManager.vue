@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import FileManagerTabs from "../components/FileManagerTabs.vue";
+import FileManagerPathBar from "../components/FileManagerPathBar.vue";
 import ArchivePreview from "../components/ArchivePreview.vue";
 import UploadTaskProgress from "../components/UploadTaskProgress.vue";
 import { useDownloadFileDialog } from "../dialogs";
@@ -34,7 +35,6 @@ import {
   VRadio,
   VRadioGroup,
   VRow,
-  VSelect,
   VSpacer,
   VTextField
 } from "vuetify/components";
@@ -63,6 +63,7 @@ const {
   activeTab,
   currentTabs,
   onEditTabs,
+  handleReorderTabs,
   handleChangeTab,
   selectChanged,
   getFileList,
@@ -92,13 +93,6 @@ const {
   closeArchivePreview,
   deleteDialog
 } = useFileManager(instanceId, daemonId);
-
-const isShowDiskList = computed(
-  () =>
-    fileStatus.value?.platform === "win32" &&
-    fileStatus.value.isGlobalInstance &&
-    fileStatus.value.disks.includes(currentDisk.value)
-);
 
 const tableHeaders = computed(() => {
   const headers: { title: string; key: string; sortable: boolean }[] = [
@@ -154,6 +148,7 @@ const FileEditorDialog = ref<InstanceType<typeof FileEditor>>();
 
 const opacity = ref(false);
 const handleDragover = (e: DragEvent) => {
+  if (!e.dataTransfer?.types.includes("Files")) return;
   e.preventDefault();
   if (!currentTabs.value.length) return;
   opacity.value = true;
@@ -442,23 +437,10 @@ onUnmounted(() => {
             <div class="upload-progress-line"><VProgressLinear :model-value="progress" color="primary" height="6" rounded="xl" /><span>{{ convertFileSize(uploadData.current![0].toString()) }} / {{ convertFileSize(uploadData.current![1].toString()) }}</span></div>
           </div>
 
-          <FileManagerTabs :active-tab="activeTab" :tabs="currentTabs" @select="handleTabChange" @close="onEditTabs($event, 'remove')" @add="onEditTabs('', 'add')" />
+          <FileManagerTabs :active-tab="activeTab" :tabs="currentTabs" @select="handleTabChange" @close="onEditTabs($event, 'remove')" @add="onEditTabs('', 'add')" @reorder="handleReorderTabs" />
 
           <template v-if="currentTabs.length">
-          <div class="path-row">
-            <VSelect v-if="isShowDiskList" v-model="currentDisk" :items="(fileStatus?.disks || []).map((disk: string) => ({ title: `${disk}:`, value: disk }))" class="disk-select" density="compact" hide-details @update:model-value="toDisk">
-              <template #no-data><Empty :icon="false" compact /></template>
-            </VSelect>
-            <div class="file-breadcrumbs" data-app-surface="control">
-              <template v-for="(item, index) in breadcrumbs" :key="item.path">
-                <VBtn variant="text" size="small" class="file-breadcrumbs-item" @click="handleChangeDir(item.path)">{{ item.name }}</VBtn>
-                <span v-if="index < breadcrumbs.length - 1" class="breadcrumb-separator">&gt;</span>
-              </template>
-            </div>
-          </div>
-
-
-
+          <FileManagerPathBar :breadcrumbs="breadcrumbs" :current-disk="currentDisk" :file-status="fileStatus" @select="handleChangeDir" @disk="toDisk" />
           <VDataTableServer
             :model-value="selectedRowKeys"
             :headers="tableHeaders"
@@ -586,8 +568,7 @@ onUnmounted(() => {
 
 .upload-status-line,
 .upload-progress-line,
-.upload-task-list,
-.path-row {
+.upload-task-list {
   display: flex;
   align-items: center;
 }
@@ -613,23 +594,6 @@ onUnmounted(() => {
   margin-top: 4px;
   font-size: 12px;
   white-space: nowrap;
-}
-
-.path-row {
-  --file-manager-path-height: 32px;
-  align-items: stretch;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.disk-select {
-  flex: 0 0 125px;
-}
-
-.disk-select :deep(.v-field) {
-  --v-input-control-height: var(--file-manager-path-height);
-  --v-field-input-padding-top: 0px;
-  --v-field-input-padding-bottom: 0px;
 }
 
 .selected-count {
@@ -660,29 +624,6 @@ onUnmounted(() => {
 .file-table :deep(th),
 .file-table :deep(td) {
   white-space: nowrap;
-}
-
-.file-breadcrumbs {
-  display: flex;
-  flex: 1;
-  min-width: 0;
-  min-height: var(--file-manager-path-height);
-  align-items: center;
-  overflow-x: auto;
-  padding: 2px 8px;
-  border-radius: 16px;
-  background: var(--color-gray-2);
-
-  .file-breadcrumbs-item {
-    min-width: 32px;
-    padding: 0 8px;
-    text-transform: none;
-  }
-}
-
-.breadcrumb-separator {
-  color: var(--color-gray-7);
-  font-size: 12px;
 }
 
 .dialog-stack {
@@ -716,20 +657,9 @@ onUnmounted(() => {
     justify-content: flex-start;
   }
 
-  .path-row,
   .permission-grid {
     grid-template-columns: 1fr;
     flex-direction: column;
-  }
-
-  .path-row {
-    display: grid;
-    grid-auto-rows: 1fr;
-  }
-
-  .disk-select {
-    flex-basis: auto;
-    width: 100%;
   }
 
   .file-name {

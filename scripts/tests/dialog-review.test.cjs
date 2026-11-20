@@ -22,7 +22,7 @@ function lifecycle() {
     run: (callback) => scope.run(callback),
     mount: () => Promise.all(mounted.map((callback) => callback())),
     dispose() {
-      unmounted.forEach((callback) => callback());
+      unmounted.splice(0).forEach((callback) => callback());
       scope.stop();
     }
   };
@@ -543,6 +543,7 @@ test("desktop overwrite dialogs settle dismissal, replacement, and window close"
       },
       "../components/ArchivePreview.vue": {},
       "../components/FileManagerTabs.vue": {},
+      "../components/FileManagerPathBar.vue": {},
       "../services/uploadService": { uiData: vue.ref({}) },
       "../tools/fileManager": {},
       "@/tools/fileSize": {},
