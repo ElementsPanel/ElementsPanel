@@ -18,7 +18,7 @@ export const vuetify = createVuetify({
       rounded: "xl"
     },
     VAlert: { rounded: "xl" },
-    VAutocomplete: { flat: true, rounded: "xl" },
+    VAutocomplete: { flat: true, rounded: "xl", variant: "solo-filled" },
     VBtn: { flat: true, rounded: "xl" },
     VColorPicker: { rounded: "xl" },
     VCombobox: { flat: true, rounded: "xl" },

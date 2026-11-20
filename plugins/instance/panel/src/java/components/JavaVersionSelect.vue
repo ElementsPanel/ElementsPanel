@@ -65,7 +65,6 @@ onUnmounted(() => {
       :label="t('TXT_CODE_JAVA_MSL_VERSION')"
       :loading="loading"
       :disabled="disabled || loading || !!error"
-      variant="solo"
       density="compact"
       hide-details="auto"
       @update:model-value="emit('update:modelValue', $event || '')"

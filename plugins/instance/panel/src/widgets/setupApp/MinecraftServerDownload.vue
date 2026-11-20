@@ -43,7 +43,6 @@ watch(selection, (value) => emit("update:modelValue", value), { immediate: true,
           :label="t('TXT_CODE_MINECRAFT_SERVER')"
           :loading="loading === 'servers'"
           :disabled="disabled || loading === 'servers'"
-          variant="solo"
           density="compact"
           hide-details="auto"
           @update:model-value="selectServer($event || '')"
@@ -60,7 +59,6 @@ watch(selection, (value) => emit("update:modelValue", value), { immediate: true,
           :disabled="
             disabled || !versions.length || loading === 'servers' || loading === 'versions'
           "
-          variant="solo"
           density="compact"
           hide-details="auto"
           @update:model-value="selectVersion($event || '')"
@@ -75,7 +73,6 @@ watch(selection, (value) => emit("update:modelValue", value), { immediate: true,
           :label="t('TXT_CODE_MINECRAFT_BUILD')"
           :loading="loading === 'builds'"
           :disabled="disabled || !!loading || !builds.length"
-          variant="solo"
           density="compact"
           hide-details="auto"
         >

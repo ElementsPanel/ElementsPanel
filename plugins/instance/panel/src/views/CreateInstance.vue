@@ -205,7 +205,6 @@ const handleCreated = (instanceUuid: string) => {
                     :items="instanceTypeOptions"
                     :label="t('TXT_CODE_COMMON_INSTANCE_TYPE')"
                     :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT')"
-                    variant="solo"
                     hide-details
                     @update:model-value="changeInstanceType"
                   >
