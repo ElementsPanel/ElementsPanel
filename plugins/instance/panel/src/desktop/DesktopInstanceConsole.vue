@@ -15,6 +15,7 @@ import { sleep } from "@elementspanel/epanel-plugin-console/tools/common";
 import { notifyDesktopError } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import { INSTANCE_CRASH_TIMEOUT, INSTANCE_STATUS } from "@elementspanel/epanel-plugin-console/types/const";
 import { t } from "@elementspanel/epanel-plugin-i18n";
+import prettyBytes from "pretty-bytes";
 import { computed, onUnmounted, ref } from "vue";
 import { VBtn, VCard, VCardActions, VCardText, VDialog, VIcon, VTooltip } from "vuetify/components";
 import DesktopManagerBtns from "./DesktopManagerBtns.vue";
@@ -294,9 +295,18 @@ const formatToGB = (bytes: number): string => {
     return `${(bytes / 1024 / 1024 / 1024).toFixed(1)}G`;
 };
 
+const formatDiskUsage = (usage: number, limit?: number): string => {
+    const options = { minimumFractionDigits: 2, maximumFractionDigits: 2, binary: true };
+    const used = prettyBytes(usage, options);
+    return limit ? `${used} / ${prettyBytes(limit, options)}` : used;
+};
+
 const perfInfo = computed(() => {
     const info = instanceInfo.value?.info;
     if (!info) return null;
+    const disk = info.storageUsage != null && info.storageUsage > 0
+        ? formatDiskUsage(info.storageUsage, info.storageLimit)
+        : null;
 
     if (isDockerMode.value) {
         const cpu = info.cpuUsage != null ? Math.min(Math.round(info.cpuUsage), 100) : null;
@@ -306,7 +316,7 @@ const perfInfo = computed(() => {
         const net = info.rxRate != null || info.txRate != null
             ? { rx: formatBytes(info.rxRate ?? 0), tx: formatBytes(info.txRate ?? 0) }
             : null;
-        return { cpu, mem, memUsed, memTotal, net };
+        return { cpu, mem, memUsed, memTotal, disk, net };
     }
 
     if (nodeInfo.value?.system) {
@@ -319,7 +329,7 @@ const perfInfo = computed(() => {
         const net = info.rxRate != null || info.txRate != null
             ? { rx: formatBytes(info.rxRate ?? 0), tx: formatBytes(info.txRate ?? 0) }
             : null;
-        return { cpu, mem, memUsed, memTotal, net };
+        return { cpu, mem, memUsed, memTotal, disk, net };
     }
 
     const cpu = info.cpuUsage != null ? Math.min(Math.round(info.cpuUsage), 100) : null;
@@ -329,7 +339,7 @@ const perfInfo = computed(() => {
     const net = info.rxRate != null || info.txRate != null
         ? { rx: formatBytes(info.rxRate ?? 0), tx: formatBytes(info.txRate ?? 0) }
         : null;
-    return { cpu, mem, memUsed, memTotal, net };
+    return { cpu, mem, memUsed, memTotal, disk, net };
 });
 
 onUnmounted(() => {
@@ -376,17 +386,22 @@ onUnmounted(() => {
             <div class="dim-toolbar__right">
                 <div v-if="perfInfo" class="dim-perf">
                     <span v-if="perfInfo.cpu != null" class="dim-perf__item"
-                        :class="`dim-perf__cpu--${perfInfo.cpu > 80 ? 'high' : perfInfo.cpu > 50 ? 'mid' : 'low'}`"
-                        :title="t('TXT_CODE_COMMON_CPU_USAGE')">
+                        :class="`dim-perf__cpu--${perfInfo.cpu > 80 ? 'high' : perfInfo.cpu > 50 ? 'mid' : 'low'}`">
                         <VIcon icon="mdi-cube-outline" size="1em" /> {{ perfInfo.cpu }}%
+                        <VTooltip activator="parent" :text="t('TXT_CODE_COMMON_CPU_USAGE')" location="bottom" />
                     </span>
                     <span v-if="perfInfo.mem != null && perfInfo.memUsed && perfInfo.memTotal" class="dim-perf__item"
-                        :class="`dim-perf__mem--${perfInfo.mem > 80 ? 'high' : perfInfo.mem > 50 ? 'mid' : 'low'}`"
-                        :title="t('TXT_CODE_COMMON_MEMORY')">
+                        :class="`dim-perf__mem--${perfInfo.mem > 80 ? 'high' : perfInfo.mem > 50 ? 'mid' : 'low'}`">
                         <VIcon icon="mdi-view-dashboard-outline" size="1em" /> {{ perfInfo.memUsed }}/{{ perfInfo.memTotal }}
+                        <VTooltip activator="parent" :text="t('TXT_CODE_COMMON_MEMORY')" location="bottom" />
                     </span>
-                    <span v-if="perfInfo.net" class="dim-perf__item dim-perf__net" :title="t('TXT_CODE_COMMON_NETWORK')">
+                    <span v-if="perfInfo.disk" class="dim-perf__item dim-perf__disk">
+                        <VIcon icon="mdi-harddisk" size="1em" /> {{ perfInfo.disk }}
+                        <VTooltip activator="parent" :text="t('TXT_CODE_DISK_USAGE')" location="bottom" />
+                    </span>
+                    <span v-if="perfInfo.net" class="dim-perf__item dim-perf__net">
                         <VIcon icon="mdi-lan" size="1em" /> ↓{{ perfInfo.net.rx }}/s ↑{{ perfInfo.net.tx }}/s
+                        <VTooltip activator="parent" :text="t('TXT_CODE_COMMON_NETWORK')" location="bottom" />
                     </span>
                 </div>
                 <template v-for="item in [...quickOperations, ...instanceOperations]" :key="item.title">
@@ -517,6 +532,12 @@ onUnmounted(() => {
         display: flex;
         align-items: center;
         gap: 8px;
+    }
+
+    &__right {
+        flex-wrap: wrap;
+        min-width: 0;
+        max-width: 100%;
     }
 }
 
@@ -657,6 +678,8 @@ onUnmounted(() => {
     position: relative;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
+    max-width: 100%;
     gap: 6px;
     padding: 0 12px;
     margin-right: 5px;
@@ -710,6 +733,10 @@ onUnmounted(() => {
 
     &.dim-perf__net {
         color: var(--color-green-6, #52c41a);
+    }
+
+    &.dim-perf__disk {
+        color: var(--color-cyan-6);
     }
 }
 
