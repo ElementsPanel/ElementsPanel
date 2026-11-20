@@ -71,7 +71,7 @@ defineExpose({ openDialog });
         <VCol cols="12" lg="6"><VSelect v-model="options.config.fileCode" :items="TERMINAL_CODE" :label="t('TXT_CODE_COMMON_FILE_ENCODING')" hide-details>
           <template #no-data><Empty :icon="false" compact /></template>
         </VSelect></VCol>
-        <VCol cols="12"><VTextarea v-model="options.config.startCommand" :rules="isDockerMode ? commandRules : []" :label="t('TXT_CODE_COMMON_STARTUP_COMMAND')" :placeholder="isDockerMode ? t('TXT_CODE_COMMON_LEAVE_EMPTY_TO_USE_DEFAULT_DOCKER_IMAGE_COMMAND') : t('TXT_CODE_COMMON_ENTER_STARTUP_COMMAND')" :disabled="!isDockerMode" rows="5" variant="solo-filled" hide-details="auto" /></VCol>
+        <VCol cols="12"><VTextarea v-model="options.config.startCommand" :rules="isDockerMode ? commandRules : []" :label="t('TXT_CODE_COMMON_STARTUP_COMMAND')" :placeholder="isDockerMode ? t('TXT_CODE_COMMON_LEAVE_EMPTY_TO_USE_DEFAULT_DOCKER_IMAGE_COMMAND') : t('TXT_CODE_COMMON_ENTER_STARTUP_COMMAND')" :disabled="!isDockerMode" rows="5" hide-details="auto" /></VCol>
         <VCol cols="12" lg="9"><VTextField v-model="options.config.updateCommand" :label="t('TXT_CODE_COMMON_UPDATE_OR_INSTALL_COMMAND')" :hint="updateCommandDesc" persistent-hint :placeholder="UPDATE_CMD_TEMPLATE" :disabled="!isDockerMode" hide-details="auto" /></VCol>
         <VCol cols="12" lg="3" class="d-flex align-center"><VBtn variant="tonal" @click="handleEditDockerEnv">{{ t('TXT_CODE_COMMON_EDIT') }}</VBtn></VCol>
       </VRow>

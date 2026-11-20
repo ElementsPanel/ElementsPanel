@@ -268,7 +268,6 @@ const open = (field: SettingField) => {
           :model-value="String(values[field.key!] ?? '')"
           :rows="4"
           :placeholder="field.placeholder || t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')"
-          variant="solo-filled"
           density="comfortable"
           hide-details
           @update:model-value="set(field, $event)"

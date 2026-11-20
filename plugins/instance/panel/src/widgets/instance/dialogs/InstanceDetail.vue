@@ -370,7 +370,7 @@ defineExpose({ openDialog });
             </VCol>
             <VCol cols="12" md="6">
               <VTextField v-model="formData.template.title" :label="t('TXT_CODE_COMMON_TEMPLATE_NAME')" />
-              <VTextarea v-model="formData.template.description" :label="t('TXT_CODE_COMMON_DESCRIPTION')" variant="solo-filled" rows="2" />
+              <VTextarea v-model="formData.template.description" :label="t('TXT_CODE_COMMON_DESCRIPTION')" rows="2" />
               <VRow>
                 <VCol cols="12" sm="6"><VSelect v-model="formData.template.language" :items="languageOptions" item-title="label" item-value="value" :label="t('TXT_CODE_COMMON_LANGUAGE')">
                   <template #no-data><Empty :icon="false" compact /></template>
@@ -407,7 +407,7 @@ defineExpose({ openDialog });
               <template #no-data><Empty :icon="false" compact /></template>
             </VSelect></VCol>
             <VCol v-if="!isTemplateMode" cols="12" lg="4"><VTextField v-model="endTimeText" :label="t('TXT_CODE_COMMON_EXPIRE')" placeholder="YYYY-MM-DD HH:mm:ss" :disabled="isGlobalTerminal" /></VCol>
-            <VCol cols="12"><VTextarea v-model="formData.instance.config.startCommand" name="startCommand" :rules="isTemplateMode ? [] : commandRules" :label="t('TXT_CODE_COMMON_STARTUP_COMMAND')" :placeholder="isDockerMode ? t('TXT_CODE_COMMON_LEAVE_EMPTY_TO_USE_DEFAULT_DOCKER_IMAGE_COMMAND') : t('TXT_CODE_COMMON_ENTER_STARTUP_COMMAND')" rows="4" variant="solo-filled" /></VCol>
+            <VCol cols="12"><VTextarea v-model="formData.instance.config.startCommand" name="startCommand" :rules="isTemplateMode ? [] : commandRules" :label="t('TXT_CODE_COMMON_STARTUP_COMMAND')" :placeholder="isDockerMode ? t('TXT_CODE_COMMON_LEAVE_EMPTY_TO_USE_DEFAULT_DOCKER_IMAGE_COMMAND') : t('TXT_CODE_COMMON_ENTER_STARTUP_COMMAND')" rows="4" /></VCol>
             <VCol cols="12"><VTextField v-model="formData.instance.config.stopCommand" :label="t('TXT_CODE_COMMON_INSTANCE_SHUTDOWN_COMMAND')" :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_AN_INSTANCE_SHUTDOWN_COMMAND_SUCH_AS_STOP_EXIT_C_ETC')" /></VCol>
           </VRow>
         </VTabsWindowItem>

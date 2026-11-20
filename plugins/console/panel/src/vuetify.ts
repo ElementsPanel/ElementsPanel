@@ -31,7 +31,7 @@ export const vuetify = createVuetify({
     VFileInput: { flat: true, rounded: "xl", variant: "solo-filled" },
     VSelect: { flat: true, rounded: "xl", variant: "solo-filled" },
     VSwitch: { color: "primary", inset: true, hideDetails: true },
-    VTextarea: { flat: true, rounded: "xl" },
+    VTextarea: { flat: true, rounded: "xl", variant: "solo-filled" },
     VTextField: { flat: true, rounded: "xl", variant: "solo-filled" }
   },
   icons: {

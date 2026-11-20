@@ -443,7 +443,6 @@ async function createInstance() {
       :hint="startCommandHint"
       persistent-hint
       rows="2"
-      variant="solo"
       density="compact"
       hide-details="auto"
       class="mt-3"
@@ -454,7 +453,6 @@ async function createInstance() {
       :hint="t('TXT_CODE_INSTANCE_UPDATE_COMMAND_HINT')"
       persistent-hint
       rows="2"
-      variant="solo"
       density="compact"
       hide-details="auto"
       class="mt-3"
