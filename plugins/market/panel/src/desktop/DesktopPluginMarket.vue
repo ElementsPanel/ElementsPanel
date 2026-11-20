@@ -95,7 +95,6 @@ const DesktopPluginDetailController = defineComponent({
           class="dpm-search"
           :label="t('TXT_CODE_PLUGIN_MARKET_SEARCH')"
           prepend-inner-icon="mdi-magnify"
-          variant="solo-filled"
           density="compact"
           hide-details
           clearable

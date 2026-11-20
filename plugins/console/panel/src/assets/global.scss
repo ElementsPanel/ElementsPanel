@@ -101,12 +101,6 @@ html {
   }
 }
 
-.v-field::before,
-.v-field::after,
-.v-field__outline {
-  display: none !important;
-}
-
 .global-bg-color {
   background-color: var(--background-color) !important;
 }

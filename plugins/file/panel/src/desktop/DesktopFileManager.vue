@@ -765,7 +765,6 @@ onUnmounted(() => {
                     v-model="operationForm.name"
                     :label="t('TXT_CODE_COMMON_SEARCH_BY_FILE_NAME')"
                     prepend-inner-icon="mdi-magnify"
-                    variant="solo-filled"
                     density="comfortable"
                     hide-details
                     clearable
@@ -843,14 +842,14 @@ onUnmounted(() => {
         >
           <p>{{ dialog.info }}</p>
           <VTextField v-if="dialog.mode === '' || dialog.mode === 'zip'" v-model="dialog.value"
-              variant="solo" density="compact" hide-details autofocus :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')" />
+              density="compact" hide-details autofocus :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')" />
           <template v-if="dialog.mode === 'unzip'">
               <div class="dfm-dialog-label">{{ t("TXT_CODE_COMMON_PLEASE_SELECT_THE_DECOMPRESSION_MODE") }}</div>
               <VRadioGroup v-model="dialog.unzipmode" inline>
                   <VRadio value="0" :label="t('TXT_CODE_COMMON_TO_THE_CURRENT_DIR')" />
                   <VRadio value="1" :label="t('TXT_CODE_COMMON_TO_A_NEW_DIR')" />
               </VRadioGroup>
-              <VTextField v-if="dialog.unzipmode === '1'" v-model="dialog.value" variant="solo"
+              <VTextField v-if="dialog.unzipmode === '1'" v-model="dialog.value"
                   density="compact" hide-details :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_THE_DIRECTORY_NAME')" />
               <div class="dfm-dialog-label">{{ t("TXT_CODE_COMMON_PLEASE_SELECT_THE_FORMAT_OF_THE_COMPRESSED_FILE") }}</div>
               <VRadioGroup v-model="dialog.code" inline>
@@ -882,9 +881,9 @@ onUnmounted(() => {
           :model-value="downloadDialog.show"
           @close="cancelDownloadDialog"
         >
-          <VTextField v-model="downloadDialog.url" :label="t('TXT_CODE_COMMON_FILE_URL_ADDRESS')" variant="solo"
+          <VTextField v-model="downloadDialog.url" :label="t('TXT_CODE_COMMON_FILE_URL_ADDRESS')"
               density="compact" hide-details autofocus class="mb-4" />
-          <VTextField v-model="downloadDialog.fileName" :label="t('TXT_CODE_COMMON_FILE_NAME')" variant="solo"
+          <VTextField v-model="downloadDialog.fileName" :label="t('TXT_CODE_COMMON_FILE_NAME')"
               density="compact" hide-details />
           <template #footer>
             <VBtn variant="text" @click="cancelDownloadDialog">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn>

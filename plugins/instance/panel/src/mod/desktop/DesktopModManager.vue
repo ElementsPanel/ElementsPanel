@@ -378,7 +378,7 @@ onMounted(async () => {
             <div class="dmm-header__right">
                 <div class="dmm-search">
                     <VTextField v-model="headerSearchQuery" :label="t('TXT_CODE_SEARCH_PLACEHOLDER')"
-                        variant="solo-filled" density="comfortable" hide-details clearable prepend-inner-icon="mdi-magnify" width="200" />
+                        density="comfortable" hide-details clearable prepend-inner-icon="mdi-magnify" width="200" />
                 </div>
                 <VBtn class="dmm-btn dmm-btn--sm" variant="text" @click="onUploadClick" :title="t('TXT_CODE_COMMON_UPLOAD')">
                     <VIcon icon="mdi-upload-outline"  /> {{ t("TXT_CODE_COMMON_UPLOAD") }}
@@ -439,7 +439,7 @@ onMounted(async () => {
                         <div class="dmm-download">
                             <div class="dmm-search-form">
                                 <div class="dmm-search-grid">
-                                    <VTextField v-model="searchFilters.query" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')" variant="solo" density="compact" hide-details @keyup.enter="onSearch" />
+                                    <VTextField v-model="searchFilters.query" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')" density="compact" hide-details @keyup.enter="onSearch" />
                                     <VSelect v-model="searchFilters.source" :items="[{title:t('TXT_CODE_COMMON_ALL_PLATFORMS'),value:'all'},{title:'Modrinth',value:'modrinth'},{title:'CurseForge',value:'curseforge'},{title:'SpigotMC',value:'spigotmc'}]" variant="solo" density="compact" hide-details>
                                       <template #no-data><Empty :icon="false" compact /></template>
                                     </VSelect>

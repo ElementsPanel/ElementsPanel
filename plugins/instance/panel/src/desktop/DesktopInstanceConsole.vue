@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import { ctx, usePluginService, type FrontendDesktopService, type FrontendTerminalService } from "@elements-panel/sdk";
+import { GLOBAL_INSTANCE_NAME } from "@elementspanel/epanel-plugin-console/config/const";
 import { INSTANCE_TYPE_TRANSLATION, verifyEULA } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
 import { useOverviewInfo } from "@elementspanel/epanel-plugin-console/hooks/useOverviewInfo";
-import { t } from "@elementspanel/epanel-plugin-i18n";
-import { ctx, usePluginService, type FrontendDesktopService, type FrontendTerminalService } from "@elements-panel/sdk";
 import {
     killInstance,
     openInstance,
@@ -10,14 +10,14 @@ import {
     stopInstance,
     updateInstance
 } from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import { arrayFilter } from "@elementspanel/epanel-plugin-console/tools/array";
 import { sleep } from "@elementspanel/epanel-plugin-console/tools/common";
 import { notifyDesktopError } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import { INSTANCE_CRASH_TIMEOUT, INSTANCE_STATUS } from "@elementspanel/epanel-plugin-console/types/const";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { computed, onUnmounted, ref } from "vue";
-import { GLOBAL_INSTANCE_NAME } from "@elementspanel/epanel-plugin-console/config/const";
-import { arrayFilter } from "@elementspanel/epanel-plugin-console/tools/array";
-import DesktopManagerBtns from "./DesktopManagerBtns.vue";
 import { VBtn, VCard, VCardActions, VCardText, VDialog, VIcon } from "vuetify/components";
+import DesktopManagerBtns from "./DesktopManagerBtns.vue";
 
 const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
 

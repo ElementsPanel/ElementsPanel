@@ -284,7 +284,6 @@ onMounted(async () => {
               :label="t('TXT_CODE_COMMON_SEARCH_BY_USERNAME')"
               prepend-inner-icon="mdi-magnify"
               density="comfortable"
-              variant="solo-filled"
               hide-details
               clearable
               @update:model-value="search"

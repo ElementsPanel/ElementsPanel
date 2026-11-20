@@ -70,7 +70,6 @@ function selectItem(item: TargetSelectionItem, selected: boolean) {
       :disabled="disabled"
       prepend-inner-icon="mdi-magnify"
       density="compact"
-      variant="solo-filled"
       hide-details
       clearable
       flat

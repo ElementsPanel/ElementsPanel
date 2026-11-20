@@ -32,7 +32,7 @@ export const vuetify = createVuetify({
     VSelect: { flat: true, rounded: "xl" },
     VSwitch: { color: "primary", inset: true, hideDetails: true },
     VTextarea: { flat: true, rounded: "xl" },
-    VTextField: { flat: true, rounded: "xl" }
+    VTextField: { flat: true, rounded: "xl", variant: "solo-filled" }
   },
   icons: {
     defaultSet: "mdi",

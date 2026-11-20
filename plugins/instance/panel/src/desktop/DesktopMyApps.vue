@@ -232,7 +232,7 @@ onUnmounted(() => {
             </div>
 
             <div class="ma-toolbar__right">
-                <VTextField v-model="searchText" class="ma-search__input" density="comfortable" variant="solo-filled"
+                <VTextField v-model="searchText" class="ma-search__input" density="comfortable"
                     hide-details clearable :label="t('TXT_CODE_DESKTOP_IM_SEARCH')"
                     prepend-inner-icon="mdi-magnify" @update:model-value="searchText = $event ?? ''" />
 

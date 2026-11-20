@@ -350,7 +350,6 @@ async function createInstance() {
           persistent-hint
           :placeholder="t('TXT_CODE_COMMON_FOR_EXAMPLE_MY_FIRST_SERVER')"
           :rules="[requiredRule]"
-          variant="solo"
           density="compact"
           hide-details="auto"
         />
@@ -395,7 +394,6 @@ async function createInstance() {
       persistent-hint
       placeholder="java"
       :rules="[javaPathRule]"
-      variant="solo"
       density="compact"
       hide-details="auto"
       class="mt-3"
@@ -417,7 +415,6 @@ async function createInstance() {
           :label="t('TXT_CODE_COMMON_HOST_WORKING_DIRECTORY')"
           :hint="t('TXT_CODE_COMMON_OPTIONAL_MANAGED_BY_PANEL_BY_DEFAULT_IF_PROVIDED_REQUIRE_ABSOLUTE_PATH_E_G_C_SERVERS_MY')"
           persistent-hint
-          variant="solo"
           density="compact"
           hide-details="auto"
       /></VCol>
@@ -427,7 +424,6 @@ async function createInstance() {
           :label="t('TXT_CODE_COMMON_WORKING_DIRECTORY_IN_CONTAINER')"
           :hint="t('TXT_CODE_COMMON_MOUNT_HOST_INSTANCE_DIRECTORY_TO_CONTAINER_FOR_DATA_PERSISTENCE')"
           persistent-hint
-          variant="solo"
           density="compact"
           hide-details="auto"
       /></VCol>
@@ -438,7 +434,6 @@ async function createInstance() {
       :label="t('TXT_CODE_COMMON_HOST_WORKING_DIRECTORY')"
       :hint="t('TXT_CODE_COMMON_OPTIONAL_MANAGED_BY_PANEL_BY_DEFAULT_IF_PROVIDED_REQUIRE_ABSOLUTE_PATH_E_G_C_SERVERS_MY')"
       persistent-hint
-      variant="solo"
       density="compact"
       hide-details="auto"
       class="mt-3"
@@ -471,7 +466,6 @@ async function createInstance() {
       :hint="t('TXT_CODE_COMMON_RUNS_WHEN_STOPPING_THE_INSTANCE_C_SENDS_CTRL_C')"
       persistent-hint
       :rules="[requiredRule]"
-      variant="solo"
       density="compact"
       hide-details="auto"
       class="mt-3"

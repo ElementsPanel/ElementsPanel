@@ -113,7 +113,6 @@ defineExpose({ openDialog });
               ref="inputRef"
               v-model="state.inputValue"
               class="tag-input"
-              variant="solo"
               density="compact"
               hide-details
               rounded="xl"

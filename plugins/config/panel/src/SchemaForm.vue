@@ -280,7 +280,6 @@ const open = (field: SettingField) => {
           <VTextField
             :model-value="String(values[field.key!] ?? '')"
             :placeholder="field.placeholder || t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')"
-            variant="solo-filled"
             density="comfortable"
             hide-details
             clearable
@@ -332,7 +331,6 @@ const open = (field: SettingField) => {
           :model-value="String(values[field.key!] ?? '')"
           class="setting-control setting-control-medium"
           :placeholder="field.placeholder || t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')"
-          variant="solo-filled"
           density="comfortable"
           hide-details
           @update:model-value="set(field, $event)"
@@ -344,7 +342,6 @@ const open = (field: SettingField) => {
           type="password"
           autocomplete="new-password"
           :placeholder="field.placeholder || t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')"
-          variant="solo-filled"
           density="comfortable"
           hide-details
           @update:model-value="set(field, $event)"
@@ -376,7 +373,6 @@ const open = (field: SettingField) => {
           :min="field.min"
           :max="field.max"
           :suffix="field.unit"
-          variant="solo-filled"
           density="comfortable"
           hide-details
           @update:model-value="setNumber(field, $event)"

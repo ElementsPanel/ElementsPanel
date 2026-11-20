@@ -281,7 +281,7 @@ onMounted(async () => {
       @close="dialogOpen = false"
     >
         <label class="ds-form-label">{{ t('TXT_CODE_SCHEDULE_NEW_TASK_NAME') }}</label>
-        <VTextField v-model="formTask.name" :disabled="isEditing" variant="solo" density="compact" hide-details
+        <VTextField v-model="formTask.name" :disabled="isEditing" density="compact" hide-details
             :placeholder="t('TXT_CODE_COMMON_REQUIRED_AND_MUST_BE_UNIQUE')" />
 
         <label class="ds-form-label">{{ t('TXT_CODE_COMMON_TASK_TYPE') }}</label>
@@ -293,32 +293,32 @@ onMounted(async () => {
         <template v-if="formTask.type === ScheduleCreateType.INTERVAL">
             <label class="ds-form-label">{{ t('TXT_CODE_COMMON_TRIGGER_TIME') }}</label>
             <div class="ds-cycle-grid">
-                <VTextField v-model="formTask.cycle[2]" :label="t('TXT_CODE_TIME_HOUR_UNIT')" variant="solo" density="compact" hide-details />
-                <VTextField v-model="formTask.cycle[1]" :label="t('TXT_CODE_TIME_MINUTE_UNIT')" variant="solo" density="compact" hide-details />
-                <VTextField v-model="formTask.cycle[0]" :label="t('TXT_CODE_COMMON_SEC')" variant="solo" density="compact" hide-details />
+                <VTextField v-model="formTask.cycle[2]" :label="t('TXT_CODE_TIME_HOUR_UNIT')" density="compact" hide-details />
+                <VTextField v-model="formTask.cycle[1]" :label="t('TXT_CODE_TIME_MINUTE_UNIT')" density="compact" hide-details />
+                <VTextField v-model="formTask.cycle[0]" :label="t('TXT_CODE_COMMON_SEC')" density="compact" hide-details />
             </div>
             <label class="ds-form-label">{{ t('TXT_CODE_COMMON_EXECUTION_COUNT') }}</label>
-            <VTextField v-model.number="formTask.count" type="number" variant="solo" density="compact" hide-details
+            <VTextField v-model.number="formTask.count" type="number" density="compact" hide-details
                 :placeholder="t('TXT_CODE_COMMON_LEAVE_BLANK_FOR_UNLIMITED')" />
         </template>
 
         <template v-if="formTask.type === ScheduleCreateType.CYCLE">
             <div class="ds-form-group">
                 <label class="ds-form-label">{{ t('TXT_CODE_COMMON_TRIGGER_TIME') }}</label>
-                <VTextField :model-value="formTask.objTime?.format('HH:mm:ss')" type="time" variant="solo" density="compact" hide-details
+                <VTextField :model-value="formTask.objTime?.format('HH:mm:ss')" type="time" density="compact" hide-details
                     @update:model-value="value => formTask.objTime = dayjs(value, 'HH:mm:ss')" />
             </div>
             <label class="ds-form-label">{{ t('TXT_CODE_COMMON_EVERY_WEEK') }}</label>
             <div class="ds-week-grid"><VCheckbox v-for="week in weeks" :key="week.value" v-model="formTask.weekend" :value="week.value" :label="week.label" hide-details density="compact" /></div>
             <label class="ds-form-label">{{ t('TXT_CODE_COMMON_EXECUTION_COUNT') }}</label>
-            <VTextField v-model.number="formTask.count" type="number" variant="solo" density="compact" hide-details
+            <VTextField v-model.number="formTask.count" type="number" density="compact" hide-details
                 :placeholder="t('TXT_CODE_COMMON_LEAVE_BLANK_FOR_UNLIMITED')" />
         </template>
 
         <template v-if="formTask.type === ScheduleCreateType.SPECIFY">
             <div class="ds-form-group">
                 <label class="ds-form-label">{{ t('TXT_CODE_COMMON_PLEASE_SELECT_A_DATE_AND_TIME') }}</label>
-                <VTextField :model-value="formTask.objTime?.format('YYYY-MM-DDTHH:mm')" type="datetime-local" variant="solo" density="compact" hide-details
+                <VTextField :model-value="formTask.objTime?.format('YYYY-MM-DDTHH:mm')" type="datetime-local" density="compact" hide-details
                     @update:model-value="value => formTask.objTime = dayjs(value)" />
             </div>
         </template>
@@ -337,7 +337,7 @@ onMounted(async () => {
                         @update:model-value="action.payload = ''">
                       <template #no-data><Empty :icon="false" compact /></template>
                     </VSelect>
-                    <VTextField v-model="action.payload" variant="solo" density="compact" hide-details
+                    <VTextField v-model="action.payload" density="compact" hide-details
                         :placeholder="getInputPlaceholder(action) || t('TXT_CODE_COMMON_UNAVAILABLE')"
                         :disabled="!getInputPlaceholder(action)" />
                     <VBtn icon size="small" variant="text" color="error" @click="delAction(index)">

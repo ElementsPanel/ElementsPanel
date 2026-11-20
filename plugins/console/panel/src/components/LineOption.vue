@@ -71,7 +71,7 @@ onMounted(() => {
             <VCol cols="12" :md="card ? 12 : 6">
               <div v-if="$slots.optionInput"><slot name="optionInput"></slot></div>
               <div v-else class="line-option-control">
-                <VTextField v-if="type == CONTROL.INPUT" v-model="computedValue" variant="solo" density="compact" hide-details />
+                <VTextField v-if="type == CONTROL.INPUT" v-model="computedValue" density="compact" hide-details />
                 <VSelect v-else v-model="computedValue" :items="[{ title: t('TXT_CODE_COMMON_YES'), value: true }, { title: t('TXT_CODE_COMMON_NO'), value: false }]" variant="solo" density="compact" hide-details>
                   <template #no-data><Empty :icon="false" compact /></template>
                 </VSelect>

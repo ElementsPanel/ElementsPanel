@@ -151,7 +151,6 @@ defineExpose({ prepare });
       placeholder="java"
       :rules="[pathRule]"
       :disabled="disabled || preparing"
-      variant="solo"
       density="compact"
       hide-details="auto"
     />

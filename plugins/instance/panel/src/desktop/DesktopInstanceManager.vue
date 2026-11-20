@@ -607,7 +607,7 @@ onUnmounted(() => {
                     </VBtn>
                 </div>
 
-                <VTextField v-model="searchText" class="dim-search__input" density="comfortable" variant="solo-filled"
+                <VTextField v-model="searchText" class="dim-search__input" density="comfortable"
                     hide-details clearable :label="t('TXT_CODE_DESKTOP_IM_SEARCH')"
                     prepend-inner-icon="mdi-magnify" @update:model-value="searchText = $event ?? ''" />
 
@@ -759,7 +759,7 @@ onUnmounted(() => {
                   <VIcon icon="mdi-close" class="dim-tag-editor__remove" @click="removeInstanceTag(tag)"  />
               </span>
               <VTextField v-if="tagDialog.newTagVisible" ref="tagInputRef" v-model="tagDialog.newTagValue"
-                  density="compact" variant="solo" hide-details class="dim-tag-editor__input"
+                  density="compact" hide-details class="dim-tag-editor__input"
                   @blur="confirmNewTag" @keyup.enter="confirmNewTag" />
               <VBtn v-else class="dim-tag-editor__add" variant="text" @click="showNewTagInput">
                   <VIcon icon="mdi-plus"  /> {{ t("TXT_CODE_COMMON_NEW_TAG") }}

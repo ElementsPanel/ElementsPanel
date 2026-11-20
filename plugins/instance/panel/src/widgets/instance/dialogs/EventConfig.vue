@@ -94,7 +94,6 @@ defineExpose({
           type="number"
           class="event-config-number"
           hide-details
-          variant="solo-filled"
         />
       </div>
 

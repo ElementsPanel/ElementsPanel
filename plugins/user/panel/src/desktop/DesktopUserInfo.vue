@@ -134,8 +134,8 @@ const disable2FACode = async () => {
                 </VBtn>
             </div>
             <div v-else class="password-form">
-                <VTextField v-model="formState.password1" type="password" variant="solo" hide-details :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_NEW_PASSWORD')" />
-                <VTextField v-model="formState.password2" type="password" variant="solo" hide-details :placeholder="t('TXT_CODE_COMMON_PLEASE_RE_ENTER_THE_NEW_PASSWORD')" />
+                <VTextField v-model="formState.password1" type="password" hide-details :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_NEW_PASSWORD')" />
+                <VTextField v-model="formState.password2" type="password" hide-details :placeholder="t('TXT_CODE_COMMON_PLEASE_RE_ENTER_THE_NEW_PASSWORD')" />
                 <div class="form-actions">
                     <VBtn variant="text" @click="formState.resetPassword = false">{{ t("TXT_CODE_COMMON_DISCARD") }}</VBtn>
                     <VBtn color="primary" variant="text" :loading="updatePasswordLoading" @click="handleChangePassword">
@@ -165,7 +165,7 @@ const disable2FACode = async () => {
                     <img :src="formState.qrcode" :alt="t('TXT_CODE_UI_2_FA_QR_CODE')" />
                 </div>
                 <div class="two-fa-form">
-                    <VTextField v-model="formState.TOTPCode" variant="solo" hide-details :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_THE_TWO_FACTOR_AUTHENTICATION_CODE')" />
+                    <VTextField v-model="formState.TOTPCode" hide-details :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_THE_TWO_FACTOR_AUTHENTICATION_CODE')" />
                     <VBtn color="primary" variant="text" :loading="setUserApiKeyLoading" @click="confirm2FACode">
                         {{ t("TXT_CODE_COMMON_I_HAVE_SCANNED") }}
                     </VBtn>

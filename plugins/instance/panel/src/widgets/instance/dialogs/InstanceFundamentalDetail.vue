@@ -65,14 +65,14 @@ defineExpose({ openDialog });
     <VForm v-if="options" ref="formRef" validate-on="input lazy" class="dialog-overflow-container" @submit.prevent="submit">
       <p class="text-medium-emphasis">{{ t("TXT_CODE_COMMON_NORMAL_USERS_CAN_ONLY_MODIFY_PART_OF_THE_SETTINGS") }}</p>
       <VRow>
-        <VCol cols="12" lg="6"><VTextField v-model="options.config.nickname" :label="t('TXT_CODE_COMMON_INSTANCE_NAME')" disabled variant="solo-filled" hide-details /></VCol>
-        <VCol cols="12" lg="6"><VTextField :model-value="INSTANCE_TYPE_TRANSLATION[options.config.type]" :label="t('TXT_CODE_COMMON_INSTANCE_TYPE')" disabled variant="solo-filled" hide-details /></VCol>
-        <VCol cols="12" lg="6"><VTextField :model-value="options.dayjsEndTime ? dayjs(options.dayjsEndTime).format('YYYY-MM-DD HH:mm:ss') : ''" :label="t('TXT_CODE_COMMON_EXPIRE')" disabled variant="solo-filled" hide-details /></VCol>
+        <VCol cols="12" lg="6"><VTextField v-model="options.config.nickname" :label="t('TXT_CODE_COMMON_INSTANCE_NAME')" disabled hide-details /></VCol>
+        <VCol cols="12" lg="6"><VTextField :model-value="INSTANCE_TYPE_TRANSLATION[options.config.type]" :label="t('TXT_CODE_COMMON_INSTANCE_TYPE')" disabled hide-details /></VCol>
+        <VCol cols="12" lg="6"><VTextField :model-value="options.dayjsEndTime ? dayjs(options.dayjsEndTime).format('YYYY-MM-DD HH:mm:ss') : ''" :label="t('TXT_CODE_COMMON_EXPIRE')" disabled hide-details /></VCol>
         <VCol cols="12" lg="6"><VSelect v-model="options.config.fileCode" :items="TERMINAL_CODE" :label="t('TXT_CODE_COMMON_FILE_ENCODING')" hide-details>
           <template #no-data><Empty :icon="false" compact /></template>
         </VSelect></VCol>
         <VCol cols="12"><VTextarea v-model="options.config.startCommand" :rules="isDockerMode ? commandRules : []" :label="t('TXT_CODE_COMMON_STARTUP_COMMAND')" :placeholder="isDockerMode ? t('TXT_CODE_COMMON_LEAVE_EMPTY_TO_USE_DEFAULT_DOCKER_IMAGE_COMMAND') : t('TXT_CODE_COMMON_ENTER_STARTUP_COMMAND')" :disabled="!isDockerMode" rows="5" variant="solo-filled" hide-details="auto" /></VCol>
-        <VCol cols="12" lg="9"><VTextField v-model="options.config.updateCommand" :label="t('TXT_CODE_COMMON_UPDATE_OR_INSTALL_COMMAND')" :hint="updateCommandDesc" persistent-hint :placeholder="UPDATE_CMD_TEMPLATE" :disabled="!isDockerMode" variant="solo-filled" hide-details="auto" /></VCol>
+        <VCol cols="12" lg="9"><VTextField v-model="options.config.updateCommand" :label="t('TXT_CODE_COMMON_UPDATE_OR_INSTALL_COMMAND')" :hint="updateCommandDesc" persistent-hint :placeholder="UPDATE_CMD_TEMPLATE" :disabled="!isDockerMode" hide-details="auto" /></VCol>
         <VCol cols="12" lg="3" class="d-flex align-center"><VBtn variant="tonal" @click="handleEditDockerEnv">{{ t('TXT_CODE_COMMON_EDIT') }}</VBtn></VCol>
       </VRow>
     </VForm>

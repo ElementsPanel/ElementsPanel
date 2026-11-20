@@ -392,7 +392,6 @@ onUnmounted(() => {
             hide-details
             clearable
             density="comfortable"
-            variant="solo-filled"
             @change="handleSearchChange"
             @click:clear="operationForm.name = ''; handleSearchChange()"
           />

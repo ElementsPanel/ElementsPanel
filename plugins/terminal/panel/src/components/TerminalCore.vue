@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import { useXhrPollError } from "@elementspanel/epanel-plugin-console/hooks/useXhrPollError";
-import { t } from "@elementspanel/epanel-plugin-i18n";
 import { logInstanceAutoRestart, logInstanceCrash } from "@elementspanel/epanel-plugin-console/services/apis/operationLog";
 import { getRandomId } from "@elementspanel/epanel-plugin-console/tools/randId";
 import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { onMounted, ref } from "vue";
 import {
   VBtn,
@@ -216,7 +216,6 @@ onMounted(async () => {
         v-model="commandInputValue"
         :placeholder="t('TXT_CODE_COMMON_ENTER_COMMAND_AND_PRESS_ENTER_TO_SEND_USE_ARROW_KEYS_TO_NAVIGATE_HISTORICAL_COMMANDS')"
         prepend-inner-icon="mdi-code-tags"
-        variant="outlined"
         density="comfortable"
         hide-details
         autofocus

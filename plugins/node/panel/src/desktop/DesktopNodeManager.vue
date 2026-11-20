@@ -317,7 +317,6 @@ const reconnectNode = async (node: NodeStatus) => {
           class="dn-search__input"
           :label="t('TXT_CODE_DESKTOP_NODES_SEARCH')"
           prepend-inner-icon="mdi-magnify"
-          variant="solo-filled"
           density="comfortable"
           hide-details
           clearable
@@ -443,7 +442,6 @@ const reconnectNode = async (node: NodeStatus) => {
         <VTextField
           v-model="form.remarks"
           class="dn-form-input"
-          variant="solo"
           density="compact"
           hide-details
           :placeholder="t('TXT_CODE_COMMON_REMARKS')"
@@ -456,7 +454,6 @@ const reconnectNode = async (node: NodeStatus) => {
         <VTextField
           v-model="form.ip"
           class="dn-form-input"
-          variant="solo"
           density="compact"
           hide-details
           :placeholder="t('TXT_CODE_DESKTOP_NODES_IP')"
@@ -470,7 +467,6 @@ const reconnectNode = async (node: NodeStatus) => {
           v-model="form.port"
           type="number"
           class="dn-form-input"
-          variant="solo"
           density="compact"
           hide-details
           :placeholder="t('TXT_CODE_COMMON_PORT')"
@@ -484,7 +480,6 @@ const reconnectNode = async (node: NodeStatus) => {
           v-model="form.apiKey"
           type="password"
           class="dn-form-input"
-          variant="solo"
           density="compact"
           hide-details
           autocomplete="new-password"
@@ -503,7 +498,6 @@ const reconnectNode = async (node: NodeStatus) => {
         <VTextField
           v-model="form.prefix"
           class="dn-form-input"
-          variant="solo"
           density="compact"
           hide-details
           :placeholder="t('TXT_CODE_NODE_CONNECTION_PATH_PREFIX')"

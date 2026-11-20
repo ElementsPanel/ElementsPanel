@@ -400,7 +400,7 @@ const getInstanceStatusLabel = (status: number): string => {
         <div class="du-toolbar">
             <div class="du-search">
                 <VTextField v-model="searchQuery" class="du-search__input" :label="t('TXT_CODE_DESKTOP_USERS_SEARCH')"
-                    prepend-inner-icon="mdi-magnify" variant="solo-filled" density="comfortable" hide-details clearable
+                    prepend-inner-icon="mdi-magnify" density="comfortable" hide-details clearable
                     autocomplete="off" spellcheck="false" @update:model-value="onSearchInput" />
             </div>
             <VBtn class="du-btn du-btn--primary" variant="text" @click="openAddDialog">
@@ -451,7 +451,7 @@ const getInstanceStatusLabel = (status: number): string => {
               <label class="du-form-label">
                   <VIcon icon="mdi-account-outline"  /> {{ t("TXT_CODE_USER_USERNAME") }}
               </label>
-              <VTextField v-model="form.username" class="du-form-input" variant="solo" density="compact" hide-details autocomplete="new-password"
+              <VTextField v-model="form.username" class="du-form-input" density="compact" hide-details autocomplete="new-password"
                   :placeholder="t('TXT_CODE_USER_USERNAME')"
                   :disabled="dialogMode === 'edit'" />
           </div>
@@ -459,7 +459,7 @@ const getInstanceStatusLabel = (status: number): string => {
               <label class="du-form-label">
                   <VIcon icon="mdi-key-outline"  /> {{ t("TXT_CODE_COMMON_PASSWORD") }}
               </label>
-              <VTextField v-model="form.password" type="password" class="du-form-input" variant="solo" density="compact" hide-details
+              <VTextField v-model="form.password" type="password" class="du-form-input" density="compact" hide-details
                   autocomplete="new-password"
                   :placeholder="dialogMode === 'edit' ? t('TXT_CODE_DESKTOP_USERS_PASSWORD_HELP') : ''" />
               <span v-if="dialogMode === 'edit'" class="du-form-hint">
@@ -546,7 +546,7 @@ const getInstanceStatusLabel = (status: number): string => {
                           </VSelect>
                       </div>
                       <div class="du-assign-search">
-                          <VTextField v-model="assignForm.instanceName" class="du-assign-search__input" variant="solo" density="compact" hide-details
+                          <VTextField v-model="assignForm.instanceName" class="du-assign-search__input" density="compact" hide-details
                               prepend-inner-icon="mdi-magnify" :placeholder="t('TXT_CODE_DESKTOP_IM_SEARCH')"
                               @update:model-value="handleAssignSearch" />
                       </div>

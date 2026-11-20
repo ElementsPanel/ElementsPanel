@@ -73,7 +73,7 @@ watch(instanceInfo, (val) => {
                         <p class="devent-form__hint">
                             {{ t("TXT_CODE_COMMON_DO_NOT_AUTOMATICALLY_RESTART_IF_THE_AUTO_RESTART_COUNT_IS_REACHED_SET_TO_1_TO_DISABLE") }}
                         </p>
-                        <VTextField v-model="options.config.eventTask.autoRestartMaxTimes" type="number" width="220" variant="solo" density="compact" hide-details />
+                        <VTextField v-model="options.config.eventTask.autoRestartMaxTimes" type="number" width="220" density="compact" hide-details />
                     </section>
                 </template>
 

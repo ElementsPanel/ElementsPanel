@@ -85,7 +85,7 @@ watch(instanceInfo, (val) => {
           <div class="dterm-field">
             <div class="dterm-field__title">{{ t("TXT_CODE_COMMON_INSTANCE_SHUTDOWN_COMMAND") }}</div>
             <div class="dterm-field__hint">{{ t("TXT_CODE_COMMON_RUNS_WHEN_STOPPING_THE_INSTANCE_C_SENDS_CTRL_C") }}</div>
-            <VTextField v-model="options.config.stopCommand" variant="solo" density="compact" hide-details />
+            <VTextField v-model="options.config.stopCommand" density="compact" hide-details />
           </div>
           <div class="dterm-field">
             <div class="dterm-field__title">{{ t("TXT_CODE_COMMON_INPUT_AND_OUTPUT_ENCODING") }}</div>

@@ -53,7 +53,7 @@ const openConsole = (node: NodeStatus) => {
         <div class="dts-toolbar">
             <div class="dts-search">
                 <div class="dts-search-input-wrap">
-                    <VTextField v-model="searchQuery" class="dts-search-input" variant="solo-filled" density="comfortable"
+                    <VTextField v-model="searchQuery" class="dts-search-input" density="comfortable"
                         hide-details clearable prepend-inner-icon="mdi-magnify"
                         :label="t('TXT_CODE_COMMON_SEARCH_BY_DAEMON_NAME')" />
                 </div>

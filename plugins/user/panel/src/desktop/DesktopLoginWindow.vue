@@ -154,15 +154,15 @@ const handleNext = async () => {
                 <form class="desktop-login-form" @submit.prevent="handleLogin">
                     <div v-if="!is2Fa" class="desktop-login-fields-group">
                         <VTextField v-model="formData.username" type="text" :placeholder="t('TXT_CODE_LOGIN_ACCOUNT_NAME')"
-                            prepend-inner-icon="mdi-account-outline" autocomplete="username" variant="solo"
+                            prepend-inner-icon="mdi-account-outline" autocomplete="username"
                             hide-details :disabled="loginStep === 1" />
                         <VTextField v-model="formData.password" type="password" :placeholder="t('TXT_CODE_COMMON_PASSWORD')"
-                            prepend-inner-icon="mdi-lock-outline" autocomplete="current-password" variant="solo"
+                            prepend-inner-icon="mdi-lock-outline" autocomplete="current-password"
                             hide-details @keydown.enter="handleLogin" :disabled="loginStep === 1" />
                     </div>
                     <div v-else>
                         <VTextField v-model="formData.code" type="text" :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_THE_TWO_FACTOR_AUTHENTICATION_CODE')"
-                            prepend-inner-icon="mdi-lock-outline" autocomplete="off" variant="solo"
+                            prepend-inner-icon="mdi-lock-outline" autocomplete="off"
                             hide-details @keydown.enter="handleLogin" :disabled="loginStep === 1" />
                     </div>
                     <VBtn type="submit" class="desktop-login-btn" block variant="flat"

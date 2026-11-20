@@ -2,7 +2,7 @@
   <div>
     <AppDialog v-model:visible="state.inputDialog.show" :title="state.inputDialog.title" :width="400" @ok="handleOk" @cancel="handleCancel">
       <div class="dialog-input-container">
-        <VTextField v-model="inputValue" :placeholder="state.inputDialog.title" variant="solo" density="compact" hide-details />
+        <VTextField v-model="inputValue" :placeholder="state.inputDialog.title" density="compact" hide-details />
       </div>
     </AppDialog>
   </div>

@@ -279,9 +279,9 @@ onUnmounted(() => {
           @close="cancelAddJava"
         >
           <VTextField v-model="addJavaDialog.data.name" :label="t('TXT_CODE_COMMON_JAVA_NAME')"
-              :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')" variant="solo" density="compact" hide-details class="mb-4" />
+              :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')" density="compact" hide-details class="mb-4" />
           <VTextField v-model="addJavaDialog.data.path" :label="t('TXT_CODE_COMMON_JAVA_PATH')"
-              :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')" variant="solo" density="compact" hide-details />
+              :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')" density="compact" hide-details />
           <template #footer>
             <VBtn class="djava-btn djava-btn--default" variant="text" @click="cancelAddJava">
                 {{ t("TXT_CODE_COMMON_CANCEL") }}

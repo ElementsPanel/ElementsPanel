@@ -340,7 +340,6 @@ onMounted(async () => {
               hide-details
               clearable
               density="comfortable"
-              variant="solo-filled"
               @keyup.enter="handleQueryInstance"
               @update:model-value="operationForm.instanceName = $event ?? ''; handleQueryInstance()"
             />

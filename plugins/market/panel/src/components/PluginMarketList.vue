@@ -80,7 +80,6 @@ defineExpose({ updateInstalled });
             hide-details
             clearable
             density="comfortable"
-            variant="solo-filled"
           />
         </template>
         <template #actions>

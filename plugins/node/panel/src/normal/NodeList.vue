@@ -65,7 +65,6 @@ const handleOpenDetailDialog = async () => {
               :label="t('TXT_CODE_COMMON_SEARCH_BY_DAEMON_NAME')"
               class="node-search-field"
               density="comfortable"
-              variant="solo-filled"
               hide-details
               clearable
               prepend-inner-icon="mdi-magnify"

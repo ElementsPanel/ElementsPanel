@@ -97,6 +97,6 @@ const selectImage = (image: unknown) => {
   </template>
 
   <template v-else>
-    <VTextField :model-value="modelValue" :id="id" :rules="rules" :placeholder="t('TXT_CODE_COMMON_REQUIRED_E_G_ECLIPSE_TEMURIN_24')" variant="solo-filled" hide-details="auto" @update:model-value="(v) => emit('update:modelValue', v)" />
+    <VTextField :model-value="modelValue" :id="id" :rules="rules" :placeholder="t('TXT_CODE_COMMON_REQUIRED_E_G_ECLIPSE_TEMURIN_24')" hide-details="auto" @update:model-value="(v) => emit('update:modelValue', v)" />
   </template>
 </template>
