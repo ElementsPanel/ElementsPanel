@@ -159,7 +159,7 @@ test("workspace wizard follows the system language and retries invalid or existi
       },
       async select(config) {
         assert.equal(config.title, "类型");
-        assert.match(config.options[2].label, /双端/);
+        assert.equal(config.options[2].label, "panel + daemon");
         assert.match(config.hint, /回车/);
         return "both";
       }

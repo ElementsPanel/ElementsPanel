@@ -525,7 +525,7 @@ for (const [mode, choice] of [
     for (const side of ["panel", "daemon"]) {
       const selected = mode === "full" || mode === side;
       assert.equal(
-        prompt.questions.some((question) => question.startsWith(`${side} port`)),
+        prompt.questions.some((question) => question.startsWith(`${side} listening port`)),
         selected
       );
       assert.equal(fs.existsSync(path.join(directory, side)), selected);
@@ -600,13 +600,13 @@ test("initializer menu keeps concise labels and reports each validation error on
     },
     async select(config) {
       titles.push(config.title);
-      if (config.title === "Services") {
+      if (config.title === "Installation mode") {
         assert.deepEqual(config.options.map(item => item.label), [
           "panel + daemon", "panel", "daemon"
         ]);
         return "full";
       }
-      assert.equal(config.title, "Install dependencies");
+      assert.equal(config.title, "Install dependencies?");
       assert.deepEqual(config.options.map(item => item.label), ["Yes", "No"]);
       return false;
     }
@@ -616,8 +616,9 @@ test("initializer menu keeps concise labels and reports each validation error on
   assert.equal(options.daemonPort, 31002);
   assert.equal(options.install, false);
   assert.deepEqual(titles, [
-    "Directory", "Directory", "Services", "panel port", "panel port",
-    "daemon port", "daemon port", "Install dependencies"
+    "Installation directory", "Installation directory", "Installation mode",
+    "panel listening port", "panel listening port", "daemon listening port",
+    "daemon listening port", "Install dependencies?"
   ]);
   assert.deepEqual(marks.map(([status]) => status), [
     "error", "done", "error", "done", "error", "done"
@@ -657,11 +658,11 @@ test("initializer wizard follows the system locale and translates Chinese prompt
   const options = await initializer.promptOptions(initializer.parseArgs([]), prompt);
   assert.equal(options.language, "zh");
   assert.equal(options.install, false);
-  assert.match(prompt.questions[0], /目录/);
-  assert.ok(prompt.questions.some((question) => question.startsWith("服务")));
-  assert.ok(prompt.questions.some((question) => question.startsWith("panel 端口")));
-  assert.ok(prompt.questions.some((question) => question.startsWith("daemon 端口")));
-  assert.ok(prompt.questions.some((question) => question.startsWith("安装依赖")));
+  assert.match(prompt.questions[0], /安装目录/);
+  assert.ok(prompt.questions.some((question) => question.startsWith("安装内容")));
+  assert.ok(prompt.questions.some((question) => question.startsWith("panel 监听端口")));
+  assert.ok(prompt.questions.some((question) => question.startsWith("daemon 监听端口")));
+  assert.ok(prompt.questions.some((question) => question.startsWith("是否安装依赖")));
   assert.equal(errors.mock.callCount(), 5);
   for (const [index, pattern] of [/目录非空/, /请选择/, /整数/, /不能相同/, /请输入/].entries())
     assert.match(errors.mock.calls[index].arguments[0], pattern);
@@ -685,6 +686,7 @@ test("initializer wizard follows the system locale and translates Chinese prompt
   ]).closed;
   assert.equal(result.code, 0, result.output);
   assert.match(result.output, /已初始化项目/);
+  assert.match(result.output, /启动命令：/);
   assert.doesNotMatch(result.output, /如需启动，请执行：/);
   assert.match(result.output, /\n  npm install\n  npm start/);
   assert.equal(

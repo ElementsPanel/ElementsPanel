@@ -541,7 +541,7 @@ function printNextSteps(result, installed, language) {
       directory: result.directory
     })}`
   );
-  console.log();
+  console.log(`\n${t("TXT_CODE_INIT_NEXT_STEPS")}`);
   if (result.directory !== path.resolve(process.cwd()))
     console.log(`  cd ${quoteDirectory(result.directory)}`);
   if (!installed) console.log("  npm install");
