@@ -4,7 +4,7 @@ import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToo
 import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { VBtn, VCol, VContainer, VPagination, VRow, VSelect, VTextField } from "vuetify/components";
 import { useRemoteNode } from "../hooks/useRemoteNode";
 import NodeDetailDialog from "./node/NodeDetailDialog.vue";
@@ -24,14 +24,18 @@ const {
   refresh: refreshOverviewInfo
 } = useRemoteNode();
 
+const initialLoading = computed(() => !response.value && refreshLoading.value);
+const refreshing = ref(false);
+
 const refresh = async () => {
+  if (refreshing.value) return;
+  refreshing.value = true;
   try {
-    refreshLoading.value = true;
-    await refreshOverviewInfo();
+    await refreshOverviewInfo(true);
   } catch (error: any) {
     reportErrorMsg(error.message);
   } finally {
-    refreshLoading.value = false;
+    refreshing.value = false;
   }
 };
 
@@ -75,8 +79,8 @@ const handleOpenDetailDialog = async () => {
         </template>
         <template #actions>
           <VBtn
-            :disabled="refreshLoading"
-            :loading="refreshLoading"
+            :disabled="initialLoading"
+            :loading="initialLoading"
             variant="text"
             @click="refresh"
           >
@@ -105,12 +109,12 @@ const handleOpenDetailDialog = async () => {
                 :length="Math.max(1, Math.ceil(operationForm.total / operationForm.pageSize))"
                 density="compact"
                 :total-visible="isPhone ? 1 : 5"
-                :disabled="refreshLoading"
+                :disabled="initialLoading"
               />
               <VSelect
                 v-model="operationForm.pageSize"
                 :items="[8, 16, 24, 48]"
-                :disabled="refreshLoading"
+                :disabled="initialLoading"
                 class="page-size-select"
                 hide-details
               >
@@ -125,7 +129,7 @@ const handleOpenDetailDialog = async () => {
       </VRow>
 
       <Empty
-        v-if="response && !remotes.length && !refreshLoading"
+        v-if="response && !remotes.length && !initialLoading"
         icon="mdi-server-network-outline"
         :title="t('TXT_CODE_NODE_LIST_EMPTY')"
         :description="t('TXT_CODE_NO_DATA')"

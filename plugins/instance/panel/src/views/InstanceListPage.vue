@@ -424,10 +424,11 @@ onMounted(async () => {
       </VRow>
 
       <div v-if="tagTips?.length" class="tag-row">
-        <VChip v-if="selectedTags.length" color="error" variant="tonal" prepend-icon="mdi-filter-remove"
+        <VChip v-if="selectedTags.length" color="error" variant="tonal" data-app-surface="control" prepend-icon="mdi-filter-remove"
           @click="clearTags">{{
             t("TXT_CODE_COMMON_CLEAR") }}</VChip>
         <VChip v-for="tag in tagTips" :key="tag" :color="isTagSelected(tag) ? 'primary' : undefined"
+          data-app-surface="control"
           :variant="isTagSelected(tag) ? 'tonal' : 'flat'"
           @click="isTagSelected(tag) ? removeTag(tag) : selectTag(tag)">
           {{ tag }}</VChip>
@@ -687,6 +688,7 @@ onMounted(async () => {
 
 .instance-card-status-divider {
   height: 20px;
+  align-self: center;
 }
 
 .instance-card-tags {
