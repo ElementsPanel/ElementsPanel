@@ -162,6 +162,69 @@ const desktopService = vue.shallowReactive({ window: DesktopWindow, confirmation
 const { VSelect, VDialog } = Vuetify.components;
 const flush = async () => { for (let i = 0; i < 8; i++) await vue.nextTick(); };
 
+test("desktop theme preserves component outlines in windows and teleported overlays", async (t) => {
+  const postcss = frontendRequire("postcss");
+  const globalFile = path.join(root, "plugins/console/panel/src/assets/global.scss");
+  const globalStyles = postcss.parse(sass.compileString(fs.readFileSync(globalFile, "utf8"), {
+    loadPaths: [path.dirname(globalFile)], logger: sass.Logger.silent
+  }).css);
+  const common = [];
+  globalStyles.walkRules((rule) => {
+    if (rule.selector.includes(".v-field__outline") || rule.selector === ".selected") common.push(rule.toString());
+  });
+  const style = document.createElement("style");
+  const componentStyles = ["VBtn/VBtn.css", "VCard/VCard.css", "VField/VField.css"].map((file) => {
+    const css = postcss.parse(fs.readFileSync(path.join(root, "core/frontend/node_modules/vuetify/lib/components", file), "utf8"));
+    // jsdom cannot parse cascade layers; these fixtures exercise desktop overrides.
+    css.walkAtRules("layer", (rule) => rule.nodes ? rule.replaceWith(...rule.nodes) : rule.remove());
+    return css.toString();
+  });
+  style.textContent = [
+    ...componentStyles,
+    ...common,
+    ".desktop-test-focus { outline: 2px solid #1677ff; } .desktop-test-border { border: 1px solid #1677ff; }",
+    sass.compileString(fs.readFileSync(path.join(root, "plugins/desktop/panel/src/theme.scss"), "utf8"), {
+      logger: sass.Logger.silent
+    }).css
+  ].join("\n");
+  document.head.appendChild(style);
+  const wasDesktop = document.body.classList.contains("desktop-mode-active");
+  document.body.classList.add("desktop-mode-active");
+  t.after(() => {
+    style.remove();
+    if (!wasDesktop) document.body.classList.remove("desktop-mode-active");
+  });
+
+  for (const theme of ["light", "dark"]) {
+    for (const context of ["desktop-container", "desktop-window", "desktop-dialog", "v-overlay v-dialog", "v-snackbar"]) {
+      await t.test(`${theme}: ${context}`, (t) => {
+        const target = document.createElement("div");
+        target.className = `app-${theme}-theme ${context}`;
+        target.innerHTML = `
+          <button class="v-btn v-btn--variant-outlined">Outlined</button>
+          <div class="v-card v-card--variant-outlined"></div>
+          <input class="desktop-test-focus">
+          <div class="desktop-test-border"></div>
+          <div class="v-card selected"></div>
+          <div class="v-field v-field--variant-outlined"><div class="v-field__outline"><div class="v-field__outline__start"></div></div></div>
+          <div class="v-field v-field--variant-solo"><div class="v-field__outline"></div></div>
+        `;
+        document.body.appendChild(target);
+        t.after(() => target.remove());
+        const read = (selector) => getComputedStyle(target.querySelector(selector));
+        assert.equal(read("button").borderTopStyle, "solid");
+        assert.equal(read(".v-card--variant-outlined").borderTopStyle, "solid");
+        assert.equal(read("input").outline, "2px solid #1677ff");
+        assert.equal(read(".desktop-test-border").borderTopWidth, "1px");
+        assert.match(read(".selected").boxShadow, /^inset /);
+        assert.equal(read(".v-field--variant-outlined .v-field__outline").display, "flex");
+        assert.equal(read(".v-field__outline__start").borderTopStyle, "solid");
+        assert.equal(read(".v-field--variant-solo .v-field__outline").display, "none");
+      });
+    }
+  }
+});
+
 test("plugin configuration marks unsaved fields and nested entries with a left border in both themes", async (t) => {
   const filename = path.join(root, "plugins/config/panel/src/SchemaForm.vue");
   const { descriptor } = parse(fs.readFileSync(filename, "utf8"), { filename });

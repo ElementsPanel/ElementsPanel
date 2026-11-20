@@ -80,22 +80,11 @@
   background: var(--desktop-window-bg) !important;
 }
 
-/* Include windows and teleported children outside the desktop container. */
+/* Flatten desktop chrome without clearing component borders or focus rings. */
 .desktop-container,
-.desktop-container *,
-.desktop-container *::before,
-.desktop-container *::after,
 .desktop-dialog,
-.desktop-dialog *,
-.desktop-dialog *::before,
-.desktop-dialog *::after,
-.desktop-window,
-.desktop-window *,
-.desktop-window *::before,
-.desktop-window *::after {
+.desktop-window {
   border: 0 !important;
-  outline: 0 !important;
-  border-color: transparent !important;
 }
 
 /* Keep timeline dots even though they share the divider class with separator lines. */
@@ -129,25 +118,22 @@
   width: 0 !important;
 }
 
-.desktop-container .v-btn,
-.desktop-container .v-card,
-.desktop-container .v-field,
-.desktop-container .v-input,
-.desktop-container .v-list {
+/* Keep ordinary surfaces flat while preserving selection outlines. */
+.desktop-container :is(.v-btn, .v-card, .v-field, .v-input, .v-list):not(.selected) {
+  box-shadow: none;
+}
+
+/* Flatten overlay wrappers while preserving their component styles. */
+.desktop-mode-active .v-overlay:not(.v-menu),
+.desktop-mode-active .v-snackbar {
+  border: 0 !important;
   box-shadow: none !important;
 }
 
-/* Apply desktop styling to teleported dialogs and toasts; menus use shared console styles. */
-.desktop-mode-active .v-overlay:not(.v-menu),
-.desktop-mode-active .v-overlay:not(.v-menu) *,
-.desktop-mode-active .v-overlay:not(.v-menu) *::before,
-.desktop-mode-active .v-overlay:not(.v-menu) *::after,
-.desktop-mode-active .v-snackbar,
-.desktop-mode-active .v-snackbar * {
-  border: 0 !important;
-  outline: 0 !important;
-  border-color: transparent !important;
-  box-shadow: none !important;
+/* Respect explicit outlined fields despite the console's flat-field defaults. */
+:is(.desktop-mode-active, .desktop-container, .desktop-window, .desktop-dialog, .desktop-login-window)
+  .v-field--variant-outlined > .v-field__outline {
+  display: flex !important;
 }
 
 /* Paint field controls in teleported dialogs without painting labels or validation messages. */
