@@ -11,28 +11,51 @@ export const vuetify = createVuetify({
     VDialog: {
       scrollable: true
     },
+    VDataTableFooter: {
+      VSelect: { flat: true, rounded: "xl", variant: "solo-filled" }
+    },
     VList: {
       VDivider: { class: "my-6" }
     },
     VCard: {
       rounded: "xl"
     },
-    VAlert: { rounded: "xl" },
-    VAutocomplete: { flat: true, rounded: "xl", variant: "solo-filled" },
-    VBtn: { flat: true, rounded: "xl" },
-    VColorPicker: { rounded: "xl" },
-    VCombobox: { flat: true, rounded: "xl" },
+    VAlert: {
+      rounded: "xl"
+    },
+    VAutocomplete: {
+      flat: true, rounded: "xl", variant: "solo-filled"
+    },
+    VBtn: {
+      flat: true, rounded: "xl"
+    },
+    VColorPicker: {
+      rounded: "xl"
+    },
+    VCombobox: {
+      flat: true, rounded: "xl"
+    },
     VField: {
       flat: true,
       rounded: "xl",
       color: "var(--text-color)",
       baseColor: "var(--text-color)"
     },
-    VFileInput: { flat: true, rounded: "xl", variant: "solo-filled" },
-    VSelect: { flat: true, rounded: "xl", variant: "solo-filled" },
-    VSwitch: { color: "primary", inset: true, hideDetails: true },
-    VTextarea: { flat: true, rounded: "xl", variant: "solo-filled" },
-    VTextField: { flat: true, rounded: "xl", variant: "solo-filled" }
+    VFileInput: {
+      flat: true, rounded: "xl", variant: "solo-filled"
+    },
+    VSelect: {
+      flat: true, rounded: "xl", variant: "solo-filled"
+    },
+    VSwitch: {
+      color: "primary", inset: true, hideDetails: true
+    },
+    VTextarea: {
+      flat: true, rounded: "xl", variant: "solo-filled"
+    },
+    VTextField: {
+      flat: true, rounded: "xl", variant: "solo-filled"
+    }
   },
   icons: {
     defaultSet: "mdi",
