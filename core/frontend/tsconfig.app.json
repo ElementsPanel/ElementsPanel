@@ -16,7 +16,7 @@
     "../../plugins/*/panel/src/backend/**"
   ],
   "compilerOptions": {
-    "composite": true,
+    "composite": false,
     "baseUrl": ".",
     "paths": {
       "@elements-panel/sdk": [
