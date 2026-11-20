@@ -2283,5 +2283,6 @@
   "TXT_CODE_UI_START_MENU": "Меню «Пуск»",
   "TXT_CODE_UI_TIMESTAMP": "Метка времени",
   "TXT_CODE_UI_DOCKER_PLATFORMS": "Платформы Docker",
-  "TXT_CODE_UI_2_FA_QR_CODE": "QR-код для 2FA"
+  "TXT_CODE_UI_2_FA_QR_CODE": "QR-код для 2FA",
+  "TXT_CODE_TERMINAL_CONNECTED_PAGES_HINT": "Количество веб-страниц, подключённых к этому терминалу. Это может повлиять на ширину и высоту вашего терминала."
 }

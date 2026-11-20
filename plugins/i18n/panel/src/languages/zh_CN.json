@@ -2283,5 +2283,6 @@
   "TXT_CODE_UI_START_MENU": "开始菜单",
   "TXT_CODE_UI_TIMESTAMP": "时间戳",
   "TXT_CODE_UI_DOCKER_PLATFORMS": "Docker 平台",
-  "TXT_CODE_UI_2_FA_QR_CODE": "双重验证二维码"
+  "TXT_CODE_UI_2_FA_QR_CODE": "双重验证二维码",
+  "TXT_CODE_TERMINAL_CONNECTED_PAGES_HINT": "已连接到此终端的网页数量，这可能会影响到你的终端宽度和高度"
 }

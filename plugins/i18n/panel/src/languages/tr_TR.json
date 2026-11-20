@@ -2283,5 +2283,6 @@
   "TXT_CODE_UI_START_MENU": "Başlat menüsü",
   "TXT_CODE_UI_TIMESTAMP": "Zaman damgası",
   "TXT_CODE_UI_DOCKER_PLATFORMS": "Docker platformları",
-  "TXT_CODE_UI_2_FA_QR_CODE": "2FA QR kodu"
+  "TXT_CODE_UI_2_FA_QR_CODE": "2FA QR kodu",
+  "TXT_CODE_TERMINAL_CONNECTED_PAGES_HINT": "Bu terminale bağlı web sayfalarının sayısı. Bu, terminalinizin genişliğini ve yüksekliğini etkileyebilir."
 }

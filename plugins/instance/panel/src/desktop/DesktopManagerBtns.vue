@@ -11,7 +11,7 @@ import { computed, ref, watch } from "vue";
 import { arrayFilter } from "@elementspanel/epanel-plugin-console/tools/array";
 import EventConfig from "../widgets/instance/dialogs/EventConfig.vue";
 import RconSettings from "../widgets/instance/dialogs/RconSettings.vue";
-import { VIcon } from "vuetify/components";
+import { VIcon, VTooltip } from "vuetify/components";
 
 const ControlOutlined = "mdi-tune-variant";
 const BuildOutlined = "mdi-hammer-wrench";
@@ -156,15 +156,18 @@ watch(instanceInfo, (cfg, oldCfg) => {
   <div class="dim-mgr-btns">
     <div class="dim-mgr-btns__title">{{ t("TXT_CODE_COMMON_MANAGE_INSTANCE") }}</div>
     <div class="dim-mgr-btns__row">
-      <div
+      <VTooltip
         v-for="btn in btns"
         :key="btn.title"
-        class="dim-mgr-btn"
-        :title="btn.title"
-        @click="btn.click"
+        :text="btn.title"
+        location="top"
       >
-        <VIcon :icon="btn.icon" size="small" />
-      </div>
+        <template #activator="{ props: tooltipProps }">
+          <div v-bind="tooltipProps" class="dim-mgr-btn" @click="btn.click">
+            <VIcon :icon="btn.icon" size="small" />
+          </div>
+        </template>
+      </VTooltip>
     </div>
   </div>
 

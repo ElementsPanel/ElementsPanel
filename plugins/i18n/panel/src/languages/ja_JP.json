@@ -2283,5 +2283,6 @@
   "TXT_CODE_UI_START_MENU": "スタートメニュー",
   "TXT_CODE_UI_TIMESTAMP": "タイムスタンプ",
   "TXT_CODE_UI_DOCKER_PLATFORMS": "Docker プラットフォーム",
-  "TXT_CODE_UI_2_FA_QR_CODE": "2FA 用 QR コード"
+  "TXT_CODE_UI_2_FA_QR_CODE": "2FA 用 QR コード",
+  "TXT_CODE_TERMINAL_CONNECTED_PAGES_HINT": "このターミナルに接続しているウェブページの数です。ターミナルの幅と高さに影響する場合があります。"
 }

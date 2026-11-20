@@ -2283,5 +2283,6 @@
   "TXT_CODE_UI_START_MENU": "Menu Démarrer",
   "TXT_CODE_UI_TIMESTAMP": "Horodatage",
   "TXT_CODE_UI_DOCKER_PLATFORMS": "Plateformes Docker",
-  "TXT_CODE_UI_2_FA_QR_CODE": "Code QR de 2FA"
+  "TXT_CODE_UI_2_FA_QR_CODE": "Code QR de 2FA",
+  "TXT_CODE_TERMINAL_CONNECTED_PAGES_HINT": "Nombre de pages web connectées à ce terminal. Cela peut modifier la largeur et la hauteur de votre terminal."
 }

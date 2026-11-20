@@ -2283,5 +2283,6 @@
   "TXT_CODE_UI_START_MENU": "เมนูเริ่ม",
   "TXT_CODE_UI_TIMESTAMP": "เวลาประทับ",
   "TXT_CODE_UI_DOCKER_PLATFORMS": "แพลตฟอร์ม Docker",
-  "TXT_CODE_UI_2_FA_QR_CODE": "คิวอาร์โค้ด 2FA"
+  "TXT_CODE_UI_2_FA_QR_CODE": "คิวอาร์โค้ด 2FA",
+  "TXT_CODE_TERMINAL_CONNECTED_PAGES_HINT": "จำนวนหน้าเว็บที่เชื่อมต่อกับเทอร์มินัลนี้ ซึ่งอาจส่งผลต่อความกว้างและความสูงของเทอร์มินัลของคุณ"
 }

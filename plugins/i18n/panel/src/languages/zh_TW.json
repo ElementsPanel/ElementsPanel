@@ -2283,5 +2283,6 @@
   "TXT_CODE_UI_START_MENU": "開始選單",
   "TXT_CODE_UI_TIMESTAMP": "時間戳記",
   "TXT_CODE_UI_DOCKER_PLATFORMS": "Docker 平台",
-  "TXT_CODE_UI_2_FA_QR_CODE": "雙重驗證 QR 碼"
+  "TXT_CODE_UI_2_FA_QR_CODE": "雙重驗證 QR 碼",
+  "TXT_CODE_TERMINAL_CONNECTED_PAGES_HINT": "已連線至此終端機的網頁數量，這可能會影響終端機的寬度與高度"
 }

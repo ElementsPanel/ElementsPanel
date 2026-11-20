@@ -2283,5 +2283,6 @@
   "TXT_CODE_UI_START_MENU": "Menu Iniciar",
   "TXT_CODE_UI_TIMESTAMP": "Carimbo de data/hora",
   "TXT_CODE_UI_DOCKER_PLATFORMS": "Plataformas Docker",
-  "TXT_CODE_UI_2_FA_QR_CODE": "Código QR de 2FA"
+  "TXT_CODE_UI_2_FA_QR_CODE": "Código QR de 2FA",
+  "TXT_CODE_TERMINAL_CONNECTED_PAGES_HINT": "Número de páginas da web conectadas a este terminal. Isso pode afetar a largura e a altura do seu terminal."
 }

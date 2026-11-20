@@ -2283,5 +2283,6 @@
   "TXT_CODE_UI_START_MENU": "시작 메뉴",
   "TXT_CODE_UI_TIMESTAMP": "타임스탬프",
   "TXT_CODE_UI_DOCKER_PLATFORMS": "Docker 플랫폼",
-  "TXT_CODE_UI_2_FA_QR_CODE": "2FA QR 코드"
+  "TXT_CODE_UI_2_FA_QR_CODE": "2FA QR 코드",
+  "TXT_CODE_TERMINAL_CONNECTED_PAGES_HINT": "이 터미널에 연결된 웹페이지 수입니다. 터미널의 너비와 높이에 영향을 줄 수 있습니다."
 }

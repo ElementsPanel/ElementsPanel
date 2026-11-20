@@ -16,7 +16,7 @@ import { notifyDesktopError } from "@elementspanel/epanel-plugin-console/tools/d
 import { INSTANCE_CRASH_TIMEOUT, INSTANCE_STATUS } from "@elementspanel/epanel-plugin-console/types/const";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import { computed, onUnmounted, ref } from "vue";
-import { VBtn, VCard, VCardActions, VCardText, VDialog, VIcon } from "vuetify/components";
+import { VBtn, VCard, VCardActions, VCardText, VDialog, VIcon, VTooltip } from "vuetify/components";
 import DesktopManagerBtns from "./DesktopManagerBtns.vue";
 
 const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
@@ -360,9 +360,17 @@ onUnmounted(() => {
                         {{ instanceStatusText }}
                     </span>
                     <span v-if="instanceTypeText" class="dim-instance__type">{{ instanceTypeText }}</span>
-                    <span v-if="instanceInfo?.watcher && instanceInfo?.watcher > 1" class="dim-instance__players">
-                        <VIcon icon="mdi-laptop"  /> {{ instanceInfo?.watcher }}
-                    </span>
+                    <VTooltip
+                        v-if="instanceInfo?.watcher && instanceInfo.watcher > 1"
+                        :text="t('TXT_CODE_TERMINAL_CONNECTED_PAGES_HINT')"
+                        location="bottom"
+                    >
+                        <template #activator="{ props: tooltipProps }">
+                            <span v-bind="tooltipProps" class="dim-instance__players">
+                                <VIcon icon="mdi-laptop" /> {{ instanceInfo?.watcher }}
+                            </span>
+                        </template>
+                    </VTooltip>
                 </div>
             </div>
             <div class="dim-toolbar__right">

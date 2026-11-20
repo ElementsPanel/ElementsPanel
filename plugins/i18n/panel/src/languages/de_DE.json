@@ -2283,5 +2283,6 @@
   "TXT_CODE_UI_START_MENU": "Startmenü",
   "TXT_CODE_UI_TIMESTAMP": "Zeitstempel",
   "TXT_CODE_UI_DOCKER_PLATFORMS": "Docker-Plattformen",
-  "TXT_CODE_UI_2_FA_QR_CODE": "QR-Code für 2FA"
+  "TXT_CODE_UI_2_FA_QR_CODE": "QR-Code für 2FA",
+  "TXT_CODE_TERMINAL_CONNECTED_PAGES_HINT": "Anzahl der mit diesem Terminal verbundenen Webseiten. Dies kann die Breite und Höhe deines Terminals beeinflussen."
 }

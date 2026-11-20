@@ -44,7 +44,8 @@ import {
   VIcon,
   VRow,
   VSpacer,
-  VToolbar
+  VToolbar,
+  VTooltip
 } from "vuetify/components";
 import DockerInfo from "../widgets/instance/dialogs/DockerInfo.vue";
 import EventConfig from "../widgets/instance/dialogs/EventConfig.vue";
@@ -321,8 +322,20 @@ onUnmounted(() => {
           :prepend-icon="isRunning ? 'mdi-check-circle-outline' : 'mdi-information-outline'"
           >{{ instanceStatusText }}</VChip
         >
+        <VTooltip
+          v-if="instanceInfo?.watcher && instanceInfo.watcher > 1"
+          :text="t('TXT_CODE_TERMINAL_CONNECTED_PAGES_HINT')"
+          location="bottom"
+        >
+          <template #activator="{ props: tooltipProps }">
+            <span v-bind="tooltipProps" class="console-watchers">
+              <VIcon icon="mdi-laptop" size="18" />
+              {{ instanceInfo?.watcher }}
+            </span>
+          </template>
+        </VTooltip>
         <VSpacer />
-        <div class="console-actions desktop-actions">
+        <div class="console-actions">
           <VBtn
             v-if="isStopped"
             color="success"
@@ -662,6 +675,15 @@ onUnmounted(() => {
 .console-status {
   margin-inline-start: 12px;
 }
+.console-watchers {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 4px;
+  margin-inline-start: 12px;
+  color: var(--color-gray-7);
+  font-size: 12px;
+}
 .console-actions {
   display: flex;
   align-items: center;
@@ -913,8 +935,31 @@ onUnmounted(() => {
   .instance-console-container {
     padding: 8px 12px 24px;
   }
-  .desktop-actions > .v-btn:not(:first-child) {
+  .console-toolbar :deep(.v-toolbar__content) {
+    height: auto !important;
+    flex-wrap: wrap;
+    row-gap: 12px;
+    padding-block: 8px 12px;
+  }
+  .console-toolbar :deep(.v-spacer) {
     display: none;
+  }
+  .console-title {
+    flex: 1 1 0;
+  }
+  .console-status {
+    flex-shrink: 0;
+  }
+  .console-actions {
+    flex: 0 0 100%;
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+  .console-actions > .v-btn {
+    flex-shrink: 0;
+  }
+  .console-function-card {
+    height: auto !important;
   }
   .info-list .info-list-identifiers {
     grid-template-columns: auto minmax(0, 1fr);
