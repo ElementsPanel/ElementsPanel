@@ -164,21 +164,26 @@ function desktopFixture(t, settings, appearance = { backgroundImage: "/website w
   };
 }
 
-test("taskbar Start icons follow shared and per-theme settings, refresh after saves and restore built-in icons", async (t) => {
-  const f = desktopFixture(t);
-  await settle();
+function taskbarComponent(dark = vue.ref(false)) {
   const Vuetify = from("frontend")("vuetify/dist/vuetify.js");
   const file = "plugins/desktop/panel/src/widgets/desktop/DesktopTaskbar.vue";
   const Taskbar = load(file, {
     "@elementspanel/epanel-plugin-console/config/router": { router: { push() {} } },
     "@elementspanel/epanel-plugin-i18n": { t: key => key },
-    "@elementspanel/epanel-plugin-console/stores/useAppConfigStore": { useAppConfigStore: () => ({ isDarkTheme: f.dark }) },
+    "@elementspanel/epanel-plugin-console/stores/useAppConfigStore": { useAppConfigStore: () => ({ isDarkTheme: dark }) },
     "@elementspanel/epanel-plugin-console/hooks/useThemeSwitch": { useThemeSwitch: () => ({}) },
     "@elementspanel/epanel-plugin-console/components/ActionRipple": {},
     "@elements-panel/sdk": { ctx: { slots: { entries: () => [] } } },
     "../../assets": { desktopIconUrl: "/builtin-dark.svg", desktopIconDarkUrl: "/builtin-light.svg" },
     "vuetify/components": Vuetify.components
   }, compileSfc(file, { inlineTemplate: true })).default;
+  return { Taskbar, Vuetify };
+}
+
+test("taskbar Start icons follow shared and per-theme settings, refresh after saves and restore built-in icons", async (t) => {
+  const f = desktopFixture(t);
+  await settle();
+  const { Taskbar, Vuetify } = taskbarComponent(f.dark);
   const target = document.createElement("div");
   document.body.appendChild(target);
   const app = vue.createApp({ render: () => vue.h(Taskbar, {
@@ -221,6 +226,131 @@ test("taskbar Start icons follow shared and per-theme settings, refresh after sa
   assert.equal(icon(), "/shared-start.png");
   await f.refresh({ ...themed, startButtonIconPerTheme: false, startButtonIcon: "" });
   assert.equal(icon(), "/builtin-dark.svg");
+});
+
+function taskbarDragFixture(t) {
+  const { Taskbar, Vuetify } = taskbarComponent();
+  const windows = vue.ref(["a", "b", "c"].map((id) => ({
+    id, title: id, icon: "mdi-folder", active: id === "b", minimized: id === "c"
+  })));
+  const events = { orders: [], toggles: [], shortcuts: [], unrelatedDrops: 0 };
+  const target = document.createElement("div");
+  document.body.appendChild(target);
+  target.addEventListener("dragover", () => events.unrelatedDrops++);
+  target.addEventListener("drop", () => events.unrelatedDrops++);
+  const app = vue.createApp({ render: () => vue.h(Taskbar, {
+    windows: windows.value, apps: [{ id: "app", label: "App", icon: "mdi-folder" }], username: "test",
+    "onReorder-windows": (ids) => {
+      events.orders.push(ids);
+      windows.value = ids.map((id) => windows.value.find((win) => win.id === id));
+    },
+    "onToggle-window": (id) => { events.toggles.push(id); },
+    "onAdd-shortcut": (...args) => { events.shortcuts.push(args); }
+  }) });
+  app.use(Vuetify.createVuetify());
+  app.mount(target);
+  t.after(() => { app.unmount(); target.remove(); });
+  const data = new Map();
+  const transfer = {
+    types: ["text/plain"], effectAllowed: "", dropEffect: "",
+    setData: (type, value) => data.set(type, value), getData: (type) => data.get(type) || ""
+  };
+  const dispatchDrag = (type, element, clientX = 25) => {
+    const event = new window.Event(type, { bubbles: true, cancelable: true });
+    Object.defineProperties(event, {
+      dataTransfer: { value: transfer }, clientX: { value: clientX }, clientY: { value: 100 }
+    });
+    element.dispatchEvent(event);
+    return event;
+  };
+  const button = (id) => target.querySelector(`[data-window-id="${id}"]`);
+  const drag = (type, id, clientX = 25) => {
+    button(id).getBoundingClientRect = () => ({ left: 0, width: 100, right: 100 });
+    return dispatchDrag(type, button(id).querySelector(".taskbar__window-title"), clientX);
+  };
+  const displayed = () => [...target.querySelectorAll("[data-window-id]")].map((button) => button.dataset.windowId);
+  return { windows, events, target, transfer, button, drag, dispatchDrag, displayed };
+}
+
+test("taskbar windows make room during drag and save inside or outside drops without toggling windows", async (t) => {
+  const f = taskbarDragFixture(t);
+  await vue.nextTick();
+  f.drag("dragstart", "c");
+  assert.equal(f.drag("dragover", "a").defaultPrevented, true);
+  await vue.nextTick();
+  assert.deepEqual(f.displayed(), ["c", "a", "b"]);
+  assert.deepEqual(f.windows.value.map((win) => win.id), ["a", "b", "c"]);
+  assert.deepEqual(f.events.orders, []);
+
+  f.windows.value = f.windows.value.map((win) => ({ ...win, title: `${win.title} live` }));
+  await vue.nextTick();
+  assert.deepEqual(f.displayed(), ["c", "a", "b"]);
+  assert.match(f.button("b").textContent, /b live/);
+  assert.equal(f.button("c").classList.contains("taskbar__window-btn--dragging"), true);
+  f.drag("drop", "a");
+  await vue.nextTick();
+  assert.deepEqual(f.windows.value.map((win) => win.id), ["c", "a", "b"]);
+  assert.equal(f.windows.value.find((win) => win.id === "c").minimized, true);
+  assert.equal(f.button("b").classList.contains("taskbar__window-btn--active"), true);
+
+  f.target.querySelector(".taskbar__start").click();
+  await vue.nextTick();
+  f.drag("dragstart", "c");
+  f.drag("dragover", "b", 75);
+  await vue.nextTick();
+  assert.deepEqual(f.displayed(), ["a", "b", "c"]);
+  f.drag("dragleave", "c");
+  const overlay = f.target.querySelector(".start-menu-overlay");
+  assert.equal(f.dispatchDrag("dragover", overlay).defaultPrevented, true);
+  assert.equal(f.dispatchDrag("drop", overlay).defaultPrevented, true);
+  f.drag("dragend", "c");
+  await vue.nextTick();
+  assert.deepEqual(f.windows.value.map((win) => win.id), ["a", "b", "c"]);
+  assert.deepEqual(f.events.orders, [["c", "a", "b"], ["a", "b", "c"]]);
+  assert.deepEqual(f.events.shortcuts, []);
+  assert.deepEqual(f.events.toggles, []);
+  assert.equal(f.events.unrelatedDrops, 0);
+  f.button("b").click();
+  assert.deepEqual(f.events.toggles, ["b"]);
+});
+
+test("taskbar windows restore cancelled drags, scroll at edges and leave app shortcut dragging working", async (t) => {
+  const f = taskbarDragFixture(t);
+  await vue.nextTick();
+  const row = f.target.querySelector(".taskbar__windows");
+  Object.defineProperties(row, { scrollWidth: { value: 500 }, clientWidth: { value: 100 } });
+  row.getBoundingClientRect = () => ({ left: 0, right: 100 });
+  row.scrollLeft = 50;
+  f.drag("dragstart", "a");
+  f.drag("dragover", "c", 75);
+  assert.equal(row.scrollLeft, 70);
+  await vue.nextTick();
+  assert.deepEqual(f.displayed(), ["b", "c", "a"]);
+  f.drag("dragend", "a");
+  await vue.nextTick();
+  assert.deepEqual(f.displayed(), ["a", "b", "c"]);
+  assert.deepEqual(f.events.orders, []);
+
+  f.drag("dragstart", "c");
+  f.drag("dragover", "a");
+  await vue.nextTick();
+  f.windows.value = f.windows.value.filter((win) => win.id !== "b");
+  await vue.nextTick();
+  for (let attempts = 0; f.button("b") && attempts < 100; attempts++)
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  assert.deepEqual(f.displayed(), ["a", "c"]);
+  assert.equal(f.target.querySelector(".taskbar__window-btn--dragging"), null);
+  assert.equal(f.dispatchDrag("drop", f.target).defaultPrevented, false);
+  assert.deepEqual(f.events.orders, []);
+
+  f.target.querySelector(".taskbar__start").click();
+  await vue.nextTick();
+  f.dispatchDrag("dragstart", f.target.querySelector(".start-menu__app-item"));
+  assert.equal(f.transfer.effectAllowed, "copy");
+  assert.equal(f.transfer.getData("application/x-elements-desktop-app"), "app");
+  f.dispatchDrag("drop", f.target.querySelector(".start-menu-overlay"));
+  assert.deepEqual(f.events.shortcuts, [["app", 25, 100]]);
+  assert.deepEqual(f.events.orders, []);
 });
 
 test("desktop wallpaper follows website and custom theme images, updates after saves and respects overlays", async (t) => {

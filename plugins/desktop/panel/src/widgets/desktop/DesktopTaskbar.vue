@@ -8,7 +8,7 @@ import { ctx } from "@elements-panel/sdk";
 import type { PanelFrontendHeaderAction } from "@elements-panel/sdk";
 import { desktopIconDarkUrl, desktopIconUrl } from "../../assets";
 import { VBadge, VBtn, VIcon, VList, VListItem, VMenu } from "vuetify/components";
-import { computed, onBeforeUnmount, ref, type Component } from "vue";
+import { computed, onBeforeUnmount, ref, watch, type Component } from "vue";
 
 const { isDarkTheme } = useAppConfigStore();
 const { themeIcon, themeTitle, cycleTheme } = useThemeSwitch();
@@ -67,47 +67,105 @@ const emit = defineEmits<{
     (e: "contextmenu-window", event: MouseEvent, id: string): void;
 }>();
 
-const draggedIndex = ref<number | null>(null);
-const dragOverIndex = ref<number | null>(null);
-
-const onDragStart = (index: number, event: DragEvent) => {
-    draggedIndex.value = index;
-    if (event.dataTransfer) {
-        event.dataTransfer.effectAllowed = "move";
-        event.dataTransfer.setData("text/plain", index.toString());
-    }
-};
-
-const onDragOver = (index: number, event: DragEvent) => {
-    event.preventDefault();
-    if (event.dataTransfer) {
-        event.dataTransfer.dropEffect = "move";
-    }
-    if (draggedIndex.value === null || draggedIndex.value === index) return;
-    dragOverIndex.value = index;
-};
-
-const onDrop = (index: number, event: DragEvent) => {
-    event.preventDefault();
-    if (draggedIndex.value === null || draggedIndex.value === index) {
-        draggedIndex.value = null;
-        dragOverIndex.value = null;
-        return;
-    }
-
-    const newWindows = [...props.windows];
-    const [draggedItem] = newWindows.splice(draggedIndex.value, 1);
-    newWindows.splice(index, 0, draggedItem);
-
-    emit("reorder-windows", newWindows.map(w => w.id));
-
-    draggedIndex.value = null;
-    dragOverIndex.value = null;
-};
+const windowsRow = ref<HTMLElement>();
+const draggedId = ref("");
+const previewOrder = ref<string[]>([]);
+const displayedWindows = computed(() => {
+    if (!draggedId.value) return props.windows;
+    const byId = new Map(props.windows.map((win) => [win.id, win]));
+    return previewOrder.value.flatMap((id) => {
+        const win = byId.get(id);
+        return win ? [win] : [];
+    });
+});
 
 const onDragEnd = () => {
-    draggedIndex.value = null;
-    dragOverIndex.value = null;
+    draggedId.value = "";
+    previewOrder.value = [];
+    document.removeEventListener("dragover", handleOutsideDragOver, true);
+    document.removeEventListener("drop", handleOutsideDrop, true);
+};
+
+watch(() => props.windows.map((win) => win.id), (ids, previous) => {
+    if (ids.length !== previous.length || ids.some((id, index) => id !== previous[index])) onDragEnd();
+});
+onBeforeUnmount(onDragEnd);
+
+const savePreview = () => {
+    if (!draggedId.value) return;
+    const ids = [...previewOrder.value];
+    onDragEnd();
+    if (ids.length === props.windows.length && ids.some((id, index) => id !== props.windows[index].id))
+        emit("reorder-windows", ids);
+};
+
+function handleOutsideDragOver(event: DragEvent) {
+    if (!draggedId.value || windowsRow.value?.contains(event.target as Node)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+}
+
+function handleOutsideDrop(event: DragEvent) {
+    if (!draggedId.value || windowsRow.value?.contains(event.target as Node)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    savePreview();
+}
+
+const onDragStart = (id: string, event: DragEvent) => {
+    if (props.windows.length < 2 || !event.dataTransfer) {
+        event.preventDefault();
+        return;
+    }
+    draggedId.value = id;
+    previewOrder.value = props.windows.map((win) => win.id);
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", id);
+    document.addEventListener("dragover", handleOutsideDragOver, true);
+    document.addEventListener("drop", handleOutsideDrop, true);
+};
+
+const updatePreview = (event: DragEvent) => {
+    const button = (event.target as HTMLElement).closest<HTMLElement>(".taskbar__window-btn");
+    const id = button?.dataset.windowId;
+    if (!button || !id || id === draggedId.value) return;
+    const from = previewOrder.value.indexOf(draggedId.value);
+    const to = previewOrder.value.indexOf(id);
+    const bounds = button.getBoundingClientRect();
+    const after = event.clientX >= bounds.left + bounds.width / 2;
+    if (from === -1 || to === -1 || (from < to) !== after) return;
+    const ids = [...previewOrder.value];
+    ids.splice(from, 1);
+    ids.splice(to, 0, draggedId.value);
+    previewOrder.value = ids;
+};
+
+const onDragOver = (event: DragEvent) => {
+    if (!draggedId.value) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+    updatePreview(event);
+
+    const container = windowsRow.value;
+    if (container && container.scrollWidth > container.clientWidth) {
+        const bounds = container.getBoundingClientRect();
+        if (event.clientX < bounds.left + 32) container.scrollLeft -= 20;
+        else if (event.clientX > bounds.right - 32) container.scrollLeft += 20;
+    }
+};
+
+const onDragLeave = (event: DragEvent) => {
+    if (draggedId.value) event.stopPropagation();
+};
+
+const onDrop = (event: DragEvent) => {
+    if (!draggedId.value) return;
+    event.preventDefault();
+    event.stopPropagation();
+    updatePreview(event);
+    savePreview();
 };
 
 const currentTime = ref("");
@@ -193,15 +251,13 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
             </span>
         </VBtn>
 
-        <div class="taskbar__windows">
+        <div ref="windowsRow" class="taskbar__windows" @dragover="onDragOver" @dragleave="onDragLeave" @drop="onDrop">
             <TransitionGroup name="taskbar-window-list">
-                <VBtn v-for="(win, index) in windows" :key="win.id" :data-window-id="win.id" class="taskbar__window-btn" variant="text" :class="{
+                <VBtn v-for="win in displayedWindows" :key="win.id" :data-window-id="win.id" class="taskbar__window-btn" variant="text" :class="{
                     'taskbar__window-btn--active': win.active,
-                    'taskbar__window-btn--dragging': draggedIndex === index,
-                    'taskbar__window-btn--drag-over-left': dragOverIndex === index && draggedIndex !== null && draggedIndex > index,
-                    'taskbar__window-btn--drag-over-right': dragOverIndex === index && draggedIndex !== null && draggedIndex < index
-                }" draggable="true" @dragstart="onDragStart(index, $event)" @dragover="onDragOver(index, $event)"
-                    @drop="onDrop(index, $event)" @dragend="onDragEnd" @click="emit('toggle-window', win.id)"
+                    'taskbar__window-btn--dragging': draggedId === win.id
+                }" :draggable="windows.length > 1" @dragstart.stop="onDragStart(win.id, $event)"
+                    @dragend.stop="onDragEnd" @click="emit('toggle-window', win.id)"
                     @contextmenu.stop.prevent="handleContextMenu($event, win)">
                     <span class="taskbar__window-icon">
                         <component :is="win.icon" v-if="isComponentIcon(win.icon)" />
@@ -464,6 +520,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
     align-items: center;
     gap: 2px;
     flex: 1;
+    min-width: 0;
     overflow-x: auto;
     overflow-y: hidden;
     padding: 0 4px;
@@ -504,14 +561,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
 
     &--dragging {
         opacity: 0.4;
-    }
-
-    &--drag-over-left {
-        box-shadow: -2px 0 0 0 var(--desktop-taskbar-drag-indicator);
-    }
-
-    &--drag-over-right {
-        box-shadow: 2px 0 0 0 var(--desktop-taskbar-drag-indicator);
+        cursor: grabbing;
     }
 }
 
@@ -586,6 +636,10 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
 }
 
 .taskbar-window-list-move {
-    transition: transform 0.3s ease;
+    transition: transform 0.16s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .taskbar-window-list-move { transition: none; }
 }
 </style>
