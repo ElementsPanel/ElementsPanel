@@ -1,0 +1,9 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./core/frontend" },
+    { "path": "./core/panel" },
+    { "path": "./core/daemon" },
+    { "path": "./core/common" }
+  ]
+}
