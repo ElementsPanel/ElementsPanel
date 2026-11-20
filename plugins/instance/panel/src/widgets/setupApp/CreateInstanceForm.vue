@@ -475,7 +475,6 @@ async function createInstance() {
       :label="isImportMode ? t('TXT_CODE_MINECRAFT_UPLOAD') : t('TXT_CODE_COMMON_UPLOAD_A_SERVER_CORE')"
       :accept="isImportMode ? '.zip,.jar' : '.jar'"
       prepend-icon="mdi-upload-outline"
-      variant="solo"
       density="compact"
       hide-details="auto"
       class="mt-3"
