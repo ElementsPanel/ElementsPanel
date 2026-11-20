@@ -1,0 +1,258 @@
+const assert = require("node:assert/strict");
+const { test } = require("node:test");
+const { createBrowser, createLoader, settle } = require("./helpers.cjs");
+
+const markers = ["data-overlayscrollbars", "data-overlayscrollbars-viewport"];
+
+function fixture(t, nodes = 0) {
+  const dom = createBrowser();
+  const root = document.createElement("main");
+  root.className = "scrollable";
+  document.body.append(root);
+  for (let index = 0; index < nodes; index++) root.append(document.createElement("div"));
+
+  const frames = new Map();
+  const timers = new Map();
+  const active = new Map();
+  const records = [];
+  const rules = new Map();
+  const events = [];
+  const queries = [];
+  let nextId = 1;
+  let dispose;
+
+  global.requestAnimationFrame = callback => {
+    const id = nextId++;
+    frames.set(id, callback);
+    return id;
+  };
+  global.cancelAnimationFrame = id => frames.delete(id);
+  window.setTimeout = callback => {
+    const id = nextId++;
+    timers.set(id, callback);
+    return id;
+  };
+  window.clearTimeout = id => timers.delete(id);
+
+  const originalQuery = dom.window.Element.prototype.querySelectorAll;
+  dom.window.Element.prototype.querySelectorAll = function (selector) {
+    if (selector === "*") queries.push(this);
+    return originalQuery.call(this, selector);
+  };
+  const originalSet = dom.window.Element.prototype.setAttribute;
+  const originalRemove = dom.window.Element.prototype.removeAttribute;
+  dom.window.Element.prototype.setAttribute = function (name, value) {
+    if (markers.includes(name)) events.push({ type: "restore", element: this });
+    return originalSet.call(this, name, value);
+  };
+  dom.window.Element.prototype.removeAttribute = function (name) {
+    if (markers.includes(name)) events.push({ type: "remove", element: this });
+    return originalRemove.call(this, name);
+  };
+  global.getComputedStyle = element => {
+    events.push({ type: "read", element });
+    assert.equal(markers.some(name => element.hasAttribute(name)), false, "Read application overflow without library markers");
+    const rule = rules.get(element)?.() || {};
+    return {
+      overflowX: element.style.overflowX || element.style.overflow || rule.x || "hidden",
+      overflowY: element.style.overflowY || element.style.overflow || rule.y ||
+        (element.classList.contains("scrollable") ? "auto" : "hidden")
+    };
+  };
+
+  const OverlayScrollbars = ({ target }) => {
+    const horizontal = document.createElement("div");
+    const vertical = document.createElement("div");
+    horizontal.className = vertical.className = "os-scrollbar";
+    target.append(horizontal, vertical);
+    target.setAttribute(markers[0], "host");
+    target.setAttribute(markers[1], "");
+    const record = { target, horizontal, vertical, changes: [], destroyed: 0 };
+    records.push(record);
+    active.set(target, record);
+    return {
+      options(options) { record.changes.push(options); },
+      elements() {
+        return {
+          scrollbarHorizontal: { scrollbar: horizontal },
+          scrollbarVertical: { scrollbar: vertical }
+        };
+      },
+      destroy() {
+        record.destroyed++;
+        active.delete(target);
+        horizontal.remove();
+        vertical.remove();
+        markers.forEach(name => target.removeAttribute(name));
+      }
+    };
+  };
+  const { installOverlayScrollbars } = createLoader({ host: "frontend" })(
+    "plugins/console/panel/src/tools/overlayScrollbars.ts",
+    { overlayscrollbars: { OverlayScrollbars } }
+  );
+
+  const f = {
+    dom, root, frames, timers, active, records, rules, events, queries,
+    install() { dispose = installOverlayScrollbars(); },
+    dispose() { dispose?.(); },
+    reset() { events.length = queries.length = 0; },
+    resize() { window.dispatchEvent(new window.Event("resize")); },
+    settleResize() {
+      const callbacks = [...timers.values()];
+      timers.clear();
+      callbacks.forEach(callback => callback());
+    },
+    async flush() {
+      await settle();
+      for (let index = 0; frames.size; index++) {
+        assert.ok(index < 5, "Scrollbar updates must not trigger an observer loop");
+        const callbacks = [...frames.values()];
+        frames.clear();
+        callbacks.forEach(callback => callback(performance.now()));
+        await settle();
+      }
+    }
+  };
+  t.after(() => { f.dispose(); dom.window.close(); });
+  return f;
+}
+
+test("window resizing defers DOM discovery until it settles", async t => {
+  const f = fixture(t, 1000);
+  f.install();
+  const initialReads = f.events.filter(event => event.type === "read").length;
+  f.reset();
+  for (let index = 0; index < 10; index++) {
+    f.resize();
+    await f.flush();
+  }
+  assert.equal(f.events.length, 0);
+  assert.equal(f.queries.length, 0);
+  assert.equal(f.timers.size, 1);
+  f.settleResize();
+  await f.flush();
+  assert.deepEqual(f.queries, [document.body]);
+  assert.equal(f.events.filter(event => event.type === "read").length, initialReads);
+  assert.equal(f.records[0].changes.length, 0);
+});
+
+test("overlapping mutation roots are scanned once and new scroll regions are discovered", async t => {
+  const f = fixture(t);
+  f.install();
+  f.reset();
+  const parent = document.createElement("section");
+  const child = document.createElement("div");
+  const input = document.createElement("input");
+  child.className = "scrollable";
+  input.style.overflow = "auto";
+  parent.append(child, input);
+  f.root.append(parent);
+  parent.classList.add("changed");
+  child.classList.add("changed");
+  await f.flush();
+  assert.deepEqual(f.queries, [parent]);
+  assert.ok(f.active.has(child));
+  assert.equal(f.active.has(input), false);
+  assert.equal(f.events.some(event => event.type === "read" && event.element === input), false);
+});
+
+test("library size styles are ignored while application overflow changes remain supported", async t => {
+  const f = fixture(t, 1000);
+  f.install();
+  f.reset();
+  f.root.style.width = "100%";
+  f.root.style.setProperty("--os-viewport-percent", "50%");
+  await f.flush();
+  assert.equal(f.events.length, 0);
+  assert.equal(f.queries.length, 0);
+
+  const original = f.active.get(f.root);
+  f.root.style.overflowY = "hidden";
+  await f.flush();
+  assert.equal(original.destroyed, 1);
+  assert.equal(f.active.has(f.root), false);
+  assert.equal(f.queries.length, 0);
+  f.root.style.removeProperty("overflow-y");
+  await f.flush();
+  assert.ok(f.active.has(f.root));
+});
+
+test("content replacement restores scrollbar nodes and removing a region destroys its instances", async t => {
+  const f = fixture(t);
+  f.install();
+  const original = f.active.get(f.root);
+  const child = document.createElement("div");
+  child.className = "scrollable";
+  f.root.replaceChildren(child);
+  await f.flush();
+  assert.equal(original.horizontal.parentElement, f.root);
+  assert.equal(original.vertical.parentElement, f.root);
+  assert.ok(f.active.has(child));
+  f.root.remove();
+  await f.flush();
+  assert.equal(f.active.size, 0);
+  assert.ok(f.records.every(record => record.destroyed === 1));
+});
+
+test("ancestor classes and inherited custom properties can change descendant scrollability", async t => {
+  const f = fixture(t);
+  const child = document.createElement("div");
+  f.root.append(child);
+  f.rules.set(child, () => ({
+    y: document.body.classList.contains("mobile") ? "auto" :
+      f.root.style.getPropertyValue("--application-overflow") || "hidden"
+  }));
+  f.install();
+  assert.equal(f.active.has(child), false);
+  f.root.style.setProperty("--application-overflow", "auto");
+  await f.flush();
+  assert.ok(f.active.has(child));
+  f.root.style.removeProperty("--application-overflow");
+  await f.flush();
+  assert.equal(f.active.has(child), false);
+  document.body.classList.add("mobile");
+  await f.flush();
+  assert.ok(f.active.has(child));
+});
+
+test("all viewport marker changes are batched around the style reads", async t => {
+  const f = fixture(t);
+  const other = document.createElement("aside");
+  other.className = "scrollable";
+  document.body.append(other);
+  f.install();
+  f.reset();
+  f.resize();
+  f.settleResize();
+  await f.flush();
+  const types = f.events.map(event => event.type);
+  const firstRead = types.indexOf("read");
+  const lastRead = types.lastIndexOf("read");
+  assert.ok(firstRead > types.lastIndexOf("remove"));
+  assert.ok(lastRead < types.indexOf("restore"));
+  assert.ok(f.records.every(record => record.changes.length === 0));
+});
+
+test("disposing cancels deferred scans and releases each scrollbar once", async t => {
+  const f = fixture(t);
+  f.install();
+  f.reset();
+  f.resize();
+  f.root.classList.add("changed");
+  await settle();
+  assert.ok(f.frames.size);
+  assert.ok(f.timers.size);
+  f.dispose();
+  f.dispose();
+  assert.equal(f.frames.size, 0);
+  assert.equal(f.timers.size, 0);
+  assert.equal(f.active.size, 0);
+  assert.ok(f.records.every(record => record.destroyed === 1));
+  f.reset();
+  f.resize();
+  f.root.classList.add("after-dispose");
+  await f.flush();
+  assert.equal(f.events.length, 0);
+  assert.equal(f.timers.size, 0);
+});
