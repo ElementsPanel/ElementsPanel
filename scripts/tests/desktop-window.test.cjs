@@ -208,6 +208,7 @@ test("desktop theme preserves component outlines in windows and teleported overl
           <div class="v-card selected"></div>
           <div class="v-field v-field--variant-outlined"><div class="v-field__outline"><div class="v-field__outline__start"></div></div></div>
           <div class="v-field v-field--variant-solo"><div class="v-field__outline"></div></div>
+          <div class="v-field v-field--variant-solo-filled"><div class="v-field__outline"></div></div>
         `;
         document.body.appendChild(target);
         t.after(() => target.remove());
@@ -219,7 +220,8 @@ test("desktop theme preserves component outlines in windows and teleported overl
         assert.match(read(".selected").boxShadow, /^inset /);
         assert.equal(read(".v-field--variant-outlined .v-field__outline").display, "flex");
         assert.equal(read(".v-field__outline__start").borderTopStyle, "solid");
-        assert.equal(read(".v-field--variant-solo .v-field__outline").display, "none");
+        assert.equal(read(".v-field--variant-solo .v-field__outline").display, "flex");
+        assert.equal(read(".v-field--variant-solo-filled .v-field__outline").display, "flex");
       });
     }
   }
