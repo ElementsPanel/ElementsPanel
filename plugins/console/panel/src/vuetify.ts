@@ -12,10 +12,14 @@ export const vuetify = createVuetify({
       scrollable: true
     },
     VDataTableFooter: {
-      VSelect: { flat: true, rounded: "xl", variant: "solo-filled" }
+      VSelect: {
+        flat: true, rounded: "xl", variant: "solo-filled"
+      }
     },
     VList: {
-      VDivider: { class: "my-6" }
+      VDivider: {
+        class: "my-6"
+      }
     },
     VCard: {
       rounded: "xl"
