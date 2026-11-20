@@ -597,6 +597,8 @@ async function run(argv = process.argv.slice(2)) {
 module.exports = {
   parseArgs,
   promptOptions,
+  detectSystemLanguage,
+  createInteractivePrompt,
   projectManifest,
   developmentScripts,
   initialize,

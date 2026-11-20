@@ -4,7 +4,12 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { spawn } = require("node:child_process");
 const initializerMetadata = require("./package.json");
-const { developmentScripts } = require("./index.cjs");
+const {
+  developmentScripts,
+  detectSystemLanguage,
+  createInteractivePrompt
+} = require("./index.cjs");
+const { createTranslator, normalizeLanguage } = require("./i18n.cjs");
 
 const PLUGIN_ID = /^[a-z][a-z0-9_-]{1,63}$/;
 const PACKAGE_NAME = /^(?:@[a-z0-9_.-]+\/)?epanel-plugin-[a-z0-9_.-]+$/;
@@ -52,39 +57,126 @@ function workspaceEntries(projectRoot) {
     });
 }
 
-function normalizePluginName(input) {
+function normalizePluginName(input, language) {
+  const t = createTranslator(language);
   const value = String(input || "").trim();
-  if (!value) throw new Error("Specify a plugin name, for example `example`.");
+  if (!value) throw new Error(t("TXT_CODE_INIT_WORKSPACE_NAME_REQUIRED"));
   let name = value;
   if (name.startsWith("@")) {
     const slash = name.indexOf("/");
-    if (slash < 0) throw new Error("A scoped plugin name must look like @scope/example.");
+    if (slash < 0) throw new Error(t("TXT_CODE_INIT_WORKSPACE_SCOPE_INVALID"));
     const scope = name.slice(1, slash);
     const local = name.slice(slash + 1).replace(/^epanel-plugin-/, "");
     name = `@${scope}/epanel-plugin-${local}`;
   } else if (!name.startsWith("epanel-plugin-")) {
     name = `epanel-plugin-${name}`;
   }
-  if (!PACKAGE_NAME.test(name)) throw new Error(`Invalid plugin package name: ${name}`);
+  if (!PACKAGE_NAME.test(name))
+    throw new Error(t("TXT_CODE_INIT_WORKSPACE_NAME_INVALID", { name: value }));
   const local = name.split("/").pop().slice("epanel-plugin-".length);
-  if (!PLUGIN_ID.test(local)) throw new Error(`Invalid plugin id: ${local}`);
+  if (!PLUGIN_ID.test(local))
+    throw new Error(t("TXT_CODE_INIT_WORKSPACE_NAME_INVALID", { name: value }));
   return { name, id: local };
 }
 
 function parseSetupArgs(args) {
+  const languageIndex = args.lastIndexOf("--language");
+  const language =
+    languageIndex < 0
+      ? detectSystemLanguage().startsWith("zh")
+        ? "zh"
+        : "en"
+      : normalizeLanguage(args[languageIndex + 1]);
+  if (!language) throw new Error(createTranslator()("TXT_CODE_INIT_LANGUAGE_INVALID"));
+  const t = createTranslator(language);
   let name;
-  let sides = ["panel"];
+  let sides;
   let install = true;
-  for (const argument of args) {
+  let yes = false;
+  let help = false;
+  for (let index = 0; index < args.length; index++) {
+    const argument = args[index];
     if (argument === "--no-install") install = false;
-    else if (argument === "--panel") sides = ["panel"];
+    else if (argument === "--install") install = true;
+    else if (["--yes", "-y"].includes(argument)) yes = true;
+    else if (["--help", "-h"].includes(argument)) help = true;
+    else if (argument === "--language") {
+      if (!normalizeLanguage(args[++index])) throw new Error(t("TXT_CODE_INIT_LANGUAGE_INVALID"));
+    } else if (argument === "--panel") sides = ["panel"];
     else if (argument === "--daemon") sides = ["daemon"];
     else if (["--both", "--dual"].includes(argument)) sides = ["panel", "daemon"];
-    else if (argument.startsWith("-")) throw new Error(`Unknown option: ${argument}`);
-    else if (name) throw new Error("Specify only one plugin name.");
+    else if (argument.startsWith("-"))
+      throw new Error(t("TXT_CODE_INIT_OPTION_UNKNOWN", { argument }));
+    else if (name !== undefined) throw new Error(t("TXT_CODE_INIT_WORKSPACE_SINGLE_NAME"));
     else name = argument;
   }
-  return { ...normalizePluginName(name), sides, install };
+  return { name, sides, install, language, yes, help };
+}
+
+function validateWorkspaceName(projectRoot, input, language) {
+  const normalized = normalizePluginName(input, language);
+  const directory = path.join(projectRoot, "external", normalized.id);
+  if (fs.existsSync(directory)) {
+    throw new Error(createTranslator(language)("TXT_CODE_INIT_WORKSPACE_EXISTS", { directory }));
+  }
+  return normalized;
+}
+
+async function promptSetupOptions(projectRoot, options, prompt) {
+  const t = createTranslator(options.language);
+  if (options.name !== undefined)
+    options.name = validateWorkspaceName(projectRoot, options.name, options.language).name;
+  while (options.name === undefined) {
+    const input = await prompt.text({
+      title: t("TXT_CODE_INIT_WORKSPACE_NAME_TITLE"),
+      placeholder: "example"
+    });
+    try {
+      options.name = validateWorkspaceName(projectRoot, input.value, options.language).name;
+      input.mark?.("done", options.name);
+    } catch (error) {
+      if (input.mark) input.mark("error", error.message);
+      else console.error(error.message);
+    }
+  }
+  if (options.sides === undefined) {
+    const type = await prompt.select({
+      title: t("TXT_CODE_INIT_WORKSPACE_TYPE_TITLE"),
+      options: [
+        { value: "panel", label: t("TXT_CODE_INIT_WORKSPACE_TYPE_PANEL") },
+        { value: "daemon", label: t("TXT_CODE_INIT_WORKSPACE_TYPE_DAEMON") },
+        { value: "both", label: t("TXT_CODE_INIT_WORKSPACE_TYPE_BOTH") }
+      ],
+      hint: t("TXT_CODE_INIT_SELECT_HINT"),
+      defaultIndex: 0
+    });
+    if (!["panel", "daemon", "both"].includes(type))
+      throw new Error(t("TXT_CODE_INIT_WORKSPACE_TYPE_INVALID"));
+    options.sides = type === "both" ? ["panel", "daemon"] : [type];
+  }
+  return options;
+}
+
+async function setupCommand(
+  projectRoot,
+  args,
+  { interactive = process.stdin.isTTY && process.stdout.isTTY, prompt } = {}
+) {
+  const options = parseSetupArgs(args);
+  if (options.help) return help(options.language);
+  if (interactive && !options.yes && (options.name === undefined || options.sides === undefined)) {
+    const input = prompt || createInteractivePrompt();
+    try {
+      await promptSetupOptions(projectRoot, options, input);
+    } finally {
+      input.close?.();
+    }
+  }
+  return createWorkspace(projectRoot, {
+    ...options,
+    ...normalizePluginName(options.name, options.language),
+    sides: options.sides || ["panel"]
+  });
 }
 
 function parseSelection(args) {
@@ -208,10 +300,20 @@ function workspaceReadme(id, sides, packageName) {
 
 async function setupWorkspace(projectRoot, args) {
   const options = parseSetupArgs(args);
+  if (options.help) return help(options.language);
+  return createWorkspace(projectRoot, {
+    ...options,
+    ...normalizePluginName(options.name, options.language),
+    sides: options.sides || ["panel"]
+  });
+}
+
+async function createWorkspace(projectRoot, options) {
   const projectManifest = readJson(path.join(projectRoot, "package.json"));
   const directory = options.id;
   const workspaceRoot = path.join(projectRoot, "external", directory);
-  if (fs.existsSync(workspaceRoot)) throw new Error(`Plugin workspace already exists: ${workspaceRoot}`);
+  if (fs.existsSync(workspaceRoot))
+    throw new Error(createTranslator(options.language)("TXT_CODE_INIT_WORKSPACE_EXISTS", { directory: workspaceRoot }));
   const dual = options.sides.length === 2;
   const packageManifest = {
     name: options.name,
@@ -264,7 +366,7 @@ async function setupWorkspace(projectRoot, args) {
     await runNpm(["install", "--no-fund", "--no-audit", "--ignore-scripts"], projectRoot);
     await installCommand(projectRoot, ["--ignore-scripts"]);
   }
-  console.log(`Created plugin workspace in ${workspaceRoot}`);
+  console.log(createTranslator(options.language)("TXT_CODE_INIT_WORKSPACE_CREATED", { directory: workspaceRoot }));
   return entry;
 }
 
@@ -297,10 +399,8 @@ async function publishCommand(projectRoot, args) {
   }
 }
 
-function help() {
-  console.log(
-    `Usage: epanel-workspace <install|setup|build|publish> [name] [options]\n\n  install [--ignore-scripts]\n  setup <name> [--panel|--daemon|--both] [--no-install]\n  build [name ...]\n  publish [name ...]`
-  );
+function help(language = detectSystemLanguage().startsWith("zh") ? "zh" : "en") {
+  console.log(createTranslator(language)("TXT_CODE_INIT_WORKSPACE_HELP"));
 }
 
 async function installCommand(projectRoot, args = []) {
@@ -328,11 +428,14 @@ async function installCommand(projectRoot, args = []) {
 }
 
 async function main(argv = process.argv.slice(2)) {
+  argv = [...argv];
   const command = argv.shift();
   if (!command || ["--help", "-h"].includes(command)) return help();
+  if (command === "setup" && argv.some((arg) => ["--help", "-h"].includes(arg)))
+    return help(parseSetupArgs(argv).language);
   const projectRoot = findProjectRoot();
   if (command === "install") return installCommand(projectRoot, argv);
-  if (command === "setup") return setupWorkspace(projectRoot, argv);
+  if (command === "setup") return setupCommand(projectRoot, argv);
   if (command === "build") return buildCommand(projectRoot, argv);
   if (["publish", "pub"].includes(command)) return publishCommand(projectRoot, argv);
   throw new Error(`Unknown workspace command: ${command}`);
@@ -348,6 +451,9 @@ if (require.main === module) {
 module.exports = {
   findProjectRoot,
   setupWorkspace,
+  setupCommand,
+  promptSetupOptions,
+  main,
   buildWorkspace,
   buildCommand,
   publishCommand,

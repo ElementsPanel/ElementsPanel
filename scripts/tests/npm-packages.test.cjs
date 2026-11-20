@@ -307,6 +307,38 @@ test("workspace packaging includes runnable entry points and excludes user data 
     "@elementspanel/daemon": npm.versions.daemon
   });
   await workspace.setupWorkspace(project, ["example", "--both", "--no-install"]);
+  const questions = [];
+  const interactive = await workspace.setupCommand(project, ["--no-install", "--language", "zh"], {
+    interactive: true,
+    prompt: {
+      async text(config) {
+        questions.push(config.title);
+        return { value: "packaged-wizard" };
+      },
+      async select(config) {
+        questions.push(config.title);
+        return "daemon";
+      }
+    }
+  });
+  assert.deepEqual(questions, ["名称", "类型"]);
+  assert.equal(typeof initializer.createInteractivePrompt().select, "function");
+  assert.equal(typeof initializer.createInteractivePrompt().text, "function");
+  assert.equal(interactive.manifest.name, "epanel-plugin-packaged-wizard");
+  assert.equal(fs.existsSync(path.join(interactive.root, "panel")), false);
+  assert.ok(fs.existsSync(path.join(interactive.root, "daemon/src/backend/index.ts")));
+  const workspaceHelp = execFileSync(
+    process.execPath,
+    [
+      path.join(f.outputRoot, "init-elementspanel/workspace.cjs"),
+      "setup",
+      "--help",
+      "--language",
+      "zh"
+    ],
+    { cwd: f.directory, encoding: "utf8" }
+  );
+  assert.match(workspaceHelp, /npm run setup/);
   const generatedRoot = path.join(project, "external/example");
   const generated = JSON.parse(fs.readFileSync(path.join(generatedRoot, "package.json")));
   assert.equal(generated.description, "ElementsPanel example plugin");

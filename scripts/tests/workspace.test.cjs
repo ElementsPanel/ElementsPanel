@@ -3,10 +3,12 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const vm = require("node:vm");
+const { spawnSync } = require("node:child_process");
 const { test } = require("node:test");
 const { initialize } = require("../../packages/init-elementspanel/index.cjs");
 const {
   setupWorkspace,
+  setupCommand,
   buildCommand,
   publishCommand,
   installCommand
@@ -74,6 +76,174 @@ test("initialized projects create npm plugin workspaces outside the runtime sour
   fs.writeFileSync(path.join(project, "external/example/package.json"), JSON.stringify(plugin));
   for (const side of ["panel", "daemon"])
     assert.equal(readPluginManifest(path.join(project, "external/example", side)).version, "0.2.0");
+});
+
+async function wizardProject(t) {
+  const project = fs.mkdtempSync(path.join(os.tmpdir(), "elementspanel-workspace-wizard-"));
+  t.after(() => fs.rmSync(project, { recursive: true, force: true }));
+  await initialize({
+    directory: project,
+    mode: "full",
+    versions: { panel: "1.0.0", daemon: "1.0.0" },
+    builtinPlugins: {},
+    install: false
+  });
+  return project;
+}
+
+for (const type of ["panel", "daemon", "both"]) {
+  test(`workspace wizard creates the selected ${type} plugin without writing before confirmation`, async (t) => {
+    const project = await wizardProject(t);
+    const marks = [];
+    let closed = false;
+    const result = await setupCommand(project, ["--language", "en", "--no-install"], {
+      interactive: true,
+      prompt: {
+        async text(config) {
+          assert.equal(config.title, "Name");
+          assert.equal(config.placeholder, "example");
+          return { value: `wizard-${type}`, mark: (...args) => marks.push(args) };
+        },
+        async select(config) {
+          assert.equal(config.title, "Type");
+          assert.deepEqual(
+            config.options.map((option) => option.value),
+            ["panel", "daemon", "both"]
+          );
+          assert.equal(config.defaultIndex, 0);
+          assert.match(config.hint, /↑\/↓.*Enter/);
+          assert.equal(fs.existsSync(path.join(project, "external")), false);
+          return type;
+        },
+        close() {
+          closed = true;
+        }
+      }
+    });
+    assert.equal(closed, true);
+    assert.deepEqual(marks, [["done", `epanel-plugin-wizard-${type}`]]);
+    assert.equal(result.manifest.elementspanel.dual, type === "both" ? true : undefined);
+    assert.equal(result.manifest.version, "0.1.0");
+    for (const side of ["panel", "daemon"]) {
+      const selected = type === "both" || type === side;
+      assert.equal(fs.existsSync(path.join(result.root, side)), selected);
+      assert.equal(Boolean(result.manifest.elementspanel[side]), selected);
+      const service = JSON.parse(fs.readFileSync(path.join(project, side, "package.json")));
+      assert.equal(Boolean(service.dependencies[result.manifest.name]), selected);
+    }
+  });
+}
+
+test("workspace wizard follows the system language and retries invalid or existing names safely", async (t) => {
+  const project = await wizardProject(t);
+  const previousLanguage = process.env.LC_ALL;
+  process.env.LC_ALL = "zh_CN.UTF-8";
+  t.after(() => {
+    if (previousLanguage === undefined) delete process.env.LC_ALL;
+    else process.env.LC_ALL = previousLanguage;
+  });
+  const existing = path.join(project, "external/existing");
+  fs.mkdirSync(existing, { recursive: true });
+  fs.writeFileSync(path.join(existing, "keep.txt"), "keep");
+  const inputs = ["", "../escape", "@other/existing", "@acme/retrying"];
+  const marks = [];
+  const errors = t.mock.method(console, "error", () => {});
+  const messages = t.mock.method(console, "log", () => {});
+  const result = await setupCommand(project, ["--no-install"], {
+    interactive: true,
+    prompt: {
+      async text(config) {
+        assert.equal(config.title, "名称");
+        assert.ok(inputs.length, "The name prompt must finish after a valid name");
+        return { value: inputs.shift(), mark: (...args) => marks.push(args) };
+      },
+      async select(config) {
+        assert.equal(config.title, "类型");
+        assert.match(config.options[2].label, /双端/);
+        assert.match(config.hint, /回车/);
+        return "both";
+      }
+    }
+  });
+  assert.deepEqual(marks.map(([status]) => status), ["error", "error", "error", "done"]);
+  assert.equal(errors.mock.callCount(), 0, "Marked errors must not also print a duplicate message");
+  assert.match(marks[0][1], /请输入名称/);
+  assert.match(marks[2][1], /工作区已存在/);
+  assert.match(messages.mock.calls[0].arguments[0], /已创建工作区/);
+  assert.equal(result.manifest.name, "@acme/epanel-plugin-retrying");
+  assert.equal(fs.readFileSync(path.join(existing, "keep.txt"), "utf8"), "keep");
+  assert.deepEqual(fs.readdirSync(path.join(project, "external")).sort(), ["existing", "retrying"]);
+});
+
+for (const [name, args, expectedPrompts, type] of [
+  ["name", ["provided-name"], ["type"], "daemon"],
+  ["type", ["--both"], ["name"], "both"],
+  ["both", ["provided-both", "--daemon"], [], "daemon"],
+  ["defaults", ["automated", "--yes"], [], "panel"]
+]) {
+  test(`workspace setup keeps supplied ${name} arguments and only prompts for missing fields`, async (t) => {
+    const project = await wizardProject(t);
+    const prompts = [];
+    const result = await setupCommand(project, [...args, "--no-install", "--language", "en"], {
+      interactive: true,
+      prompt: {
+        async text() {
+          prompts.push("name");
+          return { value: "provided-type" };
+        },
+        async select() {
+          prompts.push("type");
+          return type;
+        }
+      }
+    });
+    assert.deepEqual(prompts, expectedPrompts);
+    assert.deepEqual(
+      ["panel", "daemon"].filter((side) => result.manifest.elementspanel[side]),
+      type === "both" ? ["panel", "daemon"] : [type]
+    );
+  });
+}
+
+test("workspace setup CLI stays noninteractive in scripts and offers help outside a project", async (t) => {
+  const project = await wizardProject(t);
+  const cli = path.resolve(__dirname, "../../packages/init-elementspanel/workspace.cjs");
+  const invoke = (args) =>
+    spawnSync(process.execPath, [cli, ...args], {
+      cwd: project,
+      encoding: "utf8",
+      timeout: 10_000
+    });
+  const missing = invoke(["setup", "--no-install", "--language", "en"]);
+  assert.equal(missing.status, 1, missing.stderr);
+  assert.match(missing.stderr, /Enter a name/);
+  assert.equal(fs.existsSync(path.join(project, "external")), false);
+  const ready = invoke(["setup", "scripted", "--dual", "--no-install", "--language", "en"]);
+  assert.equal(ready.status, 0, ready.stderr);
+  assert.equal(
+    JSON.parse(fs.readFileSync(path.join(project, "external/scripted/package.json"))).elementspanel
+      .dual,
+    true
+  );
+  const original = fs.readFileSync(path.join(project, "external/scripted/package.json"), "utf8");
+  const repeated = invoke(["setup", "scripted", "--panel", "--no-install", "--language", "en"]);
+  assert.equal(repeated.status, 1);
+  assert.match(repeated.stderr, /already exists/);
+  assert.equal(
+    fs.readFileSync(path.join(project, "external/scripted/package.json"), "utf8"),
+    original
+  );
+  for (const args of [["--language", "unknown"], ["--unknown"], ["--yes"]]) {
+    await assert.rejects(setupCommand(project, [...args, "--no-install"], { interactive: false }));
+  }
+  assert.deepEqual(fs.readdirSync(path.join(project, "external")), ["scripted"]);
+  const help = spawnSync(process.execPath, [cli, "setup", "--help", "--language", "zh"], {
+    cwd: os.tmpdir(),
+    encoding: "utf8",
+    timeout: 10_000
+  });
+  assert.equal(help.status, 0, help.stderr);
+  assert.match(help.stdout, /npm run setup/);
 });
 
 test("project installation installs each side in its own npm directory", async (t) => {

@@ -1,5 +1,19 @@
 const messages = {
   en: {
+    TXT_CODE_INIT_WORKSPACE_NAME_TITLE: "Name",
+    TXT_CODE_INIT_WORKSPACE_TYPE_TITLE: "Type",
+    TXT_CODE_INIT_WORKSPACE_TYPE_PANEL: "panel",
+    TXT_CODE_INIT_WORKSPACE_TYPE_DAEMON: "daemon",
+    TXT_CODE_INIT_WORKSPACE_TYPE_BOTH: "panel + daemon",
+    TXT_CODE_INIT_WORKSPACE_TYPE_INVALID: "Choose panel, daemon or both.",
+    TXT_CODE_INIT_WORKSPACE_NAME_REQUIRED: "Enter a name.",
+    TXT_CODE_INIT_WORKSPACE_SCOPE_INVALID: "Use @scope/name.",
+    TXT_CODE_INIT_WORKSPACE_NAME_INVALID: "Invalid name: {name}",
+    TXT_CODE_INIT_WORKSPACE_SINGLE_NAME: "Specify only one name.",
+    TXT_CODE_INIT_WORKSPACE_EXISTS: "Workspace already exists: {directory}",
+    TXT_CODE_INIT_WORKSPACE_CREATED: "Workspace created: {directory}",
+    TXT_CODE_INIT_WORKSPACE_HELP:
+      "Usage: epanel-workspace <command> [options]\n\n  install [--ignore-scripts]\n  setup [name] [--panel|--daemon|--both]\n  build [name ...]\n  publish [name ...]\n\nRun npm run setup to choose a name and type.\n\nSetup options:\n  --language <en|zh>  Language (default: system)\n  --yes, -y          Skip prompts (name required; default: panel)\n  --no-install       Skip dependency installation\n",
     TXT_CODE_INIT_LANGUAGE_INVALID: "--language must be en (English) or zh (中文).",
     TXT_CODE_INIT_PORT_INVALID: "{side} port must be an integer between 1 and 65535.",
     TXT_CODE_INIT_TEMPLATE_INVALID: "--template must be full, panel or daemon.",
@@ -41,6 +55,20 @@ const messages = {
       "Usage: npx @elementspanel/init@latest [directory] [options]\n\nRun without options to choose the directory, services, ports and dependency installation interactively. The language follows the system locale.\n\n  --language <en|zh>    Use English or Chinese\n  --template <mode>     Install full, panel or daemon (default: full)\n  --panel-port <port>   Panel listening port (default: {panelPort})\n  --daemon-port <port>  Daemon listening port (default: {daemonPort})\n  --install            Install dependencies immediately\n  --update-plugins     Refresh built-in versions in an existing project\n  --no-install         Generate the project without installing dependencies\n  --yes, -y            Use defaults for unspecified options\n\nUse . as the directory to initialize the current empty folder.\n"
   },
   zh: {
+    TXT_CODE_INIT_WORKSPACE_NAME_TITLE: "名称",
+    TXT_CODE_INIT_WORKSPACE_TYPE_TITLE: "类型",
+    TXT_CODE_INIT_WORKSPACE_TYPE_PANEL: "panel",
+    TXT_CODE_INIT_WORKSPACE_TYPE_DAEMON: "daemon",
+    TXT_CODE_INIT_WORKSPACE_TYPE_BOTH: "双端",
+    TXT_CODE_INIT_WORKSPACE_TYPE_INVALID: "请选择 panel、daemon 或双端。",
+    TXT_CODE_INIT_WORKSPACE_NAME_REQUIRED: "请输入名称。",
+    TXT_CODE_INIT_WORKSPACE_SCOPE_INVALID: "名称格式：@scope/name。",
+    TXT_CODE_INIT_WORKSPACE_NAME_INVALID: "名称无效：{name}",
+    TXT_CODE_INIT_WORKSPACE_SINGLE_NAME: "只能指定一个名称。",
+    TXT_CODE_INIT_WORKSPACE_EXISTS: "工作区已存在：{directory}",
+    TXT_CODE_INIT_WORKSPACE_CREATED: "已创建工作区：{directory}",
+    TXT_CODE_INIT_WORKSPACE_HELP:
+      "用法：epanel-workspace <命令> [参数]\n\n  install [--ignore-scripts]\n  setup [名称] [--panel|--daemon|--both]\n  build [名称 ...]\n  publish [名称 ...]\n\n运行 npm run setup，交互选择名称和类型。\n\nsetup 参数：\n  --language <en|zh>  语言（默认跟随系统）\n  --yes, -y          跳过交互（名称必填，默认 panel）\n  --no-install       跳过依赖安装\n",
     TXT_CODE_INIT_LANGUAGE_INVALID: "--language 必须为 en（English）或 zh（中文）。",
     TXT_CODE_INIT_PORT_INVALID: "{side} 监听端口必须是 1 至 65535 之间的整数。",
     TXT_CODE_INIT_TEMPLATE_INVALID: "--template 必须为 full、panel 或 daemon。",
