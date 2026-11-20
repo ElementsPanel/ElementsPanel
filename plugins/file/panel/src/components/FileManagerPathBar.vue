@@ -33,7 +33,6 @@ const showDisks = computed(
       :model-value="currentDisk"
       :items="(fileStatus?.disks || []).map((disk) => ({ title: `${disk}:`, value: disk }))"
       class="file-disk-select"
-      :variant="compact ? 'solo' : undefined"
       density="compact"
       hide-details
       @update:model-value="emit('disk', $event)"

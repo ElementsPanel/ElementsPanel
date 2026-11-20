@@ -561,14 +561,14 @@ onUnmounted(() => {
             <div class="dim-toolbar__left">
                 <div class="dim-select">
                     <VSelect v-model="selectedNodeId" :label="t('TXT_CODE_COMMON_DAEMONS')" :items="nodeSelectItems"
-                        variant="solo-filled" density="comfortable" hide-details class="dim-select__input"
+                        density="comfortable" hide-details class="dim-select__input"
                         :disabled="nodeSelectItems.length === 0">
                       <template #no-data><Empty :icon="false" compact /></template>
                     </VSelect>
                 </div>
 
                 <div class="dim-select">
-                    <VSelect v-model="statusFilter" :items="statusSelectItems" variant="solo-filled" density="comfortable"
+                    <VSelect v-model="statusFilter" :items="statusSelectItems" density="comfortable"
                         hide-details class="dim-select__input">
                       <template #no-data><Empty :icon="false" compact /></template>
                     </VSelect>

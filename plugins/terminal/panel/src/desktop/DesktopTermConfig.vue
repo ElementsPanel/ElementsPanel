@@ -76,7 +76,7 @@ watch(instanceInfo, (val) => {
           <div class="dterm-field">
             <div class="dterm-field__title">{{ t("TXT_CODE_COMMON_COMMAND_LINE_ENDING") }}</div>
             <div class="dterm-field__hint">{{ t("TXT_CODE_TERMINAL_LINE_ENDING_PLATFORM_HINT") }}</div>
-            <VSelect v-model="options.config.crlf" :items="[{ title: t('TXT_CODE_COMMON_LINE_FEED'), value: 1 }, { title: t('TXT_CODE_COMMON_CARRIAGE_RETURN_AND_LINE_FEED'), value: 2 }]" :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT')" variant="solo" density="compact" hide-details>
+            <VSelect v-model="options.config.crlf" :items="[{ title: t('TXT_CODE_COMMON_LINE_FEED'), value: 1 }, { title: t('TXT_CODE_COMMON_CARRIAGE_RETURN_AND_LINE_FEED'), value: 2 }]" :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT')" density="compact" hide-details>
               <template #no-data><Empty :icon="false" compact /></template>
             </VSelect>
           </div>
@@ -90,10 +90,10 @@ watch(instanceInfo, (val) => {
           <div class="dterm-field">
             <div class="dterm-field__title">{{ t("TXT_CODE_COMMON_INPUT_AND_OUTPUT_ENCODING") }}</div>
             <div class="dterm-field__hint">{{ t("TXT_CODE_COMMON_CHANGE_THE_ENCODING_IF_TERMINAL_OUTPUT_IS_GARBLED") }}</div>
-            <VSelect v-model="options.config.ie" :items="TERMINAL_CODE" :placeholder="t('TXT_CODE_COMMON_TERMINAL_INPUT_ENCODING')" variant="solo" density="compact" hide-details class="mb-3">
+            <VSelect v-model="options.config.ie" :items="TERMINAL_CODE" :placeholder="t('TXT_CODE_COMMON_TERMINAL_INPUT_ENCODING')" density="compact" hide-details class="mb-3">
               <template #no-data><Empty :icon="false" compact /></template>
             </VSelect>
-            <VSelect v-model="options.config.oe" :items="TERMINAL_CODE" :placeholder="t('TXT_CODE_COMMON_TERMINAL_OUTPUT_ENCODING')" variant="solo" density="compact" hide-details>
+            <VSelect v-model="options.config.oe" :items="TERMINAL_CODE" :placeholder="t('TXT_CODE_COMMON_TERMINAL_OUTPUT_ENCODING')" density="compact" hide-details>
               <template #no-data><Empty :icon="false" compact /></template>
             </VSelect>
           </div>

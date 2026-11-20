@@ -135,7 +135,6 @@ defineExpose({ prepare });
       :items="modes"
       :label="t('TXT_CODE_JAVA_MSL_ENVIRONMENT')"
       :disabled="disabled || preparing"
-      variant="solo"
       density="compact"
       hide-details="auto"
       class="mb-3"
@@ -163,7 +162,6 @@ defineExpose({ prepare });
         :label="t('TXT_CODE_JAVA_MSL_INSTALLED')"
         :loading="loading"
         :disabled="disabled || preparing"
-        variant="solo"
         density="compact"
         hide-details="auto"
       >

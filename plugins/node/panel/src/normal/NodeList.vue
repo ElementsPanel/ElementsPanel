@@ -55,7 +55,6 @@ const handleOpenDetailDialog = async () => {
               ]"
               class="status-select"
               density="comfortable"
-              variant="solo-filled"
               hide-details
             >
               <template #no-data><Empty :icon="false" compact /></template>

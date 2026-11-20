@@ -540,7 +540,7 @@ const getInstanceStatusLabel = (status: number): string => {
                   <div class="du-assign-browse-toolbar">
                       <div class="du-assign-node-select">
                           <VSelect v-if="nodes?.length" v-model="currentRemoteNodeId" :items="assignNodeItems"
-                              class="du-assign-select" variant="solo" density="compact" hide-details
+                              class="du-assign-select" density="compact" hide-details
                               @update:model-value="handleAssignNodeChange">
                             <template #no-data><Empty :icon="false" compact /></template>
                           </VSelect>

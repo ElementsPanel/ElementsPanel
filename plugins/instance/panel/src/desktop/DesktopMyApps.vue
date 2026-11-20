@@ -225,7 +225,7 @@ onUnmounted(() => {
     <div class="ma">
         <div class="ma-toolbar">
             <div class="ma-toolbar__left">
-                <VSelect v-model="statusFilter" :items="statusSelectItems" variant="solo-filled" density="comfortable"
+                <VSelect v-model="statusFilter" :items="statusSelectItems" density="comfortable"
                     hide-details class="ma-select__input">
                   <template #no-data><Empty :icon="false" compact /></template>
                 </VSelect>

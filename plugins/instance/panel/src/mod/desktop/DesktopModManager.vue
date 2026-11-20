@@ -440,19 +440,19 @@ onMounted(async () => {
                             <div class="dmm-search-form">
                                 <div class="dmm-search-grid">
                                     <VTextField v-model="searchFilters.query" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')" density="compact" hide-details @keyup.enter="onSearch" />
-                                    <VSelect v-model="searchFilters.source" :items="[{title:t('TXT_CODE_COMMON_ALL_PLATFORMS'),value:'all'},{title:'Modrinth',value:'modrinth'},{title:'CurseForge',value:'curseforge'},{title:'SpigotMC',value:'spigotmc'}]" variant="solo" density="compact" hide-details>
+                                    <VSelect v-model="searchFilters.source" :items="[{title:t('TXT_CODE_COMMON_ALL_PLATFORMS'),value:'all'},{title:'Modrinth',value:'modrinth'},{title:'CurseForge',value:'curseforge'},{title:'SpigotMC',value:'spigotmc'}]" density="compact" hide-details>
                                       <template #no-data><Empty :icon="false" compact /></template>
                                     </VSelect>
-                                    <VSelect v-model="searchFilters.version" :items="[{title:t('TXT_CODE_COMMON_ALL_VERSIONS'),value:''}, ...mcVersions.map(v=>({title:v,value:v}))]" clearable :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT_CONTENT')" variant="solo" density="compact" hide-details>
+                                    <VSelect v-model="searchFilters.version" :items="[{title:t('TXT_CODE_COMMON_ALL_VERSIONS'),value:''}, ...mcVersions.map(v=>({title:v,value:v}))]" clearable :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT_CONTENT')" density="compact" hide-details>
                                       <template #no-data><Empty :icon="false" compact /></template>
                                     </VSelect>
-                                    <VSelect v-model="searchFilters.type" :items="[{title:t('TXT_CODE_MOD_ALL_TYPES'),value:'all'},{title:t('TXT_CODE_MOD'),value:'mod'},{title:t('TXT_CODE_PLUGIN'),value:'plugin'}]" variant="solo" density="compact" hide-details>
+                                    <VSelect v-model="searchFilters.type" :items="[{title:t('TXT_CODE_MOD_ALL_TYPES'),value:'all'},{title:t('TXT_CODE_MOD'),value:'mod'},{title:t('TXT_CODE_PLUGIN'),value:'plugin'}]" density="compact" hide-details>
                                       <template #no-data><Empty :icon="false" compact /></template>
                                     </VSelect>
-                                    <VSelect v-model="searchFilters.environment" :items="[{title:t('TXT_CODE_COMMON_CLIENT_SERVER'),value:'all'},{title:t('TXT_CODE_SERVER'),value:'server'},{title:t('TXT_CODE_CLIENT'),value:'client'}]" variant="solo" density="compact" hide-details>
+                                    <VSelect v-model="searchFilters.environment" :items="[{title:t('TXT_CODE_COMMON_CLIENT_SERVER'),value:'all'},{title:t('TXT_CODE_SERVER'),value:'server'},{title:t('TXT_CODE_CLIENT'),value:'client'}]" density="compact" hide-details>
                                       <template #no-data><Empty :icon="false" compact /></template>
                                     </VSelect>
-                                    <VSelect v-model="searchFilters.loader" :items="loaderOptions.flatMap((group) => group.options)" item-title="label" item-value="value" clearable :placeholder="t('TXT_CODE_SELECT_LOADER')" variant="solo" density="compact" hide-details>
+                                    <VSelect v-model="searchFilters.loader" :items="loaderOptions.flatMap((group) => group.options)" item-title="label" item-value="value" clearable :placeholder="t('TXT_CODE_SELECT_LOADER')" density="compact" hide-details>
                                       <template #no-data><Empty :icon="false" compact /></template>
                                     </VSelect>
                                 </div>

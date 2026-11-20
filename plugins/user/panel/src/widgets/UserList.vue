@@ -272,7 +272,6 @@ onMounted(async () => {
               v-model="currentRole"
               :items="roleItems"
               density="comfortable"
-              variant="solo-filled"
               hide-details
               class="role-select"
               @update:model-value="search"

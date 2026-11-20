@@ -29,7 +29,7 @@ export const vuetify = createVuetify({
       baseColor: "var(--text-color)"
     },
     VFileInput: { flat: true, rounded: "xl" },
-    VSelect: { flat: true, rounded: "xl" },
+    VSelect: { flat: true, rounded: "xl", variant: "solo-filled" },
     VSwitch: { color: "primary", inset: true, hideDetails: true },
     VTextarea: { flat: true, rounded: "xl" },
     VTextField: { flat: true, rounded: "xl", variant: "solo-filled" }

@@ -330,7 +330,7 @@ onMounted(async () => {
             <VSelect v-model="operationForm.status" :items="[
               { title: t('TXT_CODE_COMMON_ALL'), value: '' },
               ...Object.entries(INSTANCE_STATUS).map(([value, title]) => ({ title, value }))
-            ]" hide-details density="comfortable" variant="solo-filled" @update:model-value="handleQueryInstance">
+            ]" hide-details density="comfortable" @update:model-value="handleQueryInstance">
               <template #no-data><Empty :icon="false" compact /></template>
             </VSelect>
             <VTextField

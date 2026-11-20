@@ -361,7 +361,6 @@ async function createInstance() {
           :label="t('TXT_CODE_COMMON_INSTANCE_TYPE')"
           :hint="t('TXT_CODE_COMMON_DIFFERENT_TYPES_MAY_HAVE_SLIGHTLY_DIFFERENCES_IN_SOME_FUNCTIONS')"
           persistent-hint
-          variant="solo"
           density="compact"
           hide-details="auto"
           @update:model-value="changeInstanceType"

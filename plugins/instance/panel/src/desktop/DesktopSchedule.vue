@@ -285,7 +285,7 @@ onMounted(async () => {
             :placeholder="t('TXT_CODE_COMMON_REQUIRED_AND_MUST_BE_UNIQUE')" />
 
         <label class="ds-form-label">{{ t('TXT_CODE_COMMON_TASK_TYPE') }}</label>
-        <VSelect v-model="formTask.type" :items="scheduleTypeItems" variant="solo" density="compact" hide-details
+        <VSelect v-model="formTask.type" :items="scheduleTypeItems" density="compact" hide-details
             :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT')">
           <template #no-data><Empty :icon="false" compact /></template>
         </VSelect>
@@ -332,7 +332,7 @@ onMounted(async () => {
             </div>
             <div class="ds-actions-list">
                 <div v-for="(action, index) in formTask.actions" :key="index" class="ds-action-row">
-                    <VSelect v-model="action.type" :items="actionTypeItems" variant="solo" density="compact" hide-details
+                    <VSelect v-model="action.type" :items="actionTypeItems" density="compact" hide-details
                         class="ds-action-type"
                         @update:model-value="action.payload = ''">
                       <template #no-data><Empty :icon="false" compact /></template>
