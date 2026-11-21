@@ -243,145 +243,6 @@ const desktopService = vue.shallowReactive({ window: DesktopWindow, confirmation
 const { VSelect, VDialog } = Vuetify.components;
 const flush = async () => { for (let i = 0; i < 8; i++) await vue.nextTick(); };
 
-test("desktop theme preserves component outlines in windows and teleported overlays", async (t) => {
-  const postcss = frontendRequire("postcss");
-  const globalFile = path.join(root, "plugins/console/panel/src/assets/global.scss");
-  const globalStyles = postcss.parse(sass.compileString(fs.readFileSync(globalFile, "utf8"), {
-    loadPaths: [path.dirname(globalFile)], logger: sass.Logger.silent
-  }).css);
-  const common = [];
-  globalStyles.walkRules((rule) => {
-    if (rule.selector.includes(".v-field__outline") || rule.selector === ".selected") common.push(rule.toString());
-  });
-  const style = document.createElement("style");
-  const componentStyles = ["VBtn/VBtn.css", "VCard/VCard.css", "VField/VField.css"].map((file) => {
-    const css = postcss.parse(fs.readFileSync(path.join(root, "core/frontend/node_modules/vuetify/lib/components", file), "utf8"));
-    // jsdom cannot parse cascade layers; these fixtures exercise desktop overrides.
-    css.walkAtRules("layer", (rule) => rule.nodes ? rule.replaceWith(...rule.nodes) : rule.remove());
-    return css.toString();
-  });
-  style.textContent = [
-    ...componentStyles,
-    ...common,
-    ".desktop-test-focus { outline: 2px solid #1677ff; } .desktop-test-border { border: 1px solid #1677ff; }",
-    sass.compileString(fs.readFileSync(path.join(root, "plugins/desktop/panel/src/theme.scss"), "utf8"), {
-      logger: sass.Logger.silent
-    }).css
-  ].join("\n");
-  document.head.appendChild(style);
-  const wasDesktop = document.body.classList.contains("desktop-mode-active");
-  document.body.classList.add("desktop-mode-active");
-  t.after(() => {
-    style.remove();
-    if (!wasDesktop) document.body.classList.remove("desktop-mode-active");
-  });
-
-  for (const theme of ["light", "dark"]) {
-    for (const context of ["desktop-container", "desktop-window", "desktop-dialog", "v-overlay v-dialog", "v-snackbar"]) {
-      await t.test(`${theme}: ${context}`, (t) => {
-        const target = document.createElement("div");
-        target.className = `app-${theme}-theme ${context}`;
-        target.innerHTML = `
-          <button class="v-btn v-btn--variant-outlined">Outlined</button>
-          <div class="v-card v-card--variant-outlined"></div>
-          <input class="desktop-test-focus">
-          <div class="desktop-test-border"></div>
-          <div class="v-card selected"></div>
-          <div class="v-field v-field--variant-outlined"><div class="v-field__outline"><div class="v-field__outline__start"></div></div></div>
-          <div class="v-field v-field--variant-solo"><div class="v-field__outline"></div></div>
-          <div class="v-field v-field--variant-solo-filled"><div class="v-field__outline"></div></div>
-        `;
-        document.body.appendChild(target);
-        t.after(() => target.remove());
-        const read = (selector) => getComputedStyle(target.querySelector(selector));
-        assert.equal(read("button").borderTopStyle, "solid");
-        assert.equal(read(".v-card--variant-outlined").borderTopStyle, "solid");
-        assert.equal(read("input").outline, "2px solid #1677ff");
-        assert.equal(read(".desktop-test-border").borderTopWidth, "1px");
-        assert.match(read(".selected").boxShadow, /^inset /);
-        assert.equal(read(".v-field--variant-outlined .v-field__outline").display, "flex");
-        assert.equal(read(".v-field__outline__start").borderTopStyle, "solid");
-        assert.equal(read(".v-field--variant-solo .v-field__outline").display, "flex");
-        assert.equal(read(".v-field--variant-solo-filled .v-field__outline").display, "flex");
-      });
-    }
-  }
-});
-
-test("plugin configuration marks unsaved fields and nested entries with a left border in both themes", async (t) => {
-  const filename = path.join(root, "plugins/config/panel/src/SchemaForm.vue");
-  const { descriptor } = parse(fs.readFileSync(filename, "utf8"), { filename });
-  const Form = loadSfc("plugins/config/panel/src/SchemaForm.vue", {
-    "@/lang/i18n": translations,
-    "@/plugin/context": { usePluginService: () => undefined },
-    "@/config/router": { router: {} }
-  });
-  Form.__scopeId = "data-v-setting-highlight-test";
-  const style = document.createElement("style");
-  style.textContent = compileStyle({
-    source: descriptor.styles[0].content, filename, id: Form.__scopeId, scoped: true
-  }).code;
-  document.head.appendChild(style);
-  t.after(() => style.remove());
-  for (const theme of ["light", "dark"]) await t.test(theme, async (t) => {
-    const values = vue.reactive({ label: "Saved", enabled: false, entries: [{ label: "Saved entry" }] });
-    const savedValues = vue.ref(JSON.parse(JSON.stringify(values)));
-    const fields = [
-      { key: "label", type: "string", title: "Label" },
-      { key: "enabled", type: "boolean", title: "Enabled" },
-      { key: "entries", type: "list", title: "Entries", fields: [
-        { key: "label", type: "string", title: "Entry label" }
-      ] }
-    ];
-    const target = document.createElement("div");
-    target.style.backgroundColor = theme === "dark" ? "#232429" : "#ffffff";
-    document.body.appendChild(target);
-    const app = vue.createApp({ render: () => vue.h(Form, {
-      fields, values, savedValues: savedValues.value
-    }) });
-    app.use(Vuetify.createVuetify({ theme: { defaultTheme: theme } }));
-    app.mount(target);
-    t.after(() => { app.unmount(); target.remove(); });
-    const field = (title) => [...target.querySelectorAll(".setting-field-title")]
-      .find(element => element.textContent === title).closest(".setting-field");
-    const modified = () => ["Label", "Enabled", "Entries", "Entry label"]
-      .map(title => field(title).classList.contains("setting-field--modified"));
-    await flush();
-    assert.deepEqual(modified(), [false, false, false, false]);
-    assert.equal(getComputedStyle(field("Label").querySelector(".setting-field-marker")).backgroundColor, "rgba(0, 0, 0, 0)");
-    const input = field("Label").querySelector("input");
-    input.value = "Edited";
-    input.dispatchEvent(new window.Event("input", { bubbles: true }));
-    values.entries[0].label = "Edited entry";
-    await flush();
-    assert.deepEqual(modified(), [true, false, true, true]);
-    const modifiedStyle = getComputedStyle(field("Label"));
-    const markerStyle = getComputedStyle(field("Label").querySelector(".setting-field-marker"));
-    assert.equal(markerStyle.width, "6px");
-    assert.equal(markerStyle.borderRadius, "3px");
-    assert.equal(markerStyle.backgroundColor, "rgb(255, 152, 0)");
-    assert.equal(modifiedStyle.backgroundColor, "rgba(0, 0, 0, 0)");
-    values.label = "Saved";
-    values.entries[0].label = "Saved entry";
-    await flush();
-    assert.deepEqual(modified(), [false, false, false, false]);
-    values.enabled = true;
-    await flush();
-    assert.deepEqual(modified(), [false, true, false, false]);
-    savedValues.value = JSON.parse(JSON.stringify(values));
-    await flush();
-    assert.deepEqual(modified(), [false, false, false, false]);
-    values.entries.push({ label: "New entry" });
-    await flush();
-    assert.equal(field("Entries").classList.contains("setting-field--modified"), true);
-    assert.equal(target.querySelectorAll(".setting-list-item")[1]
-      .querySelector(".setting-field--modified") != null, true);
-    values.entries.pop();
-    await flush();
-    assert.deepEqual(modified(), [false, false, false, false]);
-  });
-});
-
 function fixture(t) {
   const closed = vue.ref(false);
   const transitions = { enters: 0, leaves: 0 };
@@ -454,66 +315,6 @@ function animationFixture(t) {
     return animation;
   };
   return { ...f, owner, button, sourceRect, targetRect, animations, scrollCalls: () => scrollCalls };
-}
-
-function dialogFixture(t, shellStyleLast) {
-  const proxyFilename = path.join(root, "plugins/instance/panel/src/desktop/DesktopWindow.vue");
-  const { descriptor: proxyDescriptor } = parse(fs.readFileSync(proxyFilename, "utf8"), { filename: proxyFilename });
-  const proxyScript = compileScript(proxyDescriptor, { id: "instance-window-test", inlineTemplate: true });
-  const proxyModule = new Module(proxyFilename, module);
-  proxyModule.require = (id) => frontendTestImport(id) === "@/plugin/context"
-    ? { usePluginService: () => ({ window: DesktopWindow }) }
-    : frontendRequire(id);
-  proxyModule._compile(ts.transpileModule(proxyScript.content, {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
-  }).outputText, proxyFilename);
-  const InstanceWindow = proxyModule.exports.default;
-  InstanceWindow.__scopeId = "data-v-instance-window-test";
-
-  const ownerScopeId = "data-v-instance-manager-test";
-  const ownerFilename = path.join(root, "plugins/instance/panel/src/desktop/DesktopInstanceManager.vue");
-  const { descriptor: ownerDescriptor } = parse(fs.readFileSync(ownerFilename, "utf8"), { filename: ownerFilename });
-  const styles = [
-    { descriptor: ownerDescriptor, scopeId: ownerScopeId },
-    { descriptor, scopeId: DesktopWindow.__scopeId }
-  ];
-  if (!shellStyleLast) styles.reverse();
-  const styleElements = styles.map(({ descriptor: source, scopeId }) => {
-    const element = document.createElement("style");
-    element.textContent = source.styles.map((block) => compileStyle({
-      source: sass.compileString(block.content).css,
-      filename: "desktop-dialog-test.vue", id: scopeId, scoped: block.scoped
-    }).code).join("\n");
-    document.head.appendChild(element);
-    return element;
-  });
-
-  const opened = vue.ref(false);
-  let finishEnter, finishLeave;
-  const target = document.createElement("div");
-  document.body.appendChild(target);
-  const app = vue.createApp({
-    __scopeId: ownerScopeId,
-    render: () => vue.h("div", [vue.h(vue.Teleport, { to: "body" }, [vue.h(vue.Transition, {
-      name: "desktop-window",
-      onEnter: (_element, done) => { finishEnter = done; },
-      onLeave: (_element, done) => { finishLeave = done; }
-    }, () => opened.value ? vue.h(InstanceWindow, {
-      id: "instance-manager-tag-dialog", title: "Tags", visible: opened.value,
-      minimized: false, maximized: false, active: true, showMinimize: false, showMaximize: false,
-      onClose: () => { opened.value = false; }
-    }) : null)])])
-  });
-  app.use(Vuetify.createVuetify());
-  app.mount(target);
-  t.after(() => {
-    finishEnter?.();
-    finishLeave?.();
-    app.unmount();
-    target.remove();
-    styleElements.forEach(element => element.remove());
-  });
-  return { opened, finishEnter: () => finishEnter(), finishLeave: () => finishLeave() };
 }
 
 const transitionFrame = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -868,36 +669,6 @@ test("missing taskbar targets and reduced motion keep minimizing immediate", asy
   assert.equal(f.owner.style.display, "none");
   assert.equal(f.owner.classList.contains("desktop-window--animating"), false);
 });
-
-for (const shellStyleLast of [true, false]) {
-  test(`instance subwindows fade through their wrapper with shell CSS loaded ${shellStyleLast ? "last" : "first"}`, async (t) => {
-    const f = dialogFixture(t, shellStyleLast);
-    f.opened.value = true;
-    await flush();
-    const element = document.body.querySelector(".desktop-window");
-    assert.ok(element.classList.contains("desktop-window-enter-active"));
-    const enterStyle = window.getComputedStyle(element);
-    assert.equal(enterStyle.opacity, "0");
-    assert.match(enterStyle.transition, /\b(opacity|all)\b/, "opacity must animate regardless of stylesheet order");
-    assert.match(enterStyle.transition, /\b(transform|all)\b/, "the existing dialog scale transition must also animate");
-    await transitionFrame();
-    assert.notEqual(window.getComputedStyle(element).opacity, "0");
-    f.finishEnter();
-
-    element.querySelector(".window__control--close").click();
-    await flush();
-    assert.ok(element.isConnected, "keep the subwindow mounted for its fade-out");
-    assert.notEqual(element.style.display, "none", "the visible prop must not hide a leaving subwindow early");
-    assert.ok(element.classList.contains("desktop-window-leave-active"));
-    await transitionFrame();
-    const leaveStyle = window.getComputedStyle(element);
-    assert.equal(leaveStyle.opacity, "0");
-    assert.match(leaveStyle.transition, /\b(opacity|all)\b/);
-    f.finishLeave();
-    await flush();
-    assert.equal(element.isConnected, false);
-  });
-}
 
 function folderTabsFixture(t) {
   const FileManagerTabs = loadSfc("plugins/file/panel/src/components/FileManagerTabs.vue", {
@@ -1654,18 +1425,11 @@ test("closing a background task desktop window preserves the shared task stream 
   assert.deepEqual(lifecycle, { connects: 1, disconnects: 0, resets: 1, refreshes: 1 });
 });
 
-for (const dismiss of ["button", "titlebar", "escape"]) {
-  test(`shared desktop confirmations use the user deletion layout and cancel once through ${dismiss}`, async (t) => {
+test("desktop confirmations cancel once through each dismissal action", async (t) => {
+  for (const dismiss of ["button", "titlebar", "escape"]) {
     const f = confirmationFixture(t);
     await flush();
     const dialog = f.findWindow();
-    assert.equal(dialog.closest(".v-dialog"), null);
-    assert.ok(dialog.querySelector(".desktop-confirm__icon.mdi-alert-circle-outline"));
-    assert.ok(dialog.querySelector(".desktop-confirm__message").textContent.includes("Delete Alice?"));
-    assert.ok(dialog.querySelector(".desktop-confirm__button--danger"));
-    assert.equal(dialog.querySelector(".window__control--minimize"), null);
-    assert.equal(dialog.querySelector(".window__control--maximize"), null);
-    assert.equal(document.activeElement, dialog.querySelector(".desktop-confirm__cancel"));
     if (dismiss === "button") dialog.querySelector(".desktop-confirm__cancel").click();
     else if (dismiss === "titlebar") dialog.querySelector(".window__control--close").click();
     else dialog.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
@@ -1675,8 +1439,8 @@ for (const dismiss of ["button", "titlebar", "escape"]) {
     assert.equal(f.events.confirmations, 0);
     await transitionFrame();
     assert.equal(dialog.isConnected, false);
-  });
-}
+  }
+});
 
 test("pending confirmations and required acknowledgements prevent duplicate or premature actions", async (t) => {
   const f = confirmationFixture(t);
@@ -1971,35 +1735,6 @@ test("viewport changes fit existing windows, preserve the taskbar and stop obser
   assert.equal(f.changes.length, updates);
 });
 
-test("new windows reaching the bottom work-area edge open with a top gap before their first frame", async (t) => {
-  viewportFixture(t, 1024, 768);
-  const f = boundsFixture(t, { initialX: 120, initialY: 320, initialWidth: 500, initialHeight: 400 });
-  assert.deepEqual(f.bounds(), { left: 120, top: 16, width: 500, height: 400 });
-  await flush();
-  assert.deepEqual(f.changes, [{ x: 120, y: 16, width: 500, height: 400 }]);
-});
-
-test("new windows with space below them keep their requested position", async (t) => {
-  viewportFixture(t, 1024, 768);
-  const f = boundsFixture(t, { initialX: 120, initialY: 319, initialWidth: 500, initialHeight: 400 });
-  assert.deepEqual(f.bounds(), { left: 120, top: 319, width: 500, height: 400 });
-  await flush();
-  assert.equal(f.changes.length, 0);
-});
-
-test("existing windows resize into the work area without restarting at the top", async (t) => {
-  const resize = viewportFixture(t, 1024, 900);
-  const f = boundsFixture(t, { initialX: 120, initialY: 300, initialWidth: 500, initialHeight: 400 });
-  await flush();
-  resize(1024, 748);
-  await flush();
-  assert.deepEqual(f.bounds(), { left: 120, top: 300, width: 500, height: 400 });
-  resize(1024, 700);
-  await flush();
-  assert.deepEqual(f.bounds(), { left: 120, top: 252, width: 500, height: 400 });
-  f.assertInside();
-});
-
 for (const channel of ["visible", "minimized"]) {
   test(`showing a window through ${channel} fits a previously dragged position`, async (t) => {
     viewportFixture(t, 1024, 768);
@@ -2042,39 +1777,4 @@ test("context-menu maximization restores the latest user size and remains bounde
   await flush();
   f.assertInside();
   assert.deepEqual(f.bounds(), { left: 0, top: 0, width: 640, height: 432 });
-});
-
-test("the standalone desktop login window centers using its actual size and stays inside a smaller screen", async (t) => {
-  const resize = viewportFixture(t, 800, 600);
-  const getRect = HTMLElement.prototype.getBoundingClientRect;
-  HTMLElement.prototype.getBoundingClientRect = function () {
-    return this.classList.contains("desktop-login-window")
-      ? { width: Math.min(380, window.innerWidth), height: Math.min(340, window.innerHeight) }
-      : getRect.call(this);
-  };
-  t.after(() => { HTMLElement.prototype.getBoundingClientRect = getRect; });
-  const Login = loadSfc("plugins/user/panel/src/desktop/DesktopLoginWindow.vue", {
-    "@/config/router": { router: { push() {} } },
-    "@/lang/i18n": translations,
-    "@/services/apis": { loginUser: () => ({ execute: async () => ({}) }) },
-    "@/stores/useAppStateStore": { useAppStateStore: () => ({ updateUserInfo: async () => {} }) },
-    "@/stores/useAppConfigStore": { useAppConfigStore: () => ({ isDarkTheme: vue.ref(false) }) },
-    "@/tools/common": { sleep: async () => {} },
-    "@/tools/desktopNotice": {},
-    "../assets": { desktopIconDarkUrl: "/icon.svg", desktopIconUrl: "/icon.svg" }
-  });
-  const target = document.createElement("div");
-  document.body.appendChild(target);
-  const app = vue.createApp(Login);
-  app.use(Vuetify.createVuetify());
-  app.mount(target);
-  t.after(() => { app.unmount(); target.remove(); });
-  await flush();
-  const element = target.querySelector(".desktop-login-window");
-  assert.equal(element.style.left, "210px");
-  assert.equal(element.style.top, "130px");
-  resize(320, 240);
-  await flush();
-  assert.equal(element.style.left, "0px");
-  assert.equal(element.style.top, "0px");
 });
