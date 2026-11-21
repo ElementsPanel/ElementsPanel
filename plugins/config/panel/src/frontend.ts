@@ -1,7 +1,7 @@
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import type { PanelFrontendPluginContext } from "@elements-panel/sdk";
 import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
-import ConfigPage from "./ConfigPage.vue";
+import ConfigPage from "./components/ConfigPage.vue";
 import { localeMessages } from "./i18n";
 import PluginConfig from "./normal/PluginConfig.vue";
 

@@ -55,7 +55,7 @@ import {
   type PluginGroup,
   type PluginChangeResult,
   type SettingsSchema
-} from "./api";
+} from "../api";
 import SettingsPages from "./SettingsPages.vue";
 import PluginConfigTargetSelector from "./PluginConfigTargetSelector.vue";
 

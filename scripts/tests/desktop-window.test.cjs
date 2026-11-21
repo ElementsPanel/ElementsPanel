@@ -57,8 +57,8 @@ test("settings pages retain edits and submit all pages together", async (t) => {
     "@/plugin/context": { usePluginService: () => undefined },
     "@/config/router": { router: {} }
   };
-  const Form = loadSfc("plugins/config/panel/src/SchemaForm.vue", imports);
-  const Pages = loadSfc("plugins/config/panel/src/SettingsPages.vue", {
+  const Form = loadSfc("plugins/config/panel/src/components/SchemaForm.vue", imports);
+  const Pages = loadSfc("plugins/config/panel/src/components/SettingsPages.vue", {
     ...imports, "./SchemaForm.vue": { default: Form }
   });
   const instance = { id: "instance", title: "Instance" };

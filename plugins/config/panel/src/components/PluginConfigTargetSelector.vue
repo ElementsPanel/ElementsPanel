@@ -3,7 +3,7 @@ import { t } from "@elementspanel/epanel-plugin-i18n";
 import { computeNodeName } from "@elementspanel/epanel-plugin-console/tools/nodes";
 import { computed } from "vue";
 import { VBtn, VDivider, VIcon, VList, VListItem, VMenu } from "vuetify/components";
-import type { NodeSummary } from "./api";
+import type { NodeSummary } from "../api";
 
 const props = defineProps<{
   modelValue?: string;

@@ -4,8 +4,8 @@ import { t } from "@elementspanel/epanel-plugin-i18n";
 import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
 import { VCard, VContainer } from "vuetify/components";
-import ConfigPage from "../ConfigPage.vue";
-import PluginConfigTargetSelector from "../PluginConfigTargetSelector.vue";
+import ConfigPage from "../components/ConfigPage.vue";
+import PluginConfigTargetSelector from "../components/PluginConfigTargetSelector.vue";
 
 const route = useRoute();
 const configPage = ref<InstanceType<typeof ConfigPage>>();

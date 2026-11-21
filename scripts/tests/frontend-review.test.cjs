@@ -21,6 +21,7 @@ function setupSfc(filename, overrides = {}, props = {}) {
       "@/components/Empty.vue": {},
       "@/components/TargetSelectionList.vue": {},
       "@/components/DesktopDialog.vue": {},
+      "./PluginConfigTargetSelector.vue": {},
       "@/hooks/useScreen": { useScreen: () => ({ isPhone: vue.ref(false) }) },
       "@/hooks/usePolling": { usePolling() {} },
       "vuetify/components": {},
@@ -502,7 +503,7 @@ test("schedule edits forward an atomic replacement and propagate a failed save",
 test("switching node/plugin configuration cannot display or save a stale schema", async () => {
   const requests = [];
   const saved = [];
-  const state = setupSfc("plugins/config/panel/src/ConfigPage.vue", {
+  const state = setupSfc("plugins/config/panel/src/components/ConfigPage.vue", {
     "vue-router": {
       useRoute: () => ({ query: {} }),
       // ConfigPage reads the router to rewrite the URL and guards the route on
@@ -515,7 +516,7 @@ test("switching node/plugin configuration cannot display or save a stale schema"
     "@/tools/validator": { getValidatorErrorMsg: (error) => error.message },
     "@/tools/vuetifyToast": { message: { success() {}, error() {} } },
     "./SettingsPages.vue": {},
-    "./api": {
+    "../api": {
       nodePluginSettings: () => ({
         execute: (config) => {
           const wait = deferred();
@@ -582,7 +583,7 @@ function pluginActionFixture(t, inventories = {}, nodeOverrides = {}, pluginMark
       return { value: await handlers[name](config) };
     }
   })]));
-  const state = setupSfc("plugins/config/panel/src/ConfigPage.vue", {
+  const state = setupSfc("plugins/config/panel/src/components/ConfigPage.vue", {
     "vue-router": {
       useRoute: () => ({ path: "/desktop", query: {} }),
       useRouter: () => ({}),
@@ -598,7 +599,7 @@ function pluginActionFixture(t, inventories = {}, nodeOverrides = {}, pluginMark
       error: (text) => notices.push({ color: "error", text })
     } },
     "./SettingsPages.vue": {},
-    "./api": api
+    "../api": api
   });
   state.plugins.value = panelPlugins;
   return {
@@ -1105,7 +1106,7 @@ test("plugin configuration defaults follow grouped order after loading and prese
           id: params.id, fields: [], values: {}
         } });
         const pluginId = scenario === "preferred-plugin" ? "second" : undefined;
-        const state = effect.run(() => setupSfc("plugins/config/panel/src/ConfigPage.vue", {
+        const state = effect.run(() => setupSfc("plugins/config/panel/src/components/ConfigPage.vue", {
           vue: { ...vue, onMounted() {}, onUnmounted() {} },
           "vue-router": {
             useRoute: () => ({ path: "/plugins/config", query: {
@@ -1121,7 +1122,7 @@ test("plugin configuration defaults follow grouped order after loading and prese
           "@/tools/validator": { getValidatorErrorMsg: String },
           "@/tools/vuetifyToast": { message: { success() {}, error: assert.fail } },
           "./SettingsPages.vue": {},
-          "./api": {
+          "../api": {
             pluginRemarkList: () => ({ execute: async () => ({ value: [] }) }),
             pluginGroupList: () => ({ execute: () => targetScope === "panel"
               ? groups.promise : Promise.resolve({ value: [] }) }),
@@ -1202,7 +1203,7 @@ test("plugin configuration opens its save tooltip for unsaved edits and preserve
       stored = JSON.parse(JSON.stringify(config.data));
       return { value: { saved: true, application: "applied" } };
     };
-    const state = effect.run(() => setupSfc("plugins/config/panel/src/ConfigPage.vue", {
+    const state = effect.run(() => setupSfc("plugins/config/panel/src/components/ConfigPage.vue", {
       vue: { ...vue, onMounted() {}, onUnmounted() {} },
       "@/hooks/useScreen": { useScreen: () => ({ isPhone }) },
       "vue-router": {
@@ -1218,7 +1219,7 @@ test("plugin configuration opens its save tooltip for unsaved edits and preserve
         warning: () => assert.fail("the save reminder must use the button tooltip")
       } },
       "./SettingsPages.vue": {},
-      "./api": {
+      "../api": {
         pluginRemarkList: () => ({ execute: async () => ({ value: [] }) }),
         pluginGroupList: () => ({ execute: async () => ({ value: [] }) }),
         nodePluginGroupList: () => ({ execute: async () => ({ value: [] }) }),
@@ -1237,7 +1238,7 @@ test("plugin configuration opens its save tooltip for unsaved edits and preserve
       { key: "name", type: "string", title: "Name" },
       { key: "entries", type: "list", title: "Entries" }
     ];
-    const form = setupSfc("plugins/config/panel/src/SchemaForm.vue", {
+    const form = setupSfc("plugins/config/panel/src/components/SchemaForm.vue", {
       "@/plugin/context": { usePluginService: () => undefined },
       "@/config/router": { router: {} }
     }, {
@@ -1350,7 +1351,7 @@ test("desktop plugin configuration loads each window's node without changing the
   const createPage = (props) => {
     const scope = vue.effectScope();
     t.after(() => scope.stop());
-    return scope.run(() => setupSfc("plugins/config/panel/src/ConfigPage.vue", {
+    return scope.run(() => setupSfc("plugins/config/panel/src/components/ConfigPage.vue", {
       vue: { ...vue, onMounted() {}, onUnmounted() {} },
       "vue-router": {
         useRoute: () => route,
@@ -1361,7 +1362,7 @@ test("desktop plugin configuration loads each window's node without changing the
       "@/tools/validator": { getValidatorErrorMsg: String },
       "@/tools/vuetifyToast": { message: { success() {}, error: assert.fail } },
       "./SettingsPages.vue": {},
-      "./api": {
+      "../api": {
         pluginRemarkList: () => ({ execute: async () => ({ value: [] }) }),
         pluginGroupList: () => ({ execute: async () => ({ value: [] }) }),
         nodePluginGroupList: () => ({ execute: async () => ({ value: [] }) }),

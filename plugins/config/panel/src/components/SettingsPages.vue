@@ -2,7 +2,7 @@
 import { computed, watch } from "vue";
 import { VBadge, VTab, VTabs } from "vuetify/components";
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import type { SettingField } from "./api";
+import type { SettingField } from "../api";
 import SchemaForm from "./SchemaForm.vue";
 
 const props = defineProps<{

@@ -21,7 +21,7 @@ import {
   VTextField,
   VTextarea
 } from "vuetify/components";
-import type { SettingField } from "./api";
+import type { SettingField } from "../api";
 
 const props = defineProps<{
   fields: SettingField[];
