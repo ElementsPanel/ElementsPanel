@@ -1001,12 +1001,14 @@ for (const side of ["panel", "daemon"]) {
       name: "instance", inject: ["settingsForm"],
       apply(scope) {
         scope.settingsForm.declare({
+          page: () => ({ id: "terminal", title: "Terminal" }),
           fields: () => [{ key: "fontSize", type: "number", min: 8, max: 48 }],
           read: () => ({ ...terminal }), defaults: () => ({ fontSize: 14 }),
           write: values => { terminal = { ...terminal, ...values }; }
         });
         scope.settingsForm.declare({
           restartRequired: true,
+          page: () => ({ id: "backups", title: "Backups" }),
           fields: () => [{ key: "compression", type: "number", min: 0, max: 9 }],
           read: () => ({ ...backup }), defaults: () => ({ compression: 9 }),
           write: values => {
@@ -1021,6 +1023,7 @@ for (const side of ["panel", "daemon"]) {
     assert.deepEqual(ctx.settingsForm.declared(), ["instance"]);
     const form = await ctx.settingsForm.read("instance");
     assert.deepEqual(form.fields.map(field => field.key), ["fontSize", "compression"]);
+    assert.deepEqual(form.fields.map(field => field.page.id), ["terminal", "backups"]);
     assert.deepEqual(form.values, { fontSize: 20, compression: 6 });
     await assert.rejects(ctx.settingsForm.write("instance", { fontSize: 22, compression: 8 }), /save failed/);
     assert.deepEqual((await ctx.settingsForm.read("instance")).values, form.values);

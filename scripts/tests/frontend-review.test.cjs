@@ -512,7 +512,7 @@ test("switching node/plugin configuration cannot display or save a stale schema"
     "@/plugin/context": { ctx: {} },
     "@/tools/validator": { getValidatorErrorMsg: (error) => error.message },
     "@/tools/vuetifyToast": { message: { success() {}, error() {} } },
-    "./SchemaForm.vue": {},
+    "./SettingsPages.vue": {},
     "./api": {
       nodePluginSettings: () => ({
         execute: (config) => {
@@ -594,7 +594,7 @@ function pluginActionFixture(t, inventories = {}, nodeOverrides = {}, pluginMark
       success: (text) => notices.push({ color: "success", text }),
       error: (text) => notices.push({ color: "error", text })
     } },
-    "./SchemaForm.vue": {},
+    "./SettingsPages.vue": {},
     "./api": api
   });
   state.plugins.value = panelPlugins;
@@ -1075,7 +1075,7 @@ test("plugin configuration defaults follow grouped order after loading and prese
           "@/plugin/context": { ctx: { plugins: { loaded: [] } } },
           "@/tools/validator": { getValidatorErrorMsg: String },
           "@/tools/vuetifyToast": { message: { success() {}, error: assert.fail } },
-          "./SchemaForm.vue": {},
+          "./SettingsPages.vue": {},
           "./api": {
             pluginRemarkList: () => ({ execute: async () => ({ value: [] }) }),
             pluginGroupList: () => ({ execute: () => targetScope === "panel"
@@ -1172,7 +1172,7 @@ test("plugin configuration opens its save tooltip for unsaved edits and preserve
         error: (text) => errors.push(text),
         warning: () => assert.fail("the save reminder must use the button tooltip")
       } },
-      "./SchemaForm.vue": {},
+      "./SettingsPages.vue": {},
       "./api": {
         pluginRemarkList: () => ({ execute: async () => ({ value: [] }) }),
         pluginGroupList: () => ({ execute: async () => ({ value: [] }) }),
@@ -1315,7 +1315,7 @@ test("desktop plugin configuration loads each window's node without changing the
       "@/plugin/context": { ctx: { plugins: { loaded: [] } } },
       "@/tools/validator": { getValidatorErrorMsg: String },
       "@/tools/vuetifyToast": { message: { success() {}, error: assert.fail } },
-      "./SchemaForm.vue": {},
+      "./SettingsPages.vue": {},
       "./api": {
         pluginRemarkList: () => ({ execute: async () => ({ value: [] }) }),
         pluginGroupList: () => ({ execute: async () => ({ value: [] }) }),

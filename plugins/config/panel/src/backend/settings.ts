@@ -1,7 +1,7 @@
 import { type PluginChangeResult } from "mcsmanager-common";
 import { Service, type Context } from "cordis";
 import { remove } from "cosmokit";
-import { resetSettingsDeclarations, writeSettingsDeclarations } from "../../../shared/settings";
+import { resetSettingsDeclarations, settingsFields, writeSettingsDeclarations } from "../../../shared/settings";
 import type {
   PanelSettingsDeclaration,
   PanelSettingsFormService,
@@ -34,7 +34,7 @@ export class SettingsFormService extends Service implements PanelSettingsFormSer
 
   canReset(id: string) {
     const forms = this.forms(id);
-    const fields = forms.length ? ([] as PanelSettingsSchema["fields"]).concat(...forms.map((form) => form.fields())) : this.ctx.plugins.configuration(id).fields;
+    const fields = forms.length ? settingsFields(forms) : this.ctx.plugins.configuration(id).fields;
     return fields.some((field) => field.key && field.type !== "link") &&
       forms.every((form) => Boolean(form.defaults || form.reset));
   }
@@ -53,7 +53,7 @@ export class SettingsFormService extends Service implements PanelSettingsFormSer
     }
     return {
       id,
-      fields: ([] as PanelSettingsSchema["fields"]).concat(...forms.map((form) => form.fields())),
+      fields: settingsFields(forms),
       values: Object.assign({}, ...await Promise.all(forms.map((form) => form.read())))
     };
   }

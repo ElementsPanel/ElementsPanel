@@ -83,158 +83,184 @@ export async function apply(ctx: PanelPluginContext) {
 
   ctx.settingsForm.declare({
     reset: () => applyAuthSettings({ ...new AuthSettings() }, true),
-    fields: () => [
-      {
-        key: "loginInfo",
-        type: "text",
-        title: $t("TXT_CODE_COMMON_CUSTOM_TEXT_ON_THE_LOGIN_PAGE"),
-        description: $t("TXT_CODE_COMMON_SUPPORT_MARKDOWN_FORMAT")
-      },
-      {
-        key: "loginCheckIp",
-        type: "boolean",
-        title: $t("TXT_CODE_COMMON_LIMIT_LOGIN_ATTEMPTS_FROM_THE_SAME_IP"),
-        description: $t("TXT_CODE_USER_PASSWORD_BRUTE_FORCE_PROTECTION_HINT")
-      },
-      {
-        key: "totpDriftToleranceSteps",
-        type: "select",
-        title: $t("TXT_CODE_COMMON_TWO_FACTOR_AUTHENTICATION_TOTP_TIME_DRIFT_TOLERANCE"),
-        description: $t("TXT_CODE_USER_TOTP_CLOCK_TOLERANCE_HINT"),
-        options: [
-          { value: 0, label: $t("TXT_CODE_COMMON_DISABLE") },
-          { value: 1, label: "30 s" },
-          { value: 2, label: "60 s" }
-        ]
-      },
-      {
-        key: "allowChangeCmd",
-        type: "boolean",
-        title: $t("TXT_CODE_COMMON_ALLOW_NORMAL_USERS_TO_EDIT_INSTANCE_ADVANCED_CONFIGURATION"),
-        description: $t("TXT_CODE_USER_DOCKER_CONFIG_EDIT_PERMISSION_HINT")
-      },
-      {
-        key: "canFileManager",
-        type: "boolean",
-        title: $t("TXT_CODE_COMMON_FILE_MANAGEMENT_FOR_USERS"),
-        description: `${$t("TXT_CODE_COMMON_FILE_MANAGEMENT_IS_A_RESOURCE_INTENSIVE_AND_LESS_CONTROLLABLE_FUNCTION")} ${$t("TXT_CODE_COMMON_IF_YOUR_REGULAR_USERS_DO_NOT_NEED_FILE_MANAGEMENT_YOU_CAN_DISABLE_THEIR_ACCESS_TO_THIS")}`
-      },
-      {
-        key: "allowJavaManager",
-        type: "boolean",
-        title: $t("TXT_CODE_ALLOW_JAVA_MANAGER"),
-        description: $t("TXT_CODE_ALLOW_JAVA_MANAGER_DESC")
-      },
-      {
-        key: "ssoEnabled",
-        type: "boolean",
-        title: $t("TXT_CODE_SSO_ENABLE"),
-        description: $t("TXT_CODE_SSO_ENABLE_DESC")
-      },
-      {
-        key: "ssoType",
-        type: "select",
-        title: $t("TXT_CODE_SSO_TAB_TITLE"),
-        options: [
-          { value: "oidc", label: "OIDC" },
-          { value: "oauth2", label: "OAuth 2.0" }
-        ],
-        visibleWhen: "ssoEnabled"
-      },
-      {
-        key: "ssoProviderName",
-        type: "string",
-        title: $t("TXT_CODE_SSO_PROVIDER_NAME"),
-        description: $t("TXT_CODE_SSO_PROVIDER_NAME_DESC"),
-        visibleWhen: "ssoEnabled"
-      },
-      {
-        key: "ssoIconUrl",
-        type: "string",
-        title: $t("TXT_CODE_SSO_ICON_URL"),
-        description: $t("TXT_CODE_SSO_ICON_URL_DESC"),
-        visibleWhen: "ssoEnabled"
-      },
-      {
-        key: "ssoIssuer",
-        type: "string",
-        title: $t("TXT_CODE_SSO_ISSUER"),
-        description: $t("TXT_CODE_SSO_ISSUER_DESC"),
-        visibleWhen: ["ssoEnabled", "ssoType=oidc"]
-      },
-      {
-        key: "ssoAuthorizeUrl",
-        type: "string",
-        title: $t("TXT_CODE_SSO_AUTHORIZE_URL"),
-        description: $t("TXT_CODE_SSO_AUTHORIZE_URL_DESC"),
-        visibleWhen: ["ssoEnabled", "ssoType=oauth2"]
-      },
-      {
-        key: "ssoTokenUrl",
-        type: "string",
-        title: $t("TXT_CODE_SSO_TOKEN_URL"),
-        description: $t("TXT_CODE_SSO_TOKEN_URL_DESC"),
-        visibleWhen: ["ssoEnabled", "ssoType=oauth2"]
-      },
-      {
-        key: "ssoUserinfoUrl",
-        type: "string",
-        title: $t("TXT_CODE_SSO_USERINFO_URL"),
-        description: $t("TXT_CODE_SSO_USERINFO_URL_DESC"),
-        visibleWhen: ["ssoEnabled", "ssoType=oauth2"]
-      },
-      {
-        key: "ssoUserIdField",
-        type: "string",
-        title: $t("TXT_CODE_SSO_USER_ID_FIELD"),
-        description: $t("TXT_CODE_SSO_USER_ID_FIELD_DESC"),
-        visibleWhen: ["ssoEnabled", "ssoType=oauth2"]
-      },
-      {
-        key: "ssoScopes",
-        type: "string",
-        title: $t("TXT_CODE_SSO_SCOPES"),
-        description: $t("TXT_CODE_SSO_SCOPES_DESC"),
-        visibleWhen: ["ssoEnabled", "ssoType=oauth2"]
-      },
-      {
-        key: "ssoClientId",
-        type: "string",
-        title: "Client ID",
-        description: $t("TXT_CODE_SSO_CLIENT_ID_DESC"),
-        visibleWhen: "ssoEnabled"
-      },
-      {
-        key: "ssoClientSecret",
-        type: "string",
-        title: "Client Secret",
-        description: $t("TXT_CODE_SSO_CLIENT_SECRET_DESC"),
-        secret: true,
-        visibleWhen: "ssoEnabled"
-      },
-      {
-        key: "ssoCallbackUrl",
-        type: "string",
-        title: $t("TXT_CODE_SSO_CALLBACK_URL"),
-        description: $t("TXT_CODE_SSO_CALLBACK_URL_DESC"),
-        visibleWhen: "ssoEnabled"
-      },
-      {
-        key: "ssoOnlyMode",
-        type: "boolean",
-        title: $t("TXT_CODE_SSO_ONLY_MODE"),
-        description: $t("TXT_CODE_SSO_ONLY_MODE_DESC"),
-        options: yesNo(),
-        visibleWhen: "ssoEnabled"
-      },
-      {
-        key: "ssoAutoRedirect",
-        type: "boolean",
-        title: $t("TXT_CODE_SSO_AUTO_REDIRECT"),
-        description: $t("TXT_CODE_SSO_AUTO_REDIRECT_DESC"),
-        visibleWhen: "ssoEnabled"
-      }
-    ],
+    fields: () => {
+      const loginPage = { id: "login", title: $t("TXT_CODE_SETTINGS_PAGE_LOGIN") };
+      const permissionsPage = { id: "permissions", title: $t("TXT_CODE_SETTINGS_PAGE_USER_PERMISSIONS") };
+      const ssoPage = { id: "sso", title: $t("TXT_CODE_SETTINGS_PAGE_SINGLE_SIGN_ON") };
+      return [
+        {
+          key: "loginInfo",
+          page: loginPage,
+          type: "text",
+          title: $t("TXT_CODE_COMMON_CUSTOM_TEXT_ON_THE_LOGIN_PAGE"),
+          description: $t("TXT_CODE_COMMON_SUPPORT_MARKDOWN_FORMAT")
+        },
+        {
+          key: "loginCheckIp",
+          page: loginPage,
+          type: "boolean",
+          title: $t("TXT_CODE_COMMON_LIMIT_LOGIN_ATTEMPTS_FROM_THE_SAME_IP"),
+          description: $t("TXT_CODE_USER_PASSWORD_BRUTE_FORCE_PROTECTION_HINT")
+        },
+        {
+          key: "totpDriftToleranceSteps",
+          page: loginPage,
+          type: "select",
+          title: $t("TXT_CODE_COMMON_TWO_FACTOR_AUTHENTICATION_TOTP_TIME_DRIFT_TOLERANCE"),
+          description: $t("TXT_CODE_USER_TOTP_CLOCK_TOLERANCE_HINT"),
+          options: [
+            { value: 0, label: $t("TXT_CODE_COMMON_DISABLE") },
+            { value: 1, label: "30 s" },
+            { value: 2, label: "60 s" }
+          ]
+        },
+        {
+          key: "allowChangeCmd",
+          page: permissionsPage,
+          type: "boolean",
+          title: $t("TXT_CODE_COMMON_ALLOW_NORMAL_USERS_TO_EDIT_INSTANCE_ADVANCED_CONFIGURATION"),
+          description: $t("TXT_CODE_USER_DOCKER_CONFIG_EDIT_PERMISSION_HINT")
+        },
+        {
+          key: "canFileManager",
+          page: permissionsPage,
+          type: "boolean",
+          title: $t("TXT_CODE_COMMON_FILE_MANAGEMENT_FOR_USERS"),
+          description: `${$t("TXT_CODE_COMMON_FILE_MANAGEMENT_IS_A_RESOURCE_INTENSIVE_AND_LESS_CONTROLLABLE_FUNCTION")} ${$t("TXT_CODE_COMMON_IF_YOUR_REGULAR_USERS_DO_NOT_NEED_FILE_MANAGEMENT_YOU_CAN_DISABLE_THEIR_ACCESS_TO_THIS")}`
+        },
+        {
+          key: "allowJavaManager",
+          page: permissionsPage,
+          type: "boolean",
+          title: $t("TXT_CODE_ALLOW_JAVA_MANAGER"),
+          description: $t("TXT_CODE_ALLOW_JAVA_MANAGER_DESC")
+        },
+        {
+          key: "ssoEnabled",
+          page: ssoPage,
+          type: "boolean",
+          title: $t("TXT_CODE_SSO_ENABLE"),
+          description: $t("TXT_CODE_SSO_ENABLE_DESC")
+        },
+        {
+          key: "ssoType",
+          page: ssoPage,
+          type: "select",
+          title: $t("TXT_CODE_SSO_TAB_TITLE"),
+          options: [
+            { value: "oidc", label: "OIDC" },
+            { value: "oauth2", label: "OAuth 2.0" }
+          ],
+          visibleWhen: "ssoEnabled"
+        },
+        {
+          key: "ssoProviderName",
+          page: ssoPage,
+          type: "string",
+          title: $t("TXT_CODE_SSO_PROVIDER_NAME"),
+          description: $t("TXT_CODE_SSO_PROVIDER_NAME_DESC"),
+          visibleWhen: "ssoEnabled"
+        },
+        {
+          key: "ssoIconUrl",
+          page: ssoPage,
+          type: "string",
+          title: $t("TXT_CODE_SSO_ICON_URL"),
+          description: $t("TXT_CODE_SSO_ICON_URL_DESC"),
+          visibleWhen: "ssoEnabled"
+        },
+        {
+          key: "ssoIssuer",
+          page: ssoPage,
+          type: "string",
+          title: $t("TXT_CODE_SSO_ISSUER"),
+          description: $t("TXT_CODE_SSO_ISSUER_DESC"),
+          visibleWhen: ["ssoEnabled", "ssoType=oidc"]
+        },
+        {
+          key: "ssoAuthorizeUrl",
+          page: ssoPage,
+          type: "string",
+          title: $t("TXT_CODE_SSO_AUTHORIZE_URL"),
+          description: $t("TXT_CODE_SSO_AUTHORIZE_URL_DESC"),
+          visibleWhen: ["ssoEnabled", "ssoType=oauth2"]
+        },
+        {
+          key: "ssoTokenUrl",
+          page: ssoPage,
+          type: "string",
+          title: $t("TXT_CODE_SSO_TOKEN_URL"),
+          description: $t("TXT_CODE_SSO_TOKEN_URL_DESC"),
+          visibleWhen: ["ssoEnabled", "ssoType=oauth2"]
+        },
+        {
+          key: "ssoUserinfoUrl",
+          page: ssoPage,
+          type: "string",
+          title: $t("TXT_CODE_SSO_USERINFO_URL"),
+          description: $t("TXT_CODE_SSO_USERINFO_URL_DESC"),
+          visibleWhen: ["ssoEnabled", "ssoType=oauth2"]
+        },
+        {
+          key: "ssoUserIdField",
+          page: ssoPage,
+          type: "string",
+          title: $t("TXT_CODE_SSO_USER_ID_FIELD"),
+          description: $t("TXT_CODE_SSO_USER_ID_FIELD_DESC"),
+          visibleWhen: ["ssoEnabled", "ssoType=oauth2"]
+        },
+        {
+          key: "ssoScopes",
+          page: ssoPage,
+          type: "string",
+          title: $t("TXT_CODE_SSO_SCOPES"),
+          description: $t("TXT_CODE_SSO_SCOPES_DESC"),
+          visibleWhen: ["ssoEnabled", "ssoType=oauth2"]
+        },
+        {
+          key: "ssoClientId",
+          page: ssoPage,
+          type: "string",
+          title: "Client ID",
+          description: $t("TXT_CODE_SSO_CLIENT_ID_DESC"),
+          visibleWhen: "ssoEnabled"
+        },
+        {
+          key: "ssoClientSecret",
+          page: ssoPage,
+          type: "string",
+          title: "Client Secret",
+          description: $t("TXT_CODE_SSO_CLIENT_SECRET_DESC"),
+          secret: true,
+          visibleWhen: "ssoEnabled"
+        },
+        {
+          key: "ssoCallbackUrl",
+          page: ssoPage,
+          type: "string",
+          title: $t("TXT_CODE_SSO_CALLBACK_URL"),
+          description: $t("TXT_CODE_SSO_CALLBACK_URL_DESC"),
+          visibleWhen: "ssoEnabled"
+        },
+        {
+          key: "ssoOnlyMode",
+          page: ssoPage,
+          type: "boolean",
+          title: $t("TXT_CODE_SSO_ONLY_MODE"),
+          description: $t("TXT_CODE_SSO_ONLY_MODE_DESC"),
+          options: yesNo(),
+          visibleWhen: "ssoEnabled"
+        },
+        {
+          key: "ssoAutoRedirect",
+          page: ssoPage,
+          type: "boolean",
+          title: $t("TXT_CODE_SSO_AUTO_REDIRECT"),
+          description: $t("TXT_CODE_SSO_AUTO_REDIRECT_DESC"),
+          visibleWhen: "ssoEnabled"
+        }
+      ];
+    },
     read: readAuthSettings,
     write: applyAuthSettings
   });

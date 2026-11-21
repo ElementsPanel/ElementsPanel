@@ -44,6 +44,80 @@ function loadSfc(relative, overrides = {}) {
   return component.exports.default;
 }
 
+test("settings pages retain edits and submit all pages together", async (t) => {
+  const imports = {
+    "@/lang/i18n": { t: (key) => key },
+    "@/plugin/context": { usePluginService: () => undefined },
+    "@/config/router": { router: {} }
+  };
+  const Form = loadSfc("plugins/config/panel/src/SchemaForm.vue", imports);
+  const Pages = loadSfc("plugins/config/panel/src/SettingsPages.vue", {
+    ...imports, "./SchemaForm.vue": { default: Form }
+  });
+  const instance = { id: "instance", title: "Instance" };
+  const backup = { id: "backup", title: "Backup" };
+  const fields = vue.ref([
+    { key: "name", type: "string", title: "Name", page: instance },
+    { key: "path", type: "string", title: "Path", page: backup, visibleWhen: "enabled" },
+    { key: "enabled", type: "boolean", title: "Enabled", page: instance },
+    { key: "note", type: "string", title: "Note" }
+  ]);
+  const values = vue.reactive({ name: "original", path: "backups", enabled: true, note: "" });
+  const savedValues = vue.ref(JSON.parse(JSON.stringify(values)));
+  const page = vue.ref("");
+  const writes = [];
+  const target = document.createElement("div");
+  const navigationTarget = document.createElement("header");
+  const body = document.createElement("div");
+  target.append(navigationTarget, body);
+  document.body.appendChild(target);
+  const app = vue.createApp({ render: () => vue.h(Pages, {
+    fields: fields.value, values, savedValues: savedValues.value, page: page.value, navigationTarget,
+    "onUpdate:page": (value) => { page.value = value; },
+    onSave: () => writes.push(JSON.parse(JSON.stringify(values)))
+  }) });
+  app.use(Vuetify.createVuetify());
+  app.mount(body);
+  t.after(() => { app.unmount(); target.remove(); });
+  const tab = (title) => [...target.querySelectorAll(".v-tab")]
+    .find(element => element.textContent.includes(title));
+  const edit = async (value) => {
+    const input = target.querySelector('input[type="text"]');
+    input.value = value;
+    input.dispatchEvent(new window.Event("input", { bubbles: true }));
+    await flush();
+  };
+  await flush();
+  assert.equal(page.value, "instance");
+  assert.ok(navigationTarget.querySelector(".settings-pages-tabs"));
+  assert.equal(body.querySelector(".settings-pages-tabs"), null, "tabs stay outside the scrolling form");
+  assert.ok(navigationTarget.querySelector(".v-tab__slider"));
+  await edit("edited name");
+  tab("Backup").click();
+  await flush();
+  assert.equal(page.value, "backup");
+  await edit("edited backups");
+  tab("TXT_CODE_SETTINGS_PAGE_GENERAL").click();
+  await flush();
+  await edit("edited note");
+  tab("Instance").click();
+  await flush();
+  assert.equal(target.querySelector('input[type="text"]').value, "edited name");
+  target.querySelector("form").dispatchEvent(new window.Event("submit", {
+    bubbles: true, cancelable: true
+  }));
+  await flush();
+  assert.deepEqual(writes, [{ name: "edited name", path: "edited backups", enabled: true, note: "edited note" }]);
+  savedValues.value = JSON.parse(JSON.stringify(values));
+  fields.value = [...fields.value];
+  await flush();
+  assert.equal(page.value, "instance", "saving or refreshing fields keeps the active page");
+  fields.value = fields.value.filter(field => field.page?.id === "backup");
+  await flush();
+  assert.equal(page.value, "backup", "a removed page falls back to an available page");
+  assert.equal(target.querySelector(".settings-pages-tabs"), null);
+});
+
 const Empty = loadSfc("plugins/console/panel/src/components/Empty.vue", {
   "@/lang/i18n": { t: (key) => key }
 });

@@ -16,6 +16,7 @@ export async function registerTerminalSettings(ctx: PanelPluginContext) {
     const $t = scope.i18n.$t;
     scope.settingsForm.declare({
       defaults: () => ({ ...new TerminalSettings() }),
+      page: () => ({ id: "terminal", title: $t("TXT_CODE_SETTINGS_PAGE_TERMINAL") }),
       fields: () => [
         {
           key: "historyLimitKB",

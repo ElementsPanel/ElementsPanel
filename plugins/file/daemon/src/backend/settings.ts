@@ -17,37 +17,45 @@ export function registerSettings(ctx: DaemonPluginContext) {
   ctx.inject(["settingsForm"], (settingsCtx) =>
     settingsCtx.settingsForm.declare({
       defaults: () => ({ ...ctx.settings.defaults() }),
-      fields: () => [
-        {
-          key: "uploadSpeedRate",
-          type: "select",
-          title: $t("TXT_CODE_COMMON_USER_FILE_UPLOAD_RATE"),
-          description: $t("TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_UPLOAD_SPEED"),
-          options: speedOptions(config.uploadSpeedRate)
-        },
-        {
-          key: "downloadSpeedRate",
-          type: "select",
-          title: $t("TXT_CODE_COMMON_USER_FILE_DOWNLOAD_RATE"),
-          description: $t("TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_DOWNLOAD_SPEED"),
-          options: speedOptions(config.downloadSpeedRate)
-        },
-        {
-          key: "maxDownloadFromUrlFileCount",
-          type: "number",
-          title: $t("TXT_CODE_COMMON_MAXIMUM_OF_DOWNLOAD_FROM_URL"),
-          description: $t("TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED"),
-          min: 0
-        },
-        {
-          key: "maxFileEditSizeMiB",
-          type: "number",
-          title: $t("TXT_CODE_FILE_MAX_EDIT_SIZE_MIB"),
-          description: $t("TXT_CODE_FILE_MAX_EDIT_SIZE_MIB_DESC"),
-          unit: "MiB",
-          min: 1
-        }
-      ],
+      fields: () => {
+        const transferPage = { id: "transfer", title: $t("TXT_CODE_SETTINGS_PAGE_FILE_TRANSFER") };
+        const editingPage = { id: "editing", title: $t("TXT_CODE_SETTINGS_PAGE_FILE_EDITING") };
+        return [
+          {
+            key: "uploadSpeedRate",
+            page: transferPage,
+            type: "select",
+            title: $t("TXT_CODE_COMMON_USER_FILE_UPLOAD_RATE"),
+            description: $t("TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_UPLOAD_SPEED"),
+            options: speedOptions(config.uploadSpeedRate)
+          },
+          {
+            key: "downloadSpeedRate",
+            page: transferPage,
+            type: "select",
+            title: $t("TXT_CODE_COMMON_USER_FILE_DOWNLOAD_RATE"),
+            description: $t("TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_DOWNLOAD_SPEED"),
+            options: speedOptions(config.downloadSpeedRate)
+          },
+          {
+            key: "maxDownloadFromUrlFileCount",
+            page: transferPage,
+            type: "number",
+            title: $t("TXT_CODE_COMMON_MAXIMUM_OF_DOWNLOAD_FROM_URL"),
+            description: $t("TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED"),
+            min: 0
+          },
+          {
+            key: "maxFileEditSizeMiB",
+            page: editingPage,
+            type: "number",
+            title: $t("TXT_CODE_FILE_MAX_EDIT_SIZE_MIB"),
+            description: $t("TXT_CODE_FILE_MAX_EDIT_SIZE_MIB_DESC"),
+            unit: "MiB",
+            min: 1
+          }
+        ];
+      },
       read: () => ({
         uploadSpeedRate: config.uploadSpeedRate,
         downloadSpeedRate: config.downloadSpeedRate,

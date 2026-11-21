@@ -31,6 +31,7 @@ export function registerSettings(ctx: DaemonPluginContext) {
   ctx.inject(["settingsForm"], (settingsCtx) =>
     settingsCtx.settingsForm.declare({
       defaults: () => ({ remoteMappings: [] }),
+      page: () => ({ id: "nodes", title: $t("TXT_CODE_SETTINGS_PAGE_NODES") }),
       fields: () => [
         {
           key: "remoteMappings",

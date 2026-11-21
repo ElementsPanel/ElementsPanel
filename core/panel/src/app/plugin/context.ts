@@ -2,7 +2,8 @@ import type {
   NpmRuntimeUpdateService,
   NpmUpdateBatchOptions,
   NpmUpdateBatchResult,
-  PluginChangeResult
+  PluginChangeResult,
+  PluginSettingsPage
 } from "mcsmanager-common";
 import type Router from "@koa/router";
 import { Context } from "cordis";
@@ -50,6 +51,7 @@ export interface PanelSettingOption {
 
 /** Backend-declared settings fields with translated labels, shared by panel and daemon forms. */
 export interface PanelSettingField {
+  page?: PluginSettingsPage;
   /** The key in `read()`'s result and `write()`'s argument. Absent for `link`. */
   key?: string;
   type: PanelSettingFieldType;
@@ -89,6 +91,7 @@ export interface PanelSettingField {
 
 /** Resolve fields per request so their translated labels follow the active language. */
 export interface PanelSettingsDeclaration {
+  page?(): PluginSettingsPage;
   /** Changes to this form require a process restart. */
   restartRequired?: boolean;
   fields(): PanelSettingField[];

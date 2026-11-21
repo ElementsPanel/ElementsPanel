@@ -14,6 +14,7 @@ export function apply(ctx: DaemonPluginContext, service = ctx.instances) {
 
   ctx.inject(["settingsForm"], (scope) => scope.settingsForm.declare({
     defaults: () => ({ ...ctx.settings.defaults() }),
+    page: () => ({ id: "backups", title: ctx.i18n.$t("TXT_CODE_SETTINGS_PAGE_BACKUPS") }),
     fields: () => [
       {
         key: "instanceBackupPath",

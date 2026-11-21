@@ -140,81 +140,95 @@ export function apply(ctx: PanelPluginContext) {
 
   ctx.inject(["settingsForm"], (settingsCtx) => settingsCtx.settingsForm.declare({
     defaults: () => readAppearance({}),
-    fields: () => [
-      {
-        key: "pageTitle",
-        type: "string",
-        title: $t("TXT_CODE_COMMON_PAGE_TITLE"),
-        description: $t("TXT_CODE_COMMON_THIS_CHANGES_THE_PAGE_TITLE_OF_THE_BROWSER_TAB_LEAVE_BLANK_TO_RESET_TO_DEFAULT")
-      },
-      {
-        key: "logoImagePerTheme",
-        type: "boolean",
-        title: $t("TXT_CODE_CONSOLE_LOGO_PER_THEME")
-      },
-      {
-        key: "logoImage",
-        type: "string",
-        title: $t("TXT_CODE_CONSOLE_LOGO"),
-        description: $t("TXT_CODE_CONSOLE_LOGO_HINT"),
-        fileUpload: true,
-        visibleWhen: "logoImagePerTheme=false"
-      },
-      {
-        key: "logoImageLight",
-        type: "string",
-        title: $t("TXT_CODE_CONSOLE_LOGO_LIGHT"),
-        description: $t("TXT_CODE_CONSOLE_LOGO_HINT"),
-        fileUpload: true,
-        visibleWhen: "logoImagePerTheme"
-      },
-      {
-        key: "logoImageDark",
-        type: "string",
-        title: $t("TXT_CODE_CONSOLE_LOGO_DARK"),
-        description: $t("TXT_CODE_CONSOLE_LOGO_HINT"),
-        fileUpload: true,
-        visibleWhen: "logoImagePerTheme"
-      },
-      {
-        key: "backgroundImagePerTheme",
-        type: "boolean",
-        title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_PER_THEME")
-      },
-      {
-        key: "backgroundImage",
-        type: "string",
-        title: $t("TXT_CODE_COMMON_UI_BACKGROUND_IMAGE"),
-        description: $t("TXT_CODE_COMMON_THIS_FEATURE_MAY_BE_UNSTABLE_CANNOT_GUARANTEE_BEST_USER_EXPERIENCE"),
-        fileUpload: true,
-        visibleWhen: "backgroundImagePerTheme=false"
-      },
-      {
-        key: "backgroundImageLight",
-        type: "string",
-        title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_LIGHT"),
-        description: $t("TXT_CODE_COMMON_THIS_FEATURE_MAY_BE_UNSTABLE_CANNOT_GUARANTEE_BEST_USER_EXPERIENCE"),
-        fileUpload: true,
-        visibleWhen: "backgroundImagePerTheme"
-      },
-      {
-        key: "backgroundImageDark",
-        type: "string",
-        title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_DARK"),
-        description: $t("TXT_CODE_COMMON_THIS_FEATURE_MAY_BE_UNSTABLE_CANNOT_GUARANTEE_BEST_USER_EXPERIENCE"),
-        fileUpload: true,
-        visibleWhen: "backgroundImagePerTheme"
-      },
-      {
-        key: "backgroundImageBlur",
-        type: "number",
-        control: "slider",
-        title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_BLUR"),
-        min: 0,
-        max: 50,
-        unit: "px"
-      }
-    ],
+    fields: () => {
+      const brandingPage = { id: "branding", title: $t("TXT_CODE_SETTINGS_PAGE_BRANDING") };
+      const backgroundPage = { id: "background", title: $t("TXT_CODE_SETTINGS_PAGE_BACKGROUND") };
+      return [
+        {
+          key: "pageTitle",
+          page: brandingPage,
+          type: "string",
+          title: $t("TXT_CODE_COMMON_PAGE_TITLE"),
+          description: $t("TXT_CODE_COMMON_THIS_CHANGES_THE_PAGE_TITLE_OF_THE_BROWSER_TAB_LEAVE_BLANK_TO_RESET_TO_DEFAULT")
+        },
+        {
+          key: "logoImagePerTheme",
+          page: brandingPage,
+          type: "boolean",
+          title: $t("TXT_CODE_CONSOLE_LOGO_PER_THEME")
+        },
+        {
+          key: "logoImage",
+          page: brandingPage,
+          type: "string",
+          title: $t("TXT_CODE_CONSOLE_LOGO"),
+          description: $t("TXT_CODE_CONSOLE_LOGO_HINT"),
+          fileUpload: true,
+          visibleWhen: "logoImagePerTheme=false"
+        },
+        {
+          key: "logoImageLight",
+          page: brandingPage,
+          type: "string",
+          title: $t("TXT_CODE_CONSOLE_LOGO_LIGHT"),
+          description: $t("TXT_CODE_CONSOLE_LOGO_HINT"),
+          fileUpload: true,
+          visibleWhen: "logoImagePerTheme"
+        },
+        {
+          key: "logoImageDark",
+          page: brandingPage,
+          type: "string",
+          title: $t("TXT_CODE_CONSOLE_LOGO_DARK"),
+          description: $t("TXT_CODE_CONSOLE_LOGO_HINT"),
+          fileUpload: true,
+          visibleWhen: "logoImagePerTheme"
+        },
+        {
+          key: "backgroundImagePerTheme",
+          page: backgroundPage,
+          type: "boolean",
+          title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_PER_THEME")
+        },
+        {
+          key: "backgroundImage",
+          page: backgroundPage,
+          type: "string",
+          title: $t("TXT_CODE_COMMON_UI_BACKGROUND_IMAGE"),
+          description: $t("TXT_CODE_COMMON_THIS_FEATURE_MAY_BE_UNSTABLE_CANNOT_GUARANTEE_BEST_USER_EXPERIENCE"),
+          fileUpload: true,
+          visibleWhen: "backgroundImagePerTheme=false"
+        },
+        {
+          key: "backgroundImageLight",
+          page: backgroundPage,
+          type: "string",
+          title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_LIGHT"),
+          description: $t("TXT_CODE_COMMON_THIS_FEATURE_MAY_BE_UNSTABLE_CANNOT_GUARANTEE_BEST_USER_EXPERIENCE"),
+          fileUpload: true,
+          visibleWhen: "backgroundImagePerTheme"
+        },
+        {
+          key: "backgroundImageDark",
+          page: backgroundPage,
+          type: "string",
+          title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_DARK"),
+          description: $t("TXT_CODE_COMMON_THIS_FEATURE_MAY_BE_UNSTABLE_CANNOT_GUARANTEE_BEST_USER_EXPERIENCE"),
+          fileUpload: true,
+          visibleWhen: "backgroundImagePerTheme"
+        },
+        {
+          key: "backgroundImageBlur",
+          page: backgroundPage,
+          type: "number",
+          control: "slider",
+          title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_BLUR"),
+          min: 0,
+          max: 50,
+          unit: "px"
+        }
+      ];
+    },
     read: () => readAppearance(settings.config),
     write: (values) => writeAppearance(values, settings.config, () => settings.save())
   }));

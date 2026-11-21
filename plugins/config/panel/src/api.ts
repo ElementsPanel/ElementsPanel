@@ -1,4 +1,4 @@
-import type { PluginChangeResult, PluginState } from "../../../../core/common/src/plugin_contract";
+import type { PluginChangeResult, PluginSettingsPage, PluginState } from "../../../../core/common/src/plugin_contract";
 export type { PluginChangeResult };
 import { useDefineApi } from "@elementspanel/epanel-plugin-console/stores/useDefineApi";
 
@@ -40,6 +40,7 @@ export interface SettingOption {
 
 /** Field labels are already translated by the backend. */
 export interface SettingField {
+  page?: PluginSettingsPage;
   key?: string;
   type: SettingFieldType;
   title: string;

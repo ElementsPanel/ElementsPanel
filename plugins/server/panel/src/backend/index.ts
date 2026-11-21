@@ -162,67 +162,81 @@ export function apply(ctx: PanelPluginContext) {
     settingsCtx.settingsForm.declare({
       defaults: () => ({ ...ctx.settings.defaults() }),
       restartRequired: true,
-      fields: () => [
-        {
-          key: "httpPort",
-          type: "number",
-          title: $t("TXT_CODE_COMMON_PANEL_PORT"),
-          description: `${$t("TXT_CODE_COMMON_ENTER_AN_INTEGER_PORT_NUMBER_DEFAULT_23333")} ${$t("TXT_CODE_SERVER_RESTART_TIP")}`,
-          min: 1,
-          max: 65535
-        },
-        {
-          key: "httpIp",
-          type: "string",
-          title: $t("TXT_CODE_COMMON_PANEL_BINDING_IP"),
-          description: $t("TXT_CODE_COMMON_ENTER_ITS_IP_ADDRESS_TO_BIND_TO_A_SPECIFIC_NETWORK_INTERFACE")
-        },
-        {
-          key: "prefix",
-          type: "string",
-          title: $t("TXT_CODE_SERVER_PREFIX"),
-          description: $t("TXT_CODE_SERVER_PREFIX_TIP")
-        },
-        {
-          key: "ssl",
-          type: "boolean",
-          title: $t("TXT_CODE_SERVER_SSL"),
-          description: $t("TXT_CODE_SERVER_SSL_TIP")
-        },
-        {
-          key: "sslPemPath",
-          type: "string",
-          title: $t("TXT_CODE_SERVER_SSL_PEM"),
-          description: $t("TXT_CODE_SERVER_SSL_PEM_TIP"),
-          visibleWhen: "ssl"
-        },
-        {
-          key: "sslKeyPath",
-          type: "string",
-          title: $t("TXT_CODE_SERVER_SSL_KEY"),
-          description: $t("TXT_CODE_SERVER_SSL_KEY_TIP"),
-          visibleWhen: "ssl"
-        },
-        {
-          key: "crossDomain",
-          type: "boolean",
-          title: $t("TXT_CODE_COMMON_CROSS_ORIGIN_REQUEST_API_INTERFACE"),
-          description: $t("TXT_CODE_SERVER_CROSS_ORIGIN_SECURITY_HINT")
-        },
-        {
-          key: "reverseProxyMode",
-          type: "boolean",
-          title: $t("TXT_CODE_COMMON_REVERSE_PROXY_MODE"),
-          description: $t("TXT_CODE_COMMON_ENABLE_WHEN_USING_A_REVERSE_PROXY_TO_READ_THE_CLIENTS_REAL_IP")
-        },
-        {
-          key: "reverseProxyHeader",
-          type: "string",
-          title: $t("TXT_CODE_COMMON_REVERSE_PROXY_REQUEST_HEADER"),
-          description: $t("TXT_CODE_COMMON_NAME_OF_THE_REQUEST_HEADER_CONTAINING_THE_CLIENTS_REAL_IP"),
-          visibleWhen: "reverseProxyMode"
-        }
-      ],
+      fields: () => {
+        const networkPage = { id: "network", title: $t("TXT_CODE_SETTINGS_PAGE_NETWORK") };
+        const tlsPage = { id: "tls", title: $t("TXT_CODE_SETTINGS_PAGE_TLS") };
+        const proxyPage = { id: "proxy", title: $t("TXT_CODE_SETTINGS_PAGE_PROXY") };
+        return [
+          {
+            key: "httpPort",
+            page: networkPage,
+            type: "number",
+            title: $t("TXT_CODE_COMMON_PANEL_PORT"),
+            description: `${$t("TXT_CODE_COMMON_ENTER_AN_INTEGER_PORT_NUMBER_DEFAULT_23333")} ${$t("TXT_CODE_SERVER_RESTART_TIP")}`,
+            min: 1,
+            max: 65535
+          },
+          {
+            key: "httpIp",
+            page: networkPage,
+            type: "string",
+            title: $t("TXT_CODE_COMMON_PANEL_BINDING_IP"),
+            description: $t("TXT_CODE_COMMON_ENTER_ITS_IP_ADDRESS_TO_BIND_TO_A_SPECIFIC_NETWORK_INTERFACE")
+          },
+          {
+            key: "prefix",
+            page: networkPage,
+            type: "string",
+            title: $t("TXT_CODE_SERVER_PREFIX"),
+            description: $t("TXT_CODE_SERVER_PREFIX_TIP")
+          },
+          {
+            key: "ssl",
+            page: tlsPage,
+            type: "boolean",
+            title: $t("TXT_CODE_SERVER_SSL"),
+            description: $t("TXT_CODE_SERVER_SSL_TIP")
+          },
+          {
+            key: "sslPemPath",
+            page: tlsPage,
+            type: "string",
+            title: $t("TXT_CODE_SERVER_SSL_PEM"),
+            description: $t("TXT_CODE_SERVER_SSL_PEM_TIP"),
+            visibleWhen: "ssl"
+          },
+          {
+            key: "sslKeyPath",
+            page: tlsPage,
+            type: "string",
+            title: $t("TXT_CODE_SERVER_SSL_KEY"),
+            description: $t("TXT_CODE_SERVER_SSL_KEY_TIP"),
+            visibleWhen: "ssl"
+          },
+          {
+            key: "crossDomain",
+            page: proxyPage,
+            type: "boolean",
+            title: $t("TXT_CODE_COMMON_CROSS_ORIGIN_REQUEST_API_INTERFACE"),
+            description: $t("TXT_CODE_SERVER_CROSS_ORIGIN_SECURITY_HINT")
+          },
+          {
+            key: "reverseProxyMode",
+            page: proxyPage,
+            type: "boolean",
+            title: $t("TXT_CODE_COMMON_REVERSE_PROXY_MODE"),
+            description: $t("TXT_CODE_COMMON_ENABLE_WHEN_USING_A_REVERSE_PROXY_TO_READ_THE_CLIENTS_REAL_IP")
+          },
+          {
+            key: "reverseProxyHeader",
+            page: proxyPage,
+            type: "string",
+            title: $t("TXT_CODE_COMMON_REVERSE_PROXY_REQUEST_HEADER"),
+            description: $t("TXT_CODE_COMMON_NAME_OF_THE_REQUEST_HEADER_CONTAINING_THE_CLIENTS_REAL_IP"),
+            visibleWhen: "reverseProxyMode"
+          }
+        ];
+      },
       read: () => {
         const values: Record<string, unknown> = {};
         for (const key of SETTING_KEYS) values[key] = config[key];

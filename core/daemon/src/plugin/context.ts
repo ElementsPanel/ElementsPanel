@@ -2,7 +2,8 @@ import type {
   NpmRuntimeUpdateService,
   NpmUpdateBatchOptions,
   NpmUpdateBatchResult,
-  PluginChangeResult
+  PluginChangeResult,
+  PluginSettingsPage
 } from "mcsmanager-common";
 import { Context } from "cordis";
 import type Koa from "koa";
@@ -80,6 +81,7 @@ export interface DaemonSettingOption {
 
 /** Backend-declared settings fields with labels translated in the daemon's current language. */
 export interface DaemonSettingField {
+  page?: PluginSettingsPage;
   /** The key in `read()`'s result and `write()`'s argument. Absent for `link`. */
   key?: string;
   type: DaemonSettingFieldType;
@@ -114,6 +116,7 @@ export interface DaemonSettingField {
 
 /** Resolve fields per request so their translated labels follow the active language. */
 export interface DaemonSettingsDeclaration {
+  page?(): PluginSettingsPage;
   /** Changes to this form require a process restart. */
   restartRequired?: boolean;
   fields(): DaemonSettingField[];

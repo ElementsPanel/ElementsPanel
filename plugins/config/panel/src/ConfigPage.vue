@@ -58,7 +58,7 @@ import {
   type PluginChangeResult,
   type SettingsSchema
 } from "./api";
-import SchemaForm from "./SchemaForm.vue";
+import SettingsPages from "./SettingsPages.vue";
 
 type Scope = "panel" | "node";
 type PluginAction = "enable" | "disable" | "remove";
@@ -516,6 +516,9 @@ const selectedPlugin = computed(() =>
 );
 
 const schema = ref<SettingsSchema | null>(null);
+const settingsPage = ref("");
+const settingsPagesTarget = ref<HTMLElement | null>(null);
+watch([scope, selectedNodeId, currentId], () => { settingsPage.value = ""; });
 const savedSettings = ref("");
 const savedValues = computed<Record<string, unknown> | undefined>(() =>
   savedSettings.value ? JSON.parse(savedSettings.value) : undefined
@@ -1420,119 +1423,123 @@ const confirmAction = async () => {
     </Teleport>
 
     <div class="plugin-config-content">
-      <div v-if="selectedPlugin || isPhone" class="plugin-config-title-row">
-        <div class="plugin-config-title">
-          <VBtn
-            v-if="isPhone"
-            icon="mdi-menu"
-            variant="text"
-            :title="t('TXT_CODE_PLUGIN_LIST')"
-            :aria-label="t('TXT_CODE_PLUGIN_LIST')"
-            :aria-expanded="sidebarOpen"
-            @click="sidebarOpen = true"
-          />
-          <h2>{{ pluginLabel(selectedPlugin?.id) || t("TXT_CODE_PLUGIN_CONFIG") }}</h2>
-        </div>
-        <div v-if="selectedPlugin" class="plugin-config-meta">
-          <VChip
-            v-if="selectedPlugin.state"
-            size="small"
-            :color="selectedPlugin.state === 'active' ? 'success' : 'warning'"
-          >
-            {{ t(stateLabels[selectedPlugin.state]) }}
-          </VChip>
-          <span
-            v-if="selectedPlugin.version"
-            class="plugin-config-version plugin-config-plugin-version"
-          >
-            {{ t("TXT_CODE_VERSION") }} {{ selectedPlugin.version }}
-          </span>
-          <div class="plugin-config-actions">
-            <VTooltip
-              v-model="toggleTooltipOpen"
-              :text="
-                t(selectedPlugin.enabled ? 'TXT_CODE_PLUGIN_DISABLE' : 'TXT_CODE_PLUGIN_ENABLE')
-              "
-              location="top"
+      <div class="plugin-config-header">
+        <div v-if="selectedPlugin || isPhone" class="plugin-config-title-row">
+          <div class="plugin-config-title">
+            <VBtn
+              v-if="isPhone"
+              icon="mdi-menu"
+              variant="text"
+              :title="t('TXT_CODE_PLUGIN_LIST')"
+              :aria-label="t('TXT_CODE_PLUGIN_LIST')"
+              :aria-expanded="sidebarOpen"
+              @click="sidebarOpen = true"
+            />
+            <h2>{{ pluginLabel(selectedPlugin?.id) || t("TXT_CODE_PLUGIN_CONFIG") }}</h2>
+          </div>
+          <div v-if="selectedPlugin" class="plugin-config-meta">
+            <VChip
+              v-if="selectedPlugin.state"
+              size="small"
+              :color="selectedPlugin.state === 'active' ? 'success' : 'warning'"
             >
-              <template #activator="{ props: tooltipProps }">
-                <span v-bind="tooltipProps">
-                  <VBtn
-                    icon="mdi-power"
-                    :color="selectedPlugin.enabled ? 'warning' : 'success'"
-                    variant="text"
-                    :loading="
-                      pending === selectedPlugin.id ||
-                      (actionCandidate?.plugin.id === selectedPlugin.id && actionCandidate.checkingNodes)
-                    "
-                    :disabled="actionBusy"
-                    :aria-label="
-                      t(
-                        selectedPlugin.enabled
-                          ? 'TXT_CODE_PLUGIN_DISABLE'
-                          : 'TXT_CODE_PLUGIN_ENABLE'
-                      )
-                    "
-                    @click="toggleSelected(!selectedPlugin.enabled)"
-                  />
-                </span>
-              </template>
-            </VTooltip>
-            <VTooltip
-              v-if="schema?.fields.some((field) => field.type !== 'link')"
-              v-model="saveTooltipOpen"
-              :text="
-                t(settingsDirty ? 'TXT_CODE_PLUGIN_SAVE_REMINDER' : 'TXT_CODE_PLUGIN_SAVE_SETTINGS')
-              "
-              location="top"
+              {{ t(stateLabels[selectedPlugin.state]) }}
+            </VChip>
+            <span
+              v-if="selectedPlugin.version"
+              class="plugin-config-version plugin-config-plugin-version"
             >
-              <template #activator="{ props: tooltipProps }">
-                <span v-bind="tooltipProps">
-                  <VBtn
-                    icon="mdi-content-save"
-                    color="primary"
-                    :variant="settingsDirty ? 'flat' : 'text'"
-                    :loading="savingSettings"
-                    :disabled="schemaLoading"
-                    :aria-label="t('TXT_CODE_PLUGIN_SAVE_SETTINGS')"
-                    @click="saveSettings"
-                  />
-                </span>
-              </template>
-            </VTooltip>
-            <VTooltip
-              v-model="deleteTooltipOpen"
-              :text="
-                t(
-                  selectedPlugin?.removable
-                    ? 'TXT_CODE_PLUGIN_DELETE'
-                    : 'TXT_CODE_PLUGIN_DELETE_UNAVAILABLE'
-                )
-              "
-              location="top"
-            >
-              <template #activator="{ props: tooltipProps }">
-                <span v-bind="tooltipProps">
-                  <VBtn
-                    icon="mdi-delete"
-                    color="error"
-                    variant="text"
-                    :loading="deletingPlugin"
-                    :disabled="!selectedPlugin?.removable || actionBusy"
-                    :aria-label="
-                      t(
-                        selectedPlugin?.removable
-                          ? 'TXT_CODE_PLUGIN_DELETE'
-                          : 'TXT_CODE_PLUGIN_DELETE_UNAVAILABLE'
-                      )
-                    "
-                    @click="requestAction(selectedPlugin, 'remove')"
-                  />
-                </span>
-              </template>
-            </VTooltip>
+              {{ t("TXT_CODE_VERSION") }} {{ selectedPlugin.version }}
+            </span>
+            <div class="plugin-config-actions">
+              <VTooltip
+                v-model="toggleTooltipOpen"
+                :text="
+                  t(selectedPlugin.enabled ? 'TXT_CODE_PLUGIN_DISABLE' : 'TXT_CODE_PLUGIN_ENABLE')
+                "
+                location="top"
+              >
+                <template #activator="{ props: tooltipProps }">
+                  <span v-bind="tooltipProps">
+                    <VBtn
+                      icon="mdi-power"
+                      :color="selectedPlugin.enabled ? 'warning' : 'success'"
+                      variant="text"
+                      :loading="
+                        pending === selectedPlugin.id ||
+                        (actionCandidate?.plugin.id === selectedPlugin.id && actionCandidate.checkingNodes)
+                      "
+                      :disabled="actionBusy"
+                      :aria-label="
+                        t(
+                          selectedPlugin.enabled
+                            ? 'TXT_CODE_PLUGIN_DISABLE'
+                            : 'TXT_CODE_PLUGIN_ENABLE'
+                        )
+                      "
+                      @click="toggleSelected(!selectedPlugin.enabled)"
+                    />
+                  </span>
+                </template>
+              </VTooltip>
+              <VTooltip
+                v-if="schema?.fields.some((field) => field.type !== 'link')"
+                v-model="saveTooltipOpen"
+                :text="
+                  t(settingsDirty ? 'TXT_CODE_PLUGIN_SAVE_REMINDER' : 'TXT_CODE_PLUGIN_SAVE_SETTINGS')
+                "
+                location="top"
+              >
+                <template #activator="{ props: tooltipProps }">
+                  <span v-bind="tooltipProps">
+                    <VBtn
+                      icon="mdi-content-save"
+                      color="primary"
+                      :variant="settingsDirty ? 'flat' : 'text'"
+                      :loading="savingSettings"
+                      :disabled="schemaLoading"
+                      :aria-label="t('TXT_CODE_PLUGIN_SAVE_SETTINGS')"
+                      @click="saveSettings"
+                    />
+                  </span>
+                </template>
+              </VTooltip>
+              <VTooltip
+                v-model="deleteTooltipOpen"
+                :text="
+                  t(
+                    selectedPlugin?.removable
+                      ? 'TXT_CODE_PLUGIN_DELETE'
+                      : 'TXT_CODE_PLUGIN_DELETE_UNAVAILABLE'
+                  )
+                "
+                location="top"
+              >
+                <template #activator="{ props: tooltipProps }">
+                  <span v-bind="tooltipProps">
+                    <VBtn
+                      icon="mdi-delete"
+                      color="error"
+                      variant="text"
+                      :loading="deletingPlugin"
+                      :disabled="!selectedPlugin?.removable || actionBusy"
+                      :aria-label="
+                        t(
+                          selectedPlugin?.removable
+                            ? 'TXT_CODE_PLUGIN_DELETE'
+                            : 'TXT_CODE_PLUGIN_DELETE_UNAVAILABLE'
+                        )
+                      "
+                      @click="requestAction(selectedPlugin, 'remove')"
+                    />
+                  </span>
+                </template>
+              </VTooltip>
+            </div>
           </div>
         </div>
+
+        <div ref="settingsPagesTarget" class="plugin-config-pages" />
       </div>
 
       <div class="plugin-config-body">
@@ -1607,7 +1614,10 @@ const confirmAction = async () => {
             <VProgressCircular indeterminate />
           </div>
           <div v-else-if="schema && schema.fields.length" class="plugin-config-form">
-            <SchemaForm
+            <SettingsPages
+              :key="`${scope}:${selectedNodeId}:${schema.id}`"
+              v-model:page="settingsPage"
+              :navigation-target="settingsPagesTarget"
               :fields="schema.fields"
               :values="schema.values"
               :saved-values="savedValues"
@@ -2116,6 +2126,19 @@ const confirmAction = async () => {
   padding: 32px;
   padding-top: 20px;
   overflow: hidden;
+}
+
+.plugin-config-header {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.plugin-config-pages {
+  margin-bottom: 20px;
+}
+
+.plugin-config-pages:empty {
+  display: none;
 }
 
 .plugin-config-body {

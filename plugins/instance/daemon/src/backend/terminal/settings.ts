@@ -4,6 +4,7 @@ export function registerSettings(ctx: DaemonPluginContext) {
   ctx.inject(["settingsForm"], (settingsCtx) =>
     settingsCtx.settingsForm.declare({
       defaults: () => ({ ...ctx.settings.defaults() }),
+      page: () => ({ id: "terminal", title: ctx.i18n.$t("TXT_CODE_SETTINGS_PAGE_TERMINAL") }),
       fields: () => [
         {
           key: "outputBufferSize",

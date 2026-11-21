@@ -27,48 +27,58 @@ export function apply(ctx: DaemonPluginContext) {
     settingsCtx.settingsForm.declare({
       defaults: () => ({ ...ctx.settings.defaults() }),
       restartRequired: true,
-      fields: () => [
-        {
-          key: "port",
-          type: "number",
-          title: $t("TXT_CODE_DSERVER_PORT"),
-          description: $t("TXT_CODE_DSERVER_PORT_TIP"),
-          min: 1,
-          max: 65535
-        },
-        {
-          key: "ip",
-          type: "string",
-          title: $t("TXT_CODE_DSERVER_IP"),
-          description: $t("TXT_CODE_DSERVER_IP_TIP")
-        },
-        {
-          key: "prefix",
-          type: "string",
-          title: $t("TXT_CODE_DSERVER_PREFIX"),
-          description: $t("TXT_CODE_DSERVER_PREFIX_TIP")
-        },
-        {
-          key: "ssl",
-          type: "boolean",
-          title: $t("TXT_CODE_DSERVER_SSL"),
-          description: $t("TXT_CODE_DSERVER_SSL_TIP")
-        },
-        {
-          key: "sslPemPath",
-          type: "string",
-          title: $t("TXT_CODE_DSERVER_SSL_PEM"),
-          description: $t("TXT_CODE_DSERVER_PATH_TIP"),
-          visibleWhen: "ssl"
-        },
-        {
-          key: "sslKeyPath",
-          type: "string",
-          title: $t("TXT_CODE_DSERVER_SSL_KEY"),
-          description: $t("TXT_CODE_DSERVER_PATH_TIP"),
-          visibleWhen: "ssl"
-        }
-      ],
+      fields: () => {
+        const networkPage = { id: "network", title: $t("TXT_CODE_SETTINGS_PAGE_NETWORK") };
+        const tlsPage = { id: "tls", title: $t("TXT_CODE_SETTINGS_PAGE_TLS") };
+        return [
+          {
+            key: "port",
+            page: networkPage,
+            type: "number",
+            title: $t("TXT_CODE_DSERVER_PORT"),
+            description: $t("TXT_CODE_DSERVER_PORT_TIP"),
+            min: 1,
+            max: 65535
+          },
+          {
+            key: "ip",
+            page: networkPage,
+            type: "string",
+            title: $t("TXT_CODE_DSERVER_IP"),
+            description: $t("TXT_CODE_DSERVER_IP_TIP")
+          },
+          {
+            key: "prefix",
+            page: networkPage,
+            type: "string",
+            title: $t("TXT_CODE_DSERVER_PREFIX"),
+            description: $t("TXT_CODE_DSERVER_PREFIX_TIP")
+          },
+          {
+            key: "ssl",
+            page: tlsPage,
+            type: "boolean",
+            title: $t("TXT_CODE_DSERVER_SSL"),
+            description: $t("TXT_CODE_DSERVER_SSL_TIP")
+          },
+          {
+            key: "sslPemPath",
+            page: tlsPage,
+            type: "string",
+            title: $t("TXT_CODE_DSERVER_SSL_PEM"),
+            description: $t("TXT_CODE_DSERVER_PATH_TIP"),
+            visibleWhen: "ssl"
+          },
+          {
+            key: "sslKeyPath",
+            page: tlsPage,
+            type: "string",
+            title: $t("TXT_CODE_DSERVER_SSL_KEY"),
+            description: $t("TXT_CODE_DSERVER_PATH_TIP"),
+            visibleWhen: "ssl"
+          }
+        ];
+      },
       read: () => ({
         port: config.port,
         ip: config.ip,

@@ -159,9 +159,15 @@ export function createPluginQueue() {
   };
 }
 
+export interface PluginSettingsPage {
+  id: string;
+  title: string;
+}
+
 export interface PluginSettingField {
   key?: string;
   type: string;
+  page?: PluginSettingsPage;
   title?: string;
   min?: number;
   max?: number;

@@ -39,6 +39,7 @@ export function registerModManager(ctx: PanelPluginContext) {
       const $t = settingsScope.i18n.$t;
       settingsScope.settingsForm.declare({
         defaults: () => ({ ...new ModManagerSettings() }),
+        page: () => ({ id: "mods", title: $t("TXT_CODE_SETTINGS_PAGE_MODS") }),
         fields: () => [
           {
             key: "sourcePreference",

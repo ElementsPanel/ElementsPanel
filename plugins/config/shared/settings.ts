@@ -1,12 +1,25 @@
-import { validatePluginSettings, type PluginChangeResult, type PluginSettingField } from "mcsmanager-common";
+import { validatePluginSettings, type PluginChangeResult, type PluginSettingField, type PluginSettingsPage } from "mcsmanager-common";
 
 interface SettingsDeclaration {
+  page?(): PluginSettingsPage;
   restartRequired?: boolean;
   fields(): PluginSettingField[];
   read(): Record<string, unknown> | Promise<Record<string, unknown>>;
   write(values: Record<string, unknown>): void | Promise<void>;
   defaults?(): Record<string, unknown>;
   reset?(): void | Promise<void>;
+}
+
+export function settingsFields<T extends PluginSettingField>(forms: Array<{
+  fields(): T[];
+  page?(): PluginSettingsPage;
+}>): T[] {
+  const fields: T[] = [];
+  for (const form of forms) {
+    const page = form.page?.();
+    fields.push(...form.fields().map((field) => page && !field.page ? { ...field, page } : field));
+  }
+  return fields;
 }
 
 function fieldValues(fields: PluginSettingField[], values: Record<string, unknown>) {
