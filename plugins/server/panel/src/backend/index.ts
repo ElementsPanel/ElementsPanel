@@ -164,8 +164,6 @@ export function apply(ctx: PanelPluginContext) {
       restartRequired: true,
       fields: () => {
         const networkPage = { id: "network", title: $t("TXT_CODE_SETTINGS_PAGE_NETWORK") };
-        const tlsPage = { id: "tls", title: $t("TXT_CODE_SETTINGS_PAGE_TLS") };
-        const proxyPage = { id: "proxy", title: $t("TXT_CODE_SETTINGS_PAGE_PROXY") };
         return [
           {
             key: "httpPort",
@@ -192,14 +190,14 @@ export function apply(ctx: PanelPluginContext) {
           },
           {
             key: "ssl",
-            page: tlsPage,
+            page: networkPage,
             type: "boolean",
             title: $t("TXT_CODE_SERVER_SSL"),
             description: $t("TXT_CODE_SERVER_SSL_TIP")
           },
           {
             key: "sslPemPath",
-            page: tlsPage,
+            page: networkPage,
             type: "string",
             title: $t("TXT_CODE_SERVER_SSL_PEM"),
             description: $t("TXT_CODE_SERVER_SSL_PEM_TIP"),
@@ -207,7 +205,7 @@ export function apply(ctx: PanelPluginContext) {
           },
           {
             key: "sslKeyPath",
-            page: tlsPage,
+            page: networkPage,
             type: "string",
             title: $t("TXT_CODE_SERVER_SSL_KEY"),
             description: $t("TXT_CODE_SERVER_SSL_KEY_TIP"),
@@ -215,21 +213,21 @@ export function apply(ctx: PanelPluginContext) {
           },
           {
             key: "crossDomain",
-            page: proxyPage,
+            page: networkPage,
             type: "boolean",
             title: $t("TXT_CODE_COMMON_CROSS_ORIGIN_REQUEST_API_INTERFACE"),
             description: $t("TXT_CODE_SERVER_CROSS_ORIGIN_SECURITY_HINT")
           },
           {
             key: "reverseProxyMode",
-            page: proxyPage,
+            page: networkPage,
             type: "boolean",
             title: $t("TXT_CODE_COMMON_REVERSE_PROXY_MODE"),
             description: $t("TXT_CODE_COMMON_ENABLE_WHEN_USING_A_REVERSE_PROXY_TO_READ_THE_CLIENTS_REAL_IP")
           },
           {
             key: "reverseProxyHeader",
-            page: proxyPage,
+            page: networkPage,
             type: "string",
             title: $t("TXT_CODE_COMMON_REVERSE_PROXY_REQUEST_HEADER"),
             description: $t("TXT_CODE_COMMON_NAME_OF_THE_REQUEST_HEADER_CONTAINING_THE_CLIENTS_REAL_IP"),

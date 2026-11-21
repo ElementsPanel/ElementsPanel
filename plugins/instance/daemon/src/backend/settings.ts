@@ -45,17 +45,11 @@ export function registerSettings(ctx: DaemonPluginContext) {
     settingsCtx.settingsForm.declare({
       defaults: () => ({ ...ctx.settings.defaults() }),
       fields: () => {
-        const lifecyclePage = { id: "lifecycle", title: $t("TXT_CODE_SETTINGS_PAGE_INSTANCE_LIFECYCLE") };
-        const resourcesPage = { id: "resources", title: $t("TXT_CODE_SETTINGS_PAGE_INSTANCE_RESOURCES") };
-        const schedulesPage = { id: "schedules", title: $t("TXT_CODE_SETTINGS_PAGE_INSTANCE_SCHEDULES") };
+        const instancePage = { id: "instance", title: $t("TXT_CODE_SETTINGS_PAGE_INSTANCE") };
         return [
           ...Object.entries(INSTANCE_NUMBER_SETTINGS).map(([key, range]) => ({
             key,
-            page: key === "instanceLogMaxSizeKB" || key === "instanceDiskCheckIntervalSeconds"
-              ? resourcesPage
-              : key === "instanceScheduleMaxTasks" || key === "instanceScheduleMaxActions"
-              ? schedulesPage
-              : lifecyclePage,
+            page: instancePage,
             type: "number" as const,
             title: $t(INSTANCE_SETTING_MESSAGES[key as InstanceNumberSetting].title),
             description: $t(INSTANCE_SETTING_MESSAGES[key as InstanceNumberSetting].description),
@@ -65,21 +59,21 @@ export function registerSettings(ctx: DaemonPluginContext) {
           })),
           {
             key: "instanceStopForceKill",
-            page: lifecyclePage,
+            page: instancePage,
             type: "boolean",
             title: $t("TXT_CODE_INSTANCE_SETTING_INSTANCE_STOP_FORCE_KILL"),
             description: $t("TXT_CODE_INSTANCE_SETTING_INSTANCE_STOP_FORCE_KILL_DESC")
           },
           {
             key: "enableSoftShutdown",
-            page: lifecyclePage,
+            page: instancePage,
             type: "boolean",
             title: $t("TXT_CODE_DAEMON_ENABLE_SOFT_SHUTDOWN"),
             description: $t("TXT_CODE_DAEMON_ENABLE_SOFT_SHUTDOWN_INFO")
           },
           {
             key: "softShutdownSkipDocker",
-            page: lifecyclePage,
+            page: instancePage,
             type: "boolean",
             title: $t("TXT_CODE_DAEMON_SOFT_SHUTDOWN_SKIP_DOCKER"),
             description: $t("TXT_CODE_DAEMON_SOFT_SHUTDOWN_SKIP_DOCKER_INFO"),
@@ -87,7 +81,7 @@ export function registerSettings(ctx: DaemonPluginContext) {
           },
           {
             key: "softShutdownWaitSeconds",
-            page: lifecyclePage,
+            page: instancePage,
             type: "number",
             title: $t("TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS"),
             description: $t("TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS_INFO"),

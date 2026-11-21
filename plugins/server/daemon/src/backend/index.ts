@@ -29,7 +29,6 @@ export function apply(ctx: DaemonPluginContext) {
       restartRequired: true,
       fields: () => {
         const networkPage = { id: "network", title: $t("TXT_CODE_SETTINGS_PAGE_NETWORK") };
-        const tlsPage = { id: "tls", title: $t("TXT_CODE_SETTINGS_PAGE_TLS") };
         return [
           {
             key: "port",
@@ -56,14 +55,14 @@ export function apply(ctx: DaemonPluginContext) {
           },
           {
             key: "ssl",
-            page: tlsPage,
+            page: networkPage,
             type: "boolean",
             title: $t("TXT_CODE_DSERVER_SSL"),
             description: $t("TXT_CODE_DSERVER_SSL_TIP")
           },
           {
             key: "sslPemPath",
-            page: tlsPage,
+            page: networkPage,
             type: "string",
             title: $t("TXT_CODE_DSERVER_SSL_PEM"),
             description: $t("TXT_CODE_DSERVER_PATH_TIP"),
@@ -71,7 +70,7 @@ export function apply(ctx: DaemonPluginContext) {
           },
           {
             key: "sslKeyPath",
-            page: tlsPage,
+            page: networkPage,
             type: "string",
             title: $t("TXT_CODE_DSERVER_SSL_KEY"),
             description: $t("TXT_CODE_DSERVER_PATH_TIP"),

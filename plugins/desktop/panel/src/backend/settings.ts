@@ -26,18 +26,17 @@ export async function registerDesktopSettings(ctx: PanelPluginContext) {
         startButtonIconDark: ""
       }),
       fields: () => {
-        const startMenuPage = { id: "startMenu", title: $t("TXT_CODE_UI_START_MENU") };
-        const wallpaperPage = { id: "wallpaper", title: $t("TXT_CODE_SETTINGS_PAGE_WALLPAPER") };
+        const appearancePage = { id: "appearance", title: $t("TXT_CODE_SETTINGS_PAGE_APPEARANCE") };
         return [
           {
             key: "startButtonIconPerTheme",
-            page: startMenuPage,
+            page: appearancePage,
             type: "boolean",
             title: $t("TXT_CODE_DESKTOP_START_BUTTON_ICON_PER_THEME")
           },
           {
             key: "startButtonIcon",
-            page: startMenuPage,
+            page: appearancePage,
             type: "string",
             title: $t("TXT_CODE_DESKTOP_START_BUTTON_ICON"),
             description: $t("TXT_CODE_DESKTOP_START_BUTTON_ICON_HINT"),
@@ -46,7 +45,7 @@ export async function registerDesktopSettings(ctx: PanelPluginContext) {
           },
           {
             key: "startButtonIconLight",
-            page: startMenuPage,
+            page: appearancePage,
             type: "string",
             title: $t("TXT_CODE_DESKTOP_START_BUTTON_ICON_LIGHT"),
             description: $t("TXT_CODE_DESKTOP_START_BUTTON_ICON_HINT"),
@@ -55,7 +54,7 @@ export async function registerDesktopSettings(ctx: PanelPluginContext) {
           },
           {
             key: "startButtonIconDark",
-            page: startMenuPage,
+            page: appearancePage,
             type: "string",
             title: $t("TXT_CODE_DESKTOP_START_BUTTON_ICON_DARK"),
             description: $t("TXT_CODE_DESKTOP_START_BUTTON_ICON_HINT"),
@@ -64,7 +63,7 @@ export async function registerDesktopSettings(ctx: PanelPluginContext) {
           },
           {
             key: "wallpaperMode",
-            page: wallpaperPage,
+            page: appearancePage,
             type: "select",
             title: $t("TXT_CODE_DESKTOP_WALLPAPER_MODE"),
             options: [
@@ -74,14 +73,14 @@ export async function registerDesktopSettings(ctx: PanelPluginContext) {
           },
           {
             key: "wallpaperImagePerTheme",
-            page: wallpaperPage,
+            page: appearancePage,
             type: "boolean",
             title: $t("TXT_CODE_DESKTOP_WALLPAPER_IMAGE_PER_THEME"),
             visibleWhen: "wallpaperMode=image"
           },
           {
             key: "wallpaperImage",
-            page: wallpaperPage,
+            page: appearancePage,
             type: "string",
             title: $t("TXT_CODE_DESKTOP_WALLPAPER_IMAGE"),
             description: $t("TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC"),
@@ -90,7 +89,7 @@ export async function registerDesktopSettings(ctx: PanelPluginContext) {
           },
           {
             key: "wallpaperImageLight",
-            page: wallpaperPage,
+            page: appearancePage,
             type: "string",
             title: $t("TXT_CODE_DESKTOP_WALLPAPER_IMAGE_LIGHT"),
             description: $t("TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC"),
@@ -99,7 +98,7 @@ export async function registerDesktopSettings(ctx: PanelPluginContext) {
           },
           {
             key: "wallpaperImageDark",
-            page: wallpaperPage,
+            page: appearancePage,
             type: "string",
             title: $t("TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DARK"),
             description: $t("TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC"),
@@ -108,13 +107,13 @@ export async function registerDesktopSettings(ctx: PanelPluginContext) {
           },
           {
             key: "wallpaperBlurFollowConsole",
-            page: wallpaperPage,
+            page: appearancePage,
             type: "boolean",
             title: $t("TXT_CODE_DESKTOP_WALLPAPER_BLUR_FOLLOW_CONSOLE")
           },
           {
             key: "wallpaperBlur",
-            page: wallpaperPage,
+            page: appearancePage,
             type: "number",
             control: "slider",
             title: $t("TXT_CODE_DESKTOP_WALLPAPER_BLUR"),

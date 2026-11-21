@@ -86,7 +86,6 @@ export async function apply(ctx: PanelPluginContext) {
     fields: () => {
       const loginPage = { id: "login", title: $t("TXT_CODE_SETTINGS_PAGE_LOGIN") };
       const permissionsPage = { id: "permissions", title: $t("TXT_CODE_SETTINGS_PAGE_USER_PERMISSIONS") };
-      const ssoPage = { id: "sso", title: $t("TXT_CODE_SETTINGS_PAGE_SINGLE_SIGN_ON") };
       return [
         {
           key: "loginInfo",
@@ -137,14 +136,14 @@ export async function apply(ctx: PanelPluginContext) {
         },
         {
           key: "ssoEnabled",
-          page: ssoPage,
+          page: loginPage,
           type: "boolean",
           title: $t("TXT_CODE_SSO_ENABLE"),
           description: $t("TXT_CODE_SSO_ENABLE_DESC")
         },
         {
           key: "ssoType",
-          page: ssoPage,
+          page: loginPage,
           type: "select",
           title: $t("TXT_CODE_SSO_TAB_TITLE"),
           options: [
@@ -155,7 +154,7 @@ export async function apply(ctx: PanelPluginContext) {
         },
         {
           key: "ssoProviderName",
-          page: ssoPage,
+          page: loginPage,
           type: "string",
           title: $t("TXT_CODE_SSO_PROVIDER_NAME"),
           description: $t("TXT_CODE_SSO_PROVIDER_NAME_DESC"),
@@ -163,7 +162,7 @@ export async function apply(ctx: PanelPluginContext) {
         },
         {
           key: "ssoIconUrl",
-          page: ssoPage,
+          page: loginPage,
           type: "string",
           title: $t("TXT_CODE_SSO_ICON_URL"),
           description: $t("TXT_CODE_SSO_ICON_URL_DESC"),
@@ -171,7 +170,7 @@ export async function apply(ctx: PanelPluginContext) {
         },
         {
           key: "ssoIssuer",
-          page: ssoPage,
+          page: loginPage,
           type: "string",
           title: $t("TXT_CODE_SSO_ISSUER"),
           description: $t("TXT_CODE_SSO_ISSUER_DESC"),
@@ -179,7 +178,7 @@ export async function apply(ctx: PanelPluginContext) {
         },
         {
           key: "ssoAuthorizeUrl",
-          page: ssoPage,
+          page: loginPage,
           type: "string",
           title: $t("TXT_CODE_SSO_AUTHORIZE_URL"),
           description: $t("TXT_CODE_SSO_AUTHORIZE_URL_DESC"),
@@ -187,7 +186,7 @@ export async function apply(ctx: PanelPluginContext) {
         },
         {
           key: "ssoTokenUrl",
-          page: ssoPage,
+          page: loginPage,
           type: "string",
           title: $t("TXT_CODE_SSO_TOKEN_URL"),
           description: $t("TXT_CODE_SSO_TOKEN_URL_DESC"),
@@ -195,7 +194,7 @@ export async function apply(ctx: PanelPluginContext) {
         },
         {
           key: "ssoUserinfoUrl",
-          page: ssoPage,
+          page: loginPage,
           type: "string",
           title: $t("TXT_CODE_SSO_USERINFO_URL"),
           description: $t("TXT_CODE_SSO_USERINFO_URL_DESC"),
@@ -203,7 +202,7 @@ export async function apply(ctx: PanelPluginContext) {
         },
         {
           key: "ssoUserIdField",
-          page: ssoPage,
+          page: loginPage,
           type: "string",
           title: $t("TXT_CODE_SSO_USER_ID_FIELD"),
           description: $t("TXT_CODE_SSO_USER_ID_FIELD_DESC"),
@@ -211,7 +210,7 @@ export async function apply(ctx: PanelPluginContext) {
         },
         {
           key: "ssoScopes",
-          page: ssoPage,
+          page: loginPage,
           type: "string",
           title: $t("TXT_CODE_SSO_SCOPES"),
           description: $t("TXT_CODE_SSO_SCOPES_DESC"),
@@ -219,7 +218,7 @@ export async function apply(ctx: PanelPluginContext) {
         },
         {
           key: "ssoClientId",
-          page: ssoPage,
+          page: loginPage,
           type: "string",
           title: "Client ID",
           description: $t("TXT_CODE_SSO_CLIENT_ID_DESC"),
@@ -227,7 +226,7 @@ export async function apply(ctx: PanelPluginContext) {
         },
         {
           key: "ssoClientSecret",
-          page: ssoPage,
+          page: loginPage,
           type: "string",
           title: "Client Secret",
           description: $t("TXT_CODE_SSO_CLIENT_SECRET_DESC"),
@@ -236,7 +235,7 @@ export async function apply(ctx: PanelPluginContext) {
         },
         {
           key: "ssoCallbackUrl",
-          page: ssoPage,
+          page: loginPage,
           type: "string",
           title: $t("TXT_CODE_SSO_CALLBACK_URL"),
           description: $t("TXT_CODE_SSO_CALLBACK_URL_DESC"),
@@ -244,7 +243,7 @@ export async function apply(ctx: PanelPluginContext) {
         },
         {
           key: "ssoOnlyMode",
-          page: ssoPage,
+          page: loginPage,
           type: "boolean",
           title: $t("TXT_CODE_SSO_ONLY_MODE"),
           description: $t("TXT_CODE_SSO_ONLY_MODE_DESC"),
@@ -253,7 +252,7 @@ export async function apply(ctx: PanelPluginContext) {
         },
         {
           key: "ssoAutoRedirect",
-          page: ssoPage,
+          page: loginPage,
           type: "boolean",
           title: $t("TXT_CODE_SSO_AUTO_REDIRECT"),
           description: $t("TXT_CODE_SSO_AUTO_REDIRECT_DESC"),

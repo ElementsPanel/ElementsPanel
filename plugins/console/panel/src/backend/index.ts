@@ -141,25 +141,24 @@ export function apply(ctx: PanelPluginContext) {
   ctx.inject(["settingsForm"], (settingsCtx) => settingsCtx.settingsForm.declare({
     defaults: () => readAppearance({}),
     fields: () => {
-      const brandingPage = { id: "branding", title: $t("TXT_CODE_SETTINGS_PAGE_BRANDING") };
-      const backgroundPage = { id: "background", title: $t("TXT_CODE_SETTINGS_PAGE_BACKGROUND") };
+      const appearancePage = { id: "appearance", title: $t("TXT_CODE_SETTINGS_PAGE_APPEARANCE") };
       return [
         {
           key: "pageTitle",
-          page: brandingPage,
+          page: appearancePage,
           type: "string",
           title: $t("TXT_CODE_COMMON_PAGE_TITLE"),
           description: $t("TXT_CODE_COMMON_THIS_CHANGES_THE_PAGE_TITLE_OF_THE_BROWSER_TAB_LEAVE_BLANK_TO_RESET_TO_DEFAULT")
         },
         {
           key: "logoImagePerTheme",
-          page: brandingPage,
+          page: appearancePage,
           type: "boolean",
           title: $t("TXT_CODE_CONSOLE_LOGO_PER_THEME")
         },
         {
           key: "logoImage",
-          page: brandingPage,
+          page: appearancePage,
           type: "string",
           title: $t("TXT_CODE_CONSOLE_LOGO"),
           description: $t("TXT_CODE_CONSOLE_LOGO_HINT"),
@@ -168,7 +167,7 @@ export function apply(ctx: PanelPluginContext) {
         },
         {
           key: "logoImageLight",
-          page: brandingPage,
+          page: appearancePage,
           type: "string",
           title: $t("TXT_CODE_CONSOLE_LOGO_LIGHT"),
           description: $t("TXT_CODE_CONSOLE_LOGO_HINT"),
@@ -177,7 +176,7 @@ export function apply(ctx: PanelPluginContext) {
         },
         {
           key: "logoImageDark",
-          page: brandingPage,
+          page: appearancePage,
           type: "string",
           title: $t("TXT_CODE_CONSOLE_LOGO_DARK"),
           description: $t("TXT_CODE_CONSOLE_LOGO_HINT"),
@@ -186,13 +185,13 @@ export function apply(ctx: PanelPluginContext) {
         },
         {
           key: "backgroundImagePerTheme",
-          page: backgroundPage,
+          page: appearancePage,
           type: "boolean",
           title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_PER_THEME")
         },
         {
           key: "backgroundImage",
-          page: backgroundPage,
+          page: appearancePage,
           type: "string",
           title: $t("TXT_CODE_COMMON_UI_BACKGROUND_IMAGE"),
           description: $t("TXT_CODE_COMMON_THIS_FEATURE_MAY_BE_UNSTABLE_CANNOT_GUARANTEE_BEST_USER_EXPERIENCE"),
@@ -201,7 +200,7 @@ export function apply(ctx: PanelPluginContext) {
         },
         {
           key: "backgroundImageLight",
-          page: backgroundPage,
+          page: appearancePage,
           type: "string",
           title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_LIGHT"),
           description: $t("TXT_CODE_COMMON_THIS_FEATURE_MAY_BE_UNSTABLE_CANNOT_GUARANTEE_BEST_USER_EXPERIENCE"),
@@ -210,7 +209,7 @@ export function apply(ctx: PanelPluginContext) {
         },
         {
           key: "backgroundImageDark",
-          page: backgroundPage,
+          page: appearancePage,
           type: "string",
           title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_DARK"),
           description: $t("TXT_CODE_COMMON_THIS_FEATURE_MAY_BE_UNSTABLE_CANNOT_GUARANTEE_BEST_USER_EXPERIENCE"),
@@ -219,7 +218,7 @@ export function apply(ctx: PanelPluginContext) {
         },
         {
           key: "backgroundImageBlur",
-          page: backgroundPage,
+          page: appearancePage,
           type: "number",
           control: "slider",
           title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_BLUR"),

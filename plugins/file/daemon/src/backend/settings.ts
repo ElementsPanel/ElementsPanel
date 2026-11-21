@@ -18,12 +18,11 @@ export function registerSettings(ctx: DaemonPluginContext) {
     settingsCtx.settingsForm.declare({
       defaults: () => ({ ...ctx.settings.defaults() }),
       fields: () => {
-        const transferPage = { id: "transfer", title: $t("TXT_CODE_SETTINGS_PAGE_FILE_TRANSFER") };
-        const editingPage = { id: "editing", title: $t("TXT_CODE_SETTINGS_PAGE_FILE_EDITING") };
+        const filePage = { id: "files", title: $t("TXT_CODE_SETTINGS_PAGE_FILES") };
         return [
           {
             key: "uploadSpeedRate",
-            page: transferPage,
+            page: filePage,
             type: "select",
             title: $t("TXT_CODE_COMMON_USER_FILE_UPLOAD_RATE"),
             description: $t("TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_UPLOAD_SPEED"),
@@ -31,7 +30,7 @@ export function registerSettings(ctx: DaemonPluginContext) {
           },
           {
             key: "downloadSpeedRate",
-            page: transferPage,
+            page: filePage,
             type: "select",
             title: $t("TXT_CODE_COMMON_USER_FILE_DOWNLOAD_RATE"),
             description: $t("TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_DOWNLOAD_SPEED"),
@@ -39,7 +38,7 @@ export function registerSettings(ctx: DaemonPluginContext) {
           },
           {
             key: "maxDownloadFromUrlFileCount",
-            page: transferPage,
+            page: filePage,
             type: "number",
             title: $t("TXT_CODE_COMMON_MAXIMUM_OF_DOWNLOAD_FROM_URL"),
             description: $t("TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED"),
@@ -47,7 +46,7 @@ export function registerSettings(ctx: DaemonPluginContext) {
           },
           {
             key: "maxFileEditSizeMiB",
-            page: editingPage,
+            page: filePage,
             type: "number",
             title: $t("TXT_CODE_FILE_MAX_EDIT_SIZE_MIB"),
             description: $t("TXT_CODE_FILE_MAX_EDIT_SIZE_MIB_DESC"),
