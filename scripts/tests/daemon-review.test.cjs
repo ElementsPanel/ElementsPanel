@@ -681,7 +681,7 @@ test("backup quota failures preserve the actual running instance state", async (
     println() {},
     print() {}
   };
-  load("plugins/backup/daemon/src/backend/index.ts", { "../i18n": { localeMessages: {} } }).apply({
+  load("plugins/instance/daemon/src/backend/backup/index.ts", { "../i18n": { localeMessages: {} } }).apply({
     i18n: { define() {}, $t: (key) => key },
     logger,
     settings: { config: { instanceBackupPath: backups, instanceBackupMaxSize: 0.000000001 } },
@@ -696,6 +696,7 @@ test("backup quota failures preserve the actual running instance state", async (
     instances: { Instance: { STATUS_STOP: 0, STATUS_BUSY: -1 }, subsystem: {} },
     archive: {},
     schedules: { register() {} },
+    inject: (_services, register) => register({ settingsForm: { declare() {} } }),
     features: { add() {} },
     protocol: { on() {} }
   });

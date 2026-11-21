@@ -238,7 +238,9 @@ test("sorting fails before writing any catalogue when a language is invalid", as
 });
 
 test("repository translations cover every language and static translation reference", () => {
-  assert.ok(validateCatalogues(root).files >= 240);
+  const result = validateCatalogues(root);
+  assert.equal(result.files, result.catalogues * LANGUAGES.length);
+  assert.ok(result.catalogues >= 15);
 });
 
 const load = createLoader({ compiler: ts, globals: true, host: "frontend" });

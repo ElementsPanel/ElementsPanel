@@ -1,4 +1,0 @@
-{
-  "TXT_CODE_DAEMON_OUTPUT_BUFFER_SIZE": "Taille du tampon de journalisation",
-  "TXT_CODE_DAEMON_OUTPUT_BUFFER_SIZE_INFO": "Augmenter le tampon permet de mieux garantir l'intégrité du contenu de sortie du terminal, mais augmente la pression sur la mémoire et les performances, pouvant même provoquer des fuites de mémoire."
-}

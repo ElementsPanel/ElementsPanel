@@ -1,6 +1,7 @@
-import { validatePluginSettings, type PluginChangeResult } from "mcsmanager-common";
+import { type PluginChangeResult } from "mcsmanager-common";
 import { Service, type Context } from "cordis";
 import { remove } from "cosmokit";
+import { resetSettingsDeclarations, writeSettingsDeclarations } from "../../../shared/settings";
 import type {
   DaemonSettingsDeclaration,
   DaemonSettingsFormService,
@@ -23,59 +24,42 @@ export class SettingsFormService extends Service implements DaemonSettingsFormSe
   }
 
   declared() {
-    return this.declarations.map((entry) => entry.id);
+    return [...new Set(this.declarations.map((entry) => entry.id))];
+  }
+
+  private forms(id: string) {
+    return this.declarations.filter((entry) => entry.id === id).map((entry) => entry.declaration);
   }
 
   canReset(id: string) {
-    const entry = this.declarations.find((item) => item.id === id);
-    const fields = entry ? entry.declaration.fields() : this.ctx.plugins.configuration(id).fields;
+    const forms = this.forms(id);
+    const fields = forms.length ? ([] as DaemonSettingsSchema["fields"]).concat(...forms.map((form) => form.fields())) : this.ctx.plugins.configuration(id).fields;
     return fields.some((field) => field.key && field.type !== "link") &&
-      (!entry || Boolean(entry.declaration.defaults || entry.declaration.reset));
+      forms.every((form) => Boolean(form.defaults || form.reset));
   }
 
   async reset(id: string): Promise<PluginChangeResult> {
-    const entry = this.declarations.find((item) => item.id === id);
-    if (!entry) return (await this.ctx.plugins.configure(id, null)).result!;
-    return this.ctx.plugins.runExclusive(async () => {
-      if (entry.declaration.reset) {
-        await entry.declaration.reset();
-      } else {
-        if (!entry.declaration.defaults) throw new Error("Plugin does not provide default settings.");
-        const defaults = entry.declaration.defaults();
-        const fields = entry.declaration.fields();
-        const values: Record<string, unknown> = {};
-        for (const field of fields) {
-          if (field.key && field.type !== "link") values[field.key] = defaults[field.key];
-        }
-        validatePluginSettings(fields, values);
-        await entry.declaration.write(values);
-      }
-      return {
-        saved: true,
-        application: entry.declaration.restartRequired ? "restart-required" : "applied"
-      };
-    });
+    const forms = this.forms(id);
+    if (!forms.length) return (await this.ctx.plugins.configure(id, null)).result!;
+    return this.ctx.plugins.runExclusive(() => resetSettingsDeclarations(forms));
   }
 
   async read(id: string): Promise<DaemonSettingsSchema | null> {
-    const entry = this.declarations.find((item) => item.id === id);
-    if (!entry) {
+    const forms = this.forms(id);
+    if (!forms.length) {
       const schema = this.ctx.plugins.configuration(id);
       return schema.fields.length ? schema : null;
     }
-    return { id, fields: entry.declaration.fields(), values: await entry.declaration.read() };
+    return {
+      id,
+      fields: ([] as DaemonSettingsSchema["fields"]).concat(...forms.map((form) => form.fields())),
+      values: Object.assign({}, ...await Promise.all(forms.map((form) => form.read())))
+    };
   }
 
   async write(id: string, values: Record<string, unknown>): Promise<PluginChangeResult> {
-    const entry = this.declarations.find((item) => item.id === id);
-    if (!entry) return (await this.ctx.plugins.configure(id, values)).result!;
-    return this.ctx.plugins.runExclusive(async () => {
-      validatePluginSettings(entry.declaration.fields(), values);
-      await entry.declaration.write(values);
-      return {
-        saved: true,
-        application: entry.declaration.restartRequired ? "restart-required" : "applied"
-      };
-    });
+    const forms = this.forms(id);
+    if (!forms.length) return (await this.ctx.plugins.configure(id, values)).result!;
+    return this.ctx.plugins.runExclusive(() => writeSettingsDeclarations(forms, values));
   }
 }

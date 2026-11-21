@@ -40,6 +40,7 @@ test("each built-in package owns one manifest and preserves its side-specific id
     }
     assert.equal(plugins.find((plugin) => plugin.id === "instance").folder, "instance");
     assert.equal(plugins.some((plugin) => plugin.id === "mod-manager"), false);
+    assert.equal(plugins.some((plugin) => ["terminal", "backup", "node"].includes(plugin.id)), false);
     assert.equal(
       plugins.some((plugin) => plugin.id === (side === "panel" ? "auth" : "market")),
       false

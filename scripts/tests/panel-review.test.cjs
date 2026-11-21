@@ -346,7 +346,7 @@ test("memory cache returns values and honors expiry before periodic cleanup", (t
 });
 
 test("node RPC rejects null errors and disconnects and cleans the socket that accepted the request", async () => {
-  const { default: RemoteRequest } = load("plugins/node/panel/src/backend/remote_command.ts", {
+  const { default: RemoteRequest } = load("plugins/instance/panel/src/backend/node/remote_command.ts", {
     "./remote_entity": { default: { STATUS_OK: 200 }, __esModule: true },
     "./runtime": { $t: (key) => key }
   });
@@ -606,11 +606,11 @@ test("enabled user plugin failure denies requests/uploads until its guard return
 });
 
 test("node overview imports legacy mappings and refreshes the addresses used by file and terminal access", async () => {
-  const { default: RemoteRequest } = load("plugins/node/panel/src/backend/remote_command.ts", {
+  const { default: RemoteRequest } = load("plugins/instance/panel/src/backend/node/remote_command.ts", {
     "./remote_entity": { default: { STATUS_OK: 200 }, __esModule: true },
     "./runtime": { $t: (key) => key }
   });
-  const { RemoteServiceConfig } = load("plugins/node/panel/src/backend/remote_config.ts", {
+  const { RemoteServiceConfig } = load("plugins/instance/panel/src/backend/node/remote_config.ts", {
     "mcsmanager-common": { removeTrail: (value) => value }
   });
   const config = new RemoteServiceConfig();

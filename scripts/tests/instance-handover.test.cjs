@@ -106,6 +106,7 @@ async function fixture(t, { sleep = async () => {}, configs = [], settings = {} 
           }
         }
       });
+      scope.set("archive", {});
       scope.set("transfer", {});
       scope.set("features", { add() {} });
       scope.set("overview", { provide() {} });
@@ -149,6 +150,9 @@ async function fixture(t, { sleep = async () => {}, configs = [], settings = {} 
         "tools/steam_cmd.ts": { initSteamCmd() {} },
         "service/version_adapter.ts": { migrateConfig() {} },
         "settings.ts": { registerSettings() {} },
+        "node/index.ts": { apply() {} },
+        "terminal/index.ts": { apply() {} },
+        "backup/index.ts": { apply() {} },
         "install_task.ts": { createInstanceInstallTaskClass: () => class {} },
         "minecraft_task.ts": { apply() {} },
         "java/index.ts": {

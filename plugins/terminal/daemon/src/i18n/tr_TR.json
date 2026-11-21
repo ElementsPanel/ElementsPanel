@@ -1,4 +1,0 @@
-{
-  "TXT_CODE_DAEMON_OUTPUT_BUFFER_SIZE": "Günlük Arabellek Boyutu",
-  "TXT_CODE_DAEMON_OUTPUT_BUFFER_SIZE_INFO": "Arabelleği büyütmek terminal çıktı içeriğinin bütünlüğünü daha iyi sağlayabilir, ancak bellek ve performans üzerindeki baskıyı artırır, hatta bellek sızıntısına neden olabilir."
-}

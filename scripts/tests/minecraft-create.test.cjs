@@ -854,12 +854,16 @@ test("instance owns Java before restoration, leaves status to external plugins a
   ctx.plugin(OverviewService);
   ctx.set("settings", { config: {} });
   ctx.set("storage", {});
+  ctx.set("archive", {});
   ctx.set("transfer", {});
   ctx.set("files", { getFileManager: f.ctx.instances.fileManager });
   const registries = load("plugins/instance/daemon/src/backend/registries.ts", {
     "./service/async_task_core": { AsyncTask, TaskCenter }
   });
   const instancePlugin = load("plugins/instance/daemon/src/backend/index.ts", {
+    "./node": { apply() {} },
+    "./terminal": { apply() {} },
+    "./backup": { apply() {} },
     "./tools/steam_cmd": { initSteamCmd() {} },
     "./service/version_adapter": { migrateConfig() {} },
     "./settings": load("plugins/instance/daemon/src/backend/settings.ts", {

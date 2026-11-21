@@ -51,47 +51,64 @@ function transpile(filename, source = fs.readFileSync(filename, "utf8"), compile
 
 function createLoader({ host, resolve, globals = false, transform, compiler = ts } = {}) {
   const hostRequire = host ? from(host) : null;
+  let sourceCache;
   return function load(relative, overrides = {}, input) {
+    const topLevel = !sourceCache;
+    sourceCache ??= new Map();
     const filename = path.resolve(root, relative);
-    const nativeRequire = Module.createRequire(filename);
-    const side = filename.match(/[/\\]plugins[/\\][^/\\]+[/\\](panel|daemon)[/\\]/)?.[1];
-    const workspace =
-      side === "daemon"
-        ? "daemon"
-        : side === "panel"
-        ? filename.includes(`${path.sep}backend${path.sep}`)
-          ? "panel"
-          : "frontend"
-        : filename.match(/[/\\]core[/\\](panel|daemon|frontend|common)[/\\]/)?.[1];
-    const fallback = workspace ? from(workspace) : null;
-    const localRequire = Object.assign((id) => {
-      if (!id.startsWith(".") && fallback) {
-        try {
-          return nativeRequire(id);
-        } catch (error) {
-          if (error.code !== "MODULE_NOT_FOUND") throw error;
+    if (sourceCache.has(filename)) return sourceCache.get(filename).exports;
+    try {
+      const nativeRequire = Module.createRequire(filename);
+      const side = filename.match(/[/\\]plugins[/\\][^/\\]+[/\\](panel|daemon)[/\\]/)?.[1];
+      const workspace =
+        side === "daemon"
+          ? "daemon"
+          : side === "panel"
+          ? filename.includes(`${path.sep}backend${path.sep}`)
+            ? "panel"
+            : "frontend"
+          : filename.match(/[/\\]core[/\\](panel|daemon|frontend|common)[/\\]/)?.[1];
+      const fallback = workspace ? from(workspace) : null;
+      const localRequire = Object.assign((id) => {
+        if (id.startsWith(".")) {
+          const base = path.resolve(path.dirname(filename), id);
+          const source = [base + ".ts", path.join(base, "index.ts")].find(file => fs.existsSync(file));
+          if (source) return load(path.relative(root, source), overrides);
         }
-        return fallback(id);
-      }
-      return nativeRequire(id);
-    }, nativeRequire);
-    const mod = new Module(filename, module);
-    mod.filename = filename;
-    mod.paths = Module._nodeModulePaths(path.dirname(filename));
-    mod.environment = globals ? input ?? {} : {};
-    mod.require = (id) => {
-      id = frontendTestImport(id, overrides);
-      if (Object.hasOwn(overrides, id)) return overrides[id];
-      if (resolve) return resolve(id, { filename, localRequire, load, overrides });
-      return hostRequire && !id.startsWith(".") ? hostRequire(id) : localRequire(id);
-    };
-    let source = !globals && typeof input === "string" ? input : fs.readFileSync(filename, "utf8");
-    if (transform) source = transform(source, filename, input);
-    const bindings = Object.keys(mod.environment)
-      .map((name) => `const ${name} = module.environment.${name};`)
-      .join("\n");
-    mod._compile(`${bindings}\n${transpile(filename, source, compiler)}`, filename);
-    return mod.exports;
+        if (!id.startsWith(".") && fallback) {
+          try {
+            return nativeRequire(id);
+          } catch (error) {
+            if (error.code !== "MODULE_NOT_FOUND") throw error;
+          }
+          return fallback(id);
+        }
+        return nativeRequire(id);
+      }, nativeRequire);
+      const mod = new Module(filename, module);
+      mod.filename = filename;
+      mod.paths = Module._nodeModulePaths(path.dirname(filename));
+      sourceCache.set(filename, mod);
+      mod.environment = globals ? input ?? {} : {};
+      mod.require = (id) => {
+        id = frontendTestImport(id, overrides);
+        if (Object.hasOwn(overrides, id)) return overrides[id];
+        if (resolve) return resolve(id, { filename, localRequire, load, overrides });
+        return hostRequire && !id.startsWith(".") ? hostRequire(id) : localRequire(id);
+      };
+      let source = !globals && typeof input === "string" ? input : fs.readFileSync(filename, "utf8");
+      if (transform) source = transform(source, filename, input);
+      const bindings = Object.keys(mod.environment)
+        .map((name) => `const ${name} = module.environment.${name};`)
+        .join("\n");
+      mod._compile(`${bindings}\n${transpile(filename, source, compiler)}`, filename);
+      return mod.exports;
+    } catch (error) {
+      sourceCache.delete(filename);
+      throw error;
+    } finally {
+      if (topLevel) sourceCache = undefined;
+    }
   };
 }
 

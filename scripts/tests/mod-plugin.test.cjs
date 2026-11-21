@@ -67,6 +67,8 @@ async function panelFixture(t, options = {}) {
   const policy = { canFileManager: true, allowed: true };
   ctx.set("roles", { USER: 1, ADMIN: 10 });
   ctx.set("operations", {});
+  ctx.set("settings", {});
+  if (!options.deferWebsocket) ctx.set("websocket", {});
   ctx.set("identity", {
     accessPolicy: policy,
     of: (requestCtx) => ({ elevated: requestCtx.role === 10 }),
@@ -111,6 +113,9 @@ async function panelFixture(t, options = {}) {
   });
   const emptyRouter = () => new (panelRequire("@koa/router"))();
   const plugin = load("plugins/instance/panel/src/backend/index.ts", {
+    "./node": { apply: (scope) => scope.set("remote", remote) },
+    "./terminal": { apply() {} },
+    "./backup": { apply() {} },
     "./mod": mod,
     "./routers/environment_router": { createEnvironmentRouter: emptyRouter },
     "./routers/instance_admin_router": { createInstanceAdminRouter: emptyRouter },
@@ -123,7 +128,7 @@ async function panelFixture(t, options = {}) {
   });
   // Optional services the plugin resolves lazily; set before start so the
   // injects fire deterministically.
-  if (options.storage) ctx.set("storage", options.storage);
+  ctx.set("storage", options.storage || { getStorage: () => ({ load: async () => null }) });
   if (options.settingsForm) ctx.set("settingsForm", options.settingsForm);
   const fork = ctx.plugin({ ...plugin, name: "instance" });
   await ctx.start();
@@ -147,12 +152,12 @@ async function panelFixture(t, options = {}) {
 
 test("panel routes, translations and timers follow dependency lifetime", async (t) => {
   const clear = t.mock.method(global, "clearInterval");
-  const fixture = await panelFixture(t);
+  const fixture = await panelFixture(t, { deferWebsocket: true });
   const { ctx, fork, remote, network, request } = fixture;
   assert.equal((await request("/api/mod/list")).body, undefined);
   assert.equal(ctx.i18n.items.size, 0);
 
-  const remoteFork = ctx.plugin((scoped) => scoped.set("remote", remote));
+  const remoteFork = ctx.plugin((scoped) => scoped.set("websocket", {}));
   await until(() => ctx.i18n.items.size === 1);
   assert.deepEqual((await request("/api/mod/list")).body, { forwarded: true });
   assert.deepEqual((await request("/api/mod/mc_versions")).body, ["1.21.1"]);
@@ -165,7 +170,7 @@ test("panel routes, translations and timers follow dependency lifetime", async (
   assert.equal(network[0].signal.aborted, true);
   assert.equal(clear.mock.calls.length, 1, "unload clears the daily cache timer");
 
-  ctx.plugin((scoped) => scoped.set("remote", remote));
+  ctx.plugin((scoped) => scoped.set("websocket", {}));
   await until(() => ctx.i18n.items.size === 1);
   await request("/api/mod/mc_versions");
   assert.equal(network.length, 2, "reactivation starts with a fresh cache");
@@ -176,7 +181,6 @@ test("panel routes, translations and timers follow dependency lifetime", async (
 
 test("panel mod API preserves authorization, validation and daemon event names", async (t) => {
   const { ctx, remote, policy, calls, request } = await panelFixture(t);
-  ctx.plugin((scoped) => scoped.set("remote", remote));
   await until(() => ctx.i18n.items.size === 1);
   assert.equal((await request("/api/mod/list", { role: 0 })).status, 403);
   policy.allowed = false;
@@ -555,6 +559,9 @@ test("instance owns mod APIs while mod views follow the file service lifetime", 
   });
   const modApi = { modListApi: () => "instance mods" };
   const plugin = frontendLoad("plugins/instance/panel/src/frontend.ts", {
+    "./node/frontend": { apply() {} },
+    "./terminal/frontend": { apply() {} },
+    "./backup/frontend": { apply() {} },
     ...overrides,
     "@/config/router": { ROLE: { USER: 1, ADMIN: 10 } },
     "./api": {},
@@ -873,7 +880,6 @@ test("the download route applies the live preference to stale version lists", as
     }
   };
   const { ctx, remote, calls, request } = await panelFixture(t, { storage, settingsForm });
-  ctx.plugin((scoped) => scoped.set("remote", remote));
   await until(() => declaration);
 
   const officialUrl = "https://cdn.modrinth.com/data/a/versions/b/mod.jar";
@@ -946,7 +952,6 @@ test("the stored source preference loads at startup and the settings form switch
   const first = await panelFixture(t, { storage, settingsForm, axios });
   const warnings = [];
   first.ctx.on("internal/warning", (error) => warnings.push(error.message));
-  first.ctx.plugin((scoped) => scoped.set("remote", first.remote));
   await until(() => declaration);
 
   // Source selection and network limits share the plugin settings form.
@@ -991,7 +996,6 @@ test("the stored source preference loads at startup and the settings form switch
   // A fresh plugin instance starts on the stored preference.
   const previousDeclaration = declaration;
   const second = await panelFixture(t, { storage, settingsForm, axios });
-  second.ctx.plugin((scoped) => scoped.set("remote", second.remote));
   await until(() => declaration !== previousDeclaration && declaration.read().sourcePreference === "official");
   assert.equal(await searchOrigin(second), "https://api.modrinth.com");
   assert.equal(requests.at(-1).timeout, 15000);

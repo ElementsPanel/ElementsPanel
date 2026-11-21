@@ -13,11 +13,11 @@ const load = createLoader({
     return id.startsWith(".") && fs.existsSync(target) ? load(target, overrides) : localRequire(id);
   }
 });
-const settingsModule = load("plugins/terminal/shared/settings.ts");
+const settingsModule = load("plugins/instance/shared/terminal_settings.ts");
 const { TerminalSettings } = settingsModule;
 
 test("terminal global settings survive reloads and failed saves leave the active settings unchanged", async () => {
-  const { registerTerminalSettings } = load("plugins/terminal/panel/src/backend/settings.ts");
+  const { registerTerminalSettings } = load("plugins/instance/panel/src/backend/terminal/settings.ts");
   let stored = { fontSize: 18, scrollback: -1 };
   let fail = false;
   let writes = 0;
@@ -58,7 +58,7 @@ test("history replay forwards its byte limit, caps older daemon responses and sk
   const settings = new TerminalSettings();
   settings.historyLimitKB = 1;
   const pass = () => async (_request, next) => next();
-  const { registerTerminalRoutes } = load("plugins/terminal/panel/src/backend/terminal_router.ts", {
+  const { registerTerminalRoutes } = load("plugins/instance/panel/src/backend/terminal/terminal_router.ts", {
     "./runtime": {
       $t: key => key,
       koa: () => ({ router: () => router }),
@@ -102,23 +102,23 @@ test("panel settings registered after terminal startup keep their terminal owner
   ctx.set("i18n", { $t: key => key });
   ctx.set("storage", { getStorage: () => ({ load: async () => ({ fontSize: 19 }), store: async () => {} }) });
   ctx.set("plugins", { runExclusive: callback => callback(), configuration: () => ({ fields: [], values: {} }) });
-  const { registerTerminalSettings } = load("plugins/terminal/panel/src/backend/settings.ts");
-  ctx.plugin({ name: "terminal", inject: ["storage", "i18n"], apply: registerTerminalSettings });
+  const { registerTerminalSettings } = load("plugins/instance/panel/src/backend/terminal/settings.ts");
+  ctx.plugin({ name: "instance", inject: ["storage", "i18n"], apply: registerTerminalSettings });
   await ctx.start();
   const { SettingsFormService } = load("plugins/config/panel/src/backend/settings.ts", {
     "mcsmanager-common": load("core/common/src/plugin_contract.ts")
   });
   ctx.plugin({ name: "config", inject: ["plugins"], apply: scope => { scope.plugin(SettingsFormService); } });
   await ctx.events.flush();
-  assert.deepEqual(ctx.settingsForm.declared(), ["terminal"]);
-  const schema = await ctx.settingsForm.read("terminal");
+  assert.deepEqual(ctx.settingsForm.declared(), ["instance"]);
+  const schema = await ctx.settingsForm.read("instance");
   assert.equal(schema.values.fontSize, 19);
   assert.equal(schema.fields.find(field => field.key === "ctrlCIntervalMs").visibleWhen, "ctrlCProtection");
-  const result = await ctx.settingsForm.write("terminal", { ...schema.values, fontSize: 22 });
+  const result = await ctx.settingsForm.write("instance", { ...schema.values, fontSize: 22 });
   assert.deepEqual(result, { saved: true, application: "applied" });
-  assert.equal((await ctx.settingsForm.read("terminal")).values.fontSize, 22);
-  await ctx.settingsForm.reset("terminal");
-  assert.equal((await ctx.settingsForm.read("terminal")).values.fontSize, 14);
+  assert.equal((await ctx.settingsForm.read("instance")).values.fontSize, 22);
+  await ctx.settingsForm.reset("instance");
+  assert.equal((await ctx.settingsForm.read("instance")).values.fontSize, 14);
 });
 
 test("daemon reads only the log suffix, handles partial reads and preserves UTF-8 boundaries", async (t) => {
@@ -130,7 +130,7 @@ test("daemon reads only the log suffix, handles partial reads and preserves UTF-
   const reads = [];
   let opens = 0;
   let closes = 0;
-  const { readOutputLogTail } = load("plugins/terminal/daemon/src/backend/output_log.ts", {
+  const { readOutputLogTail } = load("plugins/instance/daemon/src/backend/terminal/output_log.ts", {
     "node:fs/promises": {
       async open(...args) {
         opens++;
@@ -170,7 +170,7 @@ function terminalFixture(t, settings) {
     write() {}
     dispose() {}
   }
-  const { useTerminal } = load("plugins/terminal/panel/src/hooks/useTerminal.ts", {
+  const { useTerminal } = load("plugins/instance/panel/src/terminal/hooks/useTerminal.ts", {
     vue: { ...vue, onMounted() {}, onUnmounted: callback => { dispose = callback; } },
     "./useCommandHistory": { useCommandHistory: () => ({ setHistory() {} }) },
     "@elementspanel/epanel-plugin-console/config/const": { GLOBAL_INSTANCE_NAME: "global" },

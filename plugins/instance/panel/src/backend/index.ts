@@ -11,19 +11,25 @@ import { setPluginContext, middleware, remote, roles } from "./runtime";
 import { localeMessages } from "../i18n";
 import { registerJavaManagerRoutes } from "./routers/java_router";
 import { registerModManager } from "./mod";
+import { apply as registerNodeBackend } from "./node";
+import { apply as registerTerminalBackend } from "./terminal";
+import { apply as registerBackupRoutes } from "./backup";
 
 export const inject = [
   "koa",
   "i18n",
-  "remote",
+  "storage",
+  "settings",
+  "websocket",
   "middleware",
   "roles",
   "identity",
   "operations"
 ];
 
-export function apply(ctx: PanelPluginContext) {
+export async function apply(ctx: PanelPluginContext) {
   ctx.i18n.define(localeMessages);
+  await registerNodeBackend(ctx);
   setPluginContext(ctx);
   ctx.set("instances", {
     getDetails: getInstanceDetails,
@@ -37,6 +43,8 @@ export function apply(ctx: PanelPluginContext) {
   registerOperationLogRoutes(ctx);
   registerJavaManagerRoutes(ctx);
   registerModManager(ctx);
+  await registerTerminalBackend(ctx);
+  registerBackupRoutes(ctx);
 
   const api = ctx.koa.router("/api");
   const operateRouter = createInstanceOperateRouter();

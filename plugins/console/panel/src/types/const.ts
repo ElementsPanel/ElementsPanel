@@ -99,7 +99,7 @@ export enum ScheduleActionTypeEnum {
   Start = "start",
   Restart = "restart",
   Kill = "kill",
-  /** Provided by the optional backup plugin. */
+  /** Provided by the instance plugin. */
   Backup = "backup"
 }
 

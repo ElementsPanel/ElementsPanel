@@ -10,6 +10,9 @@ import * as minecraftInstall from "./minecraft_task";
 import { registerSettings } from "./settings";
 import { registerJavaManager } from "./java";
 import { registerModManager } from "./mod";
+import { apply as registerNodeBackend } from "./node";
+import { apply as registerTerminalBackend } from "./terminal";
+import { apply as registerBackupBackend } from "./backup";
 
 export const inject = {
   i18n: { required: true },
@@ -19,12 +22,14 @@ export const inject = {
   transfer: { required: true },
   protocol: { required: true },
   features: { required: true },
-  overview: { required: true }
+  overview: { required: true },
+  archive: { required: true }
 };
 
 export function apply(ctx: DaemonPluginContext) {
   ctx.i18n.define(localeMessages);
   registerSettings(ctx);
+  registerNodeBackend(ctx);
   ctx.plugin(TasksService);
   ctx.plugin(LifecycleService);
   ctx.plugin(PresetsService);
@@ -163,6 +168,8 @@ export function apply(ctx: DaemonPluginContext) {
       InstallTask: createInstanceInstallTaskClass(instanceCtx, services)
     };
     instanceCtx.set("instances", instanceServices);
+    registerTerminalBackend(instanceCtx, instanceServices);
+    registerBackupBackend(instanceCtx, instanceServices);
     // Load Java runtimes before restoring instances, including automatic startup and takeover.
     if (!(await registerJavaManager(instanceCtx, instanceServices))) return;
     registerModManager(instanceCtx, instanceServices);

@@ -1057,7 +1057,7 @@ watch([scope, currentId, selectedNodeId, pluginGroupsLoading], syncRoute);
 const checkNodePlugins = async (candidate: PluginActionCandidate) => {
   if (
     candidate.scope !== "panel" ||
-    !plugins.value.some((plugin) => plugin.id === "node" && plugin.enabled && plugin.running)
+    !plugins.value.some((plugin) => plugin.id === "instance" && plugin.enabled && plugin.running)
   )
     return;
 

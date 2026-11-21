@@ -424,7 +424,7 @@ export interface FrontendFileManagerService {
   ): Promise<any>;
 }
 
-/** The instance terminal and its stream client. Provided by `plugins/terminal`. */
+/** The instance terminal and its stream client. Provided by `plugins/instance`. */
 export interface FrontendTerminalService {
   readonly api: Record<string, unknown>;
   readonly TerminalCore: Component;
@@ -493,7 +493,7 @@ export interface FrontendPluginMarketService {
   beginDependencyChange(): () => void;
 }
 
-/** Node management. Provided by `plugins/node`. */
+/** Node management. Provided by `plugins/instance`. */
 export interface FrontendNodeService {
   readonly api: NodePluginApi;
   useRemoteNode(): RemoteNodeHook;

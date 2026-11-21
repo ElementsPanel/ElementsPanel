@@ -1,4 +1,0 @@
-{
-  "TXT_CODE_DAEMON_OUTPUT_BUFFER_SIZE": "Tamanho do buffer de log",
-  "TXT_CODE_DAEMON_OUTPUT_BUFFER_SIZE_INFO": "Aumentar o buffer pode garantir melhor a integridade do conteúdo de saída do terminal, mas aumentará a pressão sobre a memória e o desempenho, podendo até causar vazamentos de memória."
-}

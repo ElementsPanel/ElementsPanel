@@ -265,7 +265,8 @@ test("workspace packaging includes runnable entry points and excludes user data 
     );
     assert.match(help, /Usage:/);
   }
-  assert.equal(result.plugins.length, 16);
+  assert.equal(result.plugins.length, 13);
+  assert.equal(result.plugins.some((plugin) => ["terminal", "backup", "node"].includes(plugin.elementspanel.id)), false);
   assert.ok(result.plugins.every((plugin) => /^@elementspanel\/epanel-plugin-/.test(plugin.name)));
   const instance = result.plugins.find((plugin) => plugin.elementspanel.id === "instance");
   assert.equal(instance.elementspanel.panel.folder, "instance");

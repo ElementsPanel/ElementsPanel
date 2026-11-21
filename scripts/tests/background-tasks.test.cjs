@@ -102,8 +102,8 @@ test("protocol errors recorded without throwing do not turn into successful task
   assert.equal(tasks.list("alice").length, 1);
 });
 
-const taskTickets = load("plugins/node/panel/src/backend/task_ticket.ts");
-const panelTasks = load("plugins/node/panel/src/backend/background_tasks.ts", {
+const taskTickets = load("plugins/instance/panel/src/backend/node/task_ticket.ts");
+const panelTasks = load("plugins/instance/panel/src/backend/node/background_tasks.ts", {
   "./task_ticket": taskTickets
 });
 function panelFixture() {
@@ -245,7 +245,7 @@ test("remote requests attach the authenticated user instead of caller-supplied t
     );
     return true;
   };
-  const { default: Request } = load("plugins/node/panel/src/backend/remote_command.ts", {
+  const { default: Request } = load("plugins/instance/panel/src/backend/node/remote_command.ts", {
     "./background_tasks": panelTasks,
     "./runtime": {
       $t: (key) => key,

@@ -233,8 +233,14 @@ test("panel instance permission errors translate without undeclared service warn
   });
   ctx.set("operations", {});
   ctx.set("remote", {});
+  ctx.set("storage", { getStorage: () => ({ load: async () => null }) });
+  ctx.set("settings", {});
+  ctx.set("websocket", {});
   const runtime = load("plugins/instance/panel/src/backend/runtime.ts");
   ctx.plugin(load("plugins/instance/panel/src/backend/index.ts", {
+    "./node": { apply() {} },
+    "./terminal": { apply() {} },
+    "./backup": { apply() {} },
     "./runtime": runtime,
     "../runtime": runtime
   }));
@@ -401,11 +407,12 @@ test("node settings cannot write other plugins' configuration; the backup declar
     },
     tasks: { AsyncTask: class {}, register() {} },
     schedules: { register() {} },
+    inject: (_services, register) => register(ctx),
     instances: {},
     archive: {},
     features: { add() {} }
   };
-  load("plugins/node/daemon/src/backend/index.ts", {
+  load("plugins/instance/daemon/src/backend/node/index.ts", {
     "./settings": { registerSettings() {} }
   }).apply(ctx);
   await handlers.get("info/setting")(
@@ -423,7 +430,7 @@ test("node settings cannot write other plugins' configuration; the backup declar
   assert.equal(config.instanceBackupFormat, "zip");
   assert.equal(config.instanceBackupCompressionLevel, 6);
   assert.equal(config.instanceBackupMaxSize, 5);
-  load("plugins/backup/daemon/src/backend/index.ts").apply(ctx);
+  load("plugins/instance/daemon/src/backend/backup/index.ts").apply(ctx);
   declaration.write({
     instanceBackupPath: "backups",
     instanceBackupFormat: "7z",
@@ -512,6 +519,16 @@ function frontendFixture(t) {
     "./hooks/useServerConfig": {},
     "./hooks/useGenerateStartCmd": {}
   };
+  const featureOverrides = {
+    ...overrides,
+    "./api": {},
+    "./hooks/useRemoteNode": { useRemoteNode() {} },
+    "./hooks/useCommandHistory": { useCommandHistory() {} },
+    "./hooks/useTerminal": { useTerminal() {}, encodeConsoleColor() {} }
+  };
+  overrides["./node/frontend"] = load("plugins/instance/panel/src/node/frontend.ts", featureOverrides);
+  overrides["./terminal/frontend"] = load("plugins/instance/panel/src/terminal/frontend.ts", featureOverrides);
+  overrides["./backup/frontend"] = load("plugins/instance/panel/src/backup/frontend.ts", featureOverrides);
   return { ctx, routes, state, overrides, pluginContext };
 }
 
@@ -646,10 +663,8 @@ test("desktop shell opens/restores contributed windows and survives provider rem
   const windowShell = ctx.desktop.window;
   assert.ok(ctx.desktop.confirmation);
   assert.equal(ctx.desktop.open({ id: "missing", view: "instance-console" }), false);
-  ctx.plugin((scope) => scope.set("node", {}));
   const instancePlugin = load("plugins/instance/panel/src/frontend.ts", overrides);
   const instance = ctx.plugin(instancePlugin);
-  const terminal = ctx.plugin((scope) => scope.set("terminal", {}));
   const config = ctx.plugin(load("plugins/config/panel/src/frontend.ts", overrides));
   await tick();
   assert.ok(ctx.actions.instances.some((action) => action.id === "java-manager"));
@@ -721,13 +736,14 @@ test("desktop shell opens/restores contributed windows and survives provider rem
   assert.equal(windows.get("schedule-one").props.instanceId, "one");
   assert.deepEqual(windows.get(configRequest.id).props, configRequest.props);
   ctx.instance.openConsole({ instanceUuid: "one" }, "node");
-  await terminal.dispose();
-  await tick();
-  assert.equal(windows.has("console-one"), false);
-  assert.ok(windows.has("schedule-one"));
+  assert.ok(windows.has("console-one"));
+  assert.ok(ctx.get("node"));
+  assert.ok(ctx.get("terminal"));
   await instance.dispose();
   await tick();
   assert.equal(ctx.java, undefined);
+  assert.equal(ctx.get("node"), undefined);
+  assert.equal(ctx.get("terminal"), undefined);
   assert.equal(ctx.actions.instances.some((action) => action.id === "java-manager"), false);
   assert.equal(ctx.actions.instances.some((action) => action.id === "mcstats"), false);
   assert.equal(windows.size, 1);
@@ -804,7 +820,10 @@ function daemonSettingsFixture(plugin, initialConfig = {}) {
       "./entity/config": { globalConfiguration: { config } }
     })
   } : {};
-  load(`plugins/${plugin}/daemon/src/backend/settings.ts`, overrides).registerSettings(ctx);
+  const settingsPath = ["terminal", "node"].includes(plugin)
+    ? `plugins/instance/daemon/src/backend/${plugin}/settings.ts`
+    : `plugins/${plugin}/daemon/src/backend/settings.ts`;
+  load(settingsPath, overrides).registerSettings(ctx);
   const { validatePluginSettings } = load("core/common/src/plugin_contract.ts");
   return {
     config, saved, handlers,
@@ -904,22 +923,80 @@ test("daemon settings declarations keep their plugin ownership and leave when th
     }
   });
   const plugin = ctx.plugin({
-    name: "terminal",
+    name: "instance",
     inject: ["settings", "i18n"],
-    apply: load("plugins/terminal/daemon/src/backend/settings.ts").registerSettings
+    apply: load("plugins/instance/daemon/src/backend/terminal/settings.ts").registerSettings
   });
   await ctx.start();
-  assert.deepEqual(ctx.settingsForm.declared(), ["terminal"]);
-  assert.equal((await ctx.settingsForm.read("terminal")).values.outputBufferSize, 256);
-  await ctx.settingsForm.write("terminal", { outputBufferSize: 1024 });
+  assert.deepEqual(ctx.settingsForm.declared(), ["instance"]);
+  assert.equal((await ctx.settingsForm.read("instance")).values.outputBufferSize, 256);
+  await ctx.settingsForm.write("instance", { outputBufferSize: 1024 });
   assert.equal(ctx.settings.config.outputBufferSize, 1024);
-  await ctx.settingsForm.reset("terminal");
+  await ctx.settingsForm.reset("instance");
   assert.equal(ctx.settings.config.outputBufferSize, 256);
   await plugin.dispose();
   await tick();
   assert.deepEqual(ctx.settingsForm.declared(), []);
   assert.deepEqual(warnings, []);
 });
+
+for (const side of ["panel", "daemon"]) {
+  test(`${side}: instance settings combine module forms, reset together and roll back rejected writes`, async (t) => {
+    const { Context } = from(side)("cordis");
+    const ctx = new Context();
+    t.after(() => ctx.stop());
+    ctx.set("plugins", { runExclusive: operation => operation() });
+    const { SettingsFormService } = load(`plugins/config/${side}/src/backend/settings.ts`, {
+      "mcsmanager-common": load("core/common/src/plugin_contract.ts")
+    });
+    ctx.plugin({ name: "config", inject: ["plugins"], apply: scope => scope.plugin(SettingsFormService) });
+    let terminal = { fontSize: 20 };
+    let backup = { compression: 6 };
+    let backupWrites = 0;
+    const owner = ctx.plugin({
+      name: "instance", inject: ["settingsForm"],
+      apply(scope) {
+        scope.settingsForm.declare({
+          fields: () => [{ key: "fontSize", type: "number", min: 8, max: 48 }],
+          read: () => ({ ...terminal }), defaults: () => ({ fontSize: 14 }),
+          write: values => { terminal = { ...terminal, ...values }; }
+        });
+        scope.settingsForm.declare({
+          restartRequired: true,
+          fields: () => [{ key: "compression", type: "number", min: 0, max: 9 }],
+          read: () => ({ ...backup }), defaults: () => ({ compression: 9 }),
+          write: values => {
+            backupWrites++;
+            if (values.compression === 8) throw new Error("save failed");
+            backup = { ...backup, ...values };
+          }
+        });
+      }
+    });
+    await ctx.start();
+    assert.deepEqual(ctx.settingsForm.declared(), ["instance"]);
+    const form = await ctx.settingsForm.read("instance");
+    assert.deepEqual(form.fields.map(field => field.key), ["fontSize", "compression"]);
+    assert.deepEqual(form.values, { fontSize: 20, compression: 6 });
+    await assert.rejects(ctx.settingsForm.write("instance", { fontSize: 22, compression: 8 }), /save failed/);
+    assert.deepEqual((await ctx.settingsForm.read("instance")).values, form.values);
+    const result = await ctx.settingsForm.write("instance", { fontSize: 22, compression: 7 });
+    assert.equal(result.application, "restart-required");
+    assert.deepEqual(terminal, { fontSize: 22 });
+    assert.deepEqual(backup, { compression: 7 });
+    const previousWrites = backupWrites;
+    await ctx.settingsForm.write("instance", { fontSize: 23, compression: 7 });
+    assert.equal(backupWrites, previousWrites, "unchanged modules are not rewritten");
+    const partial = await ctx.settingsForm.write("instance", { fontSize: 24 });
+    assert.equal(backupWrites, previousWrites);
+    assert.equal(partial.application, "applied");
+    assert.equal(ctx.settingsForm.canReset("instance"), true);
+    await ctx.settingsForm.reset("instance");
+    assert.deepEqual((await ctx.settingsForm.read("instance")).values, { fontSize: 14, compression: 9 });
+    await owner.dispose();
+    assert.deepEqual(ctx.settingsForm.declared(), []);
+  });
+}
 
 test("daemon storage preserves migrated and cleared mappings across reloads", () => {
   const { Config } = load("plugins/runtime/daemon/src/backend/entity/config.ts");
