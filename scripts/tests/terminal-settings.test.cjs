@@ -156,52 +156,74 @@ test("daemon reads only the log suffix, handles partial reads and preserves UTF-
   assert.equal(opens, 1);
 });
 
-function terminalFixture(t, settings) {
+function terminalFixture(t, settings, activity) {
   const vue = from("frontend")("vue");
-  let dispose;
+  activity ??= { visible: vue.ref(true), interacting: vue.ref(false) };
+  const disposals = [], mounts = [], frames = new Map(), timers = new Map(), intervals = [], observers = [];
+  const disposed = new Set();
+  let frameId = 0, timerId = 0, fitCalls = 0, probes = 0;
   let time = 1000;
   const sent = [];
   class Terminal {
-    constructor(options) { this.options = options; this.cols = 81; this.rows = 25; }
-    loadAddon() {}
+    constructor(options) { this.options = options; this.cols = 81; this.rows = 25; this.addons = []; this.writes = []; }
+    loadAddon(addon) { this.addons.push(addon); }
     open() {}
     attachCustomKeyEventHandler() {}
     onData(callback) { this.input = callback; }
-    write() {}
+    write(text, callback) { this.writes.push({ text, callback }); }
+    clear() { this.cleared = true; }
     dispose() {}
   }
+  class WebglAddon {
+    onContextLoss(callback) { this.loss = callback; }
+    dispose() { this.disposed = true; }
+  }
+  class CanvasAddon {}
+  const socketListeners = new Map();
   const { useTerminal } = load("plugins/instance/panel/src/terminal/hooks/useTerminal.ts", {
-    vue: { ...vue, onMounted() {}, onUnmounted: callback => { dispose = callback; } },
+    vue: { ...vue, onMounted: callback => mounts.push(callback), onUnmounted: callback => disposals.push(callback) },
     "./useCommandHistory": { useCommandHistory: () => ({ setHistory() {} }) },
     "@elementspanel/epanel-plugin-console/config/const": { GLOBAL_INSTANCE_NAME: "global" },
     "@elementspanel/epanel-plugin-i18n": { t: key => key },
     "../api": { setUpTerminalStreamChannel: () => ({ execute: async () => ({ value: { addr: "node", terminalSettings: settings } }) }) },
     "@elementspanel/epanel-plugin-console/stores/useAppConfigStore": { useAppConfigStore: () => ({ hasBgImage: vue.ref(false) }) },
+    "@elementspanel/epanel-plugin-console/hooks/useDesktopWindowActivity": { useDesktopWindowActivity: () => activity },
     "@elementspanel/epanel-plugin-console/tools/protocol": { parseForwardAddress: addr => addr },
     "@elementspanel/epanel-plugin-console/types/const": { INSTANCE_STATUS_CODE: { STOPPED: 0 } },
-    "@xterm/addon-canvas": { CanvasAddon: class {} },
-    "@xterm/addon-fit": { FitAddon: class { fit() {} } },
-    "@xterm/addon-webgl": {},
+    "@xterm/addon-canvas": { CanvasAddon },
+    "@xterm/addon-fit": { FitAddon: class { fit() { fitCalls++; } } },
+    "@xterm/addon-webgl": { WebglAddon },
     "@xterm/xterm": { Terminal },
     "@elementspanel/epanel-plugin-console/hooks/useSocketIo": {
-      makeSocketIo: () => ({ on() {}, connect() {}, disconnect() {}, removeAllListeners() {}, emit: (event, data) => sent.push({ event, data }) })
+      makeSocketIo: () => ({ connected: true, on: (name, callback) => socketListeners.set(name, callback), connect() {}, disconnect() {}, removeAllListeners() {}, emit: (event, data) => sent.push({ event, data }) })
     }
   }, {
-    document: { createElement: () => ({ getContext: () => null }) },
+    document: { createElement: () => { probes++; return { getContext: () => null }; } },
+    ResizeObserver: class { constructor(callback) { this.callback = callback; observers.push(this); } observe() {} disconnect() { this.disconnected = true; } },
+    requestAnimationFrame: callback => { frames.set(++frameId, callback); return frameId; },
+    cancelAnimationFrame: id => frames.delete(id),
+    setTimeout: (callback, delay) => { timers.set(++timerId, { callback, delay }); return timerId; },
+    clearTimeout: id => timers.delete(id),
     Date: { now: () => time },
-    setInterval: () => 1,
+    setInterval: callback => { intervals.push(callback); return intervals.length; },
     clearInterval() {}
   });
   const hook = useTerminal();
-  t.after(() => dispose());
+  const dispose = index => { if (!disposed.has(index)) { disposed.add(index); disposals[index](); } };
+  t.after(() => disposals.forEach((_callback, i) => dispose(i)));
   return {
     hook,
     sent,
+    activity, frames, timers, intervals, observers, socketListeners, dispose,
+    fitCalls: () => fitCalls, probes: () => probes,
+    createHook: () => useTerminal(),
+    mount: () => mounts.forEach(callback => callback()),
+    flushFrames: () => { const pending = [...frames.values()]; frames.clear(); pending.forEach(callback => callback()); },
     setTime: value => { time = value; },
-    async initialize() {
-      await hook.execute({ instanceId: "instance", daemonId: "node" });
-      hook.state.value = { status: 3, config: { terminalOption: { pty: true } } };
-      return hook.initTerminalWindow({ addEventListener() {}, removeEventListener() {} });
+    async initialize(terminalHook = hook) {
+      await terminalHook.execute({ instanceId: "instance", daemonId: "node" });
+      terminalHook.state.value = { status: 3, config: { terminalOption: { pty: true } } };
+      return terminalHook.initTerminalWindow({ addEventListener() {}, removeEventListener() {} });
     }
   };
 }
@@ -227,6 +249,90 @@ test("new terminals apply global fonts and scrollback while Ctrl+C respects the 
   term.input("hello");
   term.input("\x03");
   assert.equal(inputs().length, 2, "other input resets the confirmation");
+});
+
+test("terminal output batches live packets, preserves history order and resumes buffered output without dropping bytes", async (t) => {
+  const vue = from("frontend")("vue");
+  const f = terminalFixture(t);
+  const term = await f.initialize();
+  for (let i = 0; i < 100; i++) f.hook.events.emit("stdout", { text: `${i}:日誌🙂\n` });
+  assert.equal(term.writes.length, 0);
+  assert.equal(f.frames.size, 1);
+  f.hook.writeOutputHistory("history\n");
+  assert.deepEqual(term.writes.map(write => write.text), [Array.from({ length: 100 }, (_, i) => `${i}:日誌🙂\n`).join(""), "", "history\n"]);
+  assert.equal(f.frames.size, 0);
+  f.activity.visible.value = false;
+  await vue.nextTick();
+  f.hook.events.emit("stdout", { text: "hidden-one\n" });
+  f.hook.events.emit("stdout", { text: "hidden-two\n" });
+  assert.equal(term.writes.length, 3);
+  assert.equal(f.timers.size, 1);
+  assert.equal([...f.timers.values()][0].delay, 1000);
+  f.activity.visible.value = true;
+  await vue.nextTick();
+  assert.equal(f.timers.size, 0);
+  assert.equal(term.writes.at(-1).text, "hidden-one\nhidden-two\n");
+  f.hook.events.emit("stdout", { text: "x".repeat(256 * 1024) });
+  assert.equal(term.writes.at(-1).text.length, 256 * 1024);
+  assert.equal(f.frames.size, 1, "only the resumed geometry fit remains queued");
+  f.dispose(0);
+  assert.equal(f.frames.size, 0);
+  assert.equal(f.timers.size, 0);
+});
+
+test("terminal layout responds to actual size changes and status updates pause during window interaction", async (t) => {
+  const vue = from("frontend")("vue");
+  const f = terminalFixture(t);
+  const term = await f.initialize();
+  f.mount();
+  assert.equal(f.fitCalls(), 1);
+  for (let i = 0; i < 10; i++) f.observers[0].callback();
+  assert.equal(f.frames.size, 1);
+  f.flushFrames();
+  assert.equal(f.fitCalls(), 2);
+  assert.equal(f.sent.filter(item => item.event === "stream/resize").length, 1);
+  term.cols++;
+  f.observers[0].callback(); f.flushFrames();
+  assert.equal(f.sent.filter(item => item.event === "stream/resize").length, 2);
+  const state = f.hook.state.value;
+  f.activity.interacting.value = true;
+  await vue.nextTick();
+  assert.equal(term.options.cursorBlink, false);
+  f.intervals[0]();
+  assert.equal(f.sent.filter(item => item.event === "stream/detail").length, 0);
+  f.observers[0].callback();
+  assert.equal(f.frames.size, 0);
+  const newest = { ...state, status: 0 };
+  f.socketListeners.get("stream/detail")({ data: { ...state, status: 1 } });
+  f.socketListeners.get("stream/detail")({ data: newest });
+  assert.equal(f.hook.state.value, state);
+  f.activity.interacting.value = false;
+  await vue.nextTick();
+  assert.equal(f.hook.state.value.status, 0);
+  assert.equal(term.options.cursorBlink, true);
+  assert.equal(f.frames.size, 1);
+  f.flushFrames();
+  f.intervals[0]();
+  assert.equal(f.sent.filter(item => item.event === "stream/detail").length, 1);
+  f.dispose(0);
+  assert.equal(f.observers[0].disconnected, true);
+});
+
+test("large terminal desktops cap WebGL contexts, recover context loss and return renderer capacity on close", async (t) => {
+  const f = terminalFixture(t);
+  const terms = [await f.initialize()];
+  for (let i = 0; i < 7; i++) terms.push(await f.initialize(f.createHook()));
+  const webgl = () => terms.flatMap(term => term.addons).filter(addon => addon.constructor.name === "WebglAddon");
+  assert.equal(webgl().length, 4);
+  assert.equal(terms.flatMap(term => term.addons).filter(addon => addon.constructor.name === "CanvasAddon").length, 4);
+  assert.equal(f.probes(), 0);
+  webgl()[0].loss();
+  assert.equal(terms[0].addons.at(-1).constructor.name, "CanvasAddon");
+  terms.push(await f.initialize(f.createHook()));
+  assert.equal(webgl().length, 5);
+  f.dispose(1);
+  terms.push(await f.initialize(f.createHook()));
+  assert.equal(webgl().length, 6);
 });
 
 test("disabling Ctrl+C protection sends once and older panels retain terminal defaults", async (t) => {

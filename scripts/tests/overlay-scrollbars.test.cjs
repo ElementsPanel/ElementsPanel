@@ -151,6 +151,66 @@ test("window resizing defers DOM discovery until it settles", async t => {
   assert.equal(f.records[0].changes.length, 0);
 });
 
+test("desktop focus and compositor motion do not scan or measure window content", async t => {
+  const f = fixture(t, 1000);
+  f.root.classList.add("desktop-window");
+  f.install();
+  f.reset();
+  f.root.classList.add("desktop-window--active", "desktop-window--dragging");
+  await f.flush();
+  for (let index = 0; index < 20; index++) {
+    f.root.style.translate = `${index}px ${index}px`;
+    f.root.style.zIndex = String(index + 100);
+    await f.flush();
+  }
+  f.root.classList.remove("desktop-window--dragging");
+  f.root.classList.add("desktop-window--suspended");
+  await f.flush();
+  assert.equal(f.queries.length, 0);
+  assert.equal(f.events.length, 0);
+  f.root.classList.remove("desktop-window--suspended");
+  f.root.classList.add("application-layout-change");
+  await f.flush();
+  assert.deepEqual(f.queries, [f.root]);
+  assert.ok(f.events.some(event => event.type === "read"));
+});
+
+test("cached desktop viewports retain their scrollbar instance until the owning window closes", async t => {
+  const f = fixture(t);
+  const window = document.createElement("section");
+  window.className = "desktop-window";
+  const title = document.createElement("span");
+  title.id = "cached-owner-title";
+  const content = document.createElement("div");
+  content.dataset.desktopWindowContent = "cached-owner";
+  content.append(f.root);
+  window.append(title, content);
+  document.body.append(window);
+  f.install();
+  const original = f.active.get(f.root);
+  original.coordinates.end = { x: 600, y: 800 };
+  f.root.scrollTop = 400;
+  content.remove();
+  await f.flush();
+  assert.equal(original.destroyed, 0);
+  original.coordinates.end = { x: 0, y: 0 };
+  original.updated();
+  assert.equal(f.root.scrollTop, 400);
+  original.coordinates.end = { x: 600, y: 800 };
+  window.append(content);
+  await f.flush();
+  assert.equal(f.active.get(f.root), original);
+  assert.equal(f.root.scrollTop, 400);
+  window.classList.add("desktop-window--suspended");
+  original.coordinates.end = { x: 0, y: 0 };
+  original.updated();
+  assert.equal(f.root.scrollTop, 400);
+  content.remove();
+  window.remove();
+  await f.flush();
+  assert.equal(original.destroyed, 1);
+});
+
 test("overlapping mutation roots are scanned once and new scroll regions are discovered", async t => {
   const f = fixture(t);
   f.install();

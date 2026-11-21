@@ -22,6 +22,7 @@ function setupSfc(filename, overrides = {}, props = {}) {
       "@/components/TargetSelectionList.vue": {},
       "@/components/DesktopDialog.vue": {},
       "@/hooks/useScreen": { useScreen: () => ({ isPhone: vue.ref(false) }) },
+      "@/hooks/usePolling": { usePolling() {} },
       "vuetify/components": {},
       ...overrides
     },
@@ -137,6 +138,7 @@ test("polling waits for completion and never restarts after unmount during a req
   const pending = deferred();
   const { usePolling } = load("plugins/console/panel/src/hooks/usePolling.ts", {
     vue: {
+      ...vue,
       onMounted: (callback) => {
         mounted = callback;
       },
@@ -1524,6 +1526,7 @@ test("terminal setup is shared and an unmounted terminal cannot create a late so
       })
     },
     "@/stores/useAppConfigStore": { useAppConfigStore: () => ({ hasBgImage: vue.ref(false) }) },
+    "@elementspanel/epanel-plugin-console/hooks/useDesktopWindowActivity": { useDesktopWindowActivity: () => ({ visible: vue.ref(true), interacting: vue.ref(false) }) },
     "@/tools/protocol": {},
     "@/types/const": { INSTANCE_STATUS_CODE: {} },
     "@xterm/addon-canvas": {},

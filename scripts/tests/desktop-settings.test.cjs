@@ -183,6 +183,7 @@ for (const [view, selector] of [["DesktopMyApps", ".ma-instance"], ["DesktopInst
       "@elementspanel/epanel-plugin-console/components/DesktopDialog": {},
       "@elementspanel/epanel-plugin-console/hooks/useInstance": { INSTANCE_TYPE_TRANSLATION: {} },
       "@elementspanel/epanel-plugin-console/hooks/usePointerDrag": pointerDrag,
+      "@elementspanel/epanel-plugin-console/hooks/usePolling": { usePolling() {} },
       "@elementspanel/epanel-plugin-console/hooks/useInstanceTag": {
         useInstanceTagTips: () => ({ tagTips: vue.ref([]), updateTagTips() {} }),
         useInstanceTagSearch: () => ({ tags: vue.ref([]), setRefreshFn() {}, selectTag() {}, removeTag() {}, isTagSelected() {}, clearTags() {} })

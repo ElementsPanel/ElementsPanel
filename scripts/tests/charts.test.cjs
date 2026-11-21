@@ -11,6 +11,7 @@ const load = createLoader({ compiler: ts, resolve: (id) => frontendRequire(id) }
 function fixture(t, chartModule) {
   const mounted = [], beforeUnmount = [], charts = [];
   const scope = vue.effectScope();
+  const activity = { visible: vue.ref(true), interacting: vue.ref(false) };
   let disposed = false;
   class FakeChart {
     static register() {}
@@ -24,6 +25,7 @@ function fixture(t, chartModule) {
       charts.push(this);
     }
     update(mode) { this.updates.push(mode); }
+    stop() { this.stops = (this.stops ?? 0) + 1; }
     destroy() { this.destroyed++; }
   }
   const lifecycle = {
@@ -33,6 +35,7 @@ function fixture(t, chartModule) {
   };
   const imports = {
     vue: lifecycle,
+    "./useDesktopWindowActivity": { useDesktopWindowActivity: () => activity },
     "chart.js": chartModule ?? Object.fromEntries([
       ["Chart", FakeChart],
       ...["CategoryScale", "LinearScale", "LineController", "LineElement", "PointElement", "Filler", "Tooltip"]
@@ -48,7 +51,7 @@ function fixture(t, chartModule) {
   };
   t.after(dispose);
   return {
-    hooks, charts, dispose,
+    hooks, charts, dispose, activity,
     run: (callback) => scope.run(callback),
     mount: () => Promise.all(mounted.map((callback) => callback())),
     setupSfc(relative, overrides) {
@@ -99,6 +102,35 @@ test("node histories initialize with available data, update nested values and re
   values.value.push(50);
   await vue.nextTick();
   assert.equal(chart.updates.length, 2);
+});
+
+test("desktop charts stop hidden animations and draw only the latest values after resuming", async (t) => {
+  const f = fixture(t);
+  const values = vue.ref([10, 20]);
+  f.run(() => f.hooks.useSimpleChart(vue.shallowRef({}), () => values.value));
+  await f.mount();
+  const chart = f.charts[0];
+  f.activity.visible.value = false;
+  await vue.nextTick();
+  values.value = [30, 40];
+  await vue.nextTick();
+  values.value = [50, 60];
+  await vue.nextTick();
+  assert.equal(chart.updates.length, 0);
+  assert.equal(chart.stops, 1);
+  f.activity.visible.value = true;
+  await vue.nextTick();
+  assert.deepEqual(chart.data.datasets[0].data, [50, 60]);
+  assert.deepEqual(chart.updates, ["none"]);
+  f.activity.interacting.value = true;
+  await vue.nextTick();
+  values.value.push(70);
+  await vue.nextTick();
+  assert.equal(chart.updates.length, 1);
+  f.activity.interacting.value = false;
+  await vue.nextTick();
+  assert.deepEqual(chart.data.datasets[0].data, [50, 60, 70]);
+  assert.deepEqual(chart.updates, ["none", "none"]);
 });
 
 test("monitoring charts map request and instance histories independently and retain count scales", async (t) => {

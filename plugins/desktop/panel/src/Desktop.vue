@@ -28,11 +28,12 @@ import type { ContextMenuItem } from "./widgets/desktop/DesktopContextMenu.vue";
 import DesktopIcon from "./widgets/desktop/DesktopIcon.vue";
 import type { TaskbarWindow } from "./widgets/desktop/DesktopTaskbar.vue";
 import DesktopTaskbar from "./widgets/desktop/DesktopTaskbar.vue";
-import DesktopWindow from "./widgets/desktop/DesktopWindow.vue";
+import DesktopWindowHost from "./widgets/desktop/DesktopWindowHost.vue";
+import { desktopWindowContextKey, type WindowState } from "./windowContext";
 import { migrateLegacyInstanceWindow } from "./legacyWindows";
 import { arrangeDesktopIcons, createIconGrid, findIconCell, getIconCell, getIconPosition } from "./iconLayout";
 import { VIcon } from "vuetify/components";
-import { computed, markRaw, nextTick, onMounted, onUnmounted, reactive, ref, watch, type Component, type CSSProperties } from "vue";
+import { computed, markRaw, nextTick, onMounted, onUnmounted, provide, reactive, ref, watch, type Component, type CSSProperties } from "vue";
 import { useRouter } from "vue-router";
 
 const CloseOutlined = "mdi-close";
@@ -570,28 +571,6 @@ const handleTaskbarAppDrop = (appId: string, clientX: number, clientY: number) =
     addDesktopShortcutAt(appId, clientX - (rect?.left || 0), clientY - (rect?.top || 0));
 };
 
-interface WindowState {
-    id: string;
-    title: string;
-    icon: Component | string;
-    visible: boolean;
-    minimized: boolean;
-    maximized: boolean;
-    zIndex: number;
-    content: string;
-    initialX: number;
-    initialY: number;
-    initialWidth: number;
-    initialHeight: number;
-    instanceId?: string;
-    daemonId?: string;
-    type?: string;
-    filePath?: string;
-    fileName?: string;
-    component?: Component;
-    props?: Record<string, unknown>;
-}
-
 const windows = reactive<Map<string, WindowState>>(new Map());
 let nextZIndex = 100;
 let windowOffset = 0;
@@ -609,6 +588,7 @@ const saveDesktopLayout = () => {
         try {
             const windowList: any[] = [];
             windows.forEach((win) => {
+                if (!win.visible) return;
                 windowList.push({
                     id: win.id,
                     content: win.content,
@@ -696,7 +676,8 @@ watch(
 );
 
 const pluginViews = computed(() => ctx.desktop.views.filter((view) => !view.condition || view.condition()));
-const findView = (id: string) => pluginViews.value.find((view) => view.id === id);
+const viewsById = computed(() => new Map(pluginViews.value.map((view) => [view.id, view])));
+const findView = (id: string) => viewsById.value.get(id);
 const savedViewProps = (win: WindowState) => win.props ?? {
     instanceId: win.instanceId, daemonId: win.daemonId, type: win.type
 };
@@ -1025,8 +1006,13 @@ const openUserInfoWindow = () => {
 };
 
 const closeWindow = (id: string) => {
-    windows.delete(id);
+    const win = windows.get(id);
+    if (win) win.visible = false;
     saveDesktopLayout();
+};
+
+const removeClosedWindow = (id: string) => {
+    if (windows.get(id)?.visible === false) windows.delete(id);
 };
 
 const minimizeWindow = (id: string) => {
@@ -1044,7 +1030,7 @@ const maximizeWindow = (id: string) => {
 
 const focusWindow = (id: string) => {
     const win = windows.get(id);
-    if (win) {
+    if (win && win.zIndex !== nextZIndex) {
         win.zIndex = ++nextZIndex;
     }
 };
@@ -1097,6 +1083,7 @@ const activeWindowId = computed(() => {
 const taskbarWindows = computed<TaskbarWindow[]>(() => {
     const list: TaskbarWindow[] = [];
     windows.forEach((win) => {
+        if (!win.visible) return;
         list.push({
             id: win.id,
             title: win.title,
@@ -1332,6 +1319,13 @@ const exitDesktop = () => {
 };
 
 const username = computed(() => appState.userInfo?.userName || "User");
+provide(desktopWindowContextKey, {
+    activeWindowId, views: viewsById, fileEditor: desktopFileEditorWindow, imageViewer: desktopImageViewerWindow,
+    users: desktopUsersWindow, userInfo: desktopUserInfoWindow,
+    close: closeWindow, closed: removeClosedWindow, minimize: minimizeWindow, maximize: maximizeWindow, focus: focusWindow,
+    moved: handleWindowMoved, resized: handleWindowResized, contextMenu: onTitlebarContextMenu,
+    openConsole: openInstanceConsole, openFileEditor: openFileEditorWindow, openImageViewer: openImageViewerWindow
+});
 const isMdiIcon = (icon: Component | string): icon is `mdi-${string}` => typeof icon === "string" && icon.startsWith("mdi-");
 </script>
 
@@ -1370,52 +1364,7 @@ const isMdiIcon = (icon: Component | string): icon is `mdi-${string}` => typeof 
                     </div>
                 </div>
 
-                <TransitionGroup name="desktop-window">
-                    <DesktopWindow v-for="[id, win] in windows" :key="id" :id="win.id" :title="win.title"
-                        :icon="win.icon" :visible="win.visible" :minimized="win.minimized" :maximized="win.maximized"
-                        :active="win.id === activeWindowId" :initial-x="win.initialX" :initial-y="win.initialY"
-                        :initial-width="win.initialWidth" :initial-height="win.initialHeight" :z-index="win.zIndex"
-                        @close="closeWindow" @minimize="minimizeWindow" @maximize="maximizeWindow" @focus="focusWindow"
-                        @moved="handleWindowMoved" @resized="handleWindowResized"
-                        @contextmenu-titlebar="onTitlebarContextMenu">
-                        <div class="window-inner-content">
-                            <component v-if="findView(win.content)" :is="findView(win.content)!.component"
-                                v-bind="savedViewProps(win)" @close="closeWindow(win.id)" />
-
-                            <component :is="win.component"
-                                v-else-if="win.content.startsWith('instance-action:') && win.component && win.instanceId && win.daemonId"
-                                :instance-uuid="win.instanceId" :daemon-id="win.daemonId" :session-id="win.id"
-                                @close="closeWindow(win.id)"
-                                @open-file-editor="(filePath: string, fileName: string) => openFileEditorWindow(win.instanceId!, win.daemonId!, filePath, fileName)"
-                                @open-image-viewer="(filePath: string, fileName: string) => openImageViewerWindow(win.instanceId!, win.daemonId!, filePath, fileName)" />
-
-                            <component :is="desktopFileEditorWindow"
-                                v-else-if="win.content === 'file-editor' && desktopFileEditorWindow && win.instanceId && win.daemonId && win.filePath && win.fileName"
-                                :instance-id="win.instanceId" :daemon-id="win.daemonId" :file-path="win.filePath"
-                                :file-name="win.fileName" @close="closeWindow(win.id)" />
-
-                            <component :is="desktopImageViewerWindow"
-                                v-else-if="win.content === 'image-viewer' && desktopImageViewerWindow && win.instanceId && win.daemonId && win.filePath && win.fileName"
-                                :instance-id="win.instanceId" :daemon-id="win.daemonId" :file-path="win.filePath"
-                                :file-name="win.fileName" @close="closeWindow(win.id)" />
-
-                            <component :is="desktopUsersWindow" v-else-if="win.content === 'users' && desktopUsersWindow" />
-
-                            <component :is="desktopUserInfoWindow"
-                                v-else-if="win.content === 'user-info' && desktopUserInfoWindow" />
-
-                            <component
-                                :is="win.component"
-                                v-else-if="win.component"
-                                @close="closeWindow(win.id)"
-                                @open-console="openInstanceConsole" />
-
-                            <div v-else class="window-page">
-                                <p>{{ win.title }}</p>
-                            </div>
-                        </div>
-                    </DesktopWindow>
-                </TransitionGroup>
+                <DesktopWindowHost v-for="[id, win] in windows" :key="id" :window="win" />
                 <DesktopTaskbar :windows="taskbarWindows" :apps="availableDesktopApps" :username="username"
                     :user-avatar="desktopStartMenuAvatar"
                     :start-button-icon="startButtonIcon"
@@ -1530,19 +1479,6 @@ const isMdiIcon = (icon: Component | string): icon is `mdi-${string}` => typeof 
     border-radius: 12px;
     border: 0;
     background: rgba(255, 255, 255, 0.06);
-}
-
-.window-inner-content {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-.window-page {
-    padding: 24px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
 }
 
 .desktop-content-wrapper {

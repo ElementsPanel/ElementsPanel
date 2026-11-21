@@ -5,6 +5,13 @@ const NATIVE_CONTROLS = "input, textarea, select, option, iframe";
 const VIEWPORT_ATTRIBUTES = ["data-overlayscrollbars", "data-overlayscrollbars-viewport"];
 const TREE_STYLE_PROPERTIES = ["all", "display", "visibility", "contain", "container-type", "content-visibility"];
 const OVERFLOW_STYLE_PROPERTIES = ["overflow", "overflow-x", "overflow-y"];
+const WINDOW_VISUAL_STYLES = new Set(["left", "top", "translate", "transform", "opacity", "z-index", "box-shadow", "border-radius", "will-change", "transition"]);
+const WINDOW_VISUAL_CLASS = /^desktop-window(?:--|-enter-|-leave-|-move$)/;
+
+const isCachedWindowContent = (element: HTMLElement) => {
+  const owner = element.closest<HTMLElement>("[data-desktop-window-content]")?.dataset.desktopWindowContent;
+  return owner !== undefined && !!document.getElementById(`${owner}-title`);
+};
 
 type Overflow = { x: OverflowBehavior; y: OverflowBehavior };
 type ScrollbarEntry = { instance: OverlayScrollbars; overflow: Overflow };
@@ -12,6 +19,7 @@ type ScrollbarEntry = { instance: OverlayScrollbars; overflow: Overflow };
 const clampScrollPosition = (instance: OverlayScrollbars) => {
   const { scrollCoordinates: { start, end } } = instance.state();
   const { scrollOffsetElement } = instance.elements();
+  if (!scrollOffsetElement.isConnected || scrollOffsetElement.closest(".desktop-window--suspended")) return;
   const clamp = (value: number, a: number, b: number) =>
     Math.min(Math.max(value, Math.min(a, b)), Math.max(a, b));
   const left = clamp(scrollOffsetElement.scrollLeft, start.x, end.x);
@@ -57,6 +65,10 @@ export function installOverlayScrollbars() {
         continue;
       }
       if (mutation.type === "attributes") {
+        if (mutation.attributeName === "class" && element.classList.contains("desktop-window")) {
+          const layoutClasses = (value: string) => value.split(/\s+/).filter(name => name && !WINDOW_VISUAL_CLASS.test(name)).sort().join(" ");
+          if (layoutClasses(mutation.oldValue || "") === layoutClasses(element.className)) continue;
+        }
         if (mutation.attributeName !== "style") {
           queueContentUpdate(element);
           queueTree(element);
@@ -68,6 +80,10 @@ export function installOverlayScrollbars() {
         const changed = (name: string) =>
           previousStyle.getPropertyValue(name) !== element.style.getPropertyValue(name) ||
           previousStyle.getPropertyPriority(name) !== element.style.getPropertyPriority(name);
+        if (element.classList.contains("desktop-window")) {
+          const names = new Set([...Array.from(previousStyle), ...Array.from(element.style)]);
+          if ([...names].filter(changed).every(name => WINDOW_VISUAL_STYLES.has(name) || name.startsWith("--os-"))) continue;
+        }
         let affectsTree = TREE_STYLE_PROPERTIES.some(changed);
         for (const style of [previousStyle, element.style]) {
           for (let index = 0; index < style.length && !affectsTree; index++) {
@@ -178,7 +194,8 @@ export function installOverlayScrollbars() {
     pendingRoots.clear();
     pendingElements.clear();
     const elements = [...candidates].filter(
-      (element) => element.isConnected && !element.matches(NATIVE_CONTROLS) && !isInternal(element)
+      (element) => element.isConnected && !element.matches(NATIVE_CONTROLS) && !isInternal(element) &&
+        !element.closest(".desktop-window--suspended")
     );
 
     // Ignore our own DOM writes and batch marker changes around all style reads.
@@ -211,7 +228,7 @@ export function installOverlayScrollbars() {
         });
       }
       for (const [element, entry] of instances) {
-        if (!element.isConnected) {
+        if (!element.isConnected && !isCachedWindowContent(element)) {
           entry.instance.destroy();
           instances.delete(element);
         }

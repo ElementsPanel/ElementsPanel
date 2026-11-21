@@ -37,6 +37,7 @@
         "config/router": "src/public/config/router.ts",
         "hooks/useAppRouters": "src/public/hooks/useAppRouters.ts",
         "hooks/useDialog": "src/public/hooks/useDialog.ts",
+        "hooks/useDesktopWindowActivity": "src/public/hooks/useDesktopWindowActivity.ts",
         "hooks/useGenerateStartCmd": "src/public/hooks/useGenerateStartCmd.ts",
         "hooks/useInstance": "src/public/hooks/useInstance.ts",
         "hooks/useInstanceActionAvailability": "src/public/hooks/useInstanceActionAvailability.ts",

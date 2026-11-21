@@ -1,4 +1,4 @@
-const { from, createBrowser, settle, frontendTestImport } = require("./helpers.cjs");
+const { from, createBrowser, createLoader, settle, frontendTestImport } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -13,6 +13,11 @@ after(() => dom.window.close());
 const vue = frontendRequire("vue");
 const Vuetify = frontendRequire("vuetify/dist/vuetify.js");
 const ts = frontendRequire("typescript");
+const loadRuntime = createLoader({ host: "frontend" });
+const windowRuntimeImports = {
+  "@elementspanel/epanel-plugin-console/hooks/useDesktopWindowActivity": loadRuntime("plugins/console/panel/src/hooks/useDesktopWindowActivity.ts"),
+  "../../windowRendering": loadRuntime("plugins/desktop/panel/src/windowRendering.ts")
+};
 
 const { parse, compileScript, compileStyle } = frontendRequire("@vue/compiler-sfc");
 const sass = frontendRequire("sass");
@@ -20,7 +25,7 @@ const filename = path.join(root, "plugins/desktop/panel/src/widgets/desktop/Desk
 const { descriptor } = parse(fs.readFileSync(filename, "utf8"), { filename });
 const script = compileScript(descriptor, { id: "desktop-window-test", inlineTemplate: true });
 const mod = new Module(filename, module);
-mod.require = (id) => id === "vuetify/components" ? Vuetify.components : frontendRequire(id);
+mod.require = (id) => windowRuntimeImports[id] ?? (id === "vuetify/components" ? Vuetify.components : frontendRequire(id));
 mod._compile(ts.transpileModule(script.content, {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
 }).outputText, filename);
@@ -33,6 +38,8 @@ function loadSfc(relative, overrides = {}) {
   const component = new Module(filename, module);
   component.require = (request) => {
     const id = frontendTestImport(request, overrides);
+    const runtime = windowRuntimeImports[request] ?? windowRuntimeImports[id];
+    if (runtime) return runtime;
     return Object.hasOwn(overrides, id) ? overrides[id]
     : id === "@/components/DesktopDialog.vue" ? { default: DesktopDialog }
     : id === "@/components/Empty.vue" ? { default: Empty }
@@ -539,17 +546,22 @@ function boundsFixture(t, initial = {}) {
     initialX: 100, initialY: 60, initialWidth: 800, initialHeight: 500, ...initial
   });
   const changes = [];
+  const moves = [];
+  let focuses = 0;
+  let renders = 0;
   const target = document.createElement("div");
   document.body.appendChild(target);
   const app = vue.createApp({
     render: () => vue.h(DesktopWindow, {
       id: "bounds", title: "Bounds", active: true, ...state,
       onMaximize: () => { state.maximized = !state.maximized; },
+      onFocus: () => { focuses++; },
+      onMoved: (_id, x, y) => { moves.push({ x, y }); },
       onResized: (_id, x, y, width, height) => {
         changes.push({ x, y, width, height });
         Object.assign(state, { initialX: x, initialY: y, initialWidth: width, initialHeight: height });
       }
-    })
+    }, { default: () => { renders++; return vue.h("div", "Window content"); } })
   });
   app.use(Vuetify.createVuetify());
   app.mount(target);
@@ -575,7 +587,32 @@ function boundsFixture(t, initial = {}) {
     document.dispatchEvent(pointerEvent("pointermove", { clientX: window.innerWidth - 24, clientY: window.innerHeight - 24 }));
     document.dispatchEvent(pointerEvent("pointerup"));
   };
-  return { state, element, app, changes, bounds, assertInside, dragOutside };
+  return { state, element, app, changes, moves, focuses: () => focuses, renders: () => renders, bounds, assertInside, dragOutside };
+}
+
+function pointerFrameFixture(t) {
+  const pending = new Map();
+  let id = 0;
+  t.mock.method(global, "requestAnimationFrame", (callback) => {
+    pending.set(++id, callback);
+    return id;
+  });
+  t.mock.method(global, "cancelAnimationFrame", (id) => pending.delete(id));
+  return {
+    count: () => pending.size,
+    flush: () => {
+      const callbacks = [...pending.values()];
+      pending.clear();
+      callbacks.forEach(callback => callback());
+    }
+  };
+}
+
+async function paintPointerCommit(frames) {
+  frames.flush();
+  await flush();
+  frames.flush();
+  await flush();
 }
 
 function confirmationFixture(t, options = {}) {
@@ -1686,6 +1723,216 @@ test("desktop confirmations preserve multiple choices and stack independently ac
   firstWindow.dispatchEvent(pointerEvent("pointerdown"));
   await flush();
   assert.ok(Number(firstWindow.style.zIndex) > Number(secondWindow.style.zIndex));
+});
+
+test("dragging with many open windows only tracks the active pointer and does not render window content", async (t) => {
+  viewportFixture(t, 1280, 900);
+  const listeners = new Map(["pointermove", "pointerup", "pointercancel"].map(type => [type, new Set()]));
+  const add = document.addEventListener.bind(document);
+  const remove = document.removeEventListener.bind(document);
+  t.mock.method(document, "addEventListener", (type, listener, options) => {
+    listeners.get(type)?.add(listener);
+    add(type, listener, options);
+  });
+  t.mock.method(document, "removeEventListener", (type, listener, options) => {
+    listeners.get(type)?.delete(listener);
+    remove(type, listener, options);
+  });
+  const windows = Array.from({ length: 20 }, () => boundsFixture(t, {
+    showMinimize: false, showMaximize: false, showClose: false
+  }));
+  await flush();
+  assert.deepEqual([...listeners.values()].map(set => set.size), [0, 0, 0]);
+  const frames = pointerFrameFixture(t);
+  const active = windows[0];
+  active.element.style.transform = "scale(0.95)";
+  active.element.querySelector(".window__titlebar").dispatchEvent(pointerEvent("pointerdown", {
+    clientX: 140, clientY: 80
+  }));
+  await flush();
+  assert.equal(active.focuses(), 1, "titlebar pointerdown must not focus again through bubbling");
+  assert.deepEqual([...listeners.values()].map(set => set.size), [1, 1, 1]);
+  const renders = windows.map(f => f.renders());
+  for (let frame = 0; frame < 3; frame++) {
+    for (let move = 1; move <= 100; move++)
+      document.dispatchEvent(pointerEvent("pointermove", { clientX: 140 + frame * 100 + move, clientY: 100 }));
+    assert.equal(frames.count(), 1, "coalesce pointer events into one browser frame");
+    assert.equal(active.element.style.translate, frame ? `${frame * 100}px 20px` : "");
+    frames.flush();
+    await flush();
+    assert.equal(active.element.style.translate, `${(frame + 1) * 100}px 20px`);
+    assert.equal(active.element.style.transform, "scale(0.95)", "drag offsets preserve visibility transforms");
+    assert.deepEqual(active.bounds(), { left: 100, top: 60, width: 800, height: 500 });
+    assert.deepEqual(windows.map(f => f.renders()), renders, "pointer frames must not render any window content");
+    assert.equal(active.moves.length, 0, "persist coordinates after the interaction");
+  }
+  document.dispatchEvent(pointerEvent("pointermove", { clientX: 450, clientY: 110 }));
+  document.dispatchEvent(pointerEvent("pointerup"));
+  await flush();
+  await paintPointerCommit(frames);
+  assert.equal(frames.count(), 0);
+  assert.equal(active.element.style.translate, "");
+  assert.deepEqual(active.bounds(), { left: 410, top: 90, width: 800, height: 500 });
+  assert.deepEqual(active.moves, [{ x: 410, y: 90 }], "release includes the last unpainted pointer event");
+  assert.deepEqual([...listeners.values()].map(set => set.size), [0, 0, 0]);
+  assert.deepEqual(windows.slice(1).map(f => f.renders()), renders.slice(1));
+});
+
+for (const end of ["pointercancel", "lostpointercapture", "blur", "unmount"]) {
+  test(`dragging cleans up pending frames after ${end}`, async (t) => {
+    viewportFixture(t, 1280, 900);
+    const f = boundsFixture(t);
+    await flush();
+    const frames = pointerFrameFixture(t);
+    const titlebar = f.element.querySelector(".window__titlebar");
+    titlebar.dispatchEvent(pointerEvent("pointerdown", { clientX: 140, clientY: 80 }));
+    await flush();
+    document.dispatchEvent(pointerEvent("pointermove", { clientX: 240, clientY: 130 }));
+    if (end === "unmount") f.app.unmount();
+    else if (end === "blur") window.dispatchEvent(new window.Event("blur"));
+    else (end === "lostpointercapture" ? titlebar : document).dispatchEvent(pointerEvent(end));
+    await flush();
+    await paintPointerCommit(frames);
+    assert.equal(frames.count(), 0);
+    assert.equal(f.element.style.translate, "");
+    assert.deepEqual(f.moves, end === "unmount" ? [] : [{ x: 200, y: 110 }]);
+    document.dispatchEvent(pointerEvent("pointermove", { clientX: 400, clientY: 200 }));
+    document.dispatchEvent(pointerEvent("pointerup"));
+    assert.equal(frames.count(), 0);
+    assert.equal(f.moves.length, end === "unmount" ? 0 : 1);
+  });
+}
+
+test("maximized titlebar dragging restores after its threshold and continues with compositor offsets", async (t) => {
+  viewportFixture(t, 1280, 900);
+  const f = boundsFixture(t);
+  f.state.maximized = true;
+  await flush();
+  const frames = pointerFrameFixture(t);
+  f.element.querySelector(".window__titlebar").dispatchEvent(pointerEvent("pointerdown", {
+    clientX: 500, clientY: 20
+  }));
+  document.dispatchEvent(pointerEvent("pointermove", { clientX: 510, clientY: 21 }));
+  frames.flush();
+  await flush();
+  assert.equal(f.state.maximized, true);
+  document.dispatchEvent(pointerEvent("pointermove", { clientX: 540, clientY: 70 }));
+  frames.flush();
+  await flush();
+  assert.equal(f.state.maximized, false);
+  assert.deepEqual(f.bounds(), { left: 420, top: 51, width: 800, height: 500 });
+  assert.ok(f.element.classList.contains("desktop-window--dragging"));
+  document.dispatchEvent(pointerEvent("pointermove", { clientX: 600, clientY: 100 }));
+  frames.flush();
+  await flush();
+  assert.equal(f.element.style.translate, "60px 30px");
+  document.dispatchEvent(pointerEvent("pointermove", { clientX: 630, clientY: 120 }));
+  document.dispatchEvent(pointerEvent("pointerup"));
+  await flush();
+  assert.deepEqual(f.bounds(), { left: 510, top: 101, width: 800, height: 500 });
+  assert.deepEqual(f.moves, [{ x: 510, y: 101 }]);
+  assert.equal(f.element.style.translate, "");
+});
+
+test("resizing coalesces pointer moves and commits the final unpainted size", async (t) => {
+  viewportFixture(t, 1280, 900);
+  const f = boundsFixture(t);
+  await flush();
+  const frames = pointerFrameFixture(t);
+  f.element.querySelector(".window__resize-handle--nw").dispatchEvent(pointerEvent("pointerdown", {
+    clientX: 100, clientY: 60
+  }));
+  for (let move = 1; move <= 100; move++)
+    document.dispatchEvent(pointerEvent("pointermove", { clientX: 100 + move, clientY: 60 + move }));
+  assert.equal(frames.count(), 1);
+  frames.flush();
+  await flush();
+  assert.deepEqual(f.bounds(), { left: 200, top: 160, width: 700, height: 400 });
+  assert.equal(f.changes.length, 0);
+  document.dispatchEvent(pointerEvent("pointermove", { clientX: 250, clientY: 200 }));
+  document.dispatchEvent(pointerEvent("pointerup"));
+  await flush();
+  assert.deepEqual(f.bounds(), { left: 250, top: 200, width: 650, height: 360 });
+  assert.deepEqual(f.changes, [{ x: 250, y: 200, width: 650, height: 360 }]);
+  await paintPointerCommit(frames);
+  assert.equal(frames.count(), 0);
+});
+
+for (const end of ["pointerup", "pointercancel", "lostpointercapture", "browser-edge"]) {
+  test(`fast dragging commits its pending position without re-enabling transitions after ${end}`, async (t) => {
+    viewportFixture(t, 1280, 900);
+    const style = document.createElement("style");
+    style.textContent = compileStyle({
+      source: sass.compileString(descriptor.styles[0].content).css,
+      filename, id: DesktopWindow.__scopeId, scoped: true
+    }).code;
+    document.head.appendChild(style);
+    t.after(() => style.remove());
+    const f = boundsFixture(t, { initialWidth: 400, initialHeight: 300 });
+    await flush();
+    const frames = pointerFrameFixture(t);
+    const titlebar = f.element.querySelector(".window__titlebar");
+    titlebar.dispatchEvent(pointerEvent("pointerdown", { clientX: 140, clientY: 80 }));
+    const point = end === "browser-edge" ? { clientX: 1270, clientY: 870 } : { clientX: 740, clientY: 360 };
+    document.dispatchEvent(pointerEvent("pointermove", point));
+    if (end === "browser-edge") document.dispatchEvent(pointerEvent("pointermove", { clientX: 1300, clientY: 920 }));
+    else (end === "lostpointercapture" ? titlebar : document).dispatchEvent(pointerEvent(end));
+    await flush();
+    const expected = { left: point.clientX - 40, top: point.clientY - 20, width: 400, height: 300 };
+    assert.deepEqual(f.bounds(), expected);
+    assert.equal(f.element.style.translate, "");
+    assert.equal(getComputedStyle(f.element).transition, "none", "the coordinate handoff must not interpolate from the old left/top");
+    frames.flush(); await flush();
+    assert.equal(getComputedStyle(f.element).transition, "none", "commit one paint with transitions disabled");
+    frames.flush(); await flush();
+    assert.match(getComputedStyle(f.element).transition, /left 0\.2s/);
+    assert.deepEqual(f.bounds(), expected);
+    assert.deepEqual(f.moves, [{ x: expected.left, y: expected.top }]);
+    document.dispatchEvent(pointerEvent("pointerup"));
+    assert.equal(f.moves.length, 1);
+  });
+}
+
+test("a new drag cancels the prior release callbacks and unmount clears the remaining commit frames", async (t) => {
+  viewportFixture(t, 1280, 900);
+  const f = boundsFixture(t);
+  await flush();
+  const frames = pointerFrameFixture(t);
+  const titlebar = f.element.querySelector(".window__titlebar");
+  titlebar.dispatchEvent(pointerEvent("pointerdown", { clientX: 140, clientY: 80 }));
+  document.dispatchEvent(pointerEvent("pointermove", { clientX: 240, clientY: 130 }));
+  document.dispatchEvent(pointerEvent("pointerup"));
+  await flush();
+  assert.ok(f.element.classList.contains("desktop-window--settling"));
+  titlebar.dispatchEvent(pointerEvent("pointerdown", { clientX: 240, clientY: 130 }));
+  await flush();
+  assert.equal(frames.count(), 0);
+  assert.ok(f.element.classList.contains("desktop-window--dragging"));
+  assert.equal(f.element.classList.contains("desktop-window--settling"), false);
+  document.dispatchEvent(pointerEvent("pointermove", { clientX: 340, clientY: 180 }));
+  document.dispatchEvent(pointerEvent("pointerup"));
+  await flush();
+  assert.deepEqual(f.moves, [{ x: 200, y: 110 }, { x: 300, y: 160 }]);
+  f.app.unmount();
+  assert.equal(frames.count(), 0);
+});
+
+test("restoring a maximized window and releasing in the same frame preserves the commit transition guard", async (t) => {
+  viewportFixture(t, 1280, 900);
+  const f = boundsFixture(t);
+  f.state.maximized = true;
+  await flush();
+  const frames = pointerFrameFixture(t);
+  f.element.querySelector(".window__titlebar").dispatchEvent(pointerEvent("pointerdown", { clientX: 500, clientY: 20 }));
+  document.dispatchEvent(pointerEvent("pointermove", { clientX: 540, clientY: 70 }));
+  document.dispatchEvent(pointerEvent("pointerup"));
+  await flush();
+  assert.equal(f.state.maximized, false);
+  assert.deepEqual(f.bounds(), { left: 420, top: 51, width: 800, height: 500 });
+  assert.ok(f.element.classList.contains("desktop-window--settling"));
+  await paintPointerCommit(frames);
+  assert.equal(f.element.classList.contains("desktop-window--settling"), false);
+  assert.deepEqual(f.moves, [{ x: 420, y: 51 }]);
 });
 
 for (const scenario of [

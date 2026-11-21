@@ -22,9 +22,10 @@ import {
 import { notifyDesktop, notifyDesktopError } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import type { InstanceDetail, NodeStatus } from "@elementspanel/epanel-plugin-console/types";
 import { INSTANCE_STATUS_CODE } from "@elementspanel/epanel-plugin-console/types/const";
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { VBtn, VChip, VIcon, VList, VListItem, VMenu, VProgressCircular, VSelect, VTextField } from "vuetify/components";
 import { useInstanceShortcutDrag } from "./instanceShortcut";
+import { usePolling } from "@elementspanel/epanel-plugin-console/hooks/usePolling";
 
 const { prepareInstanceShortcutDrag, suppressInstanceShortcutClick, isInstanceShortcutDragging, cancelInstanceShortcutDrag } = useInstanceShortcutDrag();
 
@@ -77,7 +78,6 @@ const {
     clearTags
 } = useInstanceTagSearch();
 
-let refreshTimer: ReturnType<typeof setInterval> | null = null;
 
 const deleteDialog = ref<{
     show: boolean;
@@ -549,15 +549,9 @@ onMounted(async () => {
     await fetchNodes();
     await fetchInstances();
     setRefreshFn(fetchInstances);
-    refreshTimer = setInterval(() => fetchInstances(true), 10000);
 });
 
-onUnmounted(() => {
-    if (refreshTimer) {
-        clearInterval(refreshTimer);
-        refreshTimer = null;
-    }
-});
+usePolling(() => fetchInstances(true), 10000, { immediate: false });
 </script>
 
 <template>

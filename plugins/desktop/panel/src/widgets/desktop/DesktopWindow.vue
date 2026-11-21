@@ -4,7 +4,9 @@ import {
     VDefaultsProvider,
     VIcon
 } from "vuetify/components";
-import { computed, nextTick, onMounted, onUnmounted, ref, watch, type Component } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch, type Component } from "vue";
+import { provideDesktopWindowActivity } from "@elementspanel/epanel-plugin-console/hooks/useDesktopWindowActivity";
+import { useWindowRendering } from "../../windowRendering";
 
 export interface DesktopWindowProps {
     id: string;
@@ -23,6 +25,7 @@ export interface DesktopWindowProps {
     showMaximize?: boolean;
     showClose?: boolean;
     resizable?: boolean;
+    transitioning?: boolean;
 }
 
 const props = withDefaults(defineProps<DesktopWindowProps>(), {
@@ -189,6 +192,56 @@ const fitWindow = () => {
 
 const isDragging = ref(false);
 const isResizing = ref(false);
+const isPointerSettling = ref(false);
+let restoringFromDrag = false;
+const rendering = useWindowRendering({
+    bounds: () => props.maximized
+        ? { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight - TASKBAR_HEIGHT }
+        : { left: x.value, top: y.value, right: x.value + width.value, bottom: y.value + height.value },
+    visible: () => props.visible && renderWindow.value,
+    zIndex: () => props.zIndex,
+    maximized: () => props.maximized,
+    interacting: () => isDragging.value || isResizing.value,
+    animating: () => isAnimatingVisibility.value || !!props.transitioning,
+    keepVisible: () => !!windowElement.value?.querySelector(".v-overlay--active, .desktop-window") ||
+        !!windowElement.value?.parentElement?.closest(".desktop-window")
+});
+const isRenderSuspended = rendering.suspended;
+const scrollingElements = new Set<HTMLElement>();
+const onWindowScroll = (event: Event) => {
+    if (!isRenderSuspended.value && event.target instanceof HTMLElement) scrollingElements.add(event.target);
+};
+let savedScrollPositions: { element: HTMLElement; top: number; left: number }[] = [];
+watch(isRenderSuspended, (suspended) => {
+    if (suspended) {
+        savedScrollPositions = [];
+        const element = windowElement.value;
+        for (const scroller of element?.querySelectorAll<HTMLElement>(
+            ".window__content, .window-inner-content > *, .os-viewport, .cm-scroller, .xterm-viewport"
+        ) ?? []) scrollingElements.add(scroller);
+        for (const element of scrollingElements) {
+            if (!windowElement.value?.contains(element)) {
+                scrollingElements.delete(element);
+                continue;
+            }
+            if (element.scrollTop || element.scrollLeft) savedScrollPositions.push({ element, top: element.scrollTop, left: element.scrollLeft });
+        }
+    } else if (savedScrollPositions.length) {
+        const positions = savedScrollPositions;
+        savedScrollPositions = [];
+        void nextTick(() => {
+            for (const position of positions) {
+                if (!position.element.isConnected) continue;
+                position.element.scrollTop = position.top;
+                position.element.scrollLeft = position.left;
+            }
+        });
+    }
+}, { flush: "pre" });
+provideDesktopWindowActivity({
+    visible: computed(() => props.visible && renderWindow.value && !isRenderSuspended.value),
+    interacting: rendering.interacting
+});
 const resizeDirection = ref("");
 const dragOffset = ref({ x: 0, y: 0 });
 const resizeStart = ref({ x: 0, y: 0, w: 0, h: 0, winX: 0, winY: 0 });
@@ -197,6 +250,11 @@ const savedPos = ref({ x: initialBounds.x, y: initialBounds.y, w: initialBounds.
 
 watch(() => [props.visible, props.minimized, props.maximized] as const,
     ([visible, minimized, maximized], [, , wasMaximized]) => {
+        if (maximized !== wasMaximized) {
+            if (activePointerId === undefined && !restoringFromDrag) cancelPointerSettling();
+            restoringFromDrag = false;
+        }
+        if (!visible || minimized || (maximized && !wasMaximized)) finishPointerInteraction();
         if (maximized && !wasMaximized) {
             savedPos.value = { x: x.value, y: y.value, w: width.value, h: height.value };
         } else if (!maximized && wasMaximized) {
@@ -208,6 +266,7 @@ watch(() => [props.visible, props.minimized, props.maximized] as const,
     }, { flush: "sync" });
 
 const onViewportResize = () => {
+    finishPointerInteraction();
     fitWindow();
     const saved = fitBounds({ x: savedPos.value.x, y: savedPos.value.y, width: savedPos.value.w, height: savedPos.value.h });
     savedPos.value = { x: saved.x, y: saved.y, w: saved.width, h: saved.height };
@@ -242,16 +301,75 @@ const DRAG_THRESHOLD = 20;
 const isDragThresholdMet = ref(false);
 const dragStartPos = ref({ x: 0, y: 0 });
 let activePointerId: number | undefined;
+let pointerElement: HTMLElement | undefined;
+let pointerFrame: number | undefined;
+let pendingPointerMove: PointerEvent | undefined;
+let dragPosition: { x: number; y: number } | undefined;
+let settlingFrame: number | undefined;
+let settlingId = 0;
 
-const capturePointer = (e: PointerEvent) => {
+const cancelPointerSettling = () => {
+    settlingId++;
+    if (settlingFrame !== undefined) cancelAnimationFrame(settlingFrame);
+    settlingFrame = undefined;
+    if (isPointerSettling.value) windowElement.value?.classList.remove("desktop-window--settling");
+    isPointerSettling.value = false;
+};
+
+const settlePointerPosition = () => {
+    cancelPointerSettling();
+    isPointerSettling.value = true;
+    const id = settlingId;
+    void nextTick(() => {
+        if (id !== settlingId) return;
+        // Paint committed bounds once before restoring geometry transitions.
+        settlingFrame = requestAnimationFrame(() => {
+            if (id !== settlingId) return;
+            settlingFrame = requestAnimationFrame(() => {
+                if (id !== settlingId) return;
+                settlingFrame = undefined;
+                isPointerSettling.value = false;
+            });
+        });
+    });
+};
+
+const startPointerInteraction = (e: PointerEvent) => {
+    cancelPointerSettling();
+    restoringFromDrag = false;
+    activePointerId = e.pointerId;
     const element = e.currentTarget;
-    if (element instanceof HTMLElement) element.setPointerCapture(e.pointerId);
+    if (element instanceof HTMLElement) {
+        pointerElement = element;
+        element.setPointerCapture(e.pointerId);
+        element.addEventListener("lostpointercapture", onPointerEnd);
+    }
+    document.addEventListener("pointermove", onPointerMove);
+    document.addEventListener("pointerup", onPointerEnd);
+    document.addEventListener("pointercancel", onPointerEnd);
+    window.addEventListener("blur", onWindowBlur);
+};
+
+const stopPointerInteraction = () => {
+    document.removeEventListener("pointermove", onPointerMove);
+    document.removeEventListener("pointerup", onPointerEnd);
+    document.removeEventListener("pointercancel", onPointerEnd);
+    window.removeEventListener("blur", onWindowBlur);
+    if (pointerFrame !== undefined) cancelAnimationFrame(pointerFrame);
+    pointerFrame = undefined;
+    pendingPointerMove = undefined;
+    const pointerId = activePointerId;
+    activePointerId = undefined;
+    pointerElement?.removeEventListener("lostpointercapture", onPointerEnd);
+    if (pointerId !== undefined && pointerElement?.hasPointerCapture?.(pointerId)) {
+        pointerElement.releasePointerCapture(pointerId);
+    }
+    pointerElement = undefined;
 };
 
 const onPointerDownTitlebar = (e: PointerEvent) => {
     if (e.button !== 0 || !e.isPrimary || activePointerId !== undefined) return;
-    activePointerId = e.pointerId;
-    capturePointer(e);
+    startPointerInteraction(e);
     if (props.maximized) {
         dragStartPos.value = { x: e.clientX, y: e.clientY };
         isDragThresholdMet.value = false;
@@ -266,6 +384,7 @@ const onPointerDownTitlebar = (e: PointerEvent) => {
     }
     emit("focus", props.id);
     e.preventDefault();
+    e.stopPropagation();
 };
 
 const isOutsideBrowser = (e: PointerEvent) => {
@@ -274,8 +393,23 @@ const isOutsideBrowser = (e: PointerEvent) => {
 };
 
 const finishPointerInteraction = (pointerId?: number) => {
+    if (activePointerId === undefined) return;
     if (pointerId !== undefined && activePointerId !== pointerId) return;
-    activePointerId = undefined;
+    flushPointerMove();
+    settlePointerPosition();
+    stopPointerInteraction();
+    if (dragPosition) {
+        x.value = dragPosition.x;
+        y.value = dragPosition.y;
+        const element = windowElement.value;
+        if (element) {
+            // Commit the final position before removing the compositor offset.
+            element.style.left = `${x.value}px`;
+            element.style.top = `${y.value}px`;
+            element.style.translate = "";
+        }
+        dragPosition = undefined;
+    }
     if (isDragging.value) {
         isDragging.value = false;
         emit("moved", props.id, x.value, y.value);
@@ -286,16 +420,9 @@ const finishPointerInteraction = (pointerId?: number) => {
     }
 };
 const onPointerEnd = (e: PointerEvent) => finishPointerInteraction(e.pointerId);
+const onWindowBlur = () => finishPointerInteraction();
 
-const onPointerMove = (e: PointerEvent) => {
-    if (activePointerId !== e.pointerId) return;
-    if (e.pointerType === "mouse" && isOutsideBrowser(e)) {
-        if (isDragging.value || isResizing.value) {
-            finishPointerInteraction(e.pointerId);
-        }
-        return;
-    }
-
+const applyPointerMove = (e: PointerEvent) => {
     if (isDragging.value && props.maximized && !isDragThresholdMet.value) {
         const dx = e.clientX - dragStartPos.value.x;
         const dy = e.clientY - dragStartPos.value.y;
@@ -317,6 +444,7 @@ const onPointerMove = (e: PointerEvent) => {
 
             savedPos.value = { x: restoredX, y: restoredY, w: restoredW, h: restoredH };
 
+            restoringFromDrag = true;
             emit("maximize", props.id);
 
             dragOffset.value = {
@@ -328,8 +456,12 @@ const onPointerMove = (e: PointerEvent) => {
     }
 
     if (isDragging.value) {
-        x.value = e.clientX - dragOffset.value.x;
-        y.value = e.clientY - dragOffset.value.y;
+        dragPosition = { x: e.clientX - dragOffset.value.x, y: e.clientY - dragOffset.value.y };
+        const element = windowElement.value;
+        if (element) {
+            // Keep pointer movement out of Vue rendering and layout.
+            element.style.translate = `${dragPosition.x - x.value}px ${dragPosition.y - y.value}px`;
+        }
     }
     if (isResizing.value && props.resizable) {
         const dx = e.clientX - resizeStart.value.x;
@@ -362,10 +494,29 @@ const onPointerMove = (e: PointerEvent) => {
     }
 };
 
+const flushPointerMove = () => {
+    if (pointerFrame !== undefined) cancelAnimationFrame(pointerFrame);
+    pointerFrame = undefined;
+    const event = pendingPointerMove;
+    pendingPointerMove = undefined;
+    if (event) applyPointerMove(event);
+};
+
+const onPointerMove = (e: PointerEvent) => {
+    if (activePointerId !== e.pointerId) return;
+    if (e.pointerType === "mouse" && isOutsideBrowser(e)) {
+        finishPointerInteraction(e.pointerId);
+        return;
+    }
+    pendingPointerMove = e;
+    if (pointerFrame === undefined) {
+        pointerFrame = requestAnimationFrame(flushPointerMove);
+    }
+};
+
 const onResizeStart = (e: PointerEvent, dir: string) => {
     if (e.button !== 0 || !e.isPrimary || activePointerId !== undefined || props.maximized || !props.resizable) return;
-    activePointerId = e.pointerId;
-    capturePointer(e);
+    startPointerInteraction(e);
     isResizing.value = true;
     resizeDirection.value = dir;
     resizeStart.value = {
@@ -397,18 +548,13 @@ const onContextMenuTitlebar = (e: MouseEvent) => {
 onMounted(() => {
     if (boundsDiffer(requestedBounds, initialBounds)) reportBounds();
     window.addEventListener("resize", onViewportResize);
-    document.addEventListener("pointermove", onPointerMove);
-    document.addEventListener("pointerup", onPointerEnd);
-    document.addEventListener("pointercancel", onPointerEnd);
 });
 
+onBeforeUnmount(cancelPointerSettling);
 onUnmounted(() => {
+    stopPointerInteraction();
     stopVisibilityAnimation();
     window.removeEventListener("resize", onViewportResize);
-    document.removeEventListener("pointermove", onPointerMove);
-    document.removeEventListener("pointerup", onPointerEnd);
-    document.removeEventListener("pointercancel", onPointerEnd);
-    activePointerId = undefined;
 });
 </script>
 
@@ -418,8 +564,11 @@ onUnmounted(() => {
         'desktop-window--maximized': maximized,
         'desktop-window--dragging': isDragging,
         'desktop-window--resizing': isResizing,
-        'desktop-window--animating': isAnimatingVisibility
-    }" :style="[windowStyle, { display: visible && renderWindow ? undefined : 'none' }]" @pointerdown="handleFocus">
+        'desktop-window--settling': isPointerSettling,
+        'desktop-window--animating': isAnimatingVisibility,
+        'desktop-window--suspended': isRenderSuspended
+    }" :style="[windowStyle, { display: visible && renderWindow ? undefined : 'none' }]" @pointerdown="handleFocus"
+        @scroll.capture="onWindowScroll">
         <div class="window__frame">
             <div class="window__titlebar" @pointerdown="onPointerDownTitlebar" @dblclick="handleMaximize"
                 @contextmenu.stop.prevent="onContextMenuTitlebar">
@@ -447,7 +596,7 @@ onUnmounted(() => {
 
             <div class="window__content" @contextmenu.stop>
                 <VDefaultsProvider :defaults="overlayDefaults">
-                    <slot></slot>
+                    <slot :suspended="isRenderSuspended"></slot>
                 </VDefaultsProvider>
             </div>
         </div>
@@ -482,6 +631,7 @@ onUnmounted(() => {
 
     &--dragging,
     &--resizing,
+    &--settling,
     &--animating {
         transition: none;
     }
@@ -489,6 +639,10 @@ onUnmounted(() => {
     &--animating {
         pointer-events: none;
         will-change: transform, opacity;
+    }
+
+    &--dragging {
+        will-change: translate;
     }
 }
 
@@ -505,6 +659,15 @@ onUnmounted(() => {
     min-height: 0;
     border-radius: inherit;
     overflow: hidden;
+    contain: layout paint style;
+
+    &:has(.desktop-window) {
+        contain: style;
+    }
+}
+
+.desktop-window--suspended > .window__frame {
+    content-visibility: hidden;
 }
 
 .window__titlebar {

@@ -10,6 +10,7 @@ import {
   type ChartConfiguration
 } from "chart.js";
 import { onBeforeUnmount, onMounted, shallowRef, watch, type Ref } from "vue";
+import { useDesktopWindowActivity } from "./useDesktopWindowActivity";
 
 Chart.register(CategoryScale, LinearScale, LineController, LineElement, PointElement, Filler, Tooltip);
 
@@ -33,6 +34,8 @@ export function useLineChart(
 ) {
   // Chart instances must stay outside Vue's deep reactive proxies.
   const instance = shallowRef<HistoryChart>();
+  const activity = useDesktopWindowActivity();
+  const canRender = () => activity.visible.value && !activity.interacting.value;
   let themeObserver: MutationObserver | undefined;
   const getTickColor = () => {
     if (!canvas.value || typeof getComputedStyle !== "function") return "#666";
@@ -143,7 +146,7 @@ export function useLineChart(
     if (typeof MutationObserver !== "undefined" && typeof document !== "undefined" && document.body) {
       themeObserver = new MutationObserver(() => {
         const chart = instance.value;
-        if (!chart) return;
+        if (!chart || !canRender()) return;
         const color = getTickColor();
         const x = chart.options.scales?.x;
         const y = chart.options.scales?.y;
@@ -156,16 +159,29 @@ export function useLineChart(
     }
   });
 
-  watch(readData, (value) => {
+  const updateChart = (value: LineChartData, animate = true) => {
     const chart = instance.value;
-    if (!chart) return;
+    if (!chart || !canRender()) return;
     const data = snapshot(value);
     chart.data.labels = data.labels;
     chart.data.datasets[0].data = data.values;
     const axis = chart.options.scales?.y;
     if (axis) axis.max = data.max;
-    chart.update();
-  }, { deep: true, flush: "post" });
+    chart.update(animate ? undefined : "none");
+  };
+  watch(readData, (value) => updateChart(value), { deep: true, flush: "post" });
+  watch(canRender, (available) => {
+    if (!available) return instance.value?.stop?.();
+    const chart = instance.value;
+    if (chart) {
+      const color = getTickColor();
+      const x = chart.options.scales?.x;
+      const y = chart.options.scales?.y;
+      if (x?.ticks) x.ticks.color = color;
+      if (y?.ticks) y.ticks.color = color;
+    }
+    updateChart(readData(), false);
+  }, { flush: "post" });
 
   onBeforeUnmount(() => {
     themeObserver?.disconnect();

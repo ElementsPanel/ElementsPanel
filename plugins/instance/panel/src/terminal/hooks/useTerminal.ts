@@ -3,6 +3,7 @@ import { useCommandHistory } from "./useCommandHistory";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import { setUpTerminalStreamChannel } from "../api";
 import { useAppConfigStore } from "@elementspanel/epanel-plugin-console/stores/useAppConfigStore";
+import { useDesktopWindowActivity } from "@elementspanel/epanel-plugin-console/hooks/useDesktopWindowActivity";
 import { mapDaemonAddress, parseForwardAddress } from "@elementspanel/epanel-plugin-console/tools/protocol";
 import type { InstanceDetail } from "@elementspanel/epanel-plugin-console/types";
 import { INSTANCE_STATUS_CODE } from "@elementspanel/epanel-plugin-console/types/const";
@@ -13,7 +14,7 @@ import { WebglAddon } from "@xterm/addon-webgl";
 import { Terminal } from "@xterm/xterm";
 import EventEmitter from "eventemitter3";
 import type { Socket } from "socket.io-client";
-import { computed, onMounted, onUnmounted, ref, shallowRef, unref } from "vue";
+import { computed, onMounted, onUnmounted, ref, shallowRef, unref, watch } from "vue";
 import { makeSocketIo } from "@elementspanel/epanel-plugin-console/hooks/useSocketIo";
 import { TerminalSettings, normalizeTerminalSettings } from "../../../../shared/terminal_settings";
 
@@ -54,11 +55,16 @@ export interface StdoutData {
 }
 
 const { setHistory } = useCommandHistory();
+const MAX_WEBGL_TERMINALS = 4;
+const MAX_OUTPUT_BATCH = 256 * 1024;
+let webglTerminals = 0;
 
 export type UseTerminalHook = ReturnType<typeof useTerminal>;
 
 export function useTerminal() {
   const { hasBgImage } = useAppConfigStore();
+  const activity = useDesktopWindowActivity();
+  const canRender = () => activity.visible.value && !activity.interacting.value;
 
   const events = new EventEmitter();
   let socket: Socket<DefaultEventsMap, DefaultEventsMap> | undefined;
@@ -73,6 +79,15 @@ export function useTerminal() {
   const connectionController = new AbortController();
   let terminalElement: HTMLElement | undefined;
   let settings = new TerminalSettings();
+  let pendingDetail: InstanceDetail | undefined;
+  let resizeObserver: ResizeObserver | undefined;
+  let fitFrame: number | undefined;
+  let fitTerminal: (() => void) | undefined;
+  let releaseRenderer: (() => void) | undefined;
+  let outputFrame: number | undefined;
+  let outputTimer: ReturnType<typeof setTimeout> | undefined;
+  let outputChunks: string[] = [];
+  let outputSize = 0;
 
   const isGlobalTerminal = computed(() => {
     return state.value?.config.nickname === GLOBAL_INSTANCE_NAME;
@@ -82,7 +97,6 @@ export function useTerminal() {
     return state.value?.config.processType === "docker";
   });
 
-  let fitAddonTask: ReturnType<typeof setInterval>;
   let cachedSize = {
     w: 160,
     h: 40
@@ -169,6 +183,7 @@ export function useTerminal() {
       const data = packet.data;
       if (data === true) {
         socket?.emit("stream/detail", {});
+        socket?.emit("stream/resize", { data: cachedSize });
         events.emit("connect");
         isReady.value = true;
       } else {
@@ -195,7 +210,8 @@ export function useTerminal() {
     socket.on("instance/stdout", (packet) => events.emit("stdout", packet?.data));
     socket.on("stream/detail", (packet) => {
       const v = packet?.data as InstanceDetail | undefined;
-      state.value = v;
+      if (!state.value || canRender()) state.value = v;
+      else pendingDetail = v;
       events.emit("detail", v);
     });
 
@@ -204,6 +220,7 @@ export function useTerminal() {
   };
 
   const refreshWindowSize = (w: number, h: number) => {
+    if (cachedSize.w === w && cachedSize.h === h) return;
     cachedSize = {
       w,
       h
@@ -212,6 +229,55 @@ export function useTerminal() {
       data: cachedSize
     });
   };
+
+  const scheduleFit = () => {
+    if (disposed || !fitTerminal || !canRender() || fitFrame !== undefined) return;
+    fitFrame = requestAnimationFrame(() => {
+      fitFrame = undefined;
+      if (!disposed && canRender()) fitTerminal?.();
+    });
+  };
+
+  const cancelOutputSchedule = () => {
+    if (outputFrame !== undefined) cancelAnimationFrame(outputFrame);
+    outputFrame = undefined;
+    clearTimeout(outputTimer);
+    outputTimer = undefined;
+  };
+
+  const flushOutput = () => {
+    cancelOutputSchedule();
+    if (!terminal.value || disposed || !outputChunks.length) return;
+    const output = outputChunks.join("");
+    outputChunks = [];
+    outputSize = 0;
+    terminal.value.write(output);
+  };
+
+  const scheduleOutput = () => {
+    if (!terminal.value || disposed || !outputChunks.length) return;
+    if (outputSize >= MAX_OUTPUT_BATCH) return flushOutput();
+    if (outputFrame !== undefined || outputTimer !== undefined) return;
+    if (canRender()) outputFrame = requestAnimationFrame(flushOutput);
+    else outputTimer = setTimeout(flushOutput, 1000);
+  };
+
+  const stopActivityWatch = watch(canRender, (available) => {
+    if (terminal.value) terminal.value.options.cursorBlink = available;
+    if (!available) {
+      if (fitFrame !== undefined) cancelAnimationFrame(fitFrame);
+      fitFrame = undefined;
+      cancelOutputSchedule();
+      scheduleOutput();
+      return;
+    }
+    if (pendingDetail) {
+      state.value = pendingDetail;
+      pendingDetail = undefined;
+    }
+    flushOutput();
+    scheduleFit();
+  }, { flush: "post" });
 
   const handleScrollbarMouseDown = (event: MouseEvent) => {
     if (event.target instanceof Element && event.target.closest(".os-scrollbar")) {
@@ -281,7 +347,7 @@ export function useTerminal() {
       convertEol: true,
       disableStdin: false,
       cursorStyle: "underline",
-      cursorBlink: true,
+      cursorBlink: canRender(),
       fontFamily: settings.fontFamily,
       fontSize: settings.fontSize,
       scrollback: settings.scrollback,
@@ -296,19 +362,32 @@ export function useTerminal() {
 
     terminal.value = term;
 
-    const gl = document.createElement("canvas").getContext("webgl2");
-    if (gl) {
-      const webglAddon = new WebglAddon();
-      webglAddon.onContextLoss((_) => {
-        webglAddon.dispose();
-      });
-      term.loadAddon(webglAddon);
-    } else {
-      const canvasAddon = new CanvasAddon();
-      term.loadAddon(canvasAddon);
-    }
-
     term.open(element);
+
+    // Avoid probe contexts and keep large desktops below browser WebGL context limits.
+    const useCanvasRenderer = () => term.loadAddon(new CanvasAddon());
+    if (webglTerminals < MAX_WEBGL_TERMINALS) {
+      let addon: WebglAddon | undefined;
+      try {
+        addon = new WebglAddon();
+        addon.onContextLoss(() => {
+          releaseRenderer?.();
+          addon?.dispose();
+          if (!disposed) useCanvasRenderer();
+        });
+        term.loadAddon(addon);
+        webglTerminals++;
+        let allocated = true;
+        releaseRenderer = () => {
+          if (!allocated) return;
+          allocated = false;
+          webglTerminals--;
+        };
+      } catch {
+        addon?.dispose();
+        useCanvasRenderer();
+      }
+    } else useCanvasRenderer();
 
     term.attachCustomKeyEventHandler((arg) => {
       if (arg.type === "keydown" && arg.ctrlKey && arg.code === "KeyC") {
@@ -334,10 +413,15 @@ export function useTerminal() {
 
     fitAddon.fit();
     refreshWindowSize(term.cols - 1, term.rows - 1);
-    fitAddonTask = setInterval(() => {
+    fitTerminal = () => {
       fitAddon.fit();
       refreshWindowSize(term.cols - 1, term.rows - 1);
-    }, 2000);
+    };
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(scheduleFit);
+      resizeObserver.observe(element);
+    } else if (typeof window !== "undefined") window.addEventListener("resize", scheduleFit);
+    scheduleOutput();
 
     let lastCtrlCTime: number | undefined;
 
@@ -374,12 +458,16 @@ export function useTerminal() {
   };
 
   const clearTerminal = () => {
+    cancelOutputSchedule();
+    outputChunks = [];
+    outputSize = 0;
     terminal.value?.clear();
   };
 
   const writeOutputHistory = (text: string) => {
     const term = terminal.value;
     if (!term || disposed) return;
+    flushOutput();
     const output = state.value?.config?.terminalOption?.haveColor ? encodeConsoleColor(text) : text;
     let previousDisableStdin = term.options.disableStdin;
 
@@ -395,11 +483,11 @@ export function useTerminal() {
   };
 
   events.on("stdout", (v: StdoutData) => {
-    if (state.value?.config?.terminalOption?.haveColor) {
-      terminal.value?.write(encodeConsoleColor(v.text));
-    } else {
-      terminal.value?.write(v.text);
-    }
+    if (disposed || !v?.text) return;
+    const text = state.value?.config?.terminalOption?.haveColor ? encodeConsoleColor(v.text) : v.text;
+    outputChunks.push(text);
+    outputSize += text.length;
+    scheduleOutput();
   });
 
   const sendCommand = (command: string) => {
@@ -415,14 +503,20 @@ export function useTerminal() {
   let statusQueryTask: NodeJS.Timeout;
   onMounted(() => {
     statusQueryTask = setInterval(() => {
-      if (socket?.connected) socket?.emit("stream/detail", {});
+      if (socket?.connected && canRender()) socket?.emit("stream/detail", {});
     }, 1000);
   });
 
   onUnmounted(() => {
     disposed = true;
+    stopActivityWatch();
     connectionController.abort();
-    clearInterval(fitAddonTask);
+    resizeObserver?.disconnect();
+    if (typeof window !== "undefined") window.removeEventListener("resize", scheduleFit);
+    if (fitFrame !== undefined) cancelAnimationFrame(fitFrame);
+    cancelOutputSchedule();
+    outputChunks = [];
+    releaseRenderer?.();
     clearInterval(statusQueryTask);
     events.removeAllListeners();
     isManualDisconnect = true;

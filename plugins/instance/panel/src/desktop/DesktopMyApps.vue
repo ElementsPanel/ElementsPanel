@@ -11,7 +11,8 @@ import {
 } from "@elementspanel/epanel-plugin-console/services/apis/instance";
 import { INSTANCE_STATUS_CODE } from "@elementspanel/epanel-plugin-console/types/const";
 import type { UserInstance } from "@elementspanel/epanel-plugin-console/types/user";
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
+import { usePolling } from "@elementspanel/epanel-plugin-console/hooks/usePolling";
 import { VBtn, VIcon, VProgressCircular, VSelect, VTextField } from "vuetify/components";
 import { useInstanceShortcutDrag } from "./instanceShortcut";
 
@@ -43,7 +44,6 @@ const statusSelectItems = computed(() => [
     { title: t("TXT_CODE_COMMON_STOPPING"), value: String(INSTANCE_STATUS_CODE.STOPPING) }
 ]);
 
-let refreshTimer: ReturnType<typeof setInterval> | null = null;
 
 const { execute: executeUserInfoAdvanced } = userInfoApiAdvanced();
 const { execute: executeOpen } = openInstance();
@@ -214,15 +214,9 @@ const handleInstanceDblClick = (instance: MyAppInstance, event: MouseEvent) => {
 
 onMounted(async () => {
     await fetchInstances();
-    refreshTimer = setInterval(() => fetchInstances(true), 10000);
 });
 
-onUnmounted(() => {
-    if (refreshTimer) {
-        clearInterval(refreshTimer);
-        refreshTimer = null;
-    }
-});
+usePolling(() => fetchInstances(true), 10000, { immediate: false });
 </script>
 
 <template>

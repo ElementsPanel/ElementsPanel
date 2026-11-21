@@ -32,6 +32,7 @@ const props = defineProps<{
 }>();
 
 const editorContainer = ref<HTMLElement>();
+const editorElement = ref<HTMLElement>();
 let startDistance = 0;
 let startScale = 1;
 const MAX_SCALE = 1.25;
@@ -127,7 +128,7 @@ const initEditor = () => {
     extensions: [...baseExtensions, ...getLanguageExtension(), createThemeExtension()]
   });
 
-  const parentElement = document.getElementById(DOM_ID);
+  const parentElement = editorElement.value;
   if (!parentElement) return;
   editor = new EditorView({ state: startState, parent: parentElement });
 };
@@ -199,7 +200,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="editor-wrapper">
     <div ref="editorContainer" class="editor-container">
-      <div :id="DOM_ID" class="file-editor"></div>
+      <div ref="editorElement" :id="DOM_ID" class="file-editor"></div>
     </div>
   </div>
 </template>

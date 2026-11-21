@@ -5,7 +5,7 @@ import { logInstanceAutoRestart, logInstanceCrash } from "@elementspanel/epanel-
 import { getRandomId } from "@elementspanel/epanel-plugin-console/tools/randId";
 import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref } from "vue";
 import {
   VBtn,
   VExpansionPanel,
@@ -49,6 +49,9 @@ const instanceId = props.instanceId;
 const daemonId = props.daemonId;
 
 const terminalDomId = `terminal-window-${getRandomId()}`;
+const terminalElement = ref<HTMLElement>();
+let disposed = false;
+onBeforeUnmount(() => { disposed = true; });
 
 const socketError = ref<Error>();
 const { isXhrPollError, xhrPollErrorReason } = useXhrPollError(socketError);
@@ -64,7 +67,7 @@ const handleSendCommand = () => {
 defineExpose({ focusCommandInput: () => inputRef.value?.focus() });
 
 const initTerminal = async () => {
-  const dom = document.getElementById(terminalDomId);
+  const dom = terminalElement.value;
   if (dom) {
     const term = initTerminalWindow(dom);
     return term;
@@ -144,8 +147,9 @@ onMounted(async () => {
         daemonId
       });
     }
-    await initTerminal();
+    if (!disposed) await initTerminal();
   } catch (error: any) {
+    if (disposed) return;
     console.error(error);
     throw error;
   }
@@ -180,6 +184,7 @@ onMounted(async () => {
     <div class="terminal-wrapper global-card-container-shadow position-relative" data-app-surface="terminal">
       <div class="terminal-container">
         <div
+          ref="terminalElement"
           :id="terminalDomId"
           :style="{ height: props.height }"
         ></div>

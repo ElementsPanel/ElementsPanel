@@ -107,8 +107,8 @@ async function desktopFixture(t, savedIcons = []) {
   const iconFile = "plugins/desktop/panel/src/widgets/desktop/DesktopIcon.vue";
   const Icon = load(iconFile, common, compileSfc(iconFile, { inlineTemplate: true })).default;
   const Window = vue.defineComponent({
-    props: ["id"],
-    setup: (props, { slots }) => () => vue.h("div", { class: "test-desktop-window", "data-window-id": props.id }, slots.default?.())
+    props: ["window"],
+    setup: (props) => () => vue.h("div", { class: "test-desktop-window", "data-window-id": props.window.id })
   });
   const Menu = vue.defineComponent({
     props: ["visible", "items"], emits: ["close"],
@@ -130,7 +130,7 @@ async function desktopFixture(t, savedIcons = []) {
       setDesktopLayoutConfig: () => ({ execute: async ({ data }) => { writes.push(JSON.parse(JSON.stringify(data))); } })
     },
     "./widgets/desktop/DesktopIcon.vue": Icon,
-    "./widgets/desktop/DesktopWindow.vue": Window,
+    "./widgets/desktop/DesktopWindowHost.vue": Window,
     "./widgets/desktop/DesktopContextMenu.vue": Menu,
     "vue-router": { useRouter: () => ({ push() {} }) }
   }, compileSfc(file, { inlineTemplate: true })).default;
