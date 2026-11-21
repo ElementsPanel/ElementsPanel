@@ -188,7 +188,7 @@ test("node plugin configuration buttons open desktop windows for the clicked nod
     { uuid: "two", remarks: "", ip: "two.example", port: 24444, available: false }
   ];
   const operation = () => ({ execute: async () => {}, isLoading: vue.ref(false) });
-  const Manager = loadSfc("plugins/instance/panel/src/node/desktop/DesktopNodeManager.vue", {
+  const Manager = loadSfc("plugins/node/panel/src/desktop/DesktopNodeManager.vue", {
     "@/lang/i18n": { t: (key) => key },
     "@/plugin/context": { usePluginService: () => service },
     "@/hooks/useOverviewInfo": { useOverviewInfo: () => ({ state: vue.ref() }) },

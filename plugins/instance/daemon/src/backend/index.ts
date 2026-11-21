@@ -10,7 +10,6 @@ import * as minecraftInstall from "./minecraft_task";
 import { registerSettings } from "./settings";
 import { registerJavaManager } from "./java";
 import { registerModManager } from "./mod";
-import { apply as registerNodeBackend } from "./node";
 import { apply as registerTerminalBackend } from "./terminal";
 import { apply as registerBackupBackend } from "./backup";
 import { apply as registerMonitoringBackend } from "./monitor";
@@ -31,7 +30,6 @@ export function apply(ctx: DaemonPluginContext) {
   ctx.i18n.define(localeMessages);
   registerMonitoringBackend(ctx);
   registerSettings(ctx);
-  registerNodeBackend(ctx);
   ctx.plugin(TasksService);
   ctx.plugin(LifecycleService);
   ctx.plugin(PresetsService);

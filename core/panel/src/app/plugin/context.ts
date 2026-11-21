@@ -239,7 +239,7 @@ export interface PanelRemoteRequest {
   request<T = any>(event: string, data?: any, timeout?: number, force?: boolean): Promise<T>;
 }
 
-/** Node connections and request forwarding provided by the instance plugin. */
+/** Node connections and request forwarding provided by the node plugin. */
 export interface PanelRemoteService {
   readonly services: PanelRemoteSubsystem;
   readonly Request: new (service?: PanelRemoteNode) => PanelRemoteRequest;
@@ -390,7 +390,7 @@ declare module "cordis" {
     koa: PanelKoaService;
     /** Browser-facing Socket.IO transport, provided by `plugins/server`. */
     websocket: PanelWebsocketService;
-    /** Daemon access provided by the instance plugin. */
+    /** Daemon access provided by the node plugin. */
     remote: PanelRemoteService;
     /** Request authorization for the whole panel. Provided by `plugins/user`. */
     guard: RequestGuard;

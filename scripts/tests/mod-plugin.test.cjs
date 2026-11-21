@@ -113,8 +113,8 @@ async function panelFixture(t, options = {}) {
     "./mod_manager": { ModManagerService }
   });
   const emptyRouter = () => new (panelRequire("@koa/router"))();
+  ctx.set("remote", remote);
   const plugin = load("plugins/instance/panel/src/backend/index.ts", {
-    "./node": { apply: (scope) => scope.set("remote", remote) },
     "./terminal": { apply() {} },
     "./backup": { apply() {} },
     "./monitor": { apply() {} },
@@ -561,7 +561,6 @@ test("instance owns mod APIs while mod views follow the file service lifetime", 
   });
   const modApi = { modListApi: () => "instance mods" };
   const plugin = frontendLoad("plugins/instance/panel/src/frontend.ts", {
-    "./node/frontend": { apply() {} },
     "./terminal/frontend": { apply() {} },
     "./backup/frontend": { apply() {} },
     "./monitor/frontend": { apply() {} },

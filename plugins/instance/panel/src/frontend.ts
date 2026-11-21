@@ -31,7 +31,6 @@ import { localeMessages } from "./i18n";
 import { registerJavaManager } from "./java";
 import { registerModManager } from "./mod";
 import * as modApi from "./mod/api";
-import { apply as registerNodeFrontend } from "./node/frontend";
 import { apply as registerTerminalFrontend } from "./terminal/frontend";
 import { apply as registerBackupFrontend } from "./backup/frontend";
 import { apply as registerMonitoringFrontend } from "./monitor/frontend";
@@ -66,7 +65,6 @@ export function apply(ctx: PanelFrontendPluginContext) {
       TagsDialog
     }
   });
-  registerNodeFrontend(ctx);
   registerTerminalFrontend(ctx);
   registerBackupFrontend(ctx);
   registerMonitoringFrontend(ctx);

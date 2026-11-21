@@ -14,6 +14,6 @@ export function core(): PanelPluginContext {
 export const koa = () => core().koa;
 export const middleware = () => core().middleware;
 export const roles = () => core().roles;
-export const remote = () => core().get("remote")!;
+export const remote = () => core().remote;
 export const $t = (key: string, options?: any): string =>
   core().i18n.$t(key, options) as unknown as string;

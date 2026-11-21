@@ -1,0 +1,10 @@
+{
+  "TXT_CODE_COMMON_NODE_DIRECT_CONNECTION_ADDRESS_MAPPINGS": "ノード直接接続アドレスマッピング",
+  "TXT_CODE_NODE_DIRECT_CONNECTION_HINT": "ユーザーが異なるエンドポイントからパネルにアクセスした際のノード直接接続方法を設定（リバースプロキシ配下のノードに有用）",
+  "TXT_CODE_COMMON_ADD_A_MAPPING": "マッピングを追加",
+  "TXT_CODE_COMMON_WHEN_ACCESSING_PANEL_FROM": "パネルからのアクセス時",
+  "TXT_CODE_COMMON_ACCESS_DAEMON_FROM": "デーモンへのアクセス元",
+  "TXT_CODE_COMMON_ADDRESS_AND_PORT": "アドレスとポート",
+  "TXT_CODE_COMMON_PORT": "接続ポート",
+  "TXT_CODE_NODE_HTTP_PATH_PREFIX": "パスプレフィックス"
+}

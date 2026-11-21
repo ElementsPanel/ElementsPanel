@@ -1,7 +1,7 @@
 {
   "name": "@elementspanel/epanel-plugin-instance",
   "version": "1.0.26",
-  "description": "Application instances, terminals, backups, remote nodes, monitoring, operation logs, Java runtimes and Minecraft mod management.",
+  "description": "Application instances, terminals, backups, monitoring, operation logs, Java runtimes and Minecraft mod management.",
   "elementspanel": {
     "id": "instance",
     "dual": true,
@@ -13,7 +13,7 @@
       ],
       "directory": "panel",
       "folder": "instance",
-      "description": "Application instances, terminals, backups, remote nodes, monitoring, operation logs, Java runtimes and Minecraft mod management.",
+      "description": "Application instances, terminals, backups, monitoring, operation logs, Java runtimes and Minecraft mod management.",
       "frontendExports": {
         "api": "src/public/api.ts",
         "hooks/useInstance": "src/public/hooks/useInstance.ts"
@@ -23,7 +23,7 @@
       "priority": 40,
       "directory": "daemon",
       "folder": "instance",
-      "description": "Instance processes, terminals, backups, node mappings, system monitoring, runtimes, installation, scheduling and mod management."
+      "description": "Instance processes, terminals, backups, system monitoring, runtimes, installation, scheduling and mod management."
     }
   }
 }

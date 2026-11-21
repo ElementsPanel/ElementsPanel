@@ -1,5 +1,5 @@
 import { v4 } from "uuid";
-import type { IPacket, IRequestPacket } from "../../../../../../core/panel/src/app/plugin/packets";
+import type { IPacket, IRequestPacket } from "../../../../../core/panel/src/app/plugin/packets";
 import RemoteService from "./remote_entity";
 import { $t, core } from "./runtime";
 import { taskRequestScope } from "./background_tasks";

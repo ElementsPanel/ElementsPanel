@@ -1,0 +1,4 @@
+{
+  "backend": "backend/index.cjs",
+  "frontend": "src/frontend.ts"
+}

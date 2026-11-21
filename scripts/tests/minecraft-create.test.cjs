@@ -861,7 +861,6 @@ test("instance owns Java before restoration, leaves status to external plugins a
     "./service/async_task_core": { AsyncTask, TaskCenter }
   });
   const instancePlugin = load("plugins/instance/daemon/src/backend/index.ts", {
-    "./node": { apply() {} },
     "./terminal": { apply() {} },
     "./backup": { apply() {} },
     "./monitor": { apply() {} },

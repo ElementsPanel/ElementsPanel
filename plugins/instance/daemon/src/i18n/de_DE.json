@@ -117,13 +117,5 @@
   "TXT_CODE_INSTANCE_BACKUP_STOPPING": "Instanz wird angehalten...",
   "TXT_CODE_INSTANCE_BACKUP_STOP_TIMEOUT": "Zeitüberschreitung beim Anhalten der Instanz, Sicherung abgebrochen.",
   "TXT_CODE_INSTANCE_BACKUP_SUCCESS": "Instanzsicherung erfolgreich! Datei: {{name}}",
-  "TXT_CODE_INSTANCE_CONF_INSTANCE_BUSY": "Die Instanz befindet sich derzeit in einem ausgelasteten Zustand und kann keine Aktionen ausführen.",
-  "TXT_CODE_COMMON_NODE_DIRECT_CONNECTION_ADDRESS_MAPPINGS": "Node-Direktverbindungsadresszuordnungen",
-  "TXT_CODE_NODE_DIRECT_CONNECTION_HINT": "Konfigurieren Sie die direkte Verbindung des Nodes bei Zugriff von verschiedenen Endpunkten. Nützlich bei Reverse Proxy.",
-  "TXT_CODE_COMMON_ADD_A_MAPPING": "Zuordnung hinzufügen",
-  "TXT_CODE_COMMON_WHEN_ACCESSING_PANEL_FROM": "Beim Zugriff auf Panel von",
-  "TXT_CODE_COMMON_ACCESS_DAEMON_FROM": "Daemon zugreifen von",
-  "TXT_CODE_COMMON_ADDRESS_AND_PORT": "Adresse und Port",
-  "TXT_CODE_COMMON_PORT": "Anschlussport",
-  "TXT_CODE_NODE_HTTP_PATH_PREFIX": "Pfadpräfix"
+  "TXT_CODE_INSTANCE_CONF_INSTANCE_BUSY": "Die Instanz befindet sich derzeit in einem ausgelasteten Zustand und kann keine Aktionen ausführen."
 }

@@ -150,7 +150,6 @@ async function fixture(t, { sleep = async () => {}, configs = [], settings = {} 
         "tools/steam_cmd.ts": { initSteamCmd() {} },
         "service/version_adapter.ts": { migrateConfig() {} },
         "settings.ts": { registerSettings() {} },
-        "node/index.ts": { apply() {} },
         "terminal/index.ts": { apply() {} },
         "backup/index.ts": { apply() {} },
         "monitor/index.ts": { apply() {} },

@@ -117,13 +117,5 @@
   "TXT_CODE_INSTANCE_BACKUP_STOPPING": "Arrêt de l’instance...",
   "TXT_CODE_INSTANCE_BACKUP_STOP_TIMEOUT": "Délai d’arrêt de l’instance dépassé, sauvegarde annulée.",
   "TXT_CODE_INSTANCE_BACKUP_SUCCESS": "Sauvegarde de l’instance réussie ! Fichier : {{name}}",
-  "TXT_CODE_INSTANCE_CONF_INSTANCE_BUSY": "L'instance est actuellement dans un état occupé et ne peut effectuer aucune action.",
-  "TXT_CODE_COMMON_NODE_DIRECT_CONNECTION_ADDRESS_MAPPINGS": "Mappages d'adresses de connexion directe du nœud",
-  "TXT_CODE_NODE_DIRECT_CONNECTION_HINT": "Configurez la connexion directe du nœud selon l'origine d'accès au panneau, utile avec reverse proxy.",
-  "TXT_CODE_COMMON_ADD_A_MAPPING": "Ajouter un mappage",
-  "TXT_CODE_COMMON_WHEN_ACCESSING_PANEL_FROM": "Accès au panneau depuis",
-  "TXT_CODE_COMMON_ACCESS_DAEMON_FROM": "Accéder au démon depuis",
-  "TXT_CODE_COMMON_ADDRESS_AND_PORT": "Adresse et port",
-  "TXT_CODE_COMMON_PORT": "Port de connexion",
-  "TXT_CODE_NODE_HTTP_PATH_PREFIX": "Préfixe de chemin"
+  "TXT_CODE_INSTANCE_CONF_INSTANCE_BUSY": "L'instance est actuellement dans un état occupé et ne peut effectuer aucune action."
 }

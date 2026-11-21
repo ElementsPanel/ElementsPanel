@@ -553,7 +553,7 @@ test("switching node/plugin configuration cannot display or save a stale schema"
 function pluginActionFixture(t, inventories = {}, nodeOverrides = {}, pluginMarket) {
   t.mock.method(console, "error", () => {});
   const plugin = { id: "sample", enabled: true, running: true, removable: true };
-  const panelPlugins = [plugin, { id: "instance", enabled: true, running: true, removable: true }];
+  const panelPlugins = [plugin, { id: "node", enabled: true, running: true, removable: true }];
   const calls = [], notices = [];
   const nodes = Object.keys(inventories).map((uuid) => ({
     uuid, remarks: uuid, ip: uuid, port: 24444, available: true, ...nodeOverrides[uuid]
@@ -1549,7 +1549,7 @@ test("desktop node refresh ignores stale results, validates ports and reports fa
       if (name === "delete" || name === "connect") throw new Error(`${name} failed`);
     }
   });
-  const state = setupSfc("plugins/instance/panel/src/node/desktop/DesktopNodeManager.vue", {
+  const state = setupSfc("plugins/node/panel/src/desktop/DesktopNodeManager.vue", {
     "@/plugin/context": { usePluginService: () => undefined },
     "@/hooks/useOverviewInfo": { useOverviewInfo: () => ({ state: vue.ref() }) },
     "@/hooks/useSocketIo": {
@@ -1643,7 +1643,7 @@ for (const layout of ["normal", "desktop"]) {
 
 test("editing node connection details preserves plugin settings and a blank API key", async () => {
   const writes = [];
-  const state = setupSfc("plugins/instance/panel/src/node/normal/node/NodeDetailDialog.vue", {
+  const state = setupSfc("plugins/node/panel/src/normal/node/NodeDetailDialog.vue", {
     "../../hooks/useRemoteNode": {
       useRemoteNode: () => ({
         updateNode: async (uuid, data) => writes.push({ uuid, data }),

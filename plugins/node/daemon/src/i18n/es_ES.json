@@ -1,0 +1,10 @@
+{
+  "TXT_CODE_COMMON_NODE_DIRECT_CONNECTION_ADDRESS_MAPPINGS": "Asignaciones de dirección de conexión directa del nodo",
+  "TXT_CODE_NODE_DIRECT_CONNECTION_HINT": "Configura cómo se conecta directamente el nodo cuando el usuario accede al panel desde diferentes endpoints, útil cuando el nodo está detrás de un proxy inverso.",
+  "TXT_CODE_COMMON_ADD_A_MAPPING": "Añadir asignación",
+  "TXT_CODE_COMMON_WHEN_ACCESSING_PANEL_FROM": "Al acceder al panel desde",
+  "TXT_CODE_COMMON_ACCESS_DAEMON_FROM": "Acceder al daemon desde",
+  "TXT_CODE_COMMON_ADDRESS_AND_PORT": "Dirección y puerto",
+  "TXT_CODE_COMMON_PORT": "puerto de conexión",
+  "TXT_CODE_NODE_HTTP_PATH_PREFIX": "Prefijo de ruta"
+}

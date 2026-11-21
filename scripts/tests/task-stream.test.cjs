@@ -8,8 +8,8 @@ const ts = panelRequire("typescript");
 const load = createLoader({ compiler: ts, resolve: (id) => panelRequire(id) });
 
 const { BackgroundTasks } = load("plugins/runtime/daemon/src/backend/service/background_tasks.ts");
-const tickets = load("plugins/instance/panel/src/backend/node/task_ticket.ts");
-const stream = load("plugins/instance/panel/src/backend/node/task_stream.ts");
+const tickets = load("plugins/node/panel/src/backend/task_ticket.ts");
+const stream = load("plugins/node/panel/src/backend/task_stream.ts");
 
 const input = (owner = "alice") => ({
   _taskOwner: owner,

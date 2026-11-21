@@ -24,7 +24,7 @@ export const identity = () => {
   };
 };
 export const operations = () => core().operations;
-export const remote = () => core().get("remote")!;
+export const remote = () => core().remote;
 export const $t = (key: string, options?: any): string =>
   core().i18n.$t(key, options) as unknown as string;
 

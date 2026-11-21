@@ -117,13 +117,5 @@
   "TXT_CODE_INSTANCE_BACKUP_STOPPING": "Örnek durduruluyor...",
   "TXT_CODE_INSTANCE_BACKUP_STOP_TIMEOUT": "Örneği durdurma zaman aşımına uğradı, yedekleme iptal edildi.",
   "TXT_CODE_INSTANCE_BACKUP_SUCCESS": "Örnek yedekleme başarılı! Dosya: {{name}}",
-  "TXT_CODE_INSTANCE_CONF_INSTANCE_BUSY": "Geçerli örnek meşgul ve herhangi bir işlem gerçekleştiremiyor.",
-  "TXT_CODE_COMMON_NODE_DIRECT_CONNECTION_ADDRESS_MAPPINGS": "Node doğrudan bağlantı adres eşlemeleri",
-  "TXT_CODE_NODE_DIRECT_CONNECTION_HINT": "Kullanıcı panelde farklı uç noktalardan eriştiğinde node'un doğrudan nasıl bağlandığını yapılandırın, node ters proxy arkasındayken kullanışlıdır.",
-  "TXT_CODE_COMMON_ADD_A_MAPPING": "Eşleme ekle",
-  "TXT_CODE_COMMON_WHEN_ACCESSING_PANEL_FROM": "Panodan erişirken",
-  "TXT_CODE_COMMON_ACCESS_DAEMON_FROM": "Daemon'a erişim",
-  "TXT_CODE_COMMON_ADDRESS_AND_PORT": "Adres ve port",
-  "TXT_CODE_COMMON_PORT": "Port",
-  "TXT_CODE_NODE_HTTP_PATH_PREFIX": "Yol öneki"
+  "TXT_CODE_INSTANCE_CONF_INSTANCE_BUSY": "Geçerli örnek meşgul ve herhangi bir işlem gerçekleştiremiyor."
 }

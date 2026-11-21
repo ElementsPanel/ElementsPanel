@@ -1,4 +1,5 @@
-import type { DaemonPluginContext } from "../../../../../../core/daemon/src/plugin";
+import type { DaemonPluginContext } from "../../../../../core/daemon/src/plugin";
+import { localeMessages } from "../i18n";
 import { registerSettings } from "./settings";
 
 // Keep this helper local to avoid depending on the host bundle layout.
@@ -17,7 +18,10 @@ function toNumber(value: unknown): number | null {
   return Number(value);
 }
 
+export const inject = ["protocol", "settings", "i18n", "overview"];
+
 export function apply(ctx: DaemonPluginContext) {
+  ctx.i18n.define(localeMessages);
   registerSettings(ctx);
   ctx.protocol.on("info/setting", async (routerCtx: any, data: any) => {
     const config = ctx.settings.config;

@@ -117,13 +117,5 @@
   "TXT_CODE_INSTANCE_BACKUP_STOPPING": "กำลังหยุดอินสแตนซ์...",
   "TXT_CODE_INSTANCE_BACKUP_STOP_TIMEOUT": "หยุดอินสแตนซ์หมดเวลา ยกเลิกการสำรองข้อมูลแล้ว",
   "TXT_CODE_INSTANCE_BACKUP_SUCCESS": "สำรองข้อมูลอินสแตนซ์สำเร็จ! ไฟล์: {{name}}",
-  "TXT_CODE_INSTANCE_CONF_INSTANCE_BUSY": "อินสแตนซ์ปัจจุบันกำลังยุ่งและไม่สามารถดำเนินการใดๆ ได้",
-  "TXT_CODE_COMMON_NODE_DIRECT_CONNECTION_ADDRESS_MAPPINGS": "การแมปที่อยู่การเชื่อมต่อตรงของโหนด",
-  "TXT_CODE_NODE_DIRECT_CONNECTION_HINT": "กำหนดค่าโหนดเมื่อผู้ใช้เข้าถึงแผงควบคุมจากจุดปลายทางต่าง ๆ มีประโยชน์เมื่อโหนดอยู่หลังพร็อกซี่ย้อนกลับ",
-  "TXT_CODE_COMMON_ADD_A_MAPPING": "เพิ่มการแมป",
-  "TXT_CODE_COMMON_WHEN_ACCESSING_PANEL_FROM": "เมื่อเข้าถึงแผงควบคุมจาก",
-  "TXT_CODE_COMMON_ACCESS_DAEMON_FROM": "เข้าถึงดีมอนจาก",
-  "TXT_CODE_COMMON_ADDRESS_AND_PORT": "ที่อยู่และพอร์ต",
-  "TXT_CODE_COMMON_PORT": "พอร์ต",
-  "TXT_CODE_NODE_HTTP_PATH_PREFIX": "คำนำหน้าพาธ"
+  "TXT_CODE_INSTANCE_CONF_INSTANCE_BUSY": "อินสแตนซ์ปัจจุบันกำลังยุ่งและไม่สามารถดำเนินการใดๆ ได้"
 }

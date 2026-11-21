@@ -7,11 +7,14 @@ import NewImage from "./image/NewImage.vue";
 import DesktopNodeManager from "./desktop/DesktopNodeManager.vue";
 import * as nodeApi from "./api";
 import { useRemoteNode } from "./hooks/useRemoteNode";
+import { localeMessages } from "./i18n";
 
 const ADMIN_PERMISSION = 10;
 
-export function apply(ctx: PanelFrontendPluginContext) {
+export const inject = ["console", "i18n", "routes", "ui", "desktop", "instance"];
 
+export function apply(ctx: PanelFrontendPluginContext) {
+  ctx.i18n.define(localeMessages);
   ctx.set("node", { api: nodeApi, useRemoteNode });
 
   const nodeBreadcrumb = {

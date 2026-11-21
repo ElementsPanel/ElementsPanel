@@ -1,6 +1,6 @@
 import { removeTrail } from "mcsmanager-common";
 import type { ManagerOptions, SocketOptions } from "socket.io-client";
-import type { RemoteMappingEntry } from "../../../../../../core/panel/src/app/plugin/packets";
+import type { RemoteMappingEntry } from "../../../../../core/panel/src/app/plugin/packets";
 
 // Keep the RemoteServiceConfig storage category unchanged so existing node records still load.
 export class RemoteServiceConfig {

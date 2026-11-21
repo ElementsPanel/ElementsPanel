@@ -1,6 +1,6 @@
 import { AsyncLocalStorage } from "async_hooks";
 import type Koa from "koa";
-import type { PanelPluginContext } from "../../../../../../core/panel/src/app/plugin";
+import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
 import type RemoteRequest from "./remote_command";
 import type remoteServices from "./remote_service";
 import { issueTaskTicket } from "./task_ticket";

@@ -493,7 +493,7 @@ export interface FrontendPluginMarketService {
   beginDependencyChange(): () => void;
 }
 
-/** Node management. Provided by `plugins/instance`. */
+/** Node management. Provided by `plugins/node`. */
 export interface FrontendNodeService {
   readonly api: NodePluginApi;
   useRemoteNode(): RemoteNodeHook;

@@ -239,7 +239,6 @@ test("panel instance permission errors translate without undeclared service warn
   ctx.set("websocket", {});
   const runtime = load("plugins/instance/panel/src/backend/runtime.ts");
   ctx.plugin(load("plugins/instance/panel/src/backend/index.ts", {
-    "./node": { apply() {} },
     "./terminal": { apply() {} },
     "./backup": { apply() {} },
     "./monitor": { apply() {} },
@@ -293,10 +292,11 @@ test("panel runtime retains audit records across instance monitoring unload and 
   ctx.plugin(load("plugins/server/panel/src/backend/koa.ts").KoaService, app);
   ctx.plugin(runtime);
   ctx.set("websocket", {});
+  const remoteService = { services: { services: new Map(), count: () => ({ available: 0, total: 0 }) } };
+  ctx.plugin({ name: "node", apply: scope => scope.set("remote", remoteService) });
   const emptyRouter = () => new (panelRequire("@koa/router"))();
   const instancePlugin = load("plugins/instance/panel/src/backend/index.ts", {
     "mcsmanager-common": common,
-    "./node": { apply() {} },
     "./terminal": { apply() {} },
     "./backup": { apply() {} },
     "./mod": { registerModManager() {} },
@@ -337,6 +337,7 @@ test("panel runtime retains audit records across instance monitoring unload and 
   await instance.dispose();
   await tick();
   assert.equal(ctx.operations, operations);
+  assert.equal(ctx.get("remote"), remoteService, "instance unloading preserves node connections");
   const overview = await request("/api/overview/");
   assert.ok(overview.system);
   assert.deepEqual(overview.remote, []);
@@ -386,7 +387,6 @@ test("daemon monitoring and instance capabilities share the instance plugin life
     "./tools/steam_cmd": { initSteamCmd() {} },
     "./service/version_adapter": { migrateConfig() {} },
     "./settings": { registerSettings() {} },
-    "./node": { apply() {} },
     "./terminal": { apply() {} },
     "./backup": { apply() {} },
     "./java": { registerJavaManager() {} },
@@ -449,7 +449,7 @@ test("node settings cannot write other plugins' configuration; the backup declar
     archive: {},
     features: { add() {} }
   };
-  load("plugins/instance/daemon/src/backend/node/index.ts", {
+  load("plugins/node/daemon/src/backend/index.ts", {
     "./settings": { registerSettings() {} }
   }).apply(ctx);
   await handlers.get("info/setting")(
@@ -563,11 +563,11 @@ function frontendFixture(t) {
     "./hooks/useCommandHistory": { useCommandHistory() {} },
     "./hooks/useTerminal": { useTerminal() {}, encodeConsoleColor() {} }
   };
-  overrides["./node/frontend"] = load("plugins/instance/panel/src/node/frontend.ts", featureOverrides);
+  const nodePlugin = load("plugins/node/panel/src/frontend.ts", featureOverrides);
   overrides["./terminal/frontend"] = load("plugins/instance/panel/src/terminal/frontend.ts", featureOverrides);
   overrides["./backup/frontend"] = load("plugins/instance/panel/src/backup/frontend.ts", featureOverrides);
   overrides["./monitor/frontend"] = load("plugins/instance/panel/src/monitor/frontend.ts", featureOverrides);
-  return { ctx, routes, state, overrides, pluginContext };
+  return { ctx, routes, state, overrides, pluginContext, nodePlugin };
 }
 
 test("user frontend retains login and account routes while optional instance grants follow dependencies", async (t) => {
@@ -679,7 +679,7 @@ test("desktop user CRUD loads without resource providers and a late assignment r
 });
 
 test("desktop shell opens/restores contributed windows and survives provider removal", async (t) => {
-  const { ctx, routes, overrides, state: app } = frontendFixture(t);
+  const { ctx, routes, overrides, state: app, nodePlugin } = frontendFixture(t);
   const originalDocument = global.document;
   const originalWindow = global.window;
   global.window = { removeEventListener() {} };
@@ -703,6 +703,7 @@ test("desktop shell opens/restores contributed windows and survives provider rem
   assert.equal(ctx.desktop.open({ id: "missing", view: "instance-console" }), false);
   const instancePlugin = load("plugins/instance/panel/src/frontend.ts", overrides);
   const instance = ctx.plugin(instancePlugin);
+  const node = ctx.plugin(nodePlugin);
   const config = ctx.plugin(load("plugins/config/panel/src/frontend.ts", overrides));
   await tick();
   assert.ok(ctx.actions.instances.some((action) => action.id === "java-manager"));
@@ -805,6 +806,16 @@ test("desktop shell opens/restores contributed windows and survives provider rem
   await tick();
   shell.state.openWindow("instances");
   assert.ok(windows.has("instances"));
+  const instanceService = ctx.instance;
+  await node.dispose();
+  await tick();
+  assert.equal(ctx.instance, instanceService, "node removal preserves the instance frontend");
+  assert.ok(ctx.get("terminal"));
+  assert.equal(ctx.get("node"), undefined);
+  assert.equal(routes.has("/node"), false);
+  ctx.plugin(nodePlugin);
+  await tick();
+  assert.ok(ctx.get("node"));
   app.isAdmin.value = false;
   await vue.nextTick();
   assert.equal(windows.has("instances"), false);
@@ -864,7 +875,7 @@ function daemonSettingsFixture(plugin, initialConfig = {}) {
       "./entity/config": { globalConfiguration: { config } }
     })
   } : {};
-  const settingsPath = ["terminal", "node"].includes(plugin)
+  const settingsPath = plugin === "terminal"
     ? `plugins/instance/daemon/src/backend/${plugin}/settings.ts`
     : `plugins/${plugin}/daemon/src/backend/settings.ts`;
   load(settingsPath, overrides).registerSettings(ctx);

@@ -1,4 +1,4 @@
-import type { DaemonPluginContext, DaemonSettingField } from "../../../../../../core/daemon/src/plugin";
+import type { DaemonPluginContext, DaemonSettingField } from "../../../../../core/daemon/src/plugin";
 
 type RemoteMapping = NonNullable<
   DaemonPluginContext["settings"]["config"]["remoteMappings"]

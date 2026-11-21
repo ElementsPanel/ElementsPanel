@@ -20,7 +20,7 @@ export interface NodePluginApi {
 function resolveNodeApi(): NodePluginApi {
   const node = usePluginService<{ api: NodePluginApi }>("node");
   if (!node) {
-    throw new Error('Instance node management is unavailable.');
+    throw new Error('Panel frontend plugin "node" is not loaded.');
   }
   return node.api;
 }

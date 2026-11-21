@@ -1,5 +1,6 @@
 import type Koa from "koa";
-import type { PanelPluginContext } from "../../../../../../core/panel/src/app/plugin";
+import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
+import { localeMessages } from "../i18n";
 import RemoteRequest, { RemoteRequestTimeoutError } from "./remote_command";
 import remoteServices from "./remote_service";
 import { setPluginContext } from "./runtime";
@@ -32,7 +33,10 @@ function describeNode(remoteService: RemoteServiceLike) {
   };
 }
 
+export const inject = ["koa", "i18n", "storage", "settings", "middleware", "roles", "operations", "identity", "websocket"];
+
 export async function apply(ctx: PanelPluginContext) {
+  ctx.i18n.define(localeMessages);
   setPluginContext(ctx);
 
   // Finish loading stored nodes before exposing the remote service.

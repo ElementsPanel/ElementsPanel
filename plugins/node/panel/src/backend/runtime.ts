@@ -1,4 +1,4 @@
-import type { PanelPluginContext } from "../../../../../../core/panel/src/app/plugin";
+import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
 
 /** Resolve shared services through context to avoid bundling duplicate host singletons. */
 let context: PanelPluginContext | undefined;
@@ -8,7 +8,7 @@ export function setPluginContext(value: PanelPluginContext) {
 }
 
 export function core(): PanelPluginContext {
-  if (!context) throw new Error("The instance node services have not been initialized yet.");
+  if (!context) throw new Error("The node plugin has not been initialized yet.");
   return context;
 }
 
