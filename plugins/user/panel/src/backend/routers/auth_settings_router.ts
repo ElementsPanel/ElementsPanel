@@ -23,7 +23,7 @@ export function readAuthSettings() {
 }
 
 /** Validate shared settings without overwriting omitted secrets; identity changes unbind SSO accounts. */
-export async function applyAuthSettings(values: Record<string, unknown>) {
+export async function applyAuthSettings(values: Record<string, unknown>, reset = false) {
   const config = values as Partial<AuthSettings>;
   const settings = { ...authSettings() };
 
@@ -56,6 +56,7 @@ export async function applyAuthSettings(values: Record<string, unknown>) {
     config.ssoClientId != null ? String(config.ssoClientId) : settings.ssoClientId;
   // An empty secret means "keep the stored one".
   const clientSecret =
+    reset ? "" :
     config.ssoClientSecret != null && String(config.ssoClientSecret) !== SECRET_PLACEHOLDER
       ? String(config.ssoClientSecret)
       : settings.ssoClientSecret;

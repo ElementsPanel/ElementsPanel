@@ -17,7 +17,7 @@ import {
   SEVEN_ZIP_PATH,
   ZIP_TIMEOUT_SECONDS
 } from "./const";
-import { globalConfiguration } from "./entity/config";
+import { Config, globalConfiguration } from "./entity/config";
 import { setupProcessLifecycle } from "./lifecycle";
 import { registerOverview } from "./overview";
 import { FeaturesService, OverviewService } from "./registries";
@@ -96,6 +96,7 @@ export async function apply(ctx: DaemonPluginContext) {
 
   ctx.set("settings", {
     config,
+    defaults: () => new Config(),
     version: getVersion(),
     save: () => globalConfiguration.store(),
     setLanguage: (language: string) => {

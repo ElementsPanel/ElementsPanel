@@ -1,4 +1,8 @@
 {
+  "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM_TITLE": "Restaurar as configurações padrão de {name}?",
+  "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM": "As configurações atuais deste plugin serão substituídas pelos valores padrão e salvas automaticamente.",
+  "TXT_CODE_PLUGIN_RESET_SETTINGS": "Restaurar configurações padrão",
+  "TXT_CODE_PLUGIN_SETTINGS_RESET": "Configurações do plugin restauradas para os valores padrão",
   "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM": "Desativar também o plugin correspondente nos seguintes nós? Selecione os nós que deseja incluir.",
   "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM": "Remover também o plugin correspondente dos seguintes nós? Selecione os nós que deseja incluir.",
   "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "Não foi possível verificar os plugins nestes nós: {nodes}.",

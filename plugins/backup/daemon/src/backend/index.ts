@@ -27,6 +27,7 @@ export function apply(ctx: DaemonPluginContext) {
   const BACKUP_FORMATS = ["zip", "tar.gz", "7z"];
 
   ctx.settingsForm.declare({
+    defaults: () => ({ ...ctx.settings.defaults() }),
     fields: () => [
       {
         key: "instanceBackupPath",

@@ -1,4 +1,8 @@
 {
+  "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM_TITLE": "Rétablir les paramètres par défaut de {name} ?",
+  "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM": "Les paramètres actuels de ce plugin seront remplacés par les valeurs par défaut et enregistrés automatiquement.",
+  "TXT_CODE_PLUGIN_RESET_SETTINGS": "Rétablir les paramètres par défaut",
+  "TXT_CODE_PLUGIN_SETTINGS_RESET": "Les paramètres du plugin ont été rétablis",
   "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM": "Voulez-vous aussi désactiver le plugin correspondant sur les nœuds suivants ? Sélectionnez les nœuds à inclure.",
   "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM": "Voulez-vous aussi supprimer le plugin correspondant des nœuds suivants ? Sélectionnez les nœuds à inclure.",
   "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "Impossible de vérifier les plugins sur ces nœuds : {nodes}.",

@@ -113,14 +113,14 @@ function warnFrontendManifest(message: string, error?: unknown) {
   else logger.warn(message, error);
 }
 
-function discoverPanelPlugins(options: DiscoverPluginsOptions) {
+function discoverPanelPlugins(options: DiscoverPluginsOptions, overrides = true) {
   // Resolve npm dependencies and development workspace packages; ignore legacy plugin directories.
-  return applyPluginOverrides(
-    discoverPluginsFromRoots(packagePluginRoots("panel"), {
-      ...options,
-      includeDisabled: true
-    })
-  ).filter((plugin) => options.includeDisabled || plugin.manifest.enabled !== false);
+  const plugins = discoverPluginsFromRoots(packagePluginRoots("panel"), {
+    ...options,
+    includeDisabled: true
+  });
+  return (overrides ? applyPluginOverrides(plugins) : plugins)
+    .filter((plugin) => options.includeDisabled || plugin.manifest.enabled !== false);
 }
 
 /** Exposes the loader's own registry without pulling it into a plugin bundle. */
@@ -649,12 +649,12 @@ export function removePanelPlugin(id: string): Promise<void> {
   });
 }
 
-function findPlugin(id: string) {
+function findPlugin(id: string, overrides = true) {
   const plugin = discoverPanelPlugins({
     entryFields: ENTRY_FIELDS,
     entryCandidates: ENTRY_CANDIDATES,
     includeDisabled: true
-  }).find((item) => item.manifest.id === id);
+  }, overrides).find((item) => item.manifest.id === id);
   if (!plugin) throw new Error(`Plugin not found: ${id}`);
   return plugin;
 }
@@ -710,10 +710,12 @@ function changedRecord(id: string, failure?: string): PanelPluginRecord {
 /** Config replaces the package default as one user-owned layer. Validate before saving. */
 export function configurePanelPlugin(
   id: string,
-  config: Record<string, unknown>
+  config: Record<string, unknown> | null
 ): Promise<PanelPluginRecord> {
   return change(async () => {
     const plugin = findPlugin(id);
+    const resetting = config === null;
+    if (resetting) config = (findPlugin(id, false).manifest.config || {}) as Record<string, unknown>;
     if (!config || typeof config !== "object" || Array.isArray(config))
       throw new Error("Plugin config must be an object.");
     validatePluginCompatibility(plugin.manifest.elements);
@@ -724,7 +726,7 @@ export function configurePanelPlugin(
       running.fork.runtime.schema(config);
     if (Array.isArray(plugin.manifest.configFields))
       validatePluginSettings(plugin.manifest.configFields, config);
-    writePluginOverride(id, { config });
+    writePluginOverride(id, { config: resetting ? undefined : config });
     // Core network/storage configuration is applied on restart; never tear down the reply path.
     if (RESTART_CONFIG_PLUGIN_IDS.has(id)) {
       return {

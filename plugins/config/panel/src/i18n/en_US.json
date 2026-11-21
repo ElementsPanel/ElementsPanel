@@ -1,4 +1,8 @@
 {
+  "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM_TITLE": "Restore default settings for {name}?",
+  "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM": "This plugin's current settings will be replaced with the defaults and saved automatically.",
+  "TXT_CODE_PLUGIN_RESET_SETTINGS": "Restore default settings",
+  "TXT_CODE_PLUGIN_SETTINGS_RESET": "Plugin settings restored to defaults",
   "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM": "Also disable the matching plugin on the following nodes? Select the nodes to include.",
   "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM": "Also remove the matching plugin from the following nodes? Select the nodes to include.",
   "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "Could not check the plugins on these nodes: {nodes}.",

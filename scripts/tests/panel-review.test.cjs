@@ -426,6 +426,25 @@ test("failed auth settings validation preserves the live config and existing SSO
   assert.equal(unbound, false);
 });
 
+test("restoring authentication defaults clears saved SSO secrets while normal blank writes retain them", async () => {
+  let settings = { ssoType: "oidc", ssoEnabled: false, ssoClientId: "", ssoClientSecret: "saved secret", migrationVersion: 1 };
+  const { applyAuthSettings } = load("plugins/user/panel/src/backend/routers/auth_settings_router.ts", {
+    "../runtime": {},
+    "../middleware/permission": {},
+    "../service/auth_settings": {
+      authSettings: () => settings,
+      saveAuthSettings: async value => { settings = value; }
+    },
+    "../service/sso_service": { clearOIDCCache() {} },
+    "../service/user_service": { __esModule: true, default: { unbindAllSso: async () => 0 } }
+  });
+  await applyAuthSettings({ ssoClientSecret: "" });
+  assert.equal(settings.ssoClientSecret, "saved secret");
+  await applyAuthSettings({ ssoClientSecret: "", ssoEnabled: false }, true);
+  assert.equal(settings.ssoClientSecret, "");
+  assert.equal(settings.migrationVersion, 1);
+});
+
 test("configured Redis failure never silently switches account persistence to local files", async (t) => {
   let client;
   let fileWrites = 0;

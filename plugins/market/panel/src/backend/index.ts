@@ -34,6 +34,7 @@ import {
   type RemoteMarketInstall
 } from "./service/plugin_market";
 import { initMarketSettings, marketSettings, saveMarketSettings } from "./service/market_settings";
+import MarketSettings from "./entity/market_settings";
 
 // Manage plugin npm dependencies; application templates belong to the external app-market plugin.
 
@@ -1452,6 +1453,7 @@ export async function apply(ctx: PanelPluginContext) {
   );
 
   ctx.settingsForm.declare({
+    defaults: () => ({ ...new MarketSettings() }),
     fields: () => [
       {
         key: "pluginMarketAddr",

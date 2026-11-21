@@ -17,6 +17,7 @@ import { singletonMemoryRedis } from "./service/mini_redis";
 import { OperationLogger } from "./service/operation_logger";
 import { OverviewService } from "./service/overview";
 import { initSystemConfig, saveSystemConfig, systemConfig } from "./setting";
+import SystemConfig from "./entity/setting";
 import { execWithMutexId } from "./utils/sync";
 import { getVersion, initVersionManager } from "./version";
 
@@ -135,7 +136,11 @@ export async function apply(ctx: PanelPluginContext) {
     };
   };
 
-  ctx.set("settings", { config, save: () => saveSystemConfig(ctx.storage, config) });
+  ctx.set("settings", {
+    config,
+    defaults: () => new SystemConfig(),
+    save: () => saveSystemConfig(ctx.storage, config)
+  });
   ctx.set("middleware", {
     permission,
     validator,

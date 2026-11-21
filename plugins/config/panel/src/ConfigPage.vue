@@ -42,6 +42,8 @@ import {
   pluginSettings,
   removePlugin,
   removeNodePlugin,
+  resetPluginSettings,
+  resetNodePluginSettings,
   setNodePluginEnabled,
   setPluginEnabled,
   updateNodePluginSettings,
@@ -578,8 +580,18 @@ const recordResult = (result?: PluginChangeResult | boolean) => {
 };
 const deletingPlugin = ref(false);
 const actionCandidate = ref<PluginActionCandidate | null>(null);
-const actionSubmitting = computed(() => Boolean(pending.value || deletingPlugin.value));
-const actionBusy = computed(() => actionSubmitting.value || Boolean(actionCandidate.value));
+const resetCandidate = ref<{ id: string; scope: Scope; nodeId: string } | null>(null);
+const actionSubmitting = computed(() => Boolean(pending.value || deletingPlugin.value || savingSettings.value));
+const actionBusy = computed(() => actionSubmitting.value || Boolean(actionCandidate.value || resetCandidate.value));
+const resetConfirmOpen = computed({
+  get: () => Boolean(resetCandidate.value),
+  set: (open: boolean) => {
+    if (!open && !savingSettings.value) resetCandidate.value = null;
+  }
+});
+watch([scope, selectedNodeId], () => {
+  if (!savingSettings.value) resetCandidate.value = null;
+});
 const actionConfirmOpen = computed({
   get: () => actionCandidate.value?.step === "confirm",
   set: (open: boolean) => {
@@ -778,6 +790,60 @@ const saveSettings = async () => {
       await loadSchema();
     }
   } catch (error: any) {
+    notifyError(error);
+  } finally {
+    savingSettings.value = false;
+  }
+};
+
+const requestResetContextPluginSettings = () => {
+  const plugin = pluginContextPlugin.value;
+  closePluginContextMenu();
+  if (!plugin?.canResetSettings || actionBusy.value) return;
+  resetCandidate.value = { id: plugin.id, scope: scope.value, nodeId: selectedNodeId.value };
+};
+
+const confirmResetSettings = async () => {
+  const candidate = resetCandidate.value;
+  if (!candidate || actionSubmitting.value) return;
+  const { id: targetId, scope: targetScope, nodeId: targetNode } = candidate;
+  savingSettings.value = true;
+  try {
+    const response = targetScope === "panel"
+      ? await resetPluginSettings().execute({ params: { id: targetId } })
+      : await resetNodePluginSettings().execute({ params: { daemonId: targetNode, id: targetId } });
+    const result = response.value;
+    if (resetCandidate.value === candidate) resetCandidate.value = null;
+    const currentTarget =
+      scope.value === targetScope &&
+      selectedNodeId.value === targetNode &&
+      currentId.value === targetId;
+    if (currentTarget) recordResult(result);
+    else if (result?.application === "failed")
+      notify(result.error || t("TXT_CODE_PLUGIN_LOAD_FAILED"), "error");
+    if (!result || result.application === "applied") {
+      notify(t("TXT_CODE_PLUGIN_SETTINGS_RESET"), "success");
+      if (targetScope === "panel") {
+        window.dispatchEvent(new CustomEvent("elementspanel:plugin-settings-changed", {
+          detail: { id: targetId }
+        }));
+        if (["i18n", "console"].includes(targetId)) {
+          window.setTimeout(() => window.location.reload(), 400);
+          return;
+        }
+      }
+    } else if (!currentTarget && result.application !== "failed") {
+      notify(t(result.application === "pending"
+        ? "TXT_CODE_PLUGIN_SAVED_PENDING"
+        : "TXT_CODE_PLUGIN_RESTART_REQUIRED"), "success");
+    }
+    if (scope.value === targetScope && selectedNodeId.value === targetNode) {
+      if (targetScope === "panel") await load(true);
+      else await loadNodePlugins(true);
+      if (scope.value === targetScope && selectedNodeId.value === targetNode && currentId.value === targetId)
+        await loadSchema();
+    }
+  } catch (error) {
     notifyError(error);
   } finally {
     savingSettings.value = false;
@@ -1573,6 +1639,13 @@ const confirmAction = async () => {
           :disabled="remarksLoading || savingRemark"
           @click="editContextPluginRemark"
         />
+        <VListItem
+          v-if="pluginContextPlugin.canResetSettings"
+          :title="t('TXT_CODE_PLUGIN_RESET_SETTINGS')"
+          prepend-icon="mdi-restore"
+          :disabled="actionBusy"
+          @click="requestResetContextPluginSettings"
+        />
         <VDivider />
         <VMenu submenu location="end" open-on-click :open-on-hover="false">
           <template #activator="{ props: menuProps }">
@@ -1597,6 +1670,24 @@ const confirmAction = async () => {
         </VMenu>
       </VList>
     </VMenu>
+
+    <VDialog v-model="resetConfirmOpen" :persistent="savingSettings" max-width="460">
+      <VCard
+        :title="t('TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM_TITLE', { name: pluginLabel(resetCandidate?.id) })"
+        rounded="xl"
+      >
+        <VCardText>{{ t("TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM") }}</VCardText>
+        <VCardActions>
+          <VSpacer />
+          <VBtn variant="text" :disabled="savingSettings" @click="resetConfirmOpen = false">
+            {{ t("TXT_CODE_PLUGIN_CANCEL") }}
+          </VBtn>
+          <VBtn color="primary" :loading="savingSettings" @click="confirmResetSettings">
+            {{ t("TXT_CODE_PLUGIN_RESET_SETTINGS") }}
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
 
     <VDialog v-model="remarkDialog.open" :persistent="savingRemark" max-width="460">
       <VCard :title="t('TXT_CODE_PLUGIN_REMARK_EDIT')" rounded="xl">

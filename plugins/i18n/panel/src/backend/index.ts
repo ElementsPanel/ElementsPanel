@@ -106,6 +106,7 @@ export async function apply(ctx: PanelPluginContext) {
       const config = settingsCtx.settings.config;
 
       settingsCtx.settingsForm.declare({
+        defaults: () => ({ ...settingsCtx.settings.defaults() }),
         fields: () => [
           {
             key: "language",

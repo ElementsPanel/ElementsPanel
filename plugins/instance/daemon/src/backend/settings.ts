@@ -43,6 +43,7 @@ export function registerSettings(ctx: DaemonPluginContext) {
   const $t = ctx.i18n.$t;
   ctx.inject(["settingsForm"], (settingsCtx) =>
     settingsCtx.settingsForm.declare({
+      defaults: () => ({ ...ctx.settings.defaults() }),
       fields: () => [
         ...Object.entries(INSTANCE_NUMBER_SETTINGS).map(([key, range]) => ({
           key,

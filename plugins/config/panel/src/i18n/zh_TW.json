@@ -1,4 +1,8 @@
 {
+  "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM_TITLE": "還原 {name} 的預設設定？",
+  "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM": "此外掛的目前設定將替換為預設值並自動儲存。",
+  "TXT_CODE_PLUGIN_RESET_SETTINGS": "還原預設設定",
+  "TXT_CODE_PLUGIN_SETTINGS_RESET": "外掛設定已還原為預設值",
   "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM": "是否同時停用以下節點上的對應外掛？請勾選需要同步操作的節點。",
   "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM": "是否同時刪除以下節點上的對應外掛？請勾選需要同步操作的節點。",
   "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "無法檢查以下節點的外掛：{nodes}。",

@@ -1,4 +1,8 @@
 {
+  "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM_TITLE": "Восстановить настройки {name} по умолчанию?",
+  "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM": "Текущие настройки этого плагина будут заменены значениями по умолчанию и автоматически сохранены.",
+  "TXT_CODE_PLUGIN_RESET_SETTINGS": "Восстановить настройки по умолчанию",
+  "TXT_CODE_PLUGIN_SETTINGS_RESET": "Настройки плагина восстановлены по умолчанию",
   "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM": "Отключить соответствующий плагин также на следующих узлах? Выберите нужные узлы.",
   "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM": "Удалить соответствующий плагин также со следующих узлов? Выберите нужные узлы.",
   "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "Не удалось проверить плагины на этих узлах: {nodes}.",

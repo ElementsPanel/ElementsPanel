@@ -42,6 +42,7 @@ export const ctx = new Context();
 /** Daemon configuration, plus the calls that persist and re-language it. */
 export interface DaemonSettingsService {
   readonly config: typeof globalConfiguration.config;
+  defaults(): typeof globalConfiguration.config;
   /** Version detected by the runtime foundation for this daemon process. */
   readonly version: string;
   save(): void;
@@ -116,6 +117,8 @@ export interface DaemonSettingsDeclaration {
   /** Changes to this form require a process restart. */
   restartRequired?: boolean;
   fields(): DaemonSettingField[];
+  defaults?(): Record<string, unknown>;
+  reset?(): void | Promise<void>;
   read(): Record<string, unknown> | Promise<Record<string, unknown>>;
   write(values: Record<string, unknown>): void | Promise<void>;
 }
@@ -133,10 +136,12 @@ export interface DaemonSettingsFormService {
   declare(declaration: DaemonSettingsDeclaration): () => void;
   /** The ids that declared a form, in declaration order. */
   declared(): string[];
+  canReset(id: string): boolean;
   /** One plugin's fields and values, or `null` when it declared nothing. */
   read(id: string): Promise<DaemonSettingsSchema | null>;
   /** Hands `values` to that plugin's own `write()`. */
   write(id: string, values: Record<string, unknown>): Promise<PluginChangeResult>;
+  reset(id: string): Promise<PluginChangeResult>;
 }
 
 export interface DaemonI18nService {
@@ -385,7 +390,8 @@ export interface DaemonPluginsService {
   updateBatch(options: NpmUpdateBatchOptions): Promise<NpmUpdateBatchResult>;
   /** Unloads and removes an installed daemon plugin package. */
   remove(id: string): Promise<void>;
-  configure(id: string, config: Record<string, unknown>): Promise<DaemonPluginRecord>;
+  /** Null restores package defaults and removes the saved config override. */
+  configure(id: string, config: Record<string, unknown> | null): Promise<DaemonPluginRecord>;
   configuration(id: string): DaemonSettingsSchema;
   runExclusive<T>(operation: () => Promise<T>): Promise<T>;
   /**

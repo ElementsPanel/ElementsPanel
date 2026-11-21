@@ -1,4 +1,8 @@
 {
+  "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM_TITLE": "{name} için varsayılan ayarlar geri yüklensin mi?",
+  "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM": "Bu eklentinin mevcut ayarları varsayılan değerlerle değiştirilecek ve otomatik olarak kaydedilecektir.",
+  "TXT_CODE_PLUGIN_RESET_SETTINGS": "Varsayılan ayarları geri yükle",
+  "TXT_CODE_PLUGIN_SETTINGS_RESET": "Eklenti ayarları varsayılanlara geri yüklendi",
   "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM": "Aşağıdaki düğümlerdeki aynı eklenti de devre dışı bırakılsın mı? Dahil edilecek düğümleri seçin.",
   "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM": "Aşağıdaki düğümlerdeki aynı eklenti de kaldırılsın mı? Dahil edilecek düğümleri seçin.",
   "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "Bu düğümlerdeki eklentiler kontrol edilemedi: {nodes}.",

@@ -3,6 +3,7 @@ import type { DaemonPluginContext } from "../../../../../core/daemon/src/plugin"
 export function registerSettings(ctx: DaemonPluginContext) {
   ctx.inject(["settingsForm"], (settingsCtx) =>
     settingsCtx.settingsForm.declare({
+      defaults: () => ({ ...ctx.settings.defaults() }),
       fields: () => [
         {
           key: "outputBufferSize",

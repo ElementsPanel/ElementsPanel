@@ -117,6 +117,8 @@ test("panel settings registered after terminal startup keep their terminal owner
   const result = await ctx.settingsForm.write("terminal", { ...schema.values, fontSize: 22 });
   assert.deepEqual(result, { saved: true, application: "applied" });
   assert.equal((await ctx.settingsForm.read("terminal")).values.fontSize, 22);
+  await ctx.settingsForm.reset("terminal");
+  assert.equal((await ctx.settingsForm.read("terminal")).values.fontSize, 14);
 });
 
 test("daemon reads only the log suffix, handles partial reads and preserves UTF-8 boundaries", async (t) => {

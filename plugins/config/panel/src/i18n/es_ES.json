@@ -1,4 +1,8 @@
 {
+  "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM_TITLE": "¿Restaurar los ajustes predeterminados de {name}?",
+  "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM": "Los ajustes actuales de este plugin se sustituirán por los predeterminados y se guardarán automáticamente.",
+  "TXT_CODE_PLUGIN_RESET_SETTINGS": "Restaurar ajustes predeterminados",
+  "TXT_CODE_PLUGIN_SETTINGS_RESET": "Los ajustes del plugin se han restablecido",
   "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM": "¿Quieres desactivar también el complemento correspondiente en los siguientes nodos? Selecciona los nodos que quieras incluir.",
   "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM": "¿Quieres eliminar también el complemento correspondiente de los siguientes nodos? Selecciona los nodos que quieras incluir.",
   "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "No se pudieron comprobar los complementos de estos nodos: {nodes}.",

@@ -14,6 +14,7 @@ import createSsoRouter from "./routers/sso_router";
 import createUserOverviewRouter from "./routers/user_overview_router";
 import { setPluginContext } from "./runtime";
 import { initAuthSettings } from "./service/auth_settings";
+import AuthSettings from "./entity/auth_settings";
 import userSystem from "./service/user_service";
 
 export const inject = [
@@ -81,6 +82,7 @@ export async function apply(ctx: PanelPluginContext) {
   ];
 
   ctx.settingsForm.declare({
+    reset: () => applyAuthSettings({ ...new AuthSettings() }, true),
     fields: () => [
       {
         key: "loginInfo",

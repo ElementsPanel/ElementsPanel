@@ -160,6 +160,7 @@ export function apply(ctx: PanelPluginContext) {
   // Listener, proxy and path settings take effect after restart.
   ctx.inject(["settingsForm"], (settingsCtx) =>
     settingsCtx.settingsForm.declare({
+      defaults: () => ({ ...ctx.settings.defaults() }),
       restartRequired: true,
       fields: () => [
         {

@@ -105,6 +105,7 @@ export async function apply(ctx: DaemonPluginContext) {
       const config = settingsCtx.settings.config;
 
       settingsCtx.settingsForm.declare({
+        defaults: () => ({ ...settingsCtx.settings.defaults() }),
         fields: () => [
           {
             key: "language",

@@ -567,7 +567,11 @@ function pluginActionFixture(t, inventories = {}, nodeOverrides = {}, pluginMark
     setPluginEnabled: async () => ({ result: { application: "applied" } }),
     setNodePluginEnabled: async () => ({ result: { application: "applied" } }),
     removePlugin: async () => ({}),
-    removeNodePlugin: async () => ({})
+    removeNodePlugin: async () => ({}),
+    resetPluginSettings: async () => ({ saved: true, application: "applied" }),
+    resetNodePluginSettings: async () => ({ saved: true, application: "applied" }),
+    pluginSettings: async ({ params }) => ({ id: params.id, fields: [], values: { label: "default" } }),
+    nodePluginSettings: async ({ params }) => ({ id: params.id, fields: [], values: { label: "node default" } })
   };
   const api = Object.fromEntries(Object.keys(handlers).map((name) => [name, () => ({
     execute: async (config) => {
@@ -599,6 +603,75 @@ function pluginActionFixture(t, inventories = {}, nodeOverrides = {}, pluginMark
     writes: () => calls.filter(({ name }) => /^(set|remove)/.test(name))
   };
 }
+
+test("restoring plugin defaults targets the context menu plugin and isolates in-flight node changes", async (t) => {
+  const f = pluginActionFixture(t, {
+    first: [{ id: "sample", canResetSettings: true }],
+    second: [{ id: "sample", canResetSettings: true }]
+  });
+  const { state } = f;
+  const open = () => { state.pluginContextMenu.value = { open: true, x: 10, y: 20, pluginId: "sample" }; };
+  const events = [];
+  const previousWindow = global.window;
+  const previousCustomEvent = global.CustomEvent;
+  global.window = { dispatchEvent: event => events.push(event) };
+  global.CustomEvent = class { constructor(type, options) { this.type = type; this.detail = options.detail; } };
+  t.after(() => { global.window = previousWindow; global.CustomEvent = previousCustomEvent; });
+  f.plugin.canResetSettings = true;
+  state.selectedId.value = "node";
+  open();
+  state.requestResetContextPluginSettings();
+  assert.equal(state.resetConfirmOpen.value, true);
+  assert.equal(state.resetCandidate.value.id, "sample");
+  assert.equal(f.calls.some(call => call.name === "resetPluginSettings"), false);
+  state.resetConfirmOpen.value = false;
+  assert.equal(state.resetCandidate.value, null);
+  assert.equal(f.calls.length, 0);
+  open();
+  state.requestResetContextPluginSettings();
+  await state.confirmResetSettings();
+  assert.deepEqual(f.calls.find(call => call.name === "resetPluginSettings").config, { params: { id: "sample" } });
+  assert.equal(state.selectedId.value, "node");
+  assert.equal(state.pluginContextMenu.value.open, false);
+  assert.equal(state.resetConfirmOpen.value, false);
+  assert.deepEqual(events[0].detail, { id: "sample" });
+  state.selectedId.value = "sample";
+  state.schema.value = { id: "sample", fields: [], values: { label: "edited" } };
+  open();
+  state.requestResetContextPluginSettings();
+  await state.confirmResetSettings();
+  assert.deepEqual(state.schema.value.values, { label: "default" });
+
+  const waiting = deferred();
+  f.handlers.resetNodePluginSettings = () => waiting.promise;
+  state.scope.value = "node";
+  state.selectedNodeId.value = "first";
+  state.nodeSelectedId.value = "sample";
+  state.nodePlugins.value = [{ id: "sample", canResetSettings: true }];
+  open();
+  state.requestResetContextPluginSettings();
+  const resetting = state.confirmResetSettings();
+  assert.equal(state.actionBusy.value, true);
+  await state.confirmResetSettings();
+  assert.equal(f.calls.filter(call => call.name === "resetNodePluginSettings").length, 1);
+  state.selectedNodeId.value = "second";
+  state.schema.value = { id: "sample", fields: [], values: { label: "second node" } };
+  waiting.resolve({ saved: true, application: "applied" });
+  await resetting;
+  assert.deepEqual(f.calls.find(call => call.name === "resetNodePluginSettings").config, {
+    params: { daemonId: "first", id: "sample" }
+  });
+  assert.equal(state.schema.value.values.label, "second node");
+  assert.equal(state.savingSettings.value, false);
+
+  f.handlers.resetNodePluginSettings = async () => { throw new Error("reset failed"); };
+  open();
+  state.requestResetContextPluginSettings();
+  await state.confirmResetSettings();
+  assert.equal(state.schema.value.values.label, "second node");
+  assert.equal(state.resetConfirmOpen.value, true);
+  assert.match(f.notices.at(-1).text, /reset failed/);
+});
 
 test("plugin context actions target the clicked plugin and keep remarks isolated across node changes", async (t) => {
   const f = pluginActionFixture(t);

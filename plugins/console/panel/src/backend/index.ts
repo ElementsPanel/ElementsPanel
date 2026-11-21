@@ -139,6 +139,7 @@ export function apply(ctx: PanelPluginContext) {
   const migration = migrateLegacyAppearance(settings.config, () => settings.save());
 
   ctx.inject(["settingsForm"], (settingsCtx) => settingsCtx.settingsForm.declare({
+    defaults: () => readAppearance({}),
     fields: () => [
       {
         key: "pageTitle",

@@ -27,6 +27,37 @@ export class SettingsFormService extends Service implements PanelSettingsFormSer
     return this.declarations.map((entry) => entry.id);
   }
 
+  canReset(id: string) {
+    const entry = this.declarations.find((item) => item.id === id);
+    const fields = entry ? entry.declaration.fields() : this.ctx.plugins.configuration(id).fields;
+    return fields.some((field) => field.key && field.type !== "link") &&
+      (!entry || Boolean(entry.declaration.defaults || entry.declaration.reset));
+  }
+
+  async reset(id: string): Promise<PluginChangeResult> {
+    const entry = this.declarations.find((item) => item.id === id);
+    if (!entry) return (await this.ctx.plugins.configure(id, null)).result!;
+    return this.ctx.plugins.runExclusive(async () => {
+      if (entry.declaration.reset) {
+        await entry.declaration.reset();
+      } else {
+        if (!entry.declaration.defaults) throw new Error("Plugin does not provide default settings.");
+        const defaults = entry.declaration.defaults();
+        const fields = entry.declaration.fields();
+        const values: Record<string, unknown> = {};
+        for (const field of fields) {
+          if (field.key && field.type !== "link") values[field.key] = defaults[field.key];
+        }
+        validatePluginSettings(fields, values);
+        await entry.declaration.write(values);
+      }
+      return {
+        saved: true,
+        application: entry.declaration.restartRequired ? "restart-required" : "applied"
+      };
+    });
+  }
+
   async read(id: string): Promise<PanelSettingsSchema | null> {
     const entry = this.declarations.find((item) => item.id === id);
     if (!entry) {

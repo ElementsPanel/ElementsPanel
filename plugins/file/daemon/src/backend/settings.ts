@@ -16,6 +16,7 @@ export function registerSettings(ctx: DaemonPluginContext) {
 
   ctx.inject(["settingsForm"], (settingsCtx) =>
     settingsCtx.settingsForm.declare({
+      defaults: () => ({ ...ctx.settings.defaults() }),
       fields: () => [
         {
           key: "uploadSpeedRate",

@@ -18,6 +18,7 @@ export interface PluginRecord {
   result?: PluginChangeResult;
   error?: string;
   hasSettings?: boolean;
+  canResetSettings?: boolean;
   removable: boolean;
 }
 
@@ -140,6 +141,14 @@ export const updatePluginSettings = useDefineApi<
   method: "PUT"
 });
 
+export const resetPluginSettings = useDefineApi<
+  { params: { id: string } },
+  PluginChangeResult
+>({
+  url: "/api/plugins/settings/reset",
+  method: "POST"
+});
+
 export const pluginGroupList = useDefineApi<unknown, PluginGroup[]>({
   url: "/api/plugins/groups",
   method: "GET"
@@ -179,6 +188,7 @@ export interface NodePluginRecord {
   result?: PluginChangeResult;
   error?: string;
   hasSettings?: boolean;
+  canResetSettings?: boolean;
   removable: boolean;
 }
 
@@ -224,6 +234,14 @@ export const updateNodePluginSettings = useDefineApi<
 >({
   url: "/api/plugins/node/settings",
   method: "PUT"
+});
+
+export const resetNodePluginSettings = useDefineApi<
+  { params: { daemonId: string; id: string } },
+  PluginChangeResult
+>({
+  url: "/api/plugins/node/settings/reset",
+  method: "POST"
 });
 
 export const nodePluginGroupList = useDefineApi<{ params: { daemonId: string } }, PluginGroup[]>({

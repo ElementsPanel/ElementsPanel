@@ -30,6 +30,7 @@ export function registerSettings(ctx: DaemonPluginContext) {
   const $t = ctx.i18n.$t;
   ctx.inject(["settingsForm"], (settingsCtx) =>
     settingsCtx.settingsForm.declare({
+      defaults: () => ({ remoteMappings: [] }),
       fields: () => [
         {
           key: "remoteMappings",

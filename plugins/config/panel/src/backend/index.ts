@@ -107,7 +107,8 @@ export function apply(ctx: PanelPluginContext) {
     const declared = new Set(settingsForm.declared());
     requestCtx.body = ctx.plugins.inventory().map((record) => ({
       ...record,
-      hasSettings: declared.has(record.id)
+      hasSettings: declared.has(record.id),
+      canResetSettings: settingsForm.canReset(record.id)
     }));
   });
 
@@ -126,6 +127,15 @@ export function apply(ctx: PanelPluginContext) {
         id,
         (requestCtx.request.body ?? {}) as Record<string, unknown>
       );
+    }
+  );
+
+  router.post(
+    "/settings/reset",
+    requireAdmin,
+    ctx.middleware.validator({ query: { id: String } }),
+    async (requestCtx: Koa.ParameterizedContext) => {
+      requestCtx.body = await settingsForm.reset(String(requestCtx.request.query.id));
     }
   );
 
@@ -352,6 +362,23 @@ export function apply(ctx: PanelPluginContext) {
             "Failed to refresh node information after saving plugin settings:",
             error
           );
+        }
+      }
+    );
+
+    nodeRouter.post(
+      "/settings/reset",
+      requireAdmin,
+      ctx.middleware.validator({ query: { daemonId: String, id: String } }),
+      async (requestCtx: Koa.ParameterizedContext) => {
+        const request = new RemoteRequest(nodeOf(requestCtx));
+        requestCtx.body = await request.request("plugin/config/reset", {
+          id: String(requestCtx.request.query.id)
+        });
+        try {
+          await request.request("info/overview");
+        } catch (error) {
+          ctx.logger.warn("Failed to refresh node information after resetting plugin settings:", error);
         }
       }
     );

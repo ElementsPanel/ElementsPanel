@@ -16,7 +16,12 @@ test("plugin management npm routes require an administrator and use the plugin l
   const ctx = {
     i18n: { define() {}, $t: (key) => key },
     plugin() {},
-    get: () => ({}),
+    get: () => ({
+      reset: async id => {
+        calls.push({ reset: id });
+        return { saved: true, application: "applied" };
+      }
+    }),
     roles: { ADMIN: 10 },
     middleware: {
       permission:
@@ -96,6 +101,17 @@ test("plugin management npm routes require an administrator and use the plugin l
     timeout: 10 * 60 * 1000
   });
   assert.deepEqual(calls.shift(), { reconnect: true });
+  for (const path of ["/api/plugins/settings/reset", "/api/plugins/node/settings/reset"]) {
+    assert.equal((await request("post", path, 1, undefined, { id: "sample", daemonId: "node" })).status, 403);
+  }
+  const reset = await request("post", "/api/plugins/settings/reset", 10, undefined, { id: "sample" });
+  assert.deepEqual(reset.body, { saved: true, application: "applied" });
+  assert.deepEqual(calls.splice(0), [{ reset: "sample" }]);
+  await request("post", "/api/plugins/node/settings/reset", 10, undefined, { daemonId: "node", id: "sample" });
+  assert.deepEqual(calls.splice(0), [
+    { event: "plugin/config/reset", payload: { id: "sample" }, timeout: undefined },
+    { event: "info/overview", payload: undefined, timeout: undefined }
+  ]);
   await request("delete", "/api/plugins/", 10, undefined, { id: "sample" });
   assert.deepEqual(calls.pop(), { remove: "sample" });
   for (const removeConfig of [undefined, "false", "true"]) {

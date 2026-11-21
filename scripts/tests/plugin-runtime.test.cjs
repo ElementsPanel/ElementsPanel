@@ -562,24 +562,57 @@ for (const side of ["panel", "daemon"]) {
   });
 }
 
+for (const side of ["panel", "daemon"]) {
+  test(`${side}: resetting plugin config restores package defaults and retains enablement`, async (t) => {
+    const f = fixture(t, side);
+    const source = 'exports.apply=(ctx,config)=>ctx.set("sampleValue",config.label);';
+    const metadata = {
+      config: { label: "default" },
+      configFields: [{ key: "label", title: "Label", type: "string" }]
+    };
+    f.write("sample", source, metadata);
+    f.write("other", "exports.apply=()=>{};");
+    await f.start();
+    await f.configure("other", { preserved: true });
+    await f.configure("sample", { label: "custom" });
+    assert.equal(f.ctx.sampleValue, "custom");
+    await f.configure("sample", null);
+    assert.equal(f.ctx.sampleValue, "default");
+    await f.enabled("sample", false);
+    await f.configure("sample", { label: "disabled custom" });
+    await f.configure("sample", null);
+    const overrides = JSON.parse(fs.readFileSync(path.join(f.directory, "data/plugin-overrides.json")));
+    assert.deepEqual(overrides.plugins.sample, { enabled: false });
+    assert.deepEqual(overrides.plugins.other.config, { preserved: true });
+    f.write("sample", source, { ...metadata, config: { label: "new default" } });
+    await f.enabled("sample", true);
+    assert.equal(f.ctx.sampleValue, "new default");
+  });
+}
+
 test("settings forms validate server-side before the plugin writes and report restart-only settings", async (t) => {
   const f = fixture(t);
   await f.start();
   const { SettingsFormService } = load("plugins/config/panel/src/backend/settings.ts");
   f.ctx.plugin(SettingsFormService);
   let writes = 0;
+  let defaults = { port: 23333, unrelatedSecret: "keep" };
+  let fields = [
+    { key: "port", title: "Port", type: "number", min: 1, max: 65535, required: true }
+  ];
+  let lastValues;
   f.ctx.plugin({
     name: "settings-example",
     inject: ["settingsForm"],
     apply(ctx) {
       ctx.settingsForm.declare({
         restartRequired: true,
-        fields: () => [
-          { key: "port", title: "Port", type: "number", min: 1, max: 65535, required: true }
-        ],
+        defaults: () => defaults,
+        fields: () => fields,
         read: () => ({ port: 1234 }),
-        write() {
+        write(values) {
           writes++;
+          lastValues = values;
         }
       });
     }
@@ -591,4 +624,14 @@ test("settings forms validate server-side before the plugin writes and report re
   const result = await f.ctx.settingsForm.write("settings-example", { port: 1234 });
   assert.equal(writes, 1);
   assert.deepEqual(result, { saved: true, application: "restart-required" });
+  assert.equal(f.ctx.settingsForm.canReset("settings-example"), true);
+  assert.deepEqual(await f.ctx.settingsForm.reset("settings-example"), result);
+  assert.deepEqual(lastValues, { port: 23333 });
+  defaults = { port: 0 };
+  await assert.rejects(f.ctx.settingsForm.reset("settings-example"), /invalid/);
+  assert.equal(writes, 2);
+  fields = [];
+  assert.equal(f.ctx.settingsForm.canReset("settings-example"), false);
+  fields = [{ type: "link", title: "Open page", route: "/example" }];
+  assert.equal(f.ctx.settingsForm.canReset("settings-example"), false);
 });

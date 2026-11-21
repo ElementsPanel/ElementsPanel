@@ -18,6 +18,13 @@ export async function registerDesktopSettings(ctx: PanelPluginContext) {
   ctx.inject(["settingsForm"], (scope) => {
     const $t = scope.i18n.$t;
     scope.settingsForm.declare({
+      defaults: () => ({
+        ...new DesktopSettings(),
+        wallpaperImageLight: "",
+        wallpaperImageDark: "",
+        startButtonIconLight: "",
+        startButtonIconDark: ""
+      }),
       fields: () => [
         {
           key: "startButtonIconPerTheme",

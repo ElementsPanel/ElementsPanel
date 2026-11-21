@@ -102,7 +102,8 @@ export function apply(ctx: DaemonPluginContext) {
       routerCtx,
       ctx.plugins.inventory().map((record) => ({
         ...record,
-        hasSettings: declared.has(record.id)
+        hasSettings: declared.has(record.id),
+        canResetSettings: settingsForm.canReset(record.id)
       }))
     );
   });
@@ -251,6 +252,16 @@ export function apply(ctx: DaemonPluginContext) {
       if (!id) throw new Error(ctx.i18n.$t("TXT_CODE_DAEMON_PLUGIN_ID_REQUIRED"));
       const values = (payload.values ?? {}) as Record<string, unknown>;
       ctx.protocol.response(routerCtx, await settingsForm.write(id, values));
+    } catch (error: any) {
+      ctx.protocol.responseError(routerCtx, error);
+    }
+  });
+
+  ctx.protocol.on("plugin/config/reset", async (routerCtx, data) => {
+    try {
+      const id = String((data as { id?: unknown })?.id ?? "");
+      if (!id) throw new Error(ctx.i18n.$t("TXT_CODE_DAEMON_PLUGIN_ID_REQUIRED"));
+      ctx.protocol.response(routerCtx, await settingsForm.reset(id));
     } catch (error: any) {
       ctx.protocol.responseError(routerCtx, error);
     }

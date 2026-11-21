@@ -5,6 +5,7 @@ import {
   isModSourcePreference,
   loadModManagerSettings,
   saveModManagerSettings,
+  ModManagerSettings,
   MOD_REQUEST_LIMITS
 } from "./settings";
 
@@ -37,6 +38,7 @@ export function registerModManager(ctx: PanelPluginContext) {
     scope.inject(["settingsForm"], (settingsScope) => {
       const $t = settingsScope.i18n.$t;
       settingsScope.settingsForm.declare({
+        defaults: () => ({ ...new ModManagerSettings() }),
         fields: () => [
           {
             key: "sourcePreference",

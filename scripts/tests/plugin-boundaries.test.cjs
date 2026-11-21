@@ -891,7 +891,7 @@ test("daemon settings declarations keep their plugin ownership and leave when th
   const warnings = [];
   ctx.on("internal/warning", (error) => warnings.push(error.message));
   ctx.plugin(translations(Service));
-  ctx.set("settings", { config: { outputBufferSize: 256 }, save() {} });
+  ctx.set("settings", { config: { outputBufferSize: 256 }, defaults: () => ({ outputBufferSize: 256 }), save() {} });
   ctx.set("plugins", { runExclusive: (operation) => operation(), configuration: (id) => ({ id, fields: [], values: {} }) });
   const { SettingsFormService } = load("plugins/config/daemon/src/backend/settings.ts", {
     "mcsmanager-common": load("core/common/src/plugin_contract.ts")
@@ -913,6 +913,8 @@ test("daemon settings declarations keep their plugin ownership and leave when th
   assert.equal((await ctx.settingsForm.read("terminal")).values.outputBufferSize, 256);
   await ctx.settingsForm.write("terminal", { outputBufferSize: 1024 });
   assert.equal(ctx.settings.config.outputBufferSize, 1024);
+  await ctx.settingsForm.reset("terminal");
+  assert.equal(ctx.settings.config.outputBufferSize, 256);
   await plugin.dispose();
   await tick();
   assert.deepEqual(ctx.settingsForm.declared(), []);
