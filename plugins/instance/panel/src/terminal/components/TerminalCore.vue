@@ -315,16 +315,17 @@ onMounted(async () => {
       font-size: 16px;
     }
 
-    &:hover {
+    &:hover,
+    &:has(:focus-visible) {
       ul {
-        transition: all 1s;
-        opacity: 0.8;
+        opacity: 1;
       }
     }
 
     ul {
       display: flex;
       opacity: 0;
+      transition: opacity 0.15s ease-out;
 
       li {
         cursor: pointer;
