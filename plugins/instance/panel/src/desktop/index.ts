@@ -1,15 +1,15 @@
-import { defineComponent, h, type Component } from "vue";
 import { getInstanceShortcutId, type PanelFrontendPluginContext } from "@elements-panel/sdk";
-import { t } from "@elementspanel/epanel-plugin-i18n";
 import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { defineComponent, h, type Component } from "vue";
 import CreateInstancePage from "../views/CreateInstance.vue";
-import DesktopInstanceManager from "./DesktopInstanceManager.vue";
-import DesktopMyApps from "./DesktopMyApps.vue";
-import DesktopInstanceConsole from "./DesktopInstanceConsole.vue";
-import DesktopServerConfig from "./DesktopServerConfig.vue";
-import DesktopSchedule from "./DesktopSchedule.vue";
 import DesktopEventConfig from "./DesktopEventConfig.vue";
+import DesktopInstanceConsole from "./DesktopInstanceConsole.vue";
+import DesktopInstanceManager from "./DesktopInstanceManager.vue";
 import DesktopInstanceSettings from "./DesktopInstanceSettings.vue";
+import DesktopMyApps from "./DesktopMyApps.vue";
+import DesktopSchedule from "./DesktopSchedule.vue";
+import DesktopServerConfig from "./DesktopServerConfig.vue";
 
 const withEvents = (component: Component, listeners: Record<string, unknown> = {}) =>
   defineComponent({
@@ -153,7 +153,7 @@ export function registerDesktop(ctx: PanelFrontendPluginContext) {
     scope.desktop.view({
       id: "instance-console",
       title: () => t("TXT_CODE_COMMON_TERMINAL"),
-      icon: "mdi-code-tags",
+      icon: "mdi-console-network-outline",
       initialWidth: 1000,
       initialHeight: 650,
       accepts: hasInstance,
