@@ -129,6 +129,39 @@ export function findIconCell(
   return closest;
 }
 
+export function findIconGroupCell(
+  cell: IconCell,
+  offsets: readonly IconCell[],
+  occupied: ReadonlySet<string>,
+  grid: IconGrid
+): IconCell | undefined {
+  if (!offsets.length) return undefined;
+  const minCol = -Math.min(...offsets.map(offset => offset.col));
+  const maxCol = grid.columns - 1 - Math.max(...offsets.map(offset => offset.col));
+  const minRow = -Math.min(...offsets.map(offset => offset.row));
+  const maxRow = grid.rows - 1 - Math.max(...offsets.map(offset => offset.row));
+  if (minCol > maxCol || minRow > maxRow) return undefined;
+  const target = {
+    col: Math.max(minCol, Math.min(maxCol, cell.col)),
+    row: Math.max(minRow, Math.min(maxRow, cell.row))
+  };
+  const isAvailable = (col: number, row: number) =>
+    offsets.every(offset => !occupied.has(`${col + offset.col},${row + offset.row}`));
+  if (isAvailable(target.col, target.row)) return target;
+  let closest: IconCell | undefined;
+  let distance = Infinity;
+  for (let row = minRow; row <= maxRow; row++) {
+    for (let col = minCol; col <= maxCol; col++) {
+      const nextDistance = (col - target.col) ** 2 + (row - target.row) ** 2;
+      if (nextDistance < distance && isAvailable(col, row)) {
+        closest = { col, row };
+        distance = nextDistance;
+      }
+    }
+  }
+  return closest;
+}
+
 export function arrangeDesktopIcons(
   ids: readonly string[],
   positions: ReadonlyMap<string, IconPoint>,

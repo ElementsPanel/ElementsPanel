@@ -75,6 +75,19 @@ test("desktop grids keep every icon visible across crowded, narrow and resized w
   }
 });
 
+test("group placement preserves negative offsets, avoids occupied cells and rejects shapes with no space", () => {
+  const grid = layoutTools.createIconGrid(450, 400, 4);
+  const offsets = [{ col: -1, row: 0 }, { col: 0, row: 0 }, { col: 0, row: -1 }];
+  assert.deepEqual(layoutTools.findIconGroupCell({ col: 0, row: 0 }, offsets, new Set(), grid), { col: 1, row: 1 });
+  const occupied = new Set(["1,1"]);
+  const target = layoutTools.findIconGroupCell({ col: 2, row: 1 }, offsets, occupied, grid);
+  assert.deepEqual(target, { col: 3, row: 1 });
+  for (const offset of offsets) assert.equal(occupied.has(`${target.col + offset.col},${target.row + offset.row}`), false);
+  assert.equal(layoutTools.findIconGroupCell({ col: 0, row: 0 }, [{ col: 0, row: 0 }, { col: grid.columns, row: 0 }], new Set(), grid), undefined);
+  const full = new Set(Array.from({ length: grid.columns * grid.rows }, (_, index) => `${index % grid.columns},${Math.floor(index / grid.columns)}`));
+  assert.equal(layoutTools.findIconGroupCell({ col: 2, row: 1 }, offsets, full, grid), undefined);
+});
+
 const browser = createBrowser();
 after(() => browser.window.close());
 const frontend = from("frontend");
@@ -171,6 +184,18 @@ async function desktopFixture(t, savedIcons = []) {
   };
 }
 
+function selectWithMarquee(f, ids, grid) {
+  const points = ids.map(id => f.points().get(id));
+  const left = Math.min(...points.map(point => point.x)) - 4;
+  const top = Math.min(...points.map(point => point.y)) - 4;
+  const right = Math.max(...points.map(point => point.x)) + grid.iconWidth + 4;
+  const bottom = Math.max(...points.map(point => point.y)) + grid.iconHeight + 4;
+  f.mouse("mousedown", f.surface, left, top);
+  f.mouse("mousemove", document, right, bottom);
+  f.mouse("mouseup", document, right, bottom);
+  f.mouse("click", f.surface, right, bottom);
+}
+
 test("desktop drops, restoration and resize observation never put icons behind the taskbar", async (t) => {
   const f = await desktopFixture(t, [{ id: "a", x: 16, y: 16 }, { id: "b", x: -500, y: 100000 }]);
   assertInside(f.points(), layoutTools.createIconGrid(800, 552, 4), 4);
@@ -255,4 +280,122 @@ test("desktop marquee selection supports addition, right-click deletion and keyb
   assert.deepEqual(f.writes.at(-1).shortcuts, []);
   assert.deepEqual(f.writes.at(-1).icons, []);
   assert.equal(f.writes.at(-1).windows.length, 1);
+});
+
+test("marquee-selected icons preview and move together from any selected icon and persist all new positions", async (t) => {
+  const grid = layoutTools.createIconGrid(800, 552, 4);
+  const positions = [["a", 0, 0], ["b", 1, 0], ["c", 0, 2], ["d", 6, 3]]
+    .map(([id, col, row]) => ({ id, ...layoutTools.getIconPosition({ col, row }, grid) }));
+  const f = await desktopFixture(t, positions);
+  const original = f.points();
+  selectWithMarquee(f, ["a", "b"], grid);
+  await flush();
+  assert.deepEqual(f.selected(), ["a", "b"]);
+  const start = original.get("b");
+  const target = layoutTools.getIconPosition({ col: 3, row: 1 }, grid);
+  f.mouse("mousedown", f.icon("b"), start.x + 20, start.y + 20);
+  f.mouse("mousemove", document, target.x + 20, target.y + 20);
+  await flush();
+  assert.deepEqual([...f.target.querySelectorAll(".drag-ghost__label")].map(element => element.textContent), ["a", "b"]);
+  const expected = [layoutTools.getIconPosition({ col: 2, row: 1 }, grid), target];
+  assert.deepEqual([...f.target.querySelectorAll(".drop-indicator")].map(element => ({ x: parseFloat(element.style.left), y: parseFloat(element.style.top) })), expected);
+  assert.deepEqual(f.points(), original, "preview leaves the saved positions untouched");
+  f.mouse("mouseup", document, target.x + 20, target.y + 20);
+  f.mouse("click", f.icon("b"), target.x + 20, target.y + 20);
+  await flush();
+  assert.deepEqual(f.points().get("a"), expected[0]);
+  assert.deepEqual(f.points().get("b"), expected[1]);
+  assert.deepEqual(f.points().get("c"), original.get("c"));
+  assert.deepEqual(f.points().get("d"), original.get("d"));
+  assert.deepEqual(f.selected(), ["a", "b"]);
+  assert.equal(f.target.querySelectorAll(".drag-ghost").length, 0);
+  assertInside(f.points(), grid, 4);
+  await new Promise(resolve => setTimeout(resolve, 550));
+  const saved = new Map(f.writes.at(-1).icons.map(({ id, x, y }) => [id, { x, y }]));
+  assert.deepEqual(saved, f.points());
+});
+
+test("dropping a group over another icon finds a free position for the entire shape", async (t) => {
+  const grid = layoutTools.createIconGrid(800, 552, 4);
+  const positions = [["a", 0, 0], ["b", 1, 0], ["c", 2, 1], ["d", 4, 1]]
+    .map(([id, col, row]) => ({ id, ...layoutTools.getIconPosition({ col, row }, grid) }));
+  const f = await desktopFixture(t, positions);
+  const original = f.points();
+  selectWithMarquee(f, ["a", "b"], grid);
+  await flush();
+  const start = original.get("b");
+  const target = layoutTools.getIconPosition({ col: 3, row: 1 }, grid);
+  f.mouse("mousedown", f.icon("b"), start.x + 10, start.y + 10);
+  f.mouse("mousemove", document, target.x + 10, target.y + 10);
+  f.mouse("mouseup", document, target.x + 10, target.y + 10);
+  await flush();
+  assert.deepEqual(f.points().get("a"), layoutTools.getIconPosition({ col: 2, row: 0 }, grid));
+  assert.deepEqual(f.points().get("b"), layoutTools.getIconPosition({ col: 3, row: 0 }, grid));
+  assert.deepEqual(f.points().get("c"), original.get("c"));
+  assert.deepEqual(f.points().get("d"), original.get("d"));
+  assertInside(f.points(), grid, 4);
+});
+
+test("scaled icon groups clamp their complete preview to the desktop and retain relative rows on drop", async (t) => {
+  const initialGrid = layoutTools.createIconGrid(800, 552, 4);
+  const positions = [["a", 0, 0], ["b", 1, 0], ["c", 0, 2], ["d", 6, 3]]
+    .map(([id, col, row]) => ({ id, ...layoutTools.getIconPosition({ col, row }, initialGrid) }));
+  const f = await desktopFixture(t, positions);
+  await f.resize(280, 240);
+  const grid = layoutTools.createIconGrid(280, 192, 4);
+  const original = f.points();
+  assert.ok(grid.scale < 1);
+  selectWithMarquee(f, ["a", "c"], grid);
+  await flush();
+  assert.deepEqual(f.selected(), ["a", "c"]);
+  const start = original.get("c");
+  f.mouse("mousedown", f.icon("c"), start.x + 10, start.y + 10);
+  f.mouse("mousemove", document, 5000, 5000);
+  await flush();
+  const ghosts = [...f.target.querySelectorAll(".drag-ghost")].map(element => ({ x: parseFloat(element.style.left), y: parseFloat(element.style.top) }));
+  assert.equal(ghosts.length, 2);
+  assert.ok(Math.abs(ghosts[1].y - ghosts[0].y - grid.rowHeight) < 1e-6, "pixel offsets must not be scaled twice");
+  ghosts.forEach(point => assertInside(new Map([["ghost", point]]), grid, 1));
+  f.mouse("mouseup", document, 5000, 5000);
+  await flush();
+  assert.deepEqual(f.points().get("a"), layoutTools.getIconPosition({ col: 1, row: 0 }, grid));
+  const c = f.points().get("c");
+  const expected = layoutTools.getIconPosition({ col: 1, row: 1 }, grid);
+  assert.deepEqual(layoutTools.getIconCell(c, grid), { col: 1, row: 1 });
+  assert.ok(Math.abs(c.x - expected.x) < 1e-6 && Math.abs(c.y - expected.y) < 1e-6);
+  assert.deepEqual(f.points().get("b"), original.get("b"));
+  assert.deepEqual(f.points().get("d"), original.get("d"));
+  assertInside(f.points(), grid, 4);
+});
+
+test("cancelling a group drag preserves positions and dragging an unselected icon still moves only that icon", async (t) => {
+  const grid = layoutTools.createIconGrid(800, 552, 4);
+  const positions = ["a", "b", "c", "d"].map((id, col) => ({ id, ...layoutTools.getIconPosition({ col, row: 0 }, grid) }));
+  const f = await desktopFixture(t, positions);
+  const original = f.points();
+  selectWithMarquee(f, ["a", "b"], grid);
+  await flush();
+  const start = original.get("a");
+  f.mouse("mousedown", f.icon("a"), start.x + 10, start.y + 10);
+  f.mouse("mousemove", document, 500, 400);
+  await flush();
+  assert.equal(f.target.querySelectorAll(".drag-ghost").length, 2);
+  window.dispatchEvent(new window.Event("blur"));
+  f.mouse("mouseup", document, 500, 400);
+  await flush();
+  assert.deepEqual(f.points(), original);
+  assert.deepEqual(f.selected(), ["a", "b"]);
+  assert.equal(f.target.querySelectorAll(".drag-ghost").length, 0);
+  const c = original.get("c");
+  const target = layoutTools.getIconPosition({ col: 4, row: 1 }, grid);
+  f.mouse("mousedown", f.icon("c"), c.x + 10, c.y + 10);
+  f.mouse("mousemove", document, target.x + 10, target.y + 10);
+  await flush();
+  assert.equal(f.target.querySelectorAll(".drag-ghost").length, 1);
+  f.mouse("mouseup", document, target.x + 10, target.y + 10);
+  await flush();
+  assert.deepEqual(f.points().get("c"), target);
+  assert.deepEqual(f.points().get("a"), original.get("a"));
+  assert.deepEqual(f.points().get("b"), original.get("b"));
+  assert.deepEqual(f.selected(), ["c"]);
 });

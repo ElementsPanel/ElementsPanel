@@ -368,9 +368,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
     display: flex;
     align-items: center;
     z-index: 99999;
-    border: none;
     border-radius: 0;
-    box-shadow: none;
     padding: 0 4px;
     user-select: none;
 }

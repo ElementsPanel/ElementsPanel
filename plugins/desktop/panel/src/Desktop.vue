@@ -31,9 +31,9 @@ import DesktopTaskbar from "./widgets/desktop/DesktopTaskbar.vue";
 import DesktopWindowHost from "./widgets/desktop/DesktopWindowHost.vue";
 import { desktopWindowContextKey, type WindowState } from "./windowContext";
 import { migrateLegacyInstanceWindow } from "./legacyWindows";
-import { arrangeDesktopIcons, createIconGrid, findIconCell, getIconCell, getIconPosition } from "./iconLayout";
+import { arrangeDesktopIcons, createIconGrid, findIconCell, findIconGroupCell, getIconCell, getIconPosition } from "./iconLayout";
 import { VIcon } from "vuetify/components";
-import { computed, markRaw, nextTick, onMounted, onUnmounted, provide, reactive, ref, watch, type Component, type CSSProperties } from "vue";
+import { computed, markRaw, nextTick, onMounted, onUnmounted, provide, reactive, ref, shallowRef, watch, type Component, type CSSProperties } from "vue";
 import { useRouter } from "vue-router";
 
 const CloseOutlined = "mdi-close";
@@ -279,10 +279,6 @@ const normalizeIconPositions = () => {
     return changed;
 };
 
-function snapToGrid(x: number, y: number): { x: number; y: number } {
-    return getIconPosition(getIconCell({ x, y }, iconGrid.value), iconGrid.value);
-}
-
 function getDefaultPosition(index: number): { x: number; y: number } {
     const grid = iconGrid.value;
     return getIconPosition({ col: index % grid.columns, row: Math.floor(index / grid.columns) }, grid);
@@ -306,10 +302,10 @@ function getIconGridY(id: string): number {
     return getDefaultPositionForApp(id).y;
 }
 
-function getOccupiedGrid(excludeId: string): Set<string> {
+function getOccupiedGrid(excludeIds: ReadonlySet<string>): Set<string> {
     const occupied = new Set<string>();
     for (const app of desktopApps.value) {
-        if (app.id === excludeId) continue;
+        if (excludeIds.has(app.id)) continue;
         const gx = getIconGridX(app.id);
         const gy = getIconGridY(app.id);
         const { col, row } = getIconCell({ x: gx, y: gy }, iconGrid.value);
@@ -319,7 +315,7 @@ function getOccupiedGrid(excludeId: string): Set<string> {
 }
 
 function findEmptyCell(col: number, row: number, excludeId: string): { col: number; row: number } {
-    return findIconCell({ col, row }, getOccupiedGrid(excludeId), iconGrid.value);
+    return findIconCell({ col, row }, getOccupiedGrid(new Set([excludeId])), iconGrid.value);
 }
 
 const DRAG_THRESHOLD = 5;
@@ -327,6 +323,19 @@ const DRAG_THRESHOLD = 5;
 const isDragging = ref(false);
 const dragOffsetX = ref(0);
 const dragOffsetY = ref(0);
+interface DraggedIcon {
+    id: string;
+    label: string;
+    icon: Component | string;
+    offsetX: number;
+    offsetY: number;
+    col: number;
+    row: number;
+}
+const draggedIcons = shallowRef<DraggedIcon[]>([]);
+let dragSurfaceOrigin: { left: number; top: number } | undefined;
+let dragBounds: { left: number; top: number; right: number; bottom: number } | undefined;
+let dragOccupied = new Set<string>();
 
 // Wait for the drag threshold after mousedown.
 const pendingDragId = ref<string | null>(null);
@@ -348,7 +357,7 @@ let selectionFrame = 0;
 const preventDesktopTextSelection = (event: Event) => event.preventDefault();
 
 const getDesktopPoint = (clientX: number, clientY: number) => {
-    const rect = desktopIconsRef.value?.getBoundingClientRect();
+    const rect = dragSurfaceOrigin ?? desktopIconsRef.value?.getBoundingClientRect();
     return {
         x: Math.max(0, Math.min(iconGrid.value.width, clientX - (rect?.left || 0))),
         y: Math.max(0, Math.min(iconGrid.value.height, clientY - (rect?.top || 0)))
@@ -359,6 +368,10 @@ const cancelIconInteraction = () => {
     pendingDragId.value = null;
     droppingIconId.value = null;
     isDragging.value = false;
+    draggedIcons.value = [];
+    dragSurfaceOrigin = undefined;
+    dragBounds = undefined;
+    dragOccupied.clear();
     selectionStart = null;
     selectionRect.value = null;
     if (selectionFrame) cancelAnimationFrame(selectionFrame);
@@ -415,6 +428,28 @@ function commitDragStart(id: string, clientX: number, clientY: number) {
     }
     originX.value = getIconGridX(id);
     originY.value = getIconGridY(id);
+    const grid = iconGrid.value;
+    const originCell = getIconCell({ x: originX.value, y: originY.value }, grid);
+    draggedIcons.value = desktopApps.value.filter(app => selectedIconIds.has(app.id)).map(app => {
+        const x = getIconGridX(app.id);
+        const y = getIconGridY(app.id);
+        const cell = getIconCell({ x, y }, grid);
+        return {
+            id: app.id, label: app.label, icon: app.icon,
+            offsetX: x - originX.value, offsetY: y - originY.value,
+            col: cell.col - originCell.col, row: cell.row - originCell.row
+        };
+    });
+    if (!draggedIcons.value.length) return cancelIconInteraction();
+    const rect = desktopIconsRef.value?.getBoundingClientRect();
+    dragSurfaceOrigin = { left: rect?.left || 0, top: rect?.top || 0 };
+    dragOccupied = getOccupiedGrid(selectedIconIds);
+    dragBounds = {
+        left: grid.startX - Math.min(...draggedIcons.value.map(icon => icon.offsetX)),
+        top: grid.startY - Math.min(...draggedIcons.value.map(icon => icon.offsetY)),
+        right: grid.width - grid.startX - grid.iconWidth - Math.max(...draggedIcons.value.map(icon => icon.offsetX)),
+        bottom: grid.height - grid.startY - grid.iconHeight - Math.max(...draggedIcons.value.map(icon => icon.offsetY))
+    };
     const point = getDesktopPoint(clientX, clientY);
     dragOffsetX.value = point.x - originX.value;
     dragOffsetY.value = point.y - originY.value;
@@ -447,16 +482,18 @@ const handleIconDragStart = (id: string, clientX: number, clientY: number) => {
 };
 
 const updateIconDrag = (event: MouseEvent) => {
-    if (!droppingIconId.value) return;
+    if (!droppingIconId.value || !dragBounds) return;
     const point = getDesktopPoint(event.clientX, event.clientY);
     const grid = iconGrid.value;
-    ghostX.value = Math.max(grid.startX, Math.min(grid.width - grid.startX - grid.iconWidth, point.x - dragOffsetX.value));
-    ghostY.value = Math.max(grid.startY, Math.min(grid.height - grid.startY - grid.iconHeight, point.y - dragOffsetY.value));
-    const snapped = snapToGrid(ghostX.value, ghostY.value);
-    dropX.value = snapped.x;
-    dropY.value = snapped.y;
-    const { col, row } = getIconCell(snapped, grid);
-    dropValid.value = !getOccupiedGrid(droppingIconId.value).has(`${col},${row}`);
+    ghostX.value = Math.max(dragBounds.left, Math.min(dragBounds.right, point.x - dragOffsetX.value));
+    ghostY.value = Math.max(dragBounds.top, Math.min(dragBounds.bottom, point.y - dragOffsetY.value));
+    const target = findIconGroupCell(getIconCell({ x: ghostX.value, y: ghostY.value }, grid), draggedIcons.value, dragOccupied, grid);
+    dropValid.value = !!target;
+    if (target) {
+        const position = getIconPosition(target, grid);
+        dropX.value = position.x;
+        dropY.value = position.y;
+    }
 };
 
 const handleDesktopMouseMove = (e: MouseEvent) => {
@@ -498,8 +535,11 @@ const handleDesktopMouseUp = (event: MouseEvent) => {
     if (!isDragging.value || !droppingIconId.value) return;
     updateIconDrag(event);
     const { col, row } = getIconCell({ x: dropX.value, y: dropY.value }, iconGrid.value);
-    const empty = findEmptyCell(col, row, droppingIconId.value);
-    iconPositions.set(droppingIconId.value, getIconPosition(empty, iconGrid.value));
+    if (dropValid.value) {
+        for (const icon of draggedIcons.value) {
+            iconPositions.set(icon.id, getIconPosition({ col: col + icon.col, row: row + icon.row }, iconGrid.value));
+        }
+    }
     cancelIconInteraction();
     normalizeIconPositions();
     saveDesktopLayout();
@@ -1344,24 +1384,26 @@ const isMdiIcon = (icon: Component | string): icon is `mdi-${string}` => typeof 
                     <div v-if="selectionRect && (selectionRect.width > 0 || selectionRect.height > 0)" class="desktop-drag-select-rect"
                         :style="{ left: selectionRect.x + 'px', top: selectionRect.y + 'px', width: selectionRect.width + 'px', height: selectionRect.height + 'px' }"></div>
 
-                    <div v-if="isDragging && dropValid" class="drop-indicator"
-                        :style="{ left: dropX + 'px', top: dropY + 'px', transform: `scale(${iconGrid.scale})` }">
-                        <div class="drop-indicator__highlight"></div>
-                    </div>
+                    <template v-if="isDragging && dropValid">
+                        <div v-for="item in draggedIcons" :key="item.id" class="drop-indicator"
+                            :style="{ left: dropX + item.offsetX + 'px', top: dropY + item.offsetY + 'px', transform: `scale(${iconGrid.scale})` }">
+                            <div class="drop-indicator__highlight"></div>
+                        </div>
+                    </template>
 
-                    <div v-if="isDragging && droppingIconId" class="drag-ghost"
-                        :style="{ left: ghostX + 'px', top: ghostY + 'px', transform: `scale(${iconGrid.scale})`, transformOrigin: 'top left' }">
-                        <template v-for="app in desktopApps" :key="app.id">
-                            <div v-if="app.id === droppingIconId" class="drag-ghost__inner">
-                                <component :is="app.icon" v-if="typeof app.icon !== 'string'"
+                    <template v-if="isDragging">
+                        <div v-for="item in draggedIcons" :key="item.id" class="drag-ghost"
+                            :style="{ left: ghostX + item.offsetX + 'px', top: ghostY + item.offsetY + 'px', transform: `scale(${iconGrid.scale})`, transformOrigin: 'top left' }">
+                            <div class="drag-ghost__inner">
+                                <component :is="item.icon" v-if="typeof item.icon !== 'string'"
                                     class="drag-ghost__icon" />
-                                <VIcon v-else-if="isMdiIcon(app.icon)" :icon="app.icon" size="42"
+                                <VIcon v-else-if="isMdiIcon(item.icon)" :icon="item.icon" size="42"
                                     class="drag-ghost__icon" />
-                                <span v-else class="drag-ghost__emoji">{{ app.icon }}</span>
-                                <span class="drag-ghost__label">{{ app.label }}</span>
+                                <span v-else class="drag-ghost__emoji">{{ item.icon }}</span>
+                                <span class="drag-ghost__label">{{ item.label }}</span>
                             </div>
-                        </template>
-                    </div>
+                        </div>
+                    </template>
                 </div>
 
                 <DesktopWindowHost v-for="[id, win] in windows" :key="id" :window="win" />
