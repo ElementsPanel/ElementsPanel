@@ -1932,6 +1932,7 @@ const confirmAction = async () => {
 
 .plugin-config-navigation {
   flex: 0 0 240px;
+  min-width: 0;
   min-height: 0;
 }
 

@@ -66,7 +66,12 @@ function onMenuChange(open: boolean) {
   min-width: 0;
 }
 
+.plugin-config-target-selector :deep(.v-btn__content) {
+  min-width: 0;
+}
+
 .plugin-config-target-name {
+  min-width: 0;
   max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;

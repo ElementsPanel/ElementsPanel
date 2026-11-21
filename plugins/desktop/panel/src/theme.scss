@@ -87,20 +87,18 @@
   border: 0 !important;
 }
 
-/* Keep timeline dots even though they share the divider class with separator lines. */
-.desktop-window [class*="divider"]:not(.v-timeline-divider__dot):not(.v-timeline-divider__inner-dot),
-.desktop-window [class*="separator"],
-.desktop-window hr,
+/* Preserve menu separators and timeline dots. */
 .desktop-container table,
 .desktop-container th,
 .desktop-container td,
-.desktop-container hr,
-.desktop-container .v-divider,
-.desktop-container [class*="divider"]:not(.v-timeline-divider__dot):not(.v-timeline-divider__inner-dot),
-.desktop-container [class*="separator"],
-.desktop-mode-active .v-overlay:not(.v-menu) [class*="divider"],
-.desktop-mode-active .v-overlay:not(.v-menu) [class*="separator"],
-.desktop-mode-active .v-overlay:not(.v-menu) hr {
+:is(.desktop-window, .desktop-container)
+  :is([class*="divider"], [class*="separator"], hr):not(:where(
+    .v-menu *,
+    .v-timeline-divider__dot,
+    .v-timeline-divider__inner-dot
+  )),
+.desktop-mode-active .v-overlay:not(.v-menu)
+  :is([class*="divider"], [class*="separator"], hr):not(:where(.v-menu *)) {
   border: 0 !important;
   background-color: transparent !important;
   background-image: none !important;
@@ -108,7 +106,7 @@
 }
 
 /* Hide legacy pipe separators while preserving breadcrumb navigation. */
-.desktop-container .separator {
+.desktop-container .separator:not(:where(.v-menu *)) {
   display: none !important;
 }
 
