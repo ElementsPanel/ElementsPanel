@@ -13,18 +13,20 @@ export interface DesktopIconProps {
     selected?: boolean;
     x: number;
     y: number;
+    scale?: number;
 }
 
 const props = withDefaults(defineProps<DesktopIconProps>(), {
     color: "var(--color-blue-5)",
     selected: false,
     x: 0,
-    y: 0
+    y: 0,
+    scale: 1
 });
 
 const emit = defineEmits<{
     (e: "open", id: string): void;
-    (e: "select", id: string): void;
+    (e: "select", id: string, event: MouseEvent): void;
     (e: "dragstart", id: string, clientX: number, clientY: number): void;
     (e: "contextmenu", event: MouseEvent, id: string): void;
 }>();
@@ -40,12 +42,13 @@ const handleDblClick = () => {
     emit("open", props.id);
 };
 
-const handleClick = () => {
-    emit("select", props.id);
+const handleClick = (event: MouseEvent) => {
+    emit("select", props.id, event);
 };
 
 const handleMouseDown = (e: MouseEvent) => {
     if (e.button !== 0) return;
+    e.preventDefault();
     emit("dragstart", props.id, e.clientX, e.clientY);
 };
 
@@ -56,7 +59,7 @@ const handleContextMenu = (e: MouseEvent) => {
 
 <template>
     <div class="desktop-icon" :class="{ 'desktop-icon--selected': selected }"
-        :style="{ left: x + 'px', top: y + 'px' }" @click.stop="handleClick" @dblclick.stop="handleDblClick"
+        :style="{ left: x + 'px', top: y + 'px', transform: `scale(${scale})` }" @click.stop="handleClick" @dblclick.stop="handleDblClick"
         @mousedown.stop="handleMouseDown" @contextmenu.stop.prevent="handleContextMenu">
         <div class="desktop-icon__graphic" :style="iconStyle">
             <component :is="icon" v-if="isComponent" class="desktop-icon__component" />
@@ -77,6 +80,9 @@ const handleContextMenu = (e: MouseEvent) => {
     align-items: center;
     justify-content: flex-start;
     width: 90px;
+    height: 104px;
+    box-sizing: border-box;
+    transform-origin: top left;
     padding: 8px 4px;
     cursor: pointer;
     border-radius: 8px;

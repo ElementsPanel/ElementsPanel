@@ -30,6 +30,7 @@ import type { TaskbarWindow } from "./widgets/desktop/DesktopTaskbar.vue";
 import DesktopTaskbar from "./widgets/desktop/DesktopTaskbar.vue";
 import DesktopWindow from "./widgets/desktop/DesktopWindow.vue";
 import { migrateLegacyInstanceWindow } from "./legacyWindows";
+import { arrangeDesktopIcons, createIconGrid, findIconCell, getIconCell, getIconPosition } from "./iconLayout";
 import { VIcon } from "vuetify/components";
 import { computed, markRaw, nextTick, onMounted, onUnmounted, reactive, ref, watch, type Component, type CSSProperties } from "vue";
 import { useRouter } from "vue-router";
@@ -236,48 +237,71 @@ const desktopApps = computed<DesktopApp[]>(() => {
     return apps;
 });
 
-const selectedIconId = ref<string | null>(null);
+const selectedIconIds = reactive(new Set<string>());
+let suppressDesktopClick = false;
 
-const selectIcon = (id: string) => {
-    selectedIconId.value = id;
+const selectIcon = (id: string, event?: MouseEvent) => {
+    if (suppressDesktopClick && event?.detail) {
+        suppressDesktopClick = false;
+        return;
+    }
+    if (event?.ctrlKey || event?.metaKey) {
+        if (!selectedIconIds.delete(id)) selectedIconIds.add(id);
+    } else {
+        selectedIconIds.clear();
+        selectedIconIds.add(id);
+    }
 };
 
 const iconPositions = reactive<Map<string, { x: number; y: number }>>(new Map());
 const desktopIconsRef = ref<HTMLElement | null>(null);
 
-const DEFAULT_ICON_START_X = 16;
-const DEFAULT_ICON_START_Y = 16;
-const ICON_COL_WIDTH = 94;
-const ICON_ROW_HEIGHT = 104;
+const desktopSize = ref({
+    width: window.innerWidth || 1024,
+    height: Math.max(1, (window.innerHeight || 768) - 48)
+});
+const iconGrid = computed(() => createIconGrid(desktopSize.value.width, desktopSize.value.height, desktopApps.value.length));
+
+const normalizeIconPositions = () => {
+    let changed = false;
+    const ids = desktopApps.value.map((app) => app.id);
+    const arranged = arrangeDesktopIcons(ids, iconPositions, iconGrid.value);
+    for (const [id, point] of arranged) {
+        const previous = iconPositions.get(id);
+        if (previous?.x === point.x && previous?.y === point.y) continue;
+        iconPositions.set(id, point);
+        changed = true;
+    }
+    for (const id of selectedIconIds) {
+        if (!ids.includes(id)) selectedIconIds.delete(id);
+    }
+    return changed;
+};
 
 function snapToGrid(x: number, y: number): { x: number; y: number } {
-    const snappedX = Math.round((x - DEFAULT_ICON_START_X) / ICON_COL_WIDTH) * ICON_COL_WIDTH + DEFAULT_ICON_START_X;
-    const snappedY = Math.round((y - DEFAULT_ICON_START_Y) / ICON_ROW_HEIGHT) * ICON_ROW_HEIGHT + DEFAULT_ICON_START_Y;
-    return { x: Math.max(0, snappedX), y: Math.max(0, snappedY) };
+    return getIconPosition(getIconCell({ x, y }, iconGrid.value), iconGrid.value);
 }
 
 function getDefaultPosition(index: number): { x: number; y: number } {
-    return {
-        x: DEFAULT_ICON_START_X + (index % 12) * ICON_COL_WIDTH,
-        y: DEFAULT_ICON_START_Y + Math.floor(index / 12) * ICON_ROW_HEIGHT
-    };
+    const grid = iconGrid.value;
+    return getIconPosition({ col: index % grid.columns, row: Math.floor(index / grid.columns) }, grid);
 }
 
 function getDefaultPositionForApp(id: string): { x: number; y: number } {
-    const ids = [...availableDesktopApps.value.map((app) => app.id), ...instanceShortcuts.keys()];
+    const ids = desktopApps.value.map((app) => app.id);
     const index = ids.indexOf(id);
     return getDefaultPosition(index >= 0 ? index : 0);
 }
 
 function getIconGridX(id: string): number {
     const pos = iconPositions.get(id);
-    if (pos) return pos.x;
+    if (pos && Number.isFinite(pos.x)) return Math.max(iconGrid.value.startX, Math.min(iconGrid.value.width - iconGrid.value.startX - iconGrid.value.iconWidth, pos.x));
     return getDefaultPositionForApp(id).x;
 }
 
 function getIconGridY(id: string): number {
     const pos = iconPositions.get(id);
-    if (pos) return pos.y;
+    if (pos && Number.isFinite(pos.y)) return Math.max(iconGrid.value.startY, Math.min(iconGrid.value.height - iconGrid.value.startY - iconGrid.value.iconHeight, pos.y));
     return getDefaultPositionForApp(id).y;
 }
 
@@ -287,22 +311,14 @@ function getOccupiedGrid(excludeId: string): Set<string> {
         if (app.id === excludeId) continue;
         const gx = getIconGridX(app.id);
         const gy = getIconGridY(app.id);
-        const col = Math.round((gx - DEFAULT_ICON_START_X) / ICON_COL_WIDTH);
-        const row = Math.round((gy - DEFAULT_ICON_START_Y) / ICON_ROW_HEIGHT);
+        const { col, row } = getIconCell({ x: gx, y: gy }, iconGrid.value);
         occupied.add(`${col},${row}`);
     }
     return occupied;
 }
 
 function findEmptyCell(col: number, row: number, excludeId: string): { col: number; row: number } {
-    const occupied = getOccupiedGrid(excludeId);
-    if (!occupied.has(`${col},${row}`)) return { col, row };
-    for (let r = 0; r < 50; r++) {
-        for (let c = 0; c < 12; c++) {
-            if (!occupied.has(`${c},${r}`)) return { col: c, row: r };
-        }
-    }
-    return { col, row };
+    return findIconCell({ col, row }, getOccupiedGrid(excludeId), iconGrid.value);
 }
 
 const DRAG_THRESHOLD = 5;
@@ -322,19 +338,95 @@ const ghostY = ref(0);
 const dropX = ref(0);
 const dropY = ref(0);
 const dropValid = ref(false);
+const selectionRect = ref<{ x: number; y: number; width: number; height: number } | null>(null);
+let selectionStart: { x: number; y: number } | null = null;
+let selectionPoint = { x: 0, y: 0 };
+let selectionBaseline = new Set<string>();
+let selectionFrame = 0;
+
+const preventDesktopTextSelection = (event: Event) => event.preventDefault();
+
+const getDesktopPoint = (clientX: number, clientY: number) => {
+    const rect = desktopIconsRef.value?.getBoundingClientRect();
+    return {
+        x: Math.max(0, Math.min(iconGrid.value.width, clientX - (rect?.left || 0))),
+        y: Math.max(0, Math.min(iconGrid.value.height, clientY - (rect?.top || 0)))
+    };
+};
+
+const cancelIconInteraction = () => {
+    pendingDragId.value = null;
+    droppingIconId.value = null;
+    isDragging.value = false;
+    selectionStart = null;
+    selectionRect.value = null;
+    if (selectionFrame) cancelAnimationFrame(selectionFrame);
+    selectionFrame = 0;
+    document.removeEventListener("selectstart", preventDesktopTextSelection, true);
+};
+
+const updateDragSelection = () => {
+    selectionFrame = 0;
+    if (!selectionStart) return;
+    if (Math.hypot(selectionPoint.x - selectionStart.x, selectionPoint.y - selectionStart.y) < DRAG_THRESHOLD) return;
+    suppressDesktopClick = true;
+    const rect = {
+        x: Math.min(selectionStart.x, selectionPoint.x),
+        y: Math.min(selectionStart.y, selectionPoint.y),
+        width: Math.abs(selectionPoint.x - selectionStart.x),
+        height: Math.abs(selectionPoint.y - selectionStart.y)
+    };
+    selectionRect.value = rect;
+    const selected = new Set(selectionBaseline);
+    for (const app of desktopApps.value) {
+        const x = getIconGridX(app.id);
+        const y = getIconGridY(app.id);
+        if (x < rect.x + rect.width && x + iconGrid.value.iconWidth > rect.x &&
+            y < rect.y + rect.height && y + iconGrid.value.iconHeight > rect.y) selected.add(app.id);
+    }
+    selectedIconIds.clear();
+    for (const id of selected) selectedIconIds.add(id);
+};
+
+const handleDesktopMouseDown = (event: MouseEvent) => {
+    if (event.button !== 0 || !desktopIconsRef.value?.contains(event.target as Node)) return;
+    if ((event.target as Element).closest(".desktop-icon")) return;
+    event.preventDefault();
+    event.stopPropagation();
+    cancelIconInteraction();
+    closeContextMenu();
+    desktopIconsRef.value?.focus?.({ preventScroll: true });
+    suppressDesktopClick = false;
+    selectionBaseline = event.ctrlKey || event.metaKey || event.shiftKey ? new Set(selectedIconIds) : new Set();
+    selectedIconIds.clear();
+    for (const id of selectionBaseline) selectedIconIds.add(id);
+    selectionStart = getDesktopPoint(event.clientX, event.clientY);
+    selectionPoint = selectionStart;
+    selectionRect.value = { ...selectionStart, width: 0, height: 0 };
+    window.getSelection()?.removeAllRanges();
+    document.addEventListener("selectstart", preventDesktopTextSelection, true);
+};
 
 function commitDragStart(id: string, clientX: number, clientY: number) {
-    selectedIconId.value = id;
+    if (!selectedIconIds.has(id)) {
+        selectedIconIds.clear();
+        selectedIconIds.add(id);
+    }
     originX.value = getIconGridX(id);
     originY.value = getIconGridY(id);
-    dragOffsetX.value = clientX - originX.value;
-    dragOffsetY.value = clientY - originY.value;
-    ghostX.value = clientX - dragOffsetX.value;
-    ghostY.value = clientY - dragOffsetY.value;
+    const point = getDesktopPoint(clientX, clientY);
+    dragOffsetX.value = point.x - originX.value;
+    dragOffsetY.value = point.y - originY.value;
+    ghostX.value = originX.value;
+    ghostY.value = originY.value;
+    dropX.value = originX.value;
+    dropY.value = originY.value;
     droppingIconId.value = id;
     isDragging.value = true;
     dropValid.value = true;
     pendingDragId.value = null;
+    suppressDesktopClick = true;
+    window.getSelection()?.removeAllRanges();
 }
 
 const droppingIconId = ref<string | null>(null);
@@ -342,64 +434,90 @@ const originX = ref(0);
 const originY = ref(0);
 
 const handleIconDragStart = (id: string, clientX: number, clientY: number) => {
-    selectedIconId.value = id;
+    cancelIconInteraction();
+    closeContextMenu();
+    desktopIconsRef.value?.focus?.({ preventScroll: true });
+    normalizeIconPositions();
+    suppressDesktopClick = false;
     pendingDragId.value = id;
     pendingStartX.value = clientX;
     pendingStartY.value = clientY;
+    document.addEventListener("selectstart", preventDesktopTextSelection, true);
+};
+
+const updateIconDrag = (event: MouseEvent) => {
+    if (!droppingIconId.value) return;
+    const point = getDesktopPoint(event.clientX, event.clientY);
+    const grid = iconGrid.value;
+    ghostX.value = Math.max(grid.startX, Math.min(grid.width - grid.startX - grid.iconWidth, point.x - dragOffsetX.value));
+    ghostY.value = Math.max(grid.startY, Math.min(grid.height - grid.startY - grid.iconHeight, point.y - dragOffsetY.value));
+    const snapped = snapToGrid(ghostX.value, ghostY.value);
+    dropX.value = snapped.x;
+    dropY.value = snapped.y;
+    const { col, row } = getIconCell(snapped, grid);
+    dropValid.value = !getOccupiedGrid(droppingIconId.value).has(`${col},${row}`);
 };
 
 const handleDesktopMouseMove = (e: MouseEvent) => {
+    if (!selectionStart && !pendingDragId.value && !isDragging.value) return;
+    if (!(e.buttons & 1)) return cancelIconInteraction();
+    e.preventDefault();
+    if (selectionStart) {
+        selectionPoint = getDesktopPoint(e.clientX, e.clientY);
+        if (selectionFrame) cancelAnimationFrame(selectionFrame);
+        selectionFrame = requestAnimationFrame(updateDragSelection);
+        return;
+    }
     if (pendingDragId.value && !isDragging.value) {
         const dx = e.clientX - pendingStartX.value;
         const dy = e.clientY - pendingStartY.value;
         if (Math.sqrt(dx * dx + dy * dy) >= DRAG_THRESHOLD) {
             commitDragStart(pendingDragId.value, pendingStartX.value, pendingStartY.value);
         }
-        return;
     }
 
     if (!isDragging.value || !droppingIconId.value) return;
-    ghostX.value = e.clientX - dragOffsetX.value;
-    ghostY.value = e.clientY - dragOffsetY.value;
-    const snapped = snapToGrid(ghostX.value, ghostY.value);
-    dropX.value = snapped.x;
-    dropY.value = snapped.y;
-    const targetCol = Math.round((snapped.x - DEFAULT_ICON_START_X) / ICON_COL_WIDTH);
-    const targetRow = Math.round((snapped.y - DEFAULT_ICON_START_Y) / ICON_ROW_HEIGHT);
-    const occupied = getOccupiedGrid(droppingIconId.value);
-    dropValid.value = !occupied.has(`${targetCol},${targetRow}`);
+    updateIconDrag(e);
 };
 
-const handleDesktopMouseUp = () => {
+const handleDesktopMouseUp = (event: MouseEvent) => {
+    if (selectionStart) {
+        if (selectionFrame) cancelAnimationFrame(selectionFrame);
+        selectionFrame = 0;
+        selectionPoint = getDesktopPoint(event.clientX, event.clientY);
+        updateDragSelection();
+        cancelIconInteraction();
+        return;
+    }
     if (pendingDragId.value && !isDragging.value) {
-        pendingDragId.value = null;
+        cancelIconInteraction();
         return;
     }
 
     if (!isDragging.value || !droppingIconId.value) return;
-    isDragging.value = false;
-
-    const targetCol = Math.round((dropX.value - DEFAULT_ICON_START_X) / ICON_COL_WIDTH);
-    const targetRow = Math.round((dropY.value - DEFAULT_ICON_START_Y) / ICON_ROW_HEIGHT);
-    const empty = findEmptyCell(targetCol, targetRow, droppingIconId.value);
-    const finalX = DEFAULT_ICON_START_X + empty.col * ICON_COL_WIDTH;
-    const finalY = DEFAULT_ICON_START_Y + empty.row * ICON_ROW_HEIGHT;
-
-    iconPositions.set(droppingIconId.value, { x: finalX, y: finalY });
-    droppingIconId.value = null;
+    updateIconDrag(event);
+    const { col, row } = getIconCell({ x: dropX.value, y: dropY.value }, iconGrid.value);
+    const empty = findEmptyCell(col, row, droppingIconId.value);
+    iconPositions.set(droppingIconId.value, getIconPosition(empty, iconGrid.value));
+    cancelIconInteraction();
+    normalizeIconPositions();
     saveDesktopLayout();
 };
 
-const removeDesktopShortcut = (id: string) => {
-    if (!desktopShortcutIds.has(id) && !instanceShortcuts.has(id)) return;
-    desktopShortcutIds.delete(id);
-    instanceShortcuts.delete(id);
-    iconPositions.delete(id);
-    if (selectedIconId.value === id) {
-        selectedIconId.value = null;
+const removeDesktopShortcuts = (ids: Iterable<string>) => {
+    let changed = false;
+    for (const id of [...ids]) {
+        changed = desktopShortcutIds.delete(id) || changed;
+        changed = instanceShortcuts.delete(id) || changed;
+        iconPositions.delete(id);
+        selectedIconIds.delete(id);
     }
-    saveDesktopLayout();
+    if (changed) {
+        normalizeIconPositions();
+        saveDesktopLayout();
+    }
 };
+const removeDesktopShortcut = (id: string) => removeDesktopShortcuts([id]);
 
 const handleInstanceShortcutDrop = (event: Event) => {
     const detail = (event as CustomEvent<{ shortcut: unknown; clientX: number; clientY: number }>).detail;
@@ -436,16 +554,14 @@ const addDesktopShortcutAt = (appId: string, clientX: number, clientY: number) =
 };
 
 const placeDesktopShortcutAt = (appId: string, clientX: number, clientY: number) => {
-    const snapped = snapToGrid(clientX - 45, clientY - 50);
-    const targetCol = Math.max(0, Math.round((snapped.x - DEFAULT_ICON_START_X) / ICON_COL_WIDTH));
-    const targetRow = Math.max(0, Math.round((snapped.y - DEFAULT_ICON_START_Y) / ICON_ROW_HEIGHT));
-    const empty = findEmptyCell(targetCol, targetRow, appId);
-
-    iconPositions.set(appId, {
-        x: DEFAULT_ICON_START_X + empty.col * ICON_COL_WIDTH,
-        y: DEFAULT_ICON_START_Y + empty.row * ICON_ROW_HEIGHT
-    });
-    selectedIconId.value = appId;
+    normalizeIconPositions();
+    const grid = iconGrid.value;
+    const { col, row } = getIconCell({ x: clientX - grid.iconWidth / 2, y: clientY - grid.iconHeight / 2 }, grid);
+    const empty = findEmptyCell(col, row, appId);
+    iconPositions.set(appId, getIconPosition(empty, grid));
+    normalizeIconPositions();
+    selectedIconIds.clear();
+    selectedIconIds.add(appId);
     saveDesktopLayout();
 };
 
@@ -541,7 +657,7 @@ watch(
             if (nextIds.has(id)) continue;
             layoutChanged = desktopShortcutIds.delete(id) || layoutChanged;
             layoutChanged = iconPositions.delete(id) || layoutChanged;
-            if (selectedIconId.value === id) selectedIconId.value = null;
+            selectedIconIds.delete(id);
 
             const content = `panel-plugin:${id}`;
             for (const [windowId, win] of windows) {
@@ -598,7 +714,7 @@ watch(pluginViews, (views) => {
     if (registeredViewIds.has("instance-console") && !next.has("instance-console")) {
         for (const id of instanceShortcuts.keys()) {
             iconPositions.delete(id);
-            if (selectedIconId.value === id) selectedIconId.value = null;
+            selectedIconIds.delete(id);
         }
         instanceShortcuts.clear();
         changed = true;
@@ -613,6 +729,9 @@ const ICON_MAP: Record<string, Component | string> = {
 };
 
 const loadDesktopLayout = async () => {
+    layoutLoaded = false;
+    cancelIconInteraction();
+    selectedIconIds.clear();
     try {
         const result = await executeGetLayout();
         const layout = result?.value;
@@ -711,6 +830,7 @@ const loadDesktopLayout = async () => {
             }
         }
         layoutLoaded = true;
+        if (normalizeIconPositions()) saveDesktopLayout();
     } catch (e) {
         desktopShortcutIds.clear();
         instanceShortcuts.clear();
@@ -1023,7 +1143,7 @@ const ctxMenu = reactive({
     x: 0,
     y: 0,
     targetWindowId: null as string | null,
-    targetShortcutId: null as string | null,
+    targetShortcutIds: [] as string[],
     isTitlebar: false
 });
 let contextMenuRequest = 0;
@@ -1035,7 +1155,7 @@ const closeContextMenu = () => {
 
 const openContextMenu = async (
     event: MouseEvent,
-    target: { windowId?: string; shortcutId?: string; titlebar?: boolean } = {}
+    target: { windowId?: string; shortcutId?: string; titlebar?: boolean; desktopSelection?: boolean } = {}
 ) => {
     event.preventDefault();
     const request = ++contextMenuRequest;
@@ -1043,7 +1163,7 @@ const openContextMenu = async (
     ctxMenu.x = event.clientX;
     ctxMenu.y = event.clientY;
     ctxMenu.targetWindowId = target.windowId ?? null;
-    ctxMenu.targetShortcutId = target.shortcutId ?? null;
+    ctxMenu.targetShortcutIds = target.shortcutId || target.desktopSelection ? [...selectedIconIds] : [];
     ctxMenu.isTitlebar = target.titlebar ?? false;
     await nextTick();
     if (request === contextMenuRequest && !showLoginOverlay.value) ctxMenu.visible = true;
@@ -1052,12 +1172,12 @@ const openContextMenu = async (
 const ctxMenuItems = computed<ContextMenuItem[]>(() => {
     const items: ContextMenuItem[] = [];
 
-    if (ctxMenu.targetShortcutId) {
-        const shortcutId = ctxMenu.targetShortcutId;
+    if (ctxMenu.targetShortcutIds.length) {
+        const shortcutIds = [...ctxMenu.targetShortcutIds];
         items.push({
             label: t("TXT_CODE_DESKTOP_REMOVE_SHORTCUT"),
             icon: DeleteOutlined,
-            action: () => removeDesktopShortcut(shortcutId)
+            action: () => removeDesktopShortcuts(shortcutIds)
         });
         return items;
     }
@@ -1112,7 +1232,7 @@ const ctxMenuItems = computed<ContextMenuItem[]>(() => {
 
 const onDesktopContextMenu = (e: MouseEvent) => {
     if (showLoginOverlay.value) return;
-    void openContextMenu(e);
+    void openContextMenu(e, { desktopSelection: desktopIconsRef.value?.contains(e.target as Node) });
 };
 
 const onTaskbarContextMenu = (e: MouseEvent, id: string) => {
@@ -1124,33 +1244,79 @@ const onTitlebarContextMenu = (e: MouseEvent, id: string) => {
 };
 
 const onIconContextMenu = (e: MouseEvent, id: string) => {
-    selectedIconId.value = id;
+    if (!selectedIconIds.has(id)) {
+        selectedIconIds.clear();
+        selectedIconIds.add(id);
+    }
     void openContextMenu(e, { shortcutId: id });
 };
 
 const onDesktopKeyDown = (event: KeyboardEvent) => {
-    if (event.key !== "Delete" || !selectedIconId.value) return;
+    if (event.key !== "Delete" || !selectedIconIds.size) return;
 
     const target = event.target as HTMLElement | null;
     if (target?.closest("input, textarea, select, [contenteditable]")) return;
 
     event.preventDefault();
-    removeDesktopShortcut(selectedIconId.value);
+    removeDesktopShortcuts(selectedIconIds);
     closeContextMenu();
 };
+
+let desktopResizeObserver: ResizeObserver | undefined;
+const updateDesktopSize = () => {
+    const surface = desktopIconsRef.value;
+    const rect = surface?.getBoundingClientRect();
+    const viewportWidth = window.innerWidth || 1024;
+    const viewportHeight = Math.max(1, (window.innerHeight || 768) - 48);
+    const width = Math.min(surface?.clientWidth || rect?.width || viewportWidth, viewportWidth);
+    const height = Math.min(surface?.clientHeight || rect?.height || viewportHeight, viewportHeight);
+    if (width > 0 && height > 0 && (width !== desktopSize.value.width || height !== desktopSize.value.height)) {
+        desktopSize.value = { width, height };
+    }
+};
+
+watch(desktopIconsRef, (surface) => {
+    cancelIconInteraction();
+    desktopResizeObserver?.disconnect();
+    if (surface && typeof ResizeObserver !== "undefined") {
+        desktopResizeObserver = new ResizeObserver(updateDesktopSize);
+        desktopResizeObserver.observe(surface);
+    }
+    updateDesktopSize();
+}, { flush: "post" });
+
+watch([iconGrid, desktopApps], ([grid, apps], [previousGrid]) => {
+    if (grid !== previousGrid || (droppingIconId.value && !apps.some((app) => app.id === droppingIconId.value))) cancelIconInteraction();
+    if (normalizeIconPositions()) saveDesktopLayout();
+}, { flush: "post" });
 
 onMounted(() => {
     document.body.classList.add("desktop-mode-active");
     document.addEventListener("keydown", onDesktopKeyDown);
+    document.addEventListener("mousemove", handleDesktopMouseMove);
+    document.addEventListener("mouseup", handleDesktopMouseUp);
+    window.addEventListener("resize", updateDesktopSize);
+    window.addEventListener("blur", cancelIconInteraction);
+    updateDesktopSize();
 });
 onUnmounted(() => {
     document.removeEventListener("keydown", onDesktopKeyDown);
     document.body.classList.remove("desktop-mode-active");
+    document.removeEventListener("mousemove", handleDesktopMouseMove);
+    document.removeEventListener("mouseup", handleDesktopMouseUp);
+    window.removeEventListener("resize", updateDesktopSize);
+    window.removeEventListener("blur", cancelIconInteraction);
+    desktopResizeObserver?.disconnect();
+    cancelIconInteraction();
     if (saveLayoutTimer) clearTimeout(saveLayoutTimer);
 });
 
-const onDesktopClick = () => {
-    selectedIconId.value = null;
+const onDesktopClick = (event: MouseEvent) => {
+    if (suppressDesktopClick && event.detail) {
+        suppressDesktopClick = false;
+        return;
+    }
+    if (desktopIconsRef.value?.contains(event.target as Node) && !event.ctrlKey && !event.metaKey && !event.shiftKey) selectedIconIds.clear();
     closeContextMenu();
 };
 
@@ -1173,22 +1339,24 @@ const isMdiIcon = (icon: Component | string): icon is `mdi-${string}` => typeof 
     <div class="desktop-container" @click="onDesktopClick" @contextmenu="onDesktopContextMenu">
         <div class="desktop-wallpaper" :style="wallpaperStyle" aria-hidden="true"></div>
         <Transition name="desktop-fade">
-            <div v-if="!showLoginOverlay" class="desktop-content-wrapper" @mousemove="handleDesktopMouseMove"
-                @mouseup="handleDesktopMouseUp">
-                <div ref="desktopIconsRef" class="desktop-icons" @dragover.prevent @drop.prevent="handleStartMenuAppDrop">
+            <div v-if="!showLoginOverlay" class="desktop-content-wrapper">
+                <div ref="desktopIconsRef" class="desktop-icons" tabindex="-1" @mousedown="handleDesktopMouseDown" @dragover.prevent @drop.prevent="handleStartMenuAppDrop">
                     <DesktopIcon v-for="app in desktopApps" :key="app.id" :id="app.id" :label="app.label"
-                        :icon="app.icon" :color="app.color" :selected="selectedIconId === app.id"
-                        :x="iconPositions.get(app.id)?.x ?? getDefaultPositionForApp(app.id).x"
-                        :y="iconPositions.get(app.id)?.y ?? getDefaultPositionForApp(app.id).y" @select="selectIcon"
+                        :icon="app.icon" :color="app.color" :selected="selectedIconIds.has(app.id)" :scale="iconGrid.scale"
+                        :x="getIconGridX(app.id)"
+                        :y="getIconGridY(app.id)" @select="selectIcon"
                         @open="openWindow" @dragstart="handleIconDragStart" @contextmenu="onIconContextMenu" />
 
+                    <div v-if="selectionRect && (selectionRect.width > 0 || selectionRect.height > 0)" class="desktop-drag-select-rect"
+                        :style="{ left: selectionRect.x + 'px', top: selectionRect.y + 'px', width: selectionRect.width + 'px', height: selectionRect.height + 'px' }"></div>
+
                     <div v-if="isDragging && dropValid" class="drop-indicator"
-                        :style="{ left: dropX + 'px', top: dropY + 'px' }">
+                        :style="{ left: dropX + 'px', top: dropY + 'px', transform: `scale(${iconGrid.scale})` }">
                         <div class="drop-indicator__highlight"></div>
                     </div>
 
                     <div v-if="isDragging && droppingIconId" class="drag-ghost"
-                        :style="{ left: ghostX + 'px', top: ghostY + 'px' }">
+                        :style="{ left: ghostX + 'px', top: ghostY + 'px', transform: `scale(${iconGrid.scale})`, transformOrigin: 'top left' }">
                         <template v-for="app in desktopApps" :key="app.id">
                             <div v-if="app.id === droppingIconId" class="drag-ghost__inner">
                                 <component :is="app.icon" v-if="typeof app.icon !== 'string'"
@@ -1287,6 +1455,17 @@ const isMdiIcon = (icon: Component | string): icon is `mdi-${string}` => typeof 
     width: 100%;
     height: calc(100vh - 48px);
     overflow: hidden;
+    user-select: none;
+    outline: none;
+}
+
+.desktop-drag-select-rect {
+    position: absolute;
+    z-index: 5;
+    pointer-events: none;
+    border-radius: 3px;
+    background: rgba(22, 119, 255, 0.12);
+    border: 1px solid rgba(22, 119, 255, 0.4);
 }
 
 .drag-ghost {
@@ -1338,7 +1517,8 @@ const isMdiIcon = (icon: Component | string): icon is `mdi-${string}` => typeof 
     z-index: 9998;
     pointer-events: none;
     width: 90px;
-    height: 100px;
+    height: 104px;
+    transform-origin: top left;
     display: flex;
     align-items: center;
     justify-content: center;

@@ -812,7 +812,10 @@ test("desktop shell opens/restores contributed windows and survives provider rem
   await shell.state.loadDesktopLayout();
   assert.equal(windows.size, 4);
   assert.deepEqual(shell.state.instanceShortcuts.get("console-node-one"), shortcut);
-  assert.deepEqual(shell.state.iconPositions.get("console-node-one"), { x: 204, y: 224 });
+  const restoredIcon = shell.state.iconPositions.get("console-node-one");
+  assert.ok(restoredIcon.x >= 0 && restoredIcon.y >= 0);
+  assert.ok(restoredIcon.x + shell.state.iconGrid.value.iconWidth <= shell.state.iconGrid.value.width);
+  assert.ok(restoredIcon.y + shell.state.iconGrid.value.iconHeight <= shell.state.iconGrid.value.height);
   assert.deepEqual(windows.get(settingsWindow.id).props, settingsWindow.props);
   assert.equal(windows.get("schedule-one").props.instanceId, "one");
   assert.deepEqual(windows.get(configRequest.id).props, configRequest.props);
