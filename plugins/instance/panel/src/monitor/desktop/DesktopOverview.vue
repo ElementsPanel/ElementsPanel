@@ -216,9 +216,12 @@ const memColor = computed(() => {
                     />
                     <div v-for="node in remoteNodes" :key="node.uuid" class="ov-node-item">
                         <div class="ov-node-item__status">
-                            <span v-if="node.available" class="ov-node-status-dot ov-node-status-dot--online"
-                                :title="t('TXT_CODE_COMMON_ONLINE')"></span>
-                            <span v-else class="ov-node-status-dot ov-node-status-dot--offline" :title="t('TXT_CODE_COMMON_OFFLINE')"></span>
+                            <VIcon
+                                size="16"
+                                :icon="node.available ? 'mdi-check-circle' : 'mdi-close-circle'"
+                                :color="node.available ? 'success' : 'secondary'"
+                                :title="t(node.available ? 'TXT_CODE_COMMON_ONLINE' : 'TXT_CODE_COMMON_OFFLINE')"
+                            />
                         </div>
                         <div class="ov-node-item__info">
                             <div class="ov-node-item__name">{{ node.remarks || node.ip }}</div>
@@ -414,6 +417,7 @@ const memColor = computed(() => {
     }
 
     &__status {
+        display: flex;
         flex-shrink: 0;
     }
 
@@ -458,19 +462,4 @@ const memColor = computed(() => {
     }
 }
 
-.ov-node-status-dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-
-    &--online {
-        background: var(--color-green-5, #52c41a);
-        box-shadow: 0 0 6px rgba(82, 196, 26, 0.4);
-    }
-
-    &--offline {
-        background: var(--desktop-window-text-muted);
-    }
-}
 </style>
