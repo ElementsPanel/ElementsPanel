@@ -4,32 +4,20 @@ import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import { usePluginService } from "@elements-panel/sdk";
 import { computed } from "vue";
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { VCol, VContainer, VRow } from "vuetify/components";
+import { VContainer } from "vuetify/components";
 import UserInstanceList from "../widgets/UserInstanceList.vue";
-import UserStatusBlock from "../widgets/UserStatusBlock.vue";
 
 const instanceAvailable = computed(() => !!usePluginService("instance"));
-const statusTypes = [
-  "instance_all",
-  "instance_running",
-  "instance_stop",
-  "instance_error"
-];
 </script>
 
 <template>
   <main class="customer-page">
     <VContainer fluid class="customer-page-container">
-      <PageToolbar :title="t('TXT_CODE_COMMON_MY_APPLICATION')" icon="mdi-account-outline" />
-      <VRow v-if="instanceAvailable" density="compact" class="customer-page-row">
-        <VCol v-for="type in statusTypes" :key="type" cols="12" sm="6" lg="3">
-          <UserStatusBlock :type="type" />
-        </VCol>
-        <VCol cols="12">
-          <UserInstanceList :title="t('TXT_CODE_COMMON_INSTANCE_LIST')" />
-        </VCol>
-      </VRow>
-      <Empty v-else />
+      <UserInstanceList v-if="instanceAvailable" :title="t('TXT_CODE_COMMON_MY_APPLICATION')" />
+      <template v-else>
+        <PageToolbar :title="t('TXT_CODE_COMMON_MY_APPLICATION')" icon="mdi-account-outline" />
+        <Empty />
+      </template>
     </VContainer>
   </main>
 </template>
@@ -45,11 +33,6 @@ const statusTypes = [
   max-width: var(--app-max-width);
   margin: 0 auto;
   padding: 20px 24px 32px;
-}
-
-.customer-page-row {
-  width: 100%;
-  margin: 0;
 }
 
 @media (max-width: 992px) {
