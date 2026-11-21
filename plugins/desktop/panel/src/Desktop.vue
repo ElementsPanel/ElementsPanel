@@ -6,6 +6,10 @@ import { useAppConfigStore } from "@elementspanel/epanel-plugin-console/stores/u
 import {
     ctx,
     usePluginService,
+    INSTANCE_SHORTCUT_DROP_EVENT,
+    getInstanceShortcutId,
+    parseDesktopInstanceShortcut,
+    type DesktopInstanceShortcut,
     type PanelFrontendDesktopApp,
     type PanelFrontendInstanceAction,
     type PanelFrontendDesktopWindowRequest
@@ -217,11 +221,19 @@ const availableDesktopApps = computed<DesktopApp[]>(() => {
 });
 
 const desktopShortcutIds = reactive(new Set<string>());
+const instanceShortcuts = reactive(new Map<string, DesktopInstanceShortcut>());
 const shortcutsLoaded = ref(false);
 
 const desktopApps = computed<DesktopApp[]>(() => {
     if (!shortcutsLoaded.value) return [];
-    return availableDesktopApps.value.filter((app) => desktopShortcutIds.has(app.id));
+    const apps = availableDesktopApps.value.filter((app) => desktopShortcutIds.has(app.id));
+    const consoleView = findView("instance-console");
+    if (consoleView) {
+        for (const [id, shortcut] of instanceShortcuts) {
+            apps.push({ id, label: shortcut.name, icon: consoleView.icon, color: "#1677ff" });
+        }
+    }
+    return apps;
 });
 
 const selectedIconId = ref<string | null>(null);
@@ -252,7 +264,8 @@ function getDefaultPosition(index: number): { x: number; y: number } {
 }
 
 function getDefaultPositionForApp(id: string): { x: number; y: number } {
-    const index = availableDesktopApps.value.findIndex((app) => app.id === id);
+    const ids = [...availableDesktopApps.value.map((app) => app.id), ...instanceShortcuts.keys()];
+    const index = ids.indexOf(id);
     return getDefaultPosition(index >= 0 ? index : 0);
 }
 
@@ -378,14 +391,31 @@ const handleDesktopMouseUp = () => {
 };
 
 const removeDesktopShortcut = (id: string) => {
-    if (!desktopShortcutIds.has(id)) return;
+    if (!desktopShortcutIds.has(id) && !instanceShortcuts.has(id)) return;
     desktopShortcutIds.delete(id);
+    instanceShortcuts.delete(id);
     iconPositions.delete(id);
     if (selectedIconId.value === id) {
         selectedIconId.value = null;
     }
     saveDesktopLayout();
 };
+
+const handleInstanceShortcutDrop = (event: Event) => {
+    const detail = (event as CustomEvent<{ shortcut: unknown; clientX: number; clientY: number }>).detail;
+    const shortcut = parseDesktopInstanceShortcut(detail?.shortcut);
+    const surface = desktopIconsRef.value;
+    if (!shortcut || !surface || !Number.isFinite(detail.clientX) || !Number.isFinite(detail.clientY) || !findView("instance-console")) return;
+    if (!surface.contains(document.elementFromPoint(detail.clientX, detail.clientY))) return;
+    const id = getInstanceShortcutId(shortcut);
+    if (!instanceShortcuts.has(id) && desktopShortcutIds.size + instanceShortcuts.size >= 100) return;
+    const rect = surface.getBoundingClientRect();
+    instanceShortcuts.set(id, shortcut);
+    placeDesktopShortcutAt(id, detail.clientX - rect.left, detail.clientY - rect.top);
+};
+
+onMounted(() => window.addEventListener(INSTANCE_SHORTCUT_DROP_EVENT, handleInstanceShortcutDrop));
+onUnmounted(() => window.removeEventListener(INSTANCE_SHORTCUT_DROP_EVENT, handleInstanceShortcutDrop));
 
 const handleStartMenuAppDrop = (event: DragEvent) => {
     const appId = event.dataTransfer?.getData("application/x-elements-desktop-app")
@@ -400,13 +430,17 @@ const handleStartMenuAppDrop = (event: DragEvent) => {
 
 const addDesktopShortcutAt = (appId: string, clientX: number, clientY: number) => {
     if (!appId || !availableDesktopApps.value.some((app) => app.id === appId)) return;
+    if (!desktopShortcutIds.has(appId) && desktopShortcutIds.size + instanceShortcuts.size >= 100) return;
+    desktopShortcutIds.add(appId);
+    placeDesktopShortcutAt(appId, clientX, clientY);
+};
 
+const placeDesktopShortcutAt = (appId: string, clientX: number, clientY: number) => {
     const snapped = snapToGrid(clientX - 45, clientY - 50);
     const targetCol = Math.max(0, Math.round((snapped.x - DEFAULT_ICON_START_X) / ICON_COL_WIDTH));
     const targetRow = Math.max(0, Math.round((snapped.y - DEFAULT_ICON_START_Y) / ICON_ROW_HEIGHT));
     const empty = findEmptyCell(targetCol, targetRow, appId);
 
-    desktopShortcutIds.add(appId);
     iconPositions.set(appId, {
         x: DEFAULT_ICON_START_X + empty.col * ICON_COL_WIDTH,
         y: DEFAULT_ICON_START_Y + empty.row * ICON_ROW_HEIGHT
@@ -486,6 +520,7 @@ const saveDesktopLayout = () => {
                     windows: windowList,
                     icons: iconList,
                     shortcuts: [...desktopShortcutIds],
+                    instanceShortcuts: [...instanceShortcuts.values()],
                     updatedAt: Date.now()
                 }
             });
@@ -560,6 +595,14 @@ watch(pluginViews, (views) => {
             changed = true;
         }
     }
+    if (registeredViewIds.has("instance-console") && !next.has("instance-console")) {
+        for (const id of instanceShortcuts.keys()) {
+            iconPositions.delete(id);
+            if (selectedIconId.value === id) selectedIconId.value = null;
+        }
+        instanceShortcuts.clear();
+        changed = true;
+    }
     registeredViewIds = next;
     if (changed) saveDesktopLayout();
 }, { flush: "sync" });
@@ -575,11 +618,19 @@ const loadDesktopLayout = async () => {
         const layout = result?.value;
         const availableAppIds = new Set(availableDesktopApps.value.map((app) => app.id));
         desktopShortcutIds.clear();
+        instanceShortcuts.clear();
+        iconPositions.clear();
         if (layout && Array.isArray(layout.shortcuts)) {
             for (const id of layout.shortcuts) {
                 if (typeof id === "string" && availableAppIds.has(id)) {
                     desktopShortcutIds.add(id);
                 }
+            }
+        }
+        if (layout && Array.isArray(layout.instanceShortcuts)) {
+            for (const value of layout.instanceShortcuts.slice(0, 100 - desktopShortcutIds.size)) {
+                const shortcut = parseDesktopInstanceShortcut(value);
+                if (shortcut) instanceShortcuts.set(getInstanceShortcutId(shortcut), shortcut);
             }
         }
         shortcutsLoaded.value = true;
@@ -653,9 +704,8 @@ const loadDesktopLayout = async () => {
             }
         }
         if (layout && Array.isArray(layout.icons)) {
-            iconPositions.clear();
             for (const icon of layout.icons) {
-                if (desktopShortcutIds.has(icon.id) && typeof icon.x === "number" && typeof icon.y === "number") {
+                if ((desktopShortcutIds.has(icon.id) || instanceShortcuts.has(icon.id)) && typeof icon.x === "number" && typeof icon.y === "number") {
                     iconPositions.set(icon.id, { x: icon.x, y: icon.y });
                 }
             }
@@ -663,6 +713,8 @@ const loadDesktopLayout = async () => {
         layoutLoaded = true;
     } catch (e) {
         desktopShortcutIds.clear();
+        instanceShortcuts.clear();
+        iconPositions.clear();
         shortcutsLoaded.value = true;
         layoutLoaded = true;
     }
@@ -675,6 +727,11 @@ onMounted(async () => {
 });
 
 const openWindow = (appId: string) => {
+    const shortcut = instanceShortcuts.get(appId);
+    if (shortcut) {
+        openInstanceConsole({ instanceUuid: shortcut.instanceId, config: { nickname: shortcut.name } }, shortcut.daemonId);
+        return;
+    }
     const app = availableDesktopApps.value.find((a) => a.id === appId);
     if (!app) return;
 

@@ -4,6 +4,7 @@ import { t } from "@elementspanel/epanel-plugin-i18n";
 import { useAppConfigStore } from "@elementspanel/epanel-plugin-console/stores/useAppConfigStore";
 import { useThemeSwitch } from "@elementspanel/epanel-plugin-console/hooks/useThemeSwitch";
 import ActionRipple from "@elementspanel/epanel-plugin-console/components/ActionRipple";
+import { usePointerDrag } from "@elementspanel/epanel-plugin-console/hooks/usePointerDrag";
 import { ctx } from "@elements-panel/sdk";
 import type { PanelFrontendHeaderAction } from "@elements-panel/sdk";
 import { desktopIconDarkUrl, desktopIconUrl } from "../../assets";
@@ -212,24 +213,30 @@ const handleAccountMenuClick = ({ key }: { key: string | number }) => {
     }
 };
 
-const handleOpenApp = (id: string) => {
+const appDrag = usePointerDrag<TaskbarApp>({
+    previewClass: "desktop-app-drag-preview",
+    scrollContainer: ".start-menu__apps",
+    onDrop: (app, event) => {
+        const target = document.elementFromPoint(event.clientX, event.clientY);
+        if (!target?.closest(".desktop-icons, .start-menu-overlay")) return;
+        startMenuOpen.value = false;
+        emit("add-shortcut", app.id, event.clientX, event.clientY);
+    }
+});
+const draggedAppId = appDrag.draggingId;
+
+watch(startMenuOpen, (open) => {
+    if (!open && draggedAppId.value) appDrag.cancelDrag();
+});
+
+const handleOpenApp = (id: string, event: MouseEvent) => {
+    if (appDrag.suppressDragClick(event)) return;
     startMenuOpen.value = false;
     emit("open-app", id);
 };
 
-const handleAppDragStart = (app: TaskbarApp, event: DragEvent) => {
-    if (!event.dataTransfer) return;
-    event.dataTransfer.effectAllowed = "copy";
-    event.dataTransfer.setData("application/x-elements-desktop-app", app.id);
-    event.dataTransfer.setData("text/plain", app.id);
-};
-
-const handleAppDrop = (event: DragEvent) => {
-    const appId = event.dataTransfer?.getData("application/x-elements-desktop-app")
-        || event.dataTransfer?.getData("text/plain");
-    if (!appId) return;
-    startMenuOpen.value = false;
-    emit("add-shortcut", appId, event.clientX, event.clientY);
+const prepareAppDrag = (app: TaskbarApp, event: PointerEvent) => {
+    appDrag.prepareDrag(event, { id: app.id, label: app.label, value: app });
 };
 
 const isComponentIcon = (icon: Component | string | undefined): icon is Component =>
@@ -296,8 +303,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
         </div>
     </div>
 
-    <div v-if="startMenuOpen" class="start-menu-overlay" @click="startMenuOpen = false" @dragover.prevent
-        @drop.prevent="handleAppDrop"></div>
+    <div v-if="startMenuOpen" class="start-menu-overlay" @click="startMenuOpen = false"></div>
 
     <Transition name="start-menu">
         <div v-if="startMenuOpen" class="taskbar__start-menu" @click.stop>
@@ -333,7 +339,9 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
             <div class="start-menu__apps-panel">
                 <div class="start-menu__apps">
                     <div v-for="app in apps" :key="app.id" class="start-menu__item start-menu__app-item"
-                        draggable="true" @dragstart="handleAppDragStart(app, $event)" @click="handleOpenApp(app.id)">
+                        :class="{ 'start-menu__app-item--dragging': draggedAppId === app.id }"
+                        draggable="false" @pointerdown="prepareAppDrag(app, $event)" @dragstart.prevent
+                        @click="handleOpenApp(app.id, $event)">
                         <span class="start-menu__item-icon">
                             <component :is="app.icon" v-if="isComponentIcon(app.icon)" />
                             <VIcon v-else-if="isMdiIcon(app.icon)" :icon="app.icon" size="small" />
@@ -494,7 +502,12 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
     }
 
     .start-menu__app-item {
-        cursor: default;
+        cursor: grab;
+        user-select: none;
+
+        &--dragging {
+            cursor: grabbing;
+        }
     }
 }
 

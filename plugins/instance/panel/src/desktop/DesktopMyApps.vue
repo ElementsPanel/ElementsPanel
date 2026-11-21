@@ -13,6 +13,9 @@ import { INSTANCE_STATUS_CODE } from "@elementspanel/epanel-plugin-console/types
 import type { UserInstance } from "@elementspanel/epanel-plugin-console/types/user";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { VBtn, VIcon, VProgressCircular, VSelect, VTextField } from "vuetify/components";
+import { useInstanceShortcutDrag } from "./instanceShortcut";
+
+const { prepareInstanceShortcutDrag, suppressInstanceShortcutClick, isInstanceShortcutDragging } = useInstanceShortcutDrag();
 
 const ClockCircleOutlined = "mdi-clock-outline";
 const MinusCircleOutlined = "mdi-minus-circle-outline";
@@ -194,7 +197,8 @@ const emit = defineEmits<{
     (e: "open-console", instance: any, daemonId: string): void;
 }>();
 
-const handleInstanceDblClick = (instance: MyAppInstance) => {
+const handleInstanceDblClick = (instance: MyAppInstance, event: MouseEvent) => {
+    if (suppressInstanceShortcutClick(event)) return;
     if (instance.daemonId) {
         const detail: any = {
             instanceUuid: instance.instanceUuid,
@@ -272,8 +276,11 @@ onUnmounted(() => {
             />
 
             <div v-for="instance in filteredInstances" :key="instance.instanceUuid" class="ma-instance"
-                :class="{ 'ma-instance--operating': isOperating(instance.instanceUuid) }"
-                @click="handleInstanceDblClick(instance)">
+                :class="{ 'ma-instance--operating': isOperating(instance.instanceUuid), 'ma-instance--dragging': isInstanceShortcutDragging(instance.instanceUuid, instance.daemonId) }"
+                draggable="false"
+                @pointerdown="prepareInstanceShortcutDrag($event, instance, instance.daemonId)"
+                @dragstart.prevent
+                @click="handleInstanceDblClick(instance, $event)">
                 <div class="ma-instance__info">
                     <div class="ma-instance__header">
                         <span class="ma-instance__status" :class="getStatusClass(instance.status)">
@@ -473,8 +480,12 @@ onUnmounted(() => {
     background: var(--desktop-window-titlebar-bg);
     border: 1px solid var(--desktop-window-border);
     transition: all 0.2s;
-    cursor: default;
+    cursor: grab;
     user-select: none;
+
+    &--dragging {
+        cursor: grabbing;
+    }
 
     &:hover {
         background: var(--desktop-window-control-hover);

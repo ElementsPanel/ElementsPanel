@@ -1,5 +1,5 @@
 import { defineComponent, h, type Component } from "vue";
-import type { PanelFrontendPluginContext } from "@elements-panel/sdk";
+import { getInstanceShortcutId, type PanelFrontendPluginContext } from "@elements-panel/sdk";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
 import CreateInstancePage from "../views/CreateInstance.vue";
@@ -32,9 +32,9 @@ export function openInstanceConsole(
   daemonId: string
 ) {
   return ctx.desktop.open({
-    id: `console-${instance.instanceUuid}`,
+    id: getInstanceShortcutId({ instanceId: instance.instanceUuid, daemonId }),
     view: "instance-console",
-    title: instance.config?.nickname,
+    title: instance.config?.nickname || instance.nickname,
     props: { instanceId: instance.instanceUuid, daemonId }
   });
 }

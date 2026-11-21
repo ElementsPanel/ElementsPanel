@@ -24,6 +24,9 @@ import type { InstanceDetail, NodeStatus } from "@elementspanel/epanel-plugin-co
 import { INSTANCE_STATUS_CODE } from "@elementspanel/epanel-plugin-console/types/const";
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { VBtn, VChip, VIcon, VList, VListItem, VMenu, VProgressCircular, VSelect, VTextField } from "vuetify/components";
+import { useInstanceShortcutDrag } from "./instanceShortcut";
+
+const { prepareInstanceShortcutDrag, suppressInstanceShortcutClick, isInstanceShortcutDragging, cancelInstanceShortcutDrag } = useInstanceShortcutDrag();
 
 const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
 
@@ -371,6 +374,7 @@ const selectInstance = (item: InstanceDetail) => {
 };
 
 const handleInstanceClick = (e: MouseEvent, instance: InstanceDetail) => {
+    if (suppressInstanceShortcutClick(e)) return;
     if (multipleMode.value) {
         e.preventDefault();
         selectInstance(instance);
@@ -522,6 +526,7 @@ const handleInstanceDblClick = (instance: InstanceDetail) => {
 };
 
 watch(selectedNodeId, (nodeId) => {
+    cancelInstanceShortcutDrag();
     const node = nodes.value.find((item) => item.uuid === nodeId);
     if (node) {
         try {
@@ -662,7 +667,10 @@ onUnmounted(() => {
             />
 
             <div v-for="instance in filteredInstances" :key="instance.instanceUuid" class="dim-instance"
-                :class="{ 'dim-instance--operating': isOperating(instance.instanceUuid), 'dim-instance--selected': findInstance(instance) }"
+                :class="{ 'dim-instance--operating': isOperating(instance.instanceUuid), 'dim-instance--selected': findInstance(instance), 'dim-instance--dragging': isInstanceShortcutDragging(instance.instanceUuid, selectedNodeId) }"
+                draggable="false"
+                @pointerdown="prepareInstanceShortcutDrag($event, instance, selectedNodeId)"
+                @dragstart.prevent
                 @click="handleInstanceClick($event, instance)">
                 <div class="dim-instance__info">
                     <div class="dim-instance__header">
@@ -1022,8 +1030,12 @@ onUnmounted(() => {
     background: var(--desktop-window-titlebar-bg);
     border: 1px solid var(--desktop-window-border);
     transition: all 0.2s;
-    cursor: default;
+    cursor: grab;
     user-select: none;
+
+    &--dragging {
+        cursor: grabbing;
+    }
 
     &:hover {
         background: var(--desktop-window-control-hover);

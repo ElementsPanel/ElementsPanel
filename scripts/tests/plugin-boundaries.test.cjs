@@ -530,7 +530,10 @@ function frontendFixture(t) {
     authEnabled: vue.ref(false),
     state: {}
   };
-  const pluginContext = { ctx, usePluginService: (name) => ctx.get(name) };
+  const pluginContext = {
+    ...load("core/common/src/instance_contract.ts"),
+    ctx, usePluginService: (name) => ctx.get(name)
+  };
   const overrides = {
     "@/lang/i18n": { t: (key) => key },
     "@/stores/useAppStateStore": { useAppStateStore: () => state },
@@ -679,7 +682,7 @@ test("desktop user CRUD loads without resource providers and a late assignment r
 });
 
 test("desktop shell opens/restores contributed windows and survives provider removal", async (t) => {
-  const { ctx, routes, overrides, state: app, nodePlugin } = frontendFixture(t);
+  const { ctx, routes, overrides, state: app, pluginContext, nodePlugin } = frontendFixture(t);
   const originalDocument = global.document;
   const originalWindow = global.window;
   global.window = { removeEventListener() {} };
@@ -717,7 +720,7 @@ test("desktop shell opens/restores contributed windows and survives provider rem
     ...overrides,
     "./api": {
       getDesktopLayoutConfig: () => ({ execute: async () => ({ value: savedLayout }) }),
-      setDesktopLayoutConfig: () => ({ execute: async () => {} })
+      setDesktopLayoutConfig: () => ({ execute: async ({ data }) => { savedLayout = JSON.parse(JSON.stringify(data)); } })
     },
     "@/stores/useAppConfigStore": { useAppConfigStore: () => ({ isDarkTheme: vue.ref(false) }) },
     "@/services/apis/index": {},
@@ -730,6 +733,7 @@ test("desktop shell opens/restores contributed windows and survives provider rem
     global.window = originalWindow;
   });
   const { windows } = shell.state;
+  await shell.state.loadDesktopLayout();
   assert.equal(ctx.desktop.open({ id: "bad", view: "instance-console" }), false);
   assert.equal(ctx.desktop.open({ id: "bad-config", view: "node-plugin-config" }), false);
   assert.equal(ctx.desktop.open({ id: "bad-settings", view: "instance-settings", props: { instanceId: "one" } }), false);
@@ -747,7 +751,37 @@ test("desktop shell opens/restores contributed windows and survives provider rem
     ctx.instance.openConsole({ instanceUuid: "one", config: { nickname: "One" } }, "node"),
     true
   );
-  assert.equal(windows.get("console-one").props.daemonId, "node");
+  assert.equal(windows.get("console-node-one").props.daemonId, "node");
+  const shortcut = { instanceId: "one", daemonId: "node", name: "One" };
+  let dropOnDesktop = true;
+  global.document.elementFromPoint = () => ({});
+  shell.state.desktopIconsRef.value = {
+    getBoundingClientRect: () => ({ left: 10, top: 20 }), contains: () => dropOnDesktop
+  };
+  const dropInstance = (value, x = 100, y = 100) => shell.state.handleInstanceShortcutDrop({
+    detail: { shortcut: value, clientX: x, clientY: y }
+  });
+  dropInstance(shortcut);
+  dropInstance(shortcut, 300, 250);
+  assert.equal(shell.state.instanceShortcuts.size, 1, "repeated drops move the existing shortcut");
+  assert.equal(shell.state.desktopApps.value.find(app => app.id === "console-node-one").label, "One");
+  shell.state.openWindow("console-node-one");
+  assert.equal(windows.get("console-node-one").props.daemonId, "node");
+  dropInstance({ ...shortcut, daemonId: "other-node" });
+  shell.state.openWindow("console-other-node-one");
+  assert.equal(windows.get("console-other-node-one").props.daemonId, "other-node");
+  dropInstance({ instanceId: "one", name: "Missing node" });
+  assert.equal(shell.state.instanceShortcuts.size, 2);
+  dropOnDesktop = false;
+  dropInstance({ ...shortcut, instanceId: "not-on-desktop" });
+  assert.equal(shell.state.instanceShortcuts.size, 2, "releasing over a window must not add a shortcut");
+  dropOnDesktop = true;
+  shell.state.removeDesktopShortcut("console-other-node-one");
+  assert.equal(shell.state.instanceShortcuts.size, 1);
+  assert.equal(shell.state.iconPositions.has("console-other-node-one"), false);
+  await new Promise(resolve => setTimeout(resolve, 550));
+  assert.deepEqual(savedLayout.instanceShortcuts, [shortcut]);
+  assert.ok(savedLayout.icons.some(icon => icon.id === "console-node-one"));
   const consoleView = ctx.desktop.views.find((view) => view.id === "instance-console");
   const renderConsole = consoleView.component.setup({}, {
     attrs: { instanceId: "one", daemonId: "node" }, emit() {}
@@ -764,21 +798,27 @@ test("desktop shell opens/restores contributed windows and survives provider rem
   assert.ok(windows.has("instances"));
   savedLayout = {
     shortcuts: ["instances"],
+    instanceShortcuts: [shortcut],
+    icons: [{ id: "console-node-one", x: 204, y: 224 }],
     windows: [
       { id: "schedule-one", content: "schedule", instanceId: "one", daemonId: "node" },
       { id: settingsWindow.id, content: settingsWindow.content, props: settingsWindow.props },
       { id: configRequest.id, content: configRequest.view, props: configRequest.props },
+      { id: "console-one", content: "instance-console", props: { instanceId: "one", daemonId: "node" } },
       { id: "bad", content: "schedule" },
       { id: "removed", content: "uninstalled-feature" }
     ]
   };
   await shell.state.loadDesktopLayout();
-  assert.equal(windows.size, 3);
+  assert.equal(windows.size, 4);
+  assert.deepEqual(shell.state.instanceShortcuts.get("console-node-one"), shortcut);
+  assert.deepEqual(shell.state.iconPositions.get("console-node-one"), { x: 204, y: 224 });
   assert.deepEqual(windows.get(settingsWindow.id).props, settingsWindow.props);
   assert.equal(windows.get("schedule-one").props.instanceId, "one");
   assert.deepEqual(windows.get(configRequest.id).props, configRequest.props);
   ctx.instance.openConsole({ instanceUuid: "one" }, "node");
-  assert.ok(windows.has("console-one"));
+  assert.ok(windows.has("console-node-one"));
+  assert.equal(windows.size, 4, "opening a restored console reuses its migrated window");
   assert.ok(ctx.get("node"));
   assert.ok(ctx.get("terminal"));
   await instance.dispose();
@@ -792,6 +832,7 @@ test("desktop shell opens/restores contributed windows and survives provider rem
   assert.equal(ctx.actions.instances.some((action) => action.id === "java-manager"), false);
   assert.equal(ctx.actions.instances.some((action) => action.id === "mcstats"), false);
   assert.equal(windows.size, 1);
+  assert.equal(shell.state.instanceShortcuts.size, 0);
   assert.ok(windows.has(configRequest.id));
   await config.dispose();
   await tick();

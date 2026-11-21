@@ -11,6 +11,7 @@ const load = createLoader({
     return id.startsWith(".") && fs.existsSync(target) ? load(target, overrides) : localRequire(id);
   }
 });
+const instanceContract = load("core/common/src/instance_contract.ts");
 const { resolveBackgroundImage } = load("plugins/console/panel/src/services/apis/appearance.ts", {
   "@/stores/useDefineApi": { useDefineApi: () => () => ({}) }
 });
@@ -116,6 +117,171 @@ test("desktop appearance settings persist, clear images and reject invalid or fa
 const dom = createBrowser();
 after(() => dom.window.close());
 const vue = from("frontend")("vue");
+const pointerDrag = load("plugins/console/panel/src/hooks/usePointerDrag.ts", { vue });
+
+function pointer(type, element = window, x = 10, y = 10, options = {}) {
+  const event = new window.MouseEvent(type, {
+    bubbles: true, cancelable: true, button: 0,
+    buttons: type === "pointerdown" || type === "pointermove" ? 1 : 0,
+    clientX: x, clientY: y, ...options
+  });
+  Object.defineProperties(event, {
+    pointerId: { value: options.pointerId ?? 1 },
+    pointerType: { value: options.pointerType ?? "mouse" },
+    isPrimary: { value: true }
+  });
+  element.dispatchEvent(event);
+  return event;
+}
+
+test("instance shortcuts persist per user and invalid layouts leave saved shortcuts intact", async (t) => {
+  const previousDirectory = process.cwd();
+  const directory = await fs.promises.mkdtemp(path.join(require("node:os").tmpdir(), "elements-instance-shortcuts-"));
+  t.after(async () => {
+    process.chdir(previousDirectory);
+    await fs.promises.rm(directory, { recursive: true, force: true });
+  });
+  process.chdir(directory);
+  const { getDesktopLayout, setDesktopLayout } = load("plugins/desktop/panel/src/backend/desktop-layout-service.ts");
+  const logger = { error() {} };
+  const shortcut = { instanceId: "one", daemonId: "node", name: "Server" };
+  const layout = {
+    windows: [], shortcuts: ["instances"], instanceShortcuts: [shortcut],
+    icons: [{ id: instanceContract.getInstanceShortcutId(shortcut), x: 16, y: 16 }]
+  };
+  setDesktopLayout("alice", structuredClone(layout), logger);
+  const saved = getDesktopLayout("alice", logger);
+  assert.deepEqual(saved.instanceShortcuts, [shortcut]);
+  assert.deepEqual(saved.icons, layout.icons);
+  assert.equal(getDesktopLayout("bob", logger), null);
+  for (const invalid of [
+    { instanceShortcuts: {} },
+    { instanceShortcuts: [{ instanceId: "one", name: "Missing node" }] },
+    { instanceShortcuts: [{ ...shortcut, daemonId: "../node" }] },
+    { instanceShortcuts: [{ ...shortcut, name: "x".repeat(201) }] },
+    { instanceShortcuts: Array(100).fill(shortcut) }
+  ]) assert.throws(() => setDesktopLayout("alice", { ...structuredClone(layout), ...invalid }, logger));
+  assert.deepEqual(getDesktopLayout("alice", logger), saved);
+});
+
+for (const [view, selector] of [["DesktopMyApps", ".ma-instance"], ["DesktopInstanceManager", ".dim-instance"]]) {
+  test(`${view} uses a pointer drag preview, preserves clicks and cleans up cancelled drags`, async (t) => {
+    const Vuetify = from("frontend")("vuetify/dist/vuetify.js");
+    const instance = { instanceUuid: "one", daemonId: "node", nickname: "Server", config: { nickname: "Server", tag: [] }, status: 0, info: {} };
+    const api = value => () => ({ execute: async () => ({ value }) });
+    const calls = [];
+    const operations = Object.fromEntries([
+      "batchDelete", "batchKill", "batchRestart", "batchStart", "batchStop",
+      "killInstance", "openInstance", "restartInstance", "stopInstance", "updateInstanceConfig"
+    ].map(name => [name, () => ({ execute: async () => { calls.push(name); } })]));
+    const file = `plugins/instance/panel/src/desktop/${view}.vue`;
+    const component = load(file, {
+      vue,
+      "@elements-panel/sdk": { ...instanceContract, usePluginService: () => undefined },
+      "@elementspanel/epanel-plugin-i18n": { t: key => key },
+      "@elementspanel/epanel-plugin-console/components/Empty": {},
+      "@elementspanel/epanel-plugin-console/components/DesktopDialog": {},
+      "@elementspanel/epanel-plugin-console/hooks/useInstance": { INSTANCE_TYPE_TRANSLATION: {} },
+      "@elementspanel/epanel-plugin-console/hooks/usePointerDrag": pointerDrag,
+      "@elementspanel/epanel-plugin-console/hooks/useInstanceTag": {
+        useInstanceTagTips: () => ({ tagTips: vue.ref([]), updateTagTips() {} }),
+        useInstanceTagSearch: () => ({ tags: vue.ref([]), setRefreshFn() {}, selectTag() {}, removeTag() {}, isTagSelected() {}, clearTags() {} })
+      },
+      "@elementspanel/epanel-plugin-console/tools/desktopNotice": { notifyDesktop() {}, notifyDesktopError() {} },
+      "@elementspanel/epanel-plugin-console/types/const": { INSTANCE_STATUS_CODE: { BUSY: -1, STOPPED: 0, STOPPING: 1, STARTING: 2, RUNNING: 3 } },
+      "@elementspanel/epanel-plugin-console/services/apis": {
+        userInfoApiAdvanced: api({ instances: [instance] }),
+        remoteNodeList: api([{ uuid: "node", available: true, ip: "localhost", port: 1234 }]),
+        remoteInstances: api({ data: [instance], maxPage: 1, allTags: [] })
+      },
+      "@elementspanel/epanel-plugin-console/services/apis/instance": operations,
+      "vuetify/components": Vuetify.components
+    }, compileSfc(file, { inlineTemplate: true })).default;
+    const target = document.createElement("div");
+    document.body.appendChild(target);
+    const app = vue.createApp({ render: () => vue.h(component, { onOpenConsole: () => calls.push("console") }) });
+    app.use(Vuetify.createVuetify());
+    app.mount(target);
+    let mounted = true;
+    t.after(() => { if (mounted) app.unmount(); target.remove(); });
+    await settle();
+    await vue.nextTick();
+    const row = target.querySelector(selector);
+    assert.ok(row);
+    assert.equal(row.draggable, false);
+    const nativeDrag = new window.Event("dragstart", { bubbles: true, cancelable: true });
+    row.dispatchEvent(nativeDrag);
+    assert.equal(nativeDrag.defaultPrevented, true);
+    const drops = [];
+    const recordDrop = event => drops.push(event.detail);
+    window.addEventListener(instanceContract.INSTANCE_SHORTCUT_DROP_EVENT, recordDrop);
+    const previousElementFromPoint = document.elementFromPoint;
+    document.elementFromPoint = () => row;
+    t.after(() => {
+      window.removeEventListener(instanceContract.INSTANCE_SHORTCUT_DROP_EVENT, recordDrop);
+      document.elementFromPoint = previousElementFromPoint;
+    });
+    const click = () => row.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true, detail: 1 }));
+    const preview = () => document.querySelector(".instance-shortcut-drag-preview");
+    const canSelectText = () => document.dispatchEvent(new window.Event("selectstart", { cancelable: true }));
+    assert.equal(pointer("pointerdown", row).defaultPrevented, true);
+    assert.equal(canSelectText(), false);
+    pointer("pointermove", window, 20, 15);
+    assert.equal(preview(), null, "small movement stays a normal click");
+    pointer("pointerup");
+    assert.equal(canSelectText(), true);
+    click();
+    assert.deepEqual(calls, ["console"]);
+    calls.length = 0;
+
+    const selection = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(row);
+    selection.addRange(range);
+    assert.ok(selection.toString());
+    pointer("pointerdown", row);
+    assert.equal(pointer("pointermove", window, 40, 25).defaultPrevented, true);
+    await vue.nextTick();
+    assert.equal(selection.rangeCount, 0);
+    assert.equal(preview().textContent, "Server");
+    assert.equal(preview().style.position, "fixed");
+    assert.equal(preview().style.pointerEvents, "none");
+    assert.equal(preview().style.borderRadius, "14px");
+    assert.equal(preview().style.transform, "translate(52px, 39px)");
+    assert.equal(row.classList.contains(`${selector.slice(1)}--dragging`), true);
+    pointer("pointermove", window, 150, 120);
+    assert.equal(preview().style.transform, "translate(162px, 134px)");
+    pointer("pointerup", window, 150, 120, { pointerId: 2 });
+    assert.ok(preview(), "another pointer must not finish the drag");
+    pointer("pointerup", window, 150, 120);
+    assert.equal(canSelectText(), true);
+    await vue.nextTick();
+    assert.equal(preview(), null);
+    assert.equal(row.classList.contains(`${selector.slice(1)}--dragging`), false);
+    assert.deepEqual(drops, [{ shortcut: { instanceId: "one", daemonId: "node", name: "Server" }, clientX: 150, clientY: 120 }]);
+    click();
+    assert.deepEqual(calls, []);
+    pointer("pointerdown", row);
+    pointer("pointerup");
+    click();
+    assert.deepEqual(calls, ["console"]);
+
+    for (const reason of ["pointercancel", "blur", "buttons", "unmount"]) {
+      pointer("pointerdown", row);
+      pointer("pointermove", window, 40, 25);
+      assert.ok(preview());
+      if (reason === "blur") window.dispatchEvent(new window.Event("blur"));
+      else if (reason === "buttons") pointer("pointermove", window, 50, 30, { buttons: 0 });
+      else if (reason === "unmount") { app.unmount(); mounted = false; }
+      else pointer("pointercancel");
+      assert.equal(preview(), null);
+      assert.equal(canSelectText(), true, "ending or cancelling a drag restores text selection");
+      pointer("pointermove", window, 150, 120);
+      pointer("pointerup", window, 150, 120);
+      assert.equal(drops.length, 1, "cancelled drags never add a shortcut");
+    }
+  });
+}
 
 function desktopFixture(t, settings, appearance = { backgroundImage: "/website wallpaper.png" }) {
   const dark = vue.ref(false);
@@ -130,6 +296,7 @@ function desktopFixture(t, settings, appearance = { backgroundImage: "/website w
       state: {}, isAdmin: vue.ref(false), isLogged: vue.ref(false), authEnabled: vue.ref(true)
     }) },
     "@elements-panel/sdk": {
+      ...instanceContract,
       usePluginService: () => undefined,
       ctx: { desktop: { apps: [], views: [], provideOpener: () => () => {} }, actions: { instances: [] } }
     },
@@ -172,6 +339,7 @@ function taskbarComponent(dark = vue.ref(false)) {
     "@elementspanel/epanel-plugin-i18n": { t: key => key },
     "@elementspanel/epanel-plugin-console/stores/useAppConfigStore": { useAppConfigStore: () => ({ isDarkTheme: dark }) },
     "@elementspanel/epanel-plugin-console/hooks/useThemeSwitch": { useThemeSwitch: () => ({}) },
+    "@elementspanel/epanel-plugin-console/hooks/usePointerDrag": pointerDrag,
     "@elementspanel/epanel-plugin-console/components/ActionRipple": {},
     "@elements-panel/sdk": { ctx: { slots: { entries: () => [] } } },
     "../../assets": { desktopIconUrl: "/builtin-dark.svg", desktopIconDarkUrl: "/builtin-light.svg" },
@@ -233,7 +401,7 @@ function taskbarDragFixture(t) {
   const windows = vue.ref(["a", "b", "c"].map((id) => ({
     id, title: id, icon: "mdi-folder", active: id === "b", minimized: id === "c"
   })));
-  const events = { orders: [], toggles: [], shortcuts: [], unrelatedDrops: 0 };
+  const events = { orders: [], toggles: [], shortcuts: [], opens: [], unrelatedDrops: 0 };
   const target = document.createElement("div");
   document.body.appendChild(target);
   target.addEventListener("dragover", () => events.unrelatedDrops++);
@@ -245,7 +413,8 @@ function taskbarDragFixture(t) {
       windows.value = ids.map((id) => windows.value.find((win) => win.id === id));
     },
     "onToggle-window": (id) => { events.toggles.push(id); },
-    "onAdd-shortcut": (...args) => { events.shortcuts.push(args); }
+    "onAdd-shortcut": (...args) => { events.shortcuts.push(args); },
+    "onOpen-app": id => { events.opens.push(id); }
   }) });
   app.use(Vuetify.createVuetify());
   app.mount(target);
@@ -345,11 +514,54 @@ test("taskbar windows restore cancelled drags, scroll at edges and leave app sho
 
   f.target.querySelector(".taskbar__start").click();
   await vue.nextTick();
-  f.dispatchDrag("dragstart", f.target.querySelector(".start-menu__app-item"));
-  assert.equal(f.transfer.effectAllowed, "copy");
-  assert.equal(f.transfer.getData("application/x-elements-desktop-app"), "app");
-  f.dispatchDrag("drop", f.target.querySelector(".start-menu-overlay"));
+  let item = f.target.querySelector(".start-menu__app-item");
+  assert.equal(item.draggable, false);
+  assert.equal(f.dispatchDrag("dragstart", item).defaultPrevented, true);
+  const clickItem = () => item.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true, detail: 1 }));
+  const preview = () => document.querySelector(".desktop-app-drag-preview");
+  const previousElementFromPoint = document.elementFromPoint;
+  document.elementFromPoint = () => f.target.querySelector(".taskbar__start-menu");
+  t.after(() => { document.elementFromPoint = previousElementFromPoint; });
+  pointer("pointerdown", item);
+  pointer("pointermove", window, 20, 15);
+  assert.equal(preview(), null);
+  pointer("pointerup");
+  clickItem();
+  await vue.nextTick();
+  assert.deepEqual(f.events.opens, ["app"]);
+  assert.deepEqual(f.events.shortcuts, []);
+
+  f.target.querySelector(".taskbar__start").click();
+  await vue.nextTick();
+  item = f.target.querySelector(".start-menu__app-item");
+  pointer("pointerdown", item);
+  pointer("pointermove", window, 40, 25);
+  await vue.nextTick();
+  assert.equal(preview().textContent, "App");
+  assert.equal(preview().style.transform, "translate(52px, 39px)");
+  assert.equal(item.classList.contains("start-menu__app-item--dragging"), true);
+  pointer("pointercancel");
+  assert.equal(preview(), null);
+  assert.deepEqual(f.events.shortcuts, []);
+
+  pointer("pointerdown", item);
+  pointer("pointermove", window, 40, 25);
+  pointer("pointerup", window, 40, 25);
+  clickItem();
+  await vue.nextTick();
+  assert.deepEqual(f.events.shortcuts, [], "releasing inside the Start menu does not add a shortcut");
+  assert.deepEqual(f.events.opens, ["app"], "dragging must not launch the app");
+  assert.ok(f.target.querySelector(".taskbar__start-menu"));
+
+  document.elementFromPoint = () => f.target.querySelector(".start-menu-overlay");
+  pointer("pointerdown", item);
+  pointer("pointermove", window, 40, 25);
+  pointer("pointerup", window, 25, 100);
+  clickItem();
+  await vue.nextTick();
+  assert.equal(preview(), null);
   assert.deepEqual(f.events.shortcuts, [["app", 25, 100]]);
+  assert.deepEqual(f.events.opens, ["app"]);
   assert.deepEqual(f.events.orders, []);
 });
 

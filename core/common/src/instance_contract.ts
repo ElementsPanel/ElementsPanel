@@ -20,6 +20,35 @@ export const INSTANCE_TYPES = [
 
 export type InstanceType = (typeof INSTANCE_TYPES)[number];
 
+export const INSTANCE_SHORTCUT_DROP_EVENT = "elementspanel:desktop-instance-shortcut-drop";
+
+export interface DesktopInstanceShortcut {
+  instanceId: string;
+  daemonId: string;
+  name: string;
+}
+
+export const getInstanceShortcutId = (
+  shortcut: Pick<DesktopInstanceShortcut, "instanceId" | "daemonId">
+) => `console-${shortcut.daemonId}-${shortcut.instanceId}`;
+
+export function parseDesktopInstanceShortcut(value: unknown): DesktopInstanceShortcut | undefined {
+  if (!value || typeof value !== "object") return;
+  const { instanceId, daemonId, name } = value as DesktopInstanceShortcut;
+  if (
+    typeof instanceId !== "string" ||
+    !/^[a-zA-Z0-9_-]+$/.test(instanceId) ||
+    typeof daemonId !== "string" ||
+    !/^[a-zA-Z0-9_-]+$/.test(daemonId) ||
+    typeof name !== "string" ||
+    !name.trim() ||
+    name.length > 200 ||
+    getInstanceShortcutId({ instanceId, daemonId }).length > 100
+  )
+    return;
+  return { instanceId, daemonId, name };
+}
+
 export enum QUICKSTART_ACTION_TYPE {
   Minecraft = "minecraft",
   Bedrock = "bedrock",

@@ -46,6 +46,7 @@
         "hooks/useOverviewChart": "src/public/hooks/useOverviewChart.ts",
         "hooks/useOverviewInfo": "src/public/hooks/useOverviewInfo.ts",
         "hooks/usePolling": "src/public/hooks/usePolling.ts",
+        "hooks/usePointerDrag": "src/public/hooks/usePointerDrag.ts",
         "hooks/useRemoteNode": "src/public/hooks/useRemoteNode.ts",
         "hooks/useSchedule": "src/public/hooks/useSchedule.ts",
         "hooks/useScreen": "src/public/hooks/useScreen.ts",

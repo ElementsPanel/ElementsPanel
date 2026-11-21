@@ -369,10 +369,13 @@ const clearDragPreview = () => {
   dragPreview = null;
 };
 
+const preventPluginTextSelection = (event: Event) => event.preventDefault();
+
 const startPluginDrag = (pluginId: string) => {
   closePluginContextMenu();
   draggedPluginId.value = pluginId;
   suppressPluginClick = true;
+  window.getSelection()?.removeAllRanges();
 
   clearDragPreview();
   dragPreview = document.createElement("span");
@@ -382,6 +385,7 @@ const startPluginDrag = (pluginId: string) => {
     top: "0",
     left: "0",
     pointerEvents: "none",
+    userSelect: "none",
     zIndex: "21000",
     padding: "4px 10px",
     borderRadius: "14px",
@@ -438,6 +442,7 @@ const movePluginDrag = (event: PointerEvent) => {
 
 const endPluginDrag = () => {
   if (pluginDragPointer) {
+    document.removeEventListener("selectstart", preventPluginTextSelection, true);
     window.removeEventListener("pointermove", movePluginDrag);
     window.removeEventListener("pointerup", finishPluginDrag);
     window.removeEventListener("pointercancel", cancelPluginDrag);
@@ -469,8 +474,10 @@ const preparePluginDrag = (pluginId: string, event: PointerEvent) => {
   if (!event.isPrimary || event.button !== 0 || event.pointerType === "touch" || pluginDragPointer) return;
   const list = (event.currentTarget as HTMLElement).closest<HTMLElement>(".plugin-config-list");
   if (!list) return;
+  event.preventDefault();
   suppressPluginClick = false;
   pluginDragPointer = { pluginId, pointerId: event.pointerId, x: event.clientX, y: event.clientY, list };
+  document.addEventListener("selectstart", preventPluginTextSelection, true);
   window.addEventListener("pointermove", movePluginDrag);
   window.addEventListener("pointerup", finishPluginDrag);
   window.addEventListener("pointercancel", cancelPluginDrag);

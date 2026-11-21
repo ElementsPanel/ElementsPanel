@@ -1,6 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
+import {
+  parseDesktopInstanceShortcut,
+  type DesktopInstanceShortcut
+} from "../../../../../core/common/src/instance_contract";
 
 const DESKTOP_LAYOUT_DIR = "DesktopLayouts";
 
@@ -27,6 +31,7 @@ export interface DesktopLayout {
   windows: DesktopWindowLayout[];
   icons?: DesktopIconLayout[];
   shortcuts?: string[];
+  instanceShortcuts?: DesktopInstanceShortcut[];
   updatedAt?: number;
 }
 
@@ -97,6 +102,19 @@ function validateDesktopLayout(layout: DesktopLayout) {
         throw new Error("Invalid desktop shortcut id");
       }
     }
+  }
+  if (layout.instanceShortcuts != null) {
+    if (!Array.isArray(layout.instanceShortcuts)) {
+      throw new Error("Invalid desktop layout: instanceShortcuts must be an array");
+    }
+    if (layout.instanceShortcuts.length + (layout.shortcuts?.length || 0) > 100) {
+      throw new Error("Too many shortcuts in layout (max 100)");
+    }
+    layout.instanceShortcuts = layout.instanceShortcuts.map((value) => {
+      const shortcut = parseDesktopInstanceShortcut(value);
+      if (!shortcut) throw new Error("Invalid desktop instance shortcut");
+      return shortcut;
+    });
   }
 }
 
