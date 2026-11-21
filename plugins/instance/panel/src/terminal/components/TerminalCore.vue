@@ -8,7 +8,6 @@ import { t } from "@elementspanel/epanel-plugin-i18n";
 import { onMounted, ref } from "vue";
 import {
   VBtn,
-  VChip,
   VExpansionPanel,
   VExpansionPanels,
   VProgressCircular,
@@ -32,14 +31,7 @@ const props = defineProps<{
   useTerminalHook: UseTerminalHook;
 }>();
 
-const {
-  focusHistoryList,
-  selectLocation,
-  history,
-  commandInputValue,
-  handleHistorySelect,
-  clickHistoryItem
-} = useCommandHistory();
+const { commandInputValue, handleHistorySelect, resetHistorySelection } = useCommandHistory();
 
 const {
   state,
@@ -64,14 +56,9 @@ const { isXhrPollError, xhrPollErrorReason } = useXhrPollError(socketError);
 let inputRef = ref<HTMLElement | null>(null);
 
 const handleSendCommand = () => {
-  if (focusHistoryList.value) return;
   sendCommand(commandInputValue.value || "");
   commandInputValue.value = "";
-};
-
-const handleClickHistoryItem = (item: string) => {
-  clickHistoryItem(item);
-  inputRef.value?.focus();
+  resetHistorySelection();
 };
 
 defineExpose({ focusCommandInput: () => inputRef.value?.focus() });
@@ -199,18 +186,6 @@ onMounted(async () => {
       </div>
     </div>
     <div class="command-input">
-      <div v-show="focusHistoryList" class="history">
-        <li v-for="(item, key) in history" :key="item">
-          <VChip
-            data-app-surface="card"
-            size="small"
-            :color="key !== selectLocation ? 'info' : 'primary'"
-            @click="handleClickHistoryItem(item)"
-          >
-            {{ item.length > 14 ? item.slice(0, 14) + "..." : item }}
-          </VChip>
-        </li>
-      </div>
       <VTextField
         ref="inputRef"
         v-model="commandInputValue"
@@ -220,6 +195,7 @@ onMounted(async () => {
         hide-details
         autofocus
         :disabled="!isConnect"
+        @update:model-value="resetHistorySelection"
         @keydown="handleHistorySelect"
         @keyup.enter="handleSendCommand"
       />
@@ -370,33 +346,6 @@ onMounted(async () => {
     }
 
     margin-bottom: 12px;
-  }
-
-  .command-input {
-    position: relative;
-
-    .history {
-      display: flex;
-      gap: 8px;
-      max-width: 100%;
-      overflow-x: auto;
-      overflow-y: hidden;
-      z-index: 10;
-      position: absolute;
-      top: -35px;
-      left: 0;
-
-      li {
-        list-style: none;
-        span {
-          padding: 3px 20px;
-          max-width: 300px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          cursor: pointer;
-        }
-      }
-    }
   }
 }
 </style>

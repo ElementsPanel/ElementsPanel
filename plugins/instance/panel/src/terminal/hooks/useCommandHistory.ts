@@ -6,17 +6,14 @@ const MAX_STORED_HISTORY = 40;
 const RECENT_HISTORY_DISPLAY_LIMIT = 40;
 
 const useGlobalHistory = createGlobalState(() => {
-  const history = ref<string[]>([]);
   const recentHistory = ref<string[]>([]);
   const commandInputValue = ref<string>("");
-  const focusHistoryList = ref(false);
-  const selectLocation = ref(0);
-  return { history, recentHistory, commandInputValue, focusHistoryList, selectLocation };
+  const navigation = { history: [] as string[], index: -1, draft: "" };
+  return { recentHistory, commandInputValue, navigation };
 });
 
 export function useCommandHistory() {
-  const { history, recentHistory, commandInputValue, focusHistoryList, selectLocation } =
-    useGlobalHistory();
+  const { recentHistory, commandInputValue, navigation } = useGlobalHistory();
 
   const readStoredHistory = () =>
     JSON.parse(localStorage.getItem(TERMINAL_HISTORY_KEY) || "[]") as string[];
@@ -33,67 +30,49 @@ export function useCommandHistory() {
   };
 
   const getHistory = () => {
-    return readStoredHistory().filter((item) => item.startsWith(commandInputValue.value)).slice(0, 10);
+    return readStoredHistory().filter((item) => item.startsWith(commandInputValue.value));
   };
 
-  history.value = getHistory();
   recentHistory.value = readStoredHistory().slice(0, RECENT_HISTORY_DISPLAY_LIMIT);
 
-  const openHistoryList = () => {
-    history.value = getHistory();
-    focusHistoryList.value = true;
-    selectLocation.value = 0;
-  };
-
-  const closeHistoryList = () => {
-    focusHistoryList.value = false;
+  const resetHistorySelection = () => {
+    navigation.history = [];
+    navigation.index = -1;
+    navigation.draft = "";
   };
 
   const clickHistoryItem = (item: string) => {
     commandInputValue.value = item;
-    closeHistoryList();
+    resetHistorySelection();
   };
 
   const handleHistorySelect = (e: KeyboardEvent) => {
-    if (e.key !== "ArrowUp" && e.key !== "ArrowDown" && e.key !== "Enter" && e.key !== "Escape") {
-      if (focusHistoryList.value === true) closeHistoryList();
-      return;
+    if (e.isComposing || (e.key !== "ArrowUp" && e.key !== "ArrowDown")) return;
+    e.preventDefault();
+
+    if (navigation.index === -1) {
+      if (e.key === "ArrowDown") return;
+      navigation.draft = commandInputValue.value;
+      navigation.history = getHistory();
+      if (!navigation.history.length) return;
     }
-    if (e.key === "Escape") return closeHistoryList();
-    if (e.key === "Enter" && focusHistoryList.value === false) return;
-    if (focusHistoryList.value === false) {
-      return openHistoryList();
-    }
+
     if (e.key === "ArrowUp") {
-      if (selectLocation.value <= 0) {
-        selectLocation.value = history.value.length - 1;
-      } else {
-        selectLocation.value--;
-      }
+      navigation.index = Math.min(navigation.index + 1, navigation.history.length - 1);
+    } else {
+      navigation.index--;
     }
-    if (e.key === "ArrowDown") {
-      if (selectLocation.value >= history.value.length - 1) {
-        selectLocation.value = 0;
-      } else {
-        selectLocation.value++;
-      }
-    }
-    if (e.key === "Enter") {
-      commandInputValue.value = history.value[selectLocation.value];
-      closeHistoryList();
-    }
+
+    commandInputValue.value =
+      navigation.index === -1 ? navigation.draft : navigation.history[navigation.index];
   };
 
   return {
-    history,
     recentHistory,
-    focusHistoryList,
-    selectLocation,
     commandInputValue,
     setHistory,
     getHistory,
-    openHistoryList,
-    closeHistoryList,
+    resetHistorySelection,
     clickHistoryItem,
     handleHistorySelect
   };
