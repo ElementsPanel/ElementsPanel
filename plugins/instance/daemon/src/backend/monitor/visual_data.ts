@@ -1,5 +1,5 @@
 import { systemInfo } from "mcsmanager-common";
-import type { DaemonPluginContext } from "../../../../../core/daemon/src/plugin";
+import type { DaemonPluginContext } from "../../../../../../core/daemon/src/plugin";
 
 const SAMPLE_INTERVAL_MS = 1000 * 3;
 const HISTORY_SIZE = 200;

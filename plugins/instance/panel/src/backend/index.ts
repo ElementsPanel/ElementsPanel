@@ -14,6 +14,7 @@ import { registerModManager } from "./mod";
 import { apply as registerNodeBackend } from "./node";
 import { apply as registerTerminalBackend } from "./terminal";
 import { apply as registerBackupRoutes } from "./backup";
+import { apply as registerMonitoringBackend } from "./monitor";
 
 export const inject = [
   "koa",
@@ -24,11 +25,13 @@ export const inject = [
   "middleware",
   "roles",
   "identity",
-  "operations"
+  "operations",
+  "overview"
 ];
 
 export async function apply(ctx: PanelPluginContext) {
   ctx.i18n.define(localeMessages);
+  registerMonitoringBackend(ctx);
   await registerNodeBackend(ctx);
   setPluginContext(ctx);
   ctx.set("instances", {

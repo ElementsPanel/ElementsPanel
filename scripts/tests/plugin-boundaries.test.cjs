@@ -232,6 +232,7 @@ test("panel instance permission errors translate without undeclared service warn
     instanceAccess: pass()
   });
   ctx.set("operations", {});
+  ctx.set("overview", {});
   ctx.set("remote", {});
   ctx.set("storage", { getStorage: () => ({ load: async () => null }) });
   ctx.set("settings", {});
@@ -241,6 +242,7 @@ test("panel instance permission errors translate without undeclared service warn
     "./node": { apply() {} },
     "./terminal": { apply() {} },
     "./backup": { apply() {} },
+    "./monitor": { apply() {} },
     "./runtime": runtime,
     "../runtime": runtime
   }));
@@ -258,7 +260,7 @@ test("panel instance permission errors translate without undeclared service warn
   assert.deepEqual(warnings, []);
 });
 
-test("panel runtime keeps overview and audit services alive when monitor is removed", async (t) => {
+test("panel runtime retains audit records across instance monitoring unload and reload", async (t) => {
   const { Context, Service } = panelRequire("cordis");
   const ctx = new Context();
   t.after(() => ctx.stop());
@@ -290,14 +292,26 @@ test("panel runtime keeps overview and audit services alive when monitor is remo
   const app = new (panelRequire("koa"))();
   ctx.plugin(load("plugins/server/panel/src/backend/koa.ts").KoaService, app);
   ctx.plugin(runtime);
-  ctx.plugin({
-    inject: ["koa", "middleware", "roles", "identity", "operations"],
-    apply: load("plugins/instance/panel/src/backend/routers/operation_log_router.ts")
-      .registerOperationLogRoutes
+  ctx.set("websocket", {});
+  const emptyRouter = () => new (panelRequire("@koa/router"))();
+  const instancePlugin = load("plugins/instance/panel/src/backend/index.ts", {
+    "mcsmanager-common": common,
+    "./node": { apply() {} },
+    "./terminal": { apply() {} },
+    "./backup": { apply() {} },
+    "./mod": { registerModManager() {} },
+    "./routers/java_router": { registerJavaManagerRoutes() {} },
+    "./routers/environment_router": { createEnvironmentRouter: emptyRouter },
+    "./routers/instance_admin_router": { createInstanceAdminRouter: emptyRouter },
+    "./routers/instance_operate_router": { createInstanceOperateRouter: emptyRouter },
+    "./routers/schedule_router": { createScheduleRouter: emptyRouter },
+    "./routers/minecraft_router": { createMinecraftRouter: emptyRouter },
+    "./service/instance_service": {
+      getInstanceDetails: async () => [{ daemonId: "node", instanceUuid: "one", nickname: "One" }]
+    },
+    "./runtime": { setPluginContext() {}, middleware: () => ctx.middleware, roles: () => ctx.roles }
   });
-  const monitor = ctx.plugin(
-    load("plugins/monitor/panel/src/backend/index.ts", { "mcsmanager-common": common })
-  );
+  const instance = ctx.plugin(instancePlugin);
   await ctx.start();
   const dispatch = panelRequire("koa-compose")(app.middleware);
   const request = async (url, method = "GET", body = {}) => {
@@ -317,7 +331,10 @@ test("panel runtime keeps overview and audit services alive when monitor is remo
   };
   assert.ok((await request("/api/overview/")).chart);
   const operations = ctx.operations;
-  await monitor.dispose();
+  await request("/api/overview/instance_crash", "POST", { instanceId: "one", daemonId: "node" });
+  assert.equal((await request("/api/monitor/operation_logs"))[0].instance_name, "One");
+  assert.equal((await request("/api/overview/instance_operation_logs"))[0].type, "instance_crash");
+  await instance.dispose();
   await tick();
   assert.equal(ctx.operations, operations);
   const overview = await request("/api/overview/");
@@ -325,14 +342,19 @@ test("panel runtime keeps overview and audit services alive when monitor is remo
   assert.deepEqual(overview.remote, []);
   assert.equal(overview.chart, undefined);
   assert.equal(await request("/api/monitor/operation_logs"), undefined);
-  await request("/api/overview/instance_crash", "POST", { instanceId: "one", daemonId: "node" });
+  assert.equal(await request("/api/overview/instance_operation_logs"), undefined);
+  assert.equal((await operations.get(20)).length, 1);
+  assert.ok(disk.has("OperationLogs/global.jsonl"));
+  ctx.plugin(instancePlugin);
+  await tick();
+  assert.ok((await request("/api/overview/")).chart);
   const entries = await request("/api/overview/instance_operation_logs");
   assert.equal(entries.length, 1);
   assert.equal(entries[0].type, "instance_crash");
   assert.ok(disk.has("OperationLogs/global.jsonl"));
 });
 
-test("daemon runtime answers capabilities and overview across monitor unload and reload", async (t) => {
+test("daemon monitoring and instance capabilities share the instance plugin lifetime", async (t) => {
   const { Context, Service } = from("daemon")("cordis");
   const ctx = new Context();
   t.after(() => ctx.stop());
@@ -356,34 +378,49 @@ test("daemon runtime answers capabilities and overview across monitor unload and
   });
   ctx.plugin(translations(Service));
   ctx.set("storage", {});
+  ctx.set("files", {});
   ctx.plugin(protocolService(Service));
   ctx.plugin(runtime);
-  ctx.plugin({
-    inject: ["features", "overview"],
+  const instanceBackend = load("plugins/instance/daemon/src/backend/index.ts", {
+    "mcsmanager-common": { systemInfo },
+    "./tools/steam_cmd": { initSteamCmd() {} },
+    "./service/version_adapter": { migrateConfig() {} },
+    "./settings": { registerSettings() {} },
+    "./node": { apply() {} },
+    "./terminal": { apply() {} },
+    "./backup": { apply() {} },
+    "./java": { registerJavaManager() {} },
+    "./mod": { registerModManager() {} },
+    "./runtime": { setPluginContext: () => ({}) },
+    "./service/router": { routerApp: {} },
+    "./install_task": { createInstanceInstallTaskClass() {} },
+    "./minecraft_task": { apply() {} },
+    "./registries": { TasksService() {}, LifecycleService() {}, PresetsService() {}, SchedulesService() {} }
+  });
+  const instancePlugin = {
+    ...instanceBackend,
     apply(scope) {
+      instanceBackend.apply(scope);
       scope.features.add("instanceBackup");
       scope.overview.provide(() => ({ instance: { total: 2, running: 1 } }));
     }
-  });
-  const monitorPlugin = load("plugins/monitor/daemon/src/backend/index.ts", {
-    "mcsmanager-common": { systemInfo }
-  });
-  const monitor = ctx.plugin(monitorPlugin);
+  };
+  const instance = ctx.plugin(instancePlugin);
   await ctx.start();
   assert.equal((await ctx.protocol.request("info/overview")).cpuMemChart.length, 200);
-  const features = ctx.features.all();
-  await monitor.dispose();
+  assert.equal(ctx.features.has("instanceBackup"), true);
+  await instance.dispose();
   await tick();
   const info = await ctx.protocol.request("info/overview");
-  assert.deepEqual(ctx.features.all(), features);
-  assert.equal(info.features.instanceBackup, true);
-  assert.equal(info.instance.total, 2);
+  assert.equal(info.features.instanceBackup, undefined);
+  assert.equal(info.instance, undefined);
   assert.equal(info.config.port, 23333);
   assert.equal(info.system.totalmem, 1024);
   assert.equal(info.cpuMemChart, undefined);
-  ctx.plugin(monitorPlugin);
+  ctx.plugin(instancePlugin);
   await tick();
   assert.equal((await ctx.protocol.request("info/overview")).cpuMemChart.length, 200);
+  assert.equal(ctx.features.has("instanceBackup"), true);
 });
 
 test("node settings cannot write other plugins' configuration; the backup declaration owns its settings", async () => {
@@ -529,6 +566,7 @@ function frontendFixture(t) {
   overrides["./node/frontend"] = load("plugins/instance/panel/src/node/frontend.ts", featureOverrides);
   overrides["./terminal/frontend"] = load("plugins/instance/panel/src/terminal/frontend.ts", featureOverrides);
   overrides["./backup/frontend"] = load("plugins/instance/panel/src/backup/frontend.ts", featureOverrides);
+  overrides["./monitor/frontend"] = load("plugins/instance/panel/src/monitor/frontend.ts", featureOverrides);
   return { ctx, routes, state, overrides, pluginContext };
 }
 
@@ -670,6 +708,9 @@ test("desktop shell opens/restores contributed windows and survives provider rem
   assert.ok(ctx.actions.instances.some((action) => action.id === "java-manager"));
   assert.equal(ctx.actions.instances.some((action) => action.id === "mcstats"), false);
   assert.ok(ctx.java.setupComponent);
+  assert.ok(routes.has("/overview"));
+  assert.ok(ctx.desktop.apps.some((app) => app.id === "overview"));
+  assert.ok(ctx.actions.instances.some((action) => action.id === "operation-log"));
   let savedLayout = { windows: [], shortcuts: [] };
   const shell = setupSfc("plugins/desktop/panel/src/Desktop.vue", {
     ...overrides,
@@ -744,6 +785,9 @@ test("desktop shell opens/restores contributed windows and survives provider rem
   assert.equal(ctx.java, undefined);
   assert.equal(ctx.get("node"), undefined);
   assert.equal(ctx.get("terminal"), undefined);
+  assert.equal(routes.has("/overview"), false);
+  assert.equal(ctx.desktop.apps.some((app) => app.id === "overview"), false);
+  assert.equal(ctx.actions.instances.some((action) => action.id === "operation-log"), false);
   assert.equal(ctx.actions.instances.some((action) => action.id === "java-manager"), false);
   assert.equal(ctx.actions.instances.some((action) => action.id === "mcstats"), false);
   assert.equal(windows.size, 1);

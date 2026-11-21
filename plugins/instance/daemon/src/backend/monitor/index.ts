@@ -1,15 +1,13 @@
-import type { DaemonPluginContext } from "../../../../../core/daemon/src/plugin";
+import type { DaemonPluginContext } from "../../../../../../core/daemon/src/plugin";
 import { Logger } from "cordis";
 import { systemInfo } from "mcsmanager-common";
 import { SystemUsageHistory } from "./visual_data";
-
-export const inject = ["i18n", "overview"];
 
 export function apply(ctx: DaemonPluginContext) {
   const history = new SystemUsageHistory(ctx);
   ctx.overview.provide(() => ({ cpuMemChart: history.getArray() }));
 
-  // Scope host-report timers to this plugin so disabling monitoring stops reporting.
+  // Stop host reporting when the instance plugin is disposed.
   const systemLogger = new Logger("sysinfo");
   ctx.setInterval(() => {
     const info = systemInfo();

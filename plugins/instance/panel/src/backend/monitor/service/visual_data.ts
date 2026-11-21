@@ -1,5 +1,5 @@
 import { systemInfo } from "mcsmanager-common";
-import type { PanelPluginContext } from "../../../../../../core/panel/src/app/plugin";
+import type { PanelPluginContext } from "../../../../../../../core/panel/src/app/plugin";
 
 const SAMPLE_INTERVAL_MS = 1000 * 10;
 const HISTORY_SIZE = 60;

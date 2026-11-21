@@ -1,8 +1,5 @@
-import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
-import { localeMessages } from "../i18n";
+import type { PanelPluginContext } from "../../../../../../core/panel/src/app/plugin";
 import { VisualDataHistory } from "./service/visual_data";
-
-export const inject = ["i18n", "koa", "middleware", "roles", "operations", "overview"];
 
 type OperationLogEntry = Record<string, any>;
 
@@ -38,7 +35,6 @@ async function attachInstanceNames(ctx: PanelPluginContext, entries: OperationLo
 }
 
 export function apply(ctx: PanelPluginContext) {
-  ctx.i18n.define(localeMessages);
   const history = new VisualDataHistory(ctx);
 
   // Count each request in this monitoring middleware regardless of its position in the stack.

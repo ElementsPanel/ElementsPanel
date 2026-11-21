@@ -153,6 +153,7 @@ async function fixture(t, { sleep = async () => {}, configs = [], settings = {} 
         "node/index.ts": { apply() {} },
         "terminal/index.ts": { apply() {} },
         "backup/index.ts": { apply() {} },
+        "monitor/index.ts": { apply() {} },
         "install_task.ts": { createInstanceInstallTaskClass: () => class {} },
         "minecraft_task.ts": { apply() {} },
         "java/index.ts": {

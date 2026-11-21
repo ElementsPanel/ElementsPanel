@@ -67,6 +67,7 @@ async function panelFixture(t, options = {}) {
   const policy = { canFileManager: true, allowed: true };
   ctx.set("roles", { USER: 1, ADMIN: 10 });
   ctx.set("operations", {});
+  ctx.set("overview", {});
   ctx.set("settings", {});
   if (!options.deferWebsocket) ctx.set("websocket", {});
   ctx.set("identity", {
@@ -116,6 +117,7 @@ async function panelFixture(t, options = {}) {
     "./node": { apply: (scope) => scope.set("remote", remote) },
     "./terminal": { apply() {} },
     "./backup": { apply() {} },
+    "./monitor": { apply() {} },
     "./mod": mod,
     "./routers/environment_router": { createEnvironmentRouter: emptyRouter },
     "./routers/instance_admin_router": { createInstanceAdminRouter: emptyRouter },
@@ -534,7 +536,7 @@ test("instance owns mod APIs while mod views follow the file service lifetime", 
   const ctx = new Context();
   t.after(() => ctx.stop());
   for (const name of ["i18n", "routes", "ui", "actions"]) ctx.plugin(registrar(Service, name));
-  for (const name of ["console", "desktop"]) ctx.set(name, {});
+  for (const name of ["console", "desktop", "slots"]) ctx.set(name, {});
   const user = { state: { settings: { canFileManager: true } }, isAdmin: { value: false } };
   const component = {};
   const availability = load("plugins/console/panel/src/hooks/useInstanceActionAvailability.ts", {
@@ -562,6 +564,7 @@ test("instance owns mod APIs while mod views follow the file service lifetime", 
     "./node/frontend": { apply() {} },
     "./terminal/frontend": { apply() {} },
     "./backup/frontend": { apply() {} },
+    "./monitor/frontend": { apply() {} },
     ...overrides,
     "@/config/router": { ROLE: { USER: 1, ADMIN: 10 } },
     "./api": {},

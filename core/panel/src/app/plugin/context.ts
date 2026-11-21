@@ -277,7 +277,7 @@ export interface PanelOverviewService {
   collect(): Promise<Record<string, unknown>>;
 }
 
-/** Operation records are owned by the monitor plugin and shared by feature plugins. */
+/** Runtime-owned operation records shared by feature plugins. */
 export interface PanelOperationLogger {
   log<T extends keyof OperationLoggerItemPayload>(
     type: T,

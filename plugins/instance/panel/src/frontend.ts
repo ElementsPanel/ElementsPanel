@@ -34,8 +34,9 @@ import * as modApi from "./mod/api";
 import { apply as registerNodeFrontend } from "./node/frontend";
 import { apply as registerTerminalFrontend } from "./terminal/frontend";
 import { apply as registerBackupFrontend } from "./backup/frontend";
+import { apply as registerMonitoringFrontend } from "./monitor/frontend";
 
-export const inject = ["console", "i18n", "routes", "ui", "actions", "desktop"];
+export const inject = ["console", "i18n", "routes", "ui", "actions", "desktop", "slots"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);
@@ -68,6 +69,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   registerNodeFrontend(ctx);
   registerTerminalFrontend(ctx);
   registerBackupFrontend(ctx);
+  registerMonitoringFrontend(ctx);
   registerJavaManager(ctx);
   registerModManager(ctx);
   registerDesktop(ctx);

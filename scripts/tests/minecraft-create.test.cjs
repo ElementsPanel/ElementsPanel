@@ -864,6 +864,7 @@ test("instance owns Java before restoration, leaves status to external plugins a
     "./node": { apply() {} },
     "./terminal": { apply() {} },
     "./backup": { apply() {} },
+    "./monitor": { apply() {} },
     "./tools/steam_cmd": { initSteamCmd() {} },
     "./service/version_adapter": { migrateConfig() {} },
     "./settings": load("plugins/instance/daemon/src/backend/settings.ts", {

@@ -6,17 +6,13 @@ import DesktopOverview from "./desktop/DesktopOverview.vue";
 import DesktopInstanceOperationLog from "./desktop/InstanceOperationLog.vue";
 import InstanceLogHost from "./InstanceLogHost.vue";
 import { closeInstanceLog } from "./instanceLog";
-import { localeMessages } from "./i18n";
 import InstanceOperationLogAction from "./normal/InstanceOperationLogAction.vue";
 import OverviewPage from "./normal/OverviewPage.vue";
 
 const ROLE_ADMIN = 10;
 
-export const inject = ["console", "i18n", "routes", "slots", "desktop", "actions"];
-
 export function apply(ctx: PanelFrontendPluginContext) {
   const { isAdmin } = useAppStateStore();
-  ctx.i18n.define(localeMessages);
 
   ctx.slots.register("shell.overlay", InstanceLogHost, { id: "monitor-instance-log" });
   ctx.effect(() => () => closeInstanceLog());

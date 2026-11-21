@@ -241,7 +241,7 @@ declare global {
       uptime: number;
       cpu: number;
     };
-    /** Contributed by the panel's `monitor` plugin; absent without it. */
+    /** Contributed by the panel's instance plugin. */
     chart?: {
       system: { cpu: number; mem: number }[];
       request: { value: number; totalInstance: number; runningInstance: number }[];

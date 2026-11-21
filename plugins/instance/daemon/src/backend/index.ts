@@ -13,6 +13,7 @@ import { registerModManager } from "./mod";
 import { apply as registerNodeBackend } from "./node";
 import { apply as registerTerminalBackend } from "./terminal";
 import { apply as registerBackupBackend } from "./backup";
+import { apply as registerMonitoringBackend } from "./monitor";
 
 export const inject = {
   i18n: { required: true },
@@ -28,6 +29,7 @@ export const inject = {
 
 export function apply(ctx: DaemonPluginContext) {
   ctx.i18n.define(localeMessages);
+  registerMonitoringBackend(ctx);
   registerSettings(ctx);
   registerNodeBackend(ctx);
   ctx.plugin(TasksService);
