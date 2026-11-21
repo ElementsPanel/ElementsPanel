@@ -60,20 +60,32 @@ function fixture(t, nodes = 0) {
     };
   };
 
-  const OverlayScrollbars = ({ target }) => {
+  const OverlayScrollbars = ({ target }, options, handlers) => {
     const horizontal = document.createElement("div");
     const vertical = document.createElement("div");
     horizontal.className = vertical.className = "os-scrollbar";
     target.append(horizontal, vertical);
     target.setAttribute(markers[0], "host");
     target.setAttribute(markers[1], "");
-    const record = { target, horizontal, vertical, changes: [], destroyed: 0 };
+    const record = {
+      target, horizontal, vertical, changes: [], updates: [], destroyed: 0,
+      coordinates: { start: { x: 0, y: 0 }, end: { x: 0, y: 0 } }
+    };
     records.push(record);
     active.set(target, record);
-    return {
+    const instance = {
       options(options) { record.changes.push(options); },
+      state() { return { scrollCoordinates: record.coordinates }; },
+      update(force) {
+        assert.ok(markers.every(name => target.hasAttribute(name)), "Measure with viewport styles restored");
+        assert.equal(horizontal.parentElement, target);
+        assert.equal(vertical.parentElement, target);
+        record.updates.push(force);
+        handlers.updated(instance);
+      },
       elements() {
         return {
+          scrollOffsetElement: target,
           scrollbarHorizontal: { scrollbar: horizontal },
           scrollbarVertical: { scrollbar: vertical }
         };
@@ -86,6 +98,8 @@ function fixture(t, nodes = 0) {
         markers.forEach(name => target.removeAttribute(name));
       }
     };
+    record.updated = () => handlers.updated(instance);
+    return instance;
   };
   const { installOverlayScrollbars } = createLoader({ host: "frontend" })(
     "plugins/console/panel/src/tools/overlayScrollbars.ts",
@@ -188,11 +202,64 @@ test("content replacement restores scrollbar nodes and removing a region destroy
   await f.flush();
   assert.equal(original.horizontal.parentElement, f.root);
   assert.equal(original.vertical.parentElement, f.root);
+  assert.deepEqual(original.updates, [true]);
   assert.ok(f.active.has(child));
   f.root.remove();
   await f.flush();
   assert.equal(f.active.size, 0);
   assert.ok(f.records.every(record => record.destroyed === 1));
+});
+
+test("shorter text refreshes the existing viewport and clamps both axes to their actual bounds", async t => {
+  const f = fixture(t);
+  const text = document.createTextNode("Long content");
+  f.root.append(text);
+  f.install();
+  const original = f.active.get(f.root);
+  f.root.scrollTop = 900;
+  f.root.scrollLeft = 600;
+  Object.defineProperty(f.root, "scrollHeight", { configurable: true, value: 1200 });
+  Object.defineProperty(f.root, "scrollWidth", { configurable: true, value: 900 });
+  original.coordinates.end = { x: 120, y: 80 };
+  f.reset();
+  text.data = "Short";
+  await f.flush();
+  assert.equal(f.active.get(f.root), original);
+  assert.equal(original.destroyed, 0);
+  assert.deepEqual(original.updates, [true]);
+  assert.equal(f.root.scrollTop, 80);
+  assert.equal(f.root.scrollLeft, 120);
+  assert.equal(f.events.length, 0);
+  assert.equal(f.queries.length, 0);
+
+  f.root.scrollTop = 40;
+  f.root.scrollLeft = 50;
+  original.updated();
+  assert.equal(f.root.scrollTop, 40);
+  assert.equal(f.root.scrollLeft, 50);
+  original.coordinates.end = { x: 0, y: 0 };
+  original.updated();
+  assert.equal(f.root.scrollTop, 0);
+  assert.equal(f.root.scrollLeft, 0);
+});
+
+test("child size changes refresh ancestor scrollbars and preserve valid reversed scroll positions", async t => {
+  const f = fixture(t);
+  const child = document.createElement("div");
+  f.root.append(child);
+  f.install();
+  const original = f.active.get(f.root);
+  original.coordinates.end = { x: -60, y: 800 };
+  f.root.scrollLeft = -300;
+  f.root.scrollTop = 500;
+  f.reset();
+  child.style.height = "100px";
+  await f.flush();
+  assert.deepEqual(original.updates, [true]);
+  assert.equal(f.root.scrollLeft, -60);
+  assert.equal(f.root.scrollTop, 500);
+  assert.equal(f.events.length, 0);
+  assert.equal(f.queries.length, 0);
 });
 
 test("ancestor classes and inherited custom properties can change descendant scrollability", async t => {

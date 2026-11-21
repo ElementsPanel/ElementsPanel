@@ -9,16 +9,33 @@ const OVERFLOW_STYLE_PROPERTIES = ["overflow", "overflow-x", "overflow-y"];
 type Overflow = { x: OverflowBehavior; y: OverflowBehavior };
 type ScrollbarEntry = { instance: OverlayScrollbars; overflow: Overflow };
 
+const clampScrollPosition = (instance: OverlayScrollbars) => {
+  const { scrollCoordinates: { start, end } } = instance.state();
+  const { scrollOffsetElement } = instance.elements();
+  const clamp = (value: number, a: number, b: number) =>
+    Math.min(Math.max(value, Math.min(a, b)), Math.max(a, b));
+  const left = clamp(scrollOffsetElement.scrollLeft, start.x, end.x);
+  const top = clamp(scrollOffsetElement.scrollTop, start.y, end.y);
+  if (left !== scrollOffsetElement.scrollLeft) scrollOffsetElement.scrollLeft = left;
+  if (top !== scrollOffsetElement.scrollTop) scrollOffsetElement.scrollTop = top;
+};
+
 export function installOverlayScrollbars() {
   const instances = new Map<HTMLElement, ScrollbarEntry>();
   const pendingRoots = new Set<HTMLElement>([document.body]);
   const pendingElements = new Set<HTMLElement>();
+  const pendingUpdates = new Set<HTMLElement>();
   const previousStyle = document.createElement("div").style;
   let frame = 0;
   let resizeTimer: number | undefined;
   let disposed = false;
 
   const isInternal = (element: HTMLElement) => !!element.closest(INTERNAL_ELEMENTS);
+  const queueContentUpdate = (element: HTMLElement) => {
+    for (let current: HTMLElement | null = element; current; current = current.parentElement) {
+      if (instances.has(current)) pendingUpdates.add(current);
+    }
+  };
   const queueAncestors = (element: HTMLElement) => {
     for (let current: HTMLElement | null = element; current; current = current.parentElement) {
       pendingElements.add(current);
@@ -32,15 +49,21 @@ export function installOverlayScrollbars() {
 
   const collectMutations = (mutations: MutationRecord[]) => {
     for (const mutation of mutations) {
-      if (!(mutation.target instanceof HTMLElement) || isInternal(mutation.target)) continue;
-      const element = mutation.target;
+      const element = mutation.target instanceof HTMLElement
+        ? mutation.target : mutation.type === "characterData" ? mutation.target.parentElement : null;
+      if (!(element instanceof HTMLElement) || isInternal(element)) continue;
+      if (mutation.type === "characterData") {
+        queueContentUpdate(element);
+        continue;
+      }
       if (mutation.type === "attributes") {
         if (mutation.attributeName !== "style") {
+          queueContentUpdate(element);
           queueTree(element);
           continue;
         }
 
-        // Size and library-owned styles are handled by the library's observers.
+        // Size changes refresh existing instances without rescanning the tree.
         previousStyle.cssText = mutation.oldValue || "";
         const changed = (name: string) =>
           previousStyle.getPropertyValue(name) !== element.style.getPropertyValue(name) ||
@@ -54,6 +77,15 @@ export function installOverlayScrollbars() {
         }
         if (affectsTree) queueTree(element);
         else if (OVERFLOW_STYLE_PROPERTIES.some(changed)) queueAncestors(element);
+        for (const style of [previousStyle, element.style]) {
+          for (let index = 0; index < style.length; index++) {
+            const name = style.item(index);
+            if (!name.startsWith("--os-") && changed(name)) {
+              queueContentUpdate(element);
+              break;
+            }
+          }
+        }
       } else {
         let changed = false;
         for (const node of mutation.addedNodes) {
@@ -70,7 +102,10 @@ export function installOverlayScrollbars() {
             changed = true;
           }
         }
-        if (changed) queueAncestors(element);
+        if (changed) {
+          queueContentUpdate(element);
+          queueAncestors(element);
+        }
       }
     }
   };
@@ -111,7 +146,8 @@ export function installOverlayScrollbars() {
               autoHide: "scroll",
               autoHideDelay: 800
             }
-          }
+          },
+          { updated: clampScrollPosition }
         )
       });
     }
@@ -121,6 +157,8 @@ export function installOverlayScrollbars() {
     frame = 0;
     if (disposed) return;
     collectMutations(observer.takeRecords());
+    const updates = new Set(pendingUpdates);
+    pendingUpdates.clear();
     const candidates = new Set(pendingElements);
     for (const root of pendingRoots) {
       if (!root.isConnected) continue;
@@ -178,12 +216,18 @@ export function installOverlayScrollbars() {
           instances.delete(element);
         }
       }
-      plans.forEach(({ element, overflow }) => update(element, overflow));
+      plans.forEach(({ element, overflow }) => {
+        if (instances.has(element)) updates.add(element);
+        update(element, overflow);
+      });
+      // Measure final content without the translated scrollbar tracks inflating its extent.
+      updates.forEach((element) => instances.get(element)?.instance.update(true));
     } finally {
       if (!disposed) {
         observer.observe(document.body, {
           subtree: true,
           childList: true,
+          characterData: true,
           attributes: true,
           attributeOldValue: true,
           attributeFilter: ["class", "style", "hidden", "open", "dir"]
@@ -206,7 +250,7 @@ export function installOverlayScrollbars() {
   };
   const observer = new MutationObserver((mutations) => {
     collectMutations(mutations);
-    if (pendingRoots.size || pendingElements.size) schedule();
+    if (pendingRoots.size || pendingElements.size || pendingUpdates.size) schedule();
   });
 
   queueAncestors(document.body);
@@ -224,5 +268,6 @@ export function installOverlayScrollbars() {
     instances.clear();
     pendingRoots.clear();
     pendingElements.clear();
+    pendingUpdates.clear();
   };
 }
