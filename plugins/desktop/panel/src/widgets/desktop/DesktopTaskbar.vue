@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { router } from "@elementspanel/epanel-plugin-console/config/router";
-import { t } from "@elementspanel/epanel-plugin-i18n";
-import { useAppConfigStore } from "@elementspanel/epanel-plugin-console/stores/useAppConfigStore";
-import { useThemeSwitch } from "@elementspanel/epanel-plugin-console/hooks/useThemeSwitch";
-import ActionRipple from "@elementspanel/epanel-plugin-console/components/ActionRipple";
-import { usePointerDrag } from "@elementspanel/epanel-plugin-console/hooks/usePointerDrag";
-import { ctx } from "@elements-panel/sdk";
 import type { PanelFrontendHeaderAction } from "@elements-panel/sdk";
-import { desktopIconDarkUrl, desktopIconUrl } from "../../assets";
-import { VBadge, VBtn, VIcon, VList, VListItem, VMenu } from "vuetify/components";
+import { ctx } from "@elements-panel/sdk";
+import ActionRipple from "@elementspanel/epanel-plugin-console/components/ActionRipple";
+import { router } from "@elementspanel/epanel-plugin-console/config/router";
+import { usePointerDrag } from "@elementspanel/epanel-plugin-console/hooks/usePointerDrag";
+import { useThemeSwitch } from "@elementspanel/epanel-plugin-console/hooks/useThemeSwitch";
+import { useAppConfigStore } from "@elementspanel/epanel-plugin-console/stores/useAppConfigStore";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { computed, onBeforeUnmount, ref, watch, type Component } from "vue";
+import { VBadge, VBtn, VIcon, VList, VListItem, VMenu } from "vuetify/components";
+import { desktopIconDarkUrl, desktopIconUrl } from "../../assets";
 
 const { isDarkTheme } = useAppConfigStore();
 const { themeIcon, themeTitle, cycleTheme } = useThemeSwitch();
@@ -417,8 +417,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
     display: flex;
     background: var(--desktop-start-menu-bg);
     border-radius: 12px;
-    border: none;
-    box-shadow: 0 8px 32px var(--desktop-menu-shadow);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--desktop-menu-shadow) 40%, transparent);
     z-index: 100000;
     overflow: hidden;
     color: var(--desktop-menu-text);

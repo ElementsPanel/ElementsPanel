@@ -166,7 +166,7 @@ onMounted(async () => {
                 v-bind="tooltipProps"
                 icon="mdi-delete-outline"
                 variant="text"
-                size="small"
+                size="x-small"
                 color="white"
                 :aria-label="t('TXT_CODE_COMMON_CLEAR_TERMINAL_OUTPUT')"
                 @click="clearTerminal()"
@@ -299,11 +299,16 @@ onMounted(async () => {
 
   .terminal-button-group {
     z-index: 11;
+    margin-top: 6px;
     margin-right: 20px;
     padding-bottom: 50px;
     padding-left: 50px;
     border-radius: 6px;
     color: #fff;
+
+    :deep(.v-btn .v-icon) {
+      font-size: 16px;
+    }
 
     &:hover {
       ul {
@@ -319,14 +324,10 @@ onMounted(async () => {
       li {
         cursor: pointer;
         list-style: none;
-        padding: 5px;
+        padding: 3px;
         margin-left: 5px;
         border-radius: 6px;
         font-size: 20px;
-
-        &:hover {
-          background-color: #3e3e3e;
-        }
       }
     }
   }
