@@ -1,4 +1,4 @@
-import { getInstanceShortcutId } from "@elements-panel/sdk";
+import { getInstanceShortcutId } from "../../../../core/common/src/instance_contract";
 
 /** Translate persisted window identifiers without importing a feature plugin. */
 export function migrateLegacyInstanceWindow<
