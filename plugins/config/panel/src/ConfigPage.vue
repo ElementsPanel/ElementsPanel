@@ -2204,6 +2204,10 @@ const confirmAction = async () => {
   margin-bottom: 20px;
 }
 
+.plugin-config-title-row:has(+ .plugin-config-pages:not(:empty)) {
+  margin-bottom: 6px;
+}
+
 .plugin-config-title-row h2 {
   margin: 0;
   font-size: 20px;
