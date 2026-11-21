@@ -13,6 +13,7 @@ import {
   VChip,
   VCol,
   VContainer,
+  VDivider,
   VIcon,
   VImg,
   VList,
@@ -105,6 +106,7 @@ defineExpose({ updateInstalled });
                 prepend-icon="mdi-monitor-dashboard"
                 @click="selectedDaemonId = ''"
               />
+              <VDivider v-if="nodes.length" />
               <VListItem
                 v-for="node in nodes"
                 :key="node.daemonId"

@@ -11,6 +11,7 @@
   "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "无法检查以下节点的插件：{nodes}。",
   "TXT_CODE_PLUGIN_NODE_ACTION_FAILED": "以下节点上的插件操作未完成：{nodes}",
   "TXT_CODE_PLUGIN_CONFIG": "插件配置",
+  "TXT_CODE_PLUGIN_CURRENT_PANEL": "当前面板",
   "TXT_CODE_PLUGIN_CANCEL": "取消",
   "TXT_CODE_PLUGIN_DELETE": "删除插件",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM": "插件将会被卸载。",

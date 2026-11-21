@@ -11,6 +11,7 @@
   "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "Die Plugins auf diesen Knoten konnten nicht geprüft werden: {nodes}.",
   "TXT_CODE_PLUGIN_NODE_ACTION_FAILED": "Die Plugin-Aktion wurde auf diesen Knoten nicht abgeschlossen: {nodes}",
   "TXT_CODE_PLUGIN_CONFIG": "Plugin-Konfiguration",
+  "TXT_CODE_PLUGIN_CURRENT_PANEL": "Aktuelles Panel",
   "TXT_CODE_PLUGIN_CANCEL": "Abbrechen",
   "TXT_CODE_PLUGIN_DELETE": "Entfernen",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM": "Das Plugin wird deinstalliert.",

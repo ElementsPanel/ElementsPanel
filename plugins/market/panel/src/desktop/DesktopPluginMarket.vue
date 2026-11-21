@@ -7,6 +7,7 @@ import {
   VAvatar,
   VBtn,
   VChip,
+  VDivider,
   VIcon,
   VImg,
   VList,
@@ -125,6 +126,7 @@ const DesktopPluginDetailController = defineComponent({
                 prepend-icon="mdi-monitor-dashboard"
                 @click="selectedDaemonId = ''"
               />
+              <VDivider v-if="nodes.length" />
               <VListItem
                 v-for="node in nodes"
                 :key="node.daemonId"

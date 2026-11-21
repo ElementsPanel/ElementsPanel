@@ -11,6 +11,7 @@
   "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "以下のノードのプラグインを確認できませんでした：{nodes}。",
   "TXT_CODE_PLUGIN_NODE_ACTION_FAILED": "以下のノードでプラグインの操作が完了しませんでした：{nodes}",
   "TXT_CODE_PLUGIN_CONFIG": "プラグイン設定",
+  "TXT_CODE_PLUGIN_CURRENT_PANEL": "現在のパネル",
   "TXT_CODE_PLUGIN_CANCEL": "キャンセル",
   "TXT_CODE_PLUGIN_DELETE": "削除",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM": "プラグインはアンインストールされます。",

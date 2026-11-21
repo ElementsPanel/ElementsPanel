@@ -11,6 +11,7 @@
   "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "No se pudieron comprobar los complementos de estos nodos: {nodes}.",
   "TXT_CODE_PLUGIN_NODE_ACTION_FAILED": "La operación del complemento no se completó en estos nodos: {nodes}",
   "TXT_CODE_PLUGIN_CONFIG": "Configuracion de plugins",
+  "TXT_CODE_PLUGIN_CURRENT_PANEL": "Panel actual",
   "TXT_CODE_PLUGIN_CANCEL": "Cancelar",
   "TXT_CODE_PLUGIN_DELETE": "Eliminar",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM": "El complemento se desinstalará.",

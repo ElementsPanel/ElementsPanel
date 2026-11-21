@@ -11,6 +11,7 @@
   "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "다음 노드의 플러그인을 확인할 수 없습니다: {nodes}.",
   "TXT_CODE_PLUGIN_NODE_ACTION_FAILED": "다음 노드에서 플러그인 작업이 완료되지 않았습니다: {nodes}",
   "TXT_CODE_PLUGIN_CONFIG": "플러그인 설정",
+  "TXT_CODE_PLUGIN_CURRENT_PANEL": "현재 패널",
   "TXT_CODE_PLUGIN_CANCEL": "취소",
   "TXT_CODE_PLUGIN_DELETE": "삭제",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM": "플러그인이 제거됩니다.",

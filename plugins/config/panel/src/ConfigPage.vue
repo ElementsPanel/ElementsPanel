@@ -11,7 +11,6 @@ import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import {
   VAlert,
   VBtn,
-  VBtnToggle,
   VCard,
   VCardActions,
   VCardText,
@@ -26,7 +25,6 @@ import {
   VNavigationDrawer,
   VProgressCircular,
   VProgressLinear,
-  VSelect,
   VTextField,
   VSpacer,
   VTooltip
@@ -59,6 +57,7 @@ import {
   type SettingsSchema
 } from "./api";
 import SettingsPages from "./SettingsPages.vue";
+import PluginConfigTargetSelector from "./PluginConfigTargetSelector.vue";
 
 type Scope = "panel" | "node";
 type PluginAction = "enable" | "disable" | "remove";
@@ -85,8 +84,7 @@ const props = defineProps<{
   scope?: Scope;
   daemonId?: string;
   pluginId?: string;
-  hideScopeSwitch?: boolean;
-  hideNodeSelect?: boolean;
+  hideTargetSelect?: boolean;
 }>();
 const { isPhone } = useScreen();
 const sidebarOpen = ref(false);
@@ -125,6 +123,7 @@ const plugins = ref<PluginRecord[]>([]);
 const selectedId = ref("");
 
 const nodes = ref<NodeSummary[]>([]);
+const nodesLoading = ref(false);
 const selectedNodeId = ref("");
 const nodePlugins = ref<NodePluginRecord[]>([]);
 const nodeSelectedId = ref("");
@@ -143,10 +142,15 @@ const pluginLabel = (id?: string) => {
   return name.startsWith(PLUGIN_NAME_PREFIX) ? name.slice(PLUGIN_NAME_PREFIX.length) : id;
 };
 
-const nodeItems = computed(() =>
-  nodes.value.map((node) => ({ title: nodeLabel(node), value: node.uuid }))
-);
-defineExpose({ scope, selectedNodeId, nodeItems, loading });
+const selectedTargetId = computed({
+  get: () => (scope.value === "panel" ? "" : selectedNodeId.value || undefined),
+  set: (daemonId: string | undefined) => {
+    if (daemonId === undefined) return;
+    scope.value = daemonId ? "node" : "panel";
+    if (daemonId) selectedNodeId.value = daemonId;
+  }
+});
+defineExpose({ scope, selectedNodeId, selectedTargetId, nodes, nodesLoading, loadNodes, loading });
 
 const currentList = computed<Array<PluginRecord | NodePluginRecord>>(() =>
   scope.value === "panel" ? plugins.value : nodePlugins.value
@@ -904,24 +908,27 @@ const load = async (quiet = false) => {
   }
 };
 
-const loadNodes = async () => {
-  loading.value = true;
+async function loadNodes() {
+  if (nodesLoading.value || disposed) return;
+  nodesLoading.value = true;
   nodeError.value = "";
   try {
     const { execute } = nodeList();
-    const res = await execute();
+    const res = await execute({ forceRequest: true });
+    if (disposed) return;
     nodes.value = res.value ?? [];
-    if (!nodes.value.some((item) => item.uuid === selectedNodeId.value)) {
+    if (scope.value === "node" && !nodes.value.some((item) => item.uuid === selectedNodeId.value)) {
       selectedNodeId.value = nodes.value.find((item) => item.available)?.uuid || "";
     }
   } catch (error: any) {
+    if (disposed) return;
     nodes.value = [];
-    selectedNodeId.value = "";
+    if (scope.value === "node") selectedNodeId.value = "";
     nodeError.value = error?.message ?? String(error);
   } finally {
-    loading.value = false;
+    nodesLoading.value = false;
   }
-};
+}
 
 const loadNodePlugins = async (quiet = false) => {
   if (disposed) return;
@@ -1013,7 +1020,9 @@ watch(scope, (value) => {
   if (value === "node" && !nodes.value.length && !nodeError.value) loadNodes();
 });
 
-watch(selectedNodeId, () => loadNodePlugins());
+watch([scope, selectedNodeId], () => {
+  if (scope.value === "node") void loadNodePlugins();
+});
 
 watch(
   () => [
@@ -1351,7 +1360,12 @@ const confirmAction = async () => {
 
 <template>
   <div class="plugin-config-page" data-app-surface="transparent" @keydown.esc="sidebarOpen = false">
-    <VProgressLinear v-if="loading" class="plugin-config-loading" color="primary" indeterminate />
+    <VProgressLinear
+      v-if="loading || nodesLoading"
+      class="plugin-config-loading"
+      color="primary"
+      indeterminate
+    />
 
     <Teleport to="body" :disabled="!isPhone">
       <component
@@ -1360,31 +1374,14 @@ const confirmAction = async () => {
         @keydown.esc="sidebarOpen = false"
       >
         <div class="plugin-config-sidebar" :data-app-surface="isPhone ? 'card' : 'transparent'">
-          <VBtnToggle
-            v-if="!props.hideScopeSwitch"
-            v-model="scope"
-            class="plugin-config-scope"
-            mandatory
-          >
-            <VBtn value="panel" size="small" variant="text">{{
-              t("TXT_CODE_PLUGIN_SCOPE_PANEL")
-            }}</VBtn>
-            <VBtn value="node" size="small" variant="text">{{
-              t("TXT_CODE_PLUGIN_SCOPE_NODE")
-            }}</VBtn>
-          </VBtnToggle>
-
-          <VSelect
-            v-if="scope === 'node' && !props.hideNodeSelect"
-            v-model="selectedNodeId"
-            class="plugin-config-node-select"
-            :items="nodeItems"
-            :loading="loading"
-            :placeholder="t('TXT_CODE_PLUGIN_NODE_SELECT')"
-            hide-details
-          >
-            <template #no-data><Empty :icon="false" compact /></template>
-          </VSelect>
+          <div v-if="!props.hideTargetSelect" class="plugin-config-target-select">
+            <PluginConfigTargetSelector
+              v-model="selectedTargetId"
+              :nodes="nodes"
+              :loading="nodesLoading"
+              @open="loadNodes"
+            />
+          </div>
 
           <div class="plugin-config-heading">
             <span>{{ t("TXT_CODE_PLUGIN_LIST") }}</span>
@@ -1587,7 +1584,7 @@ const confirmAction = async () => {
             <VBtn
               variant="tonal"
               prepend-icon="mdi-refresh"
-              :loading="loading"
+              :loading="loading || nodesLoading"
               :disabled="actionBusy"
               @click="selectedNodeId ? loadNodePlugins() : loadNodes()"
             >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn>
@@ -1961,35 +1958,7 @@ const confirmAction = async () => {
   overflow: hidden;
 }
 
-.plugin-config-scope {
-  display: flex;
-  gap: 8px;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0 10px 12px;
-  background: transparent;
-  border-radius: 0;
-  box-shadow: none;
-}
-
-.plugin-config-scope :deep(.v-btn) {
-  flex: 1;
-  min-height: 32px;
-  border-radius: 24px;
-  color: var(--text-color) !important;
-  text-align: center;
-}
-
-:global(.app-dark-theme) .plugin-config-scope :deep(.v-btn) {
-  color: #fff !important;
-}
-
-.plugin-config-scope :deep(.v-btn--active) {
-  background: rgb(var(--v-theme-primary));
-  color: #fff !important;
-}
-
-.plugin-config-node-select {
+.plugin-config-target-select {
   flex: 0 0 auto;
   width: 100%;
   max-width: 100%;
@@ -1998,21 +1967,9 @@ const confirmAction = async () => {
   box-sizing: border-box;
 }
 
-.plugin-config-node-select :deep(.v-input__control),
-.plugin-config-node-select :deep(.v-field) {
+.plugin-config-target-select :deep(.plugin-config-target-selector) {
   width: 100%;
   min-width: 0;
-}
-
-.plugin-config-node-select :deep(.v-field__input) {
-  min-width: 0;
-  overflow: hidden;
-}
-
-.plugin-config-node-select :deep(.v-select__selection-text) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .plugin-config-heading {
@@ -2278,24 +2235,6 @@ const confirmAction = async () => {
   .plugin-config-sidebar {
     min-width: 0;
     padding: 16px;
-  }
-
-  .plugin-config-scope {
-    flex: none;
-    height: auto;
-    padding: 0 0 12px;
-  }
-
-  .plugin-config-scope :deep(.v-btn) {
-    min-width: 0;
-    min-height: 44px;
-    height: auto;
-    padding: 8px;
-  }
-
-  .plugin-config-scope :deep(.v-btn__content) {
-    white-space: normal;
-    overflow-wrap: anywhere;
   }
 
   .plugin-config-list :deep(.plugin-config-group-actions) {

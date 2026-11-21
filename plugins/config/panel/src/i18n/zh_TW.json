@@ -11,6 +11,7 @@
   "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "無法檢查以下節點的外掛：{nodes}。",
   "TXT_CODE_PLUGIN_NODE_ACTION_FAILED": "以下節點上的外掛操作未完成：{nodes}",
   "TXT_CODE_PLUGIN_CONFIG": "插件設定",
+  "TXT_CODE_PLUGIN_CURRENT_PANEL": "目前面板",
   "TXT_CODE_PLUGIN_CANCEL": "取消",
   "TXT_CODE_PLUGIN_DELETE": "刪除外掛",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM": "外掛將會被解除安裝。",

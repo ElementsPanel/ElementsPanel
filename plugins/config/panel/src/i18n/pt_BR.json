@@ -11,6 +11,7 @@
   "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "Não foi possível verificar os plugins nestes nós: {nodes}.",
   "TXT_CODE_PLUGIN_NODE_ACTION_FAILED": "A operação do plugin não foi concluída nestes nós: {nodes}",
   "TXT_CODE_PLUGIN_CONFIG": "Configuracao de plugins",
+  "TXT_CODE_PLUGIN_CURRENT_PANEL": "Painel atual",
   "TXT_CODE_PLUGIN_CANCEL": "Cancelar",
   "TXT_CODE_PLUGIN_DELETE": "Remover",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM": "O plugin será desinstalado.",

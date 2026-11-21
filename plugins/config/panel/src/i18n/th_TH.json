@@ -11,6 +11,7 @@
   "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "ไม่สามารถตรวจสอบปลั๊กอินบนโหนดเหล่านี้ได้: {nodes}",
   "TXT_CODE_PLUGIN_NODE_ACTION_FAILED": "การดำเนินการกับปลั๊กอินบนโหนดเหล่านี้ไม่สำเร็จ: {nodes}",
   "TXT_CODE_PLUGIN_CONFIG": "การกำหนดค่าปลั๊กอิน",
+  "TXT_CODE_PLUGIN_CURRENT_PANEL": "แผงควบคุมปัจจุบัน",
   "TXT_CODE_PLUGIN_CANCEL": "ยกเลิก",
   "TXT_CODE_PLUGIN_DELETE": "ลบ",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM": "ปลั๊กอินจะถูกถอนการติดตั้ง",

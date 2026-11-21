@@ -11,6 +11,7 @@
   "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "Не удалось проверить плагины на этих узлах: {nodes}.",
   "TXT_CODE_PLUGIN_NODE_ACTION_FAILED": "Операция с плагином не завершена на этих узлах: {nodes}",
   "TXT_CODE_PLUGIN_CONFIG": "Настройка плагинов",
+  "TXT_CODE_PLUGIN_CURRENT_PANEL": "Текущая панель",
   "TXT_CODE_PLUGIN_CANCEL": "Отмена",
   "TXT_CODE_PLUGIN_DELETE": "Удалить",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM": "Плагин будет удалён.",
