@@ -3,6 +3,7 @@
   "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM": "このプラグインの現在の設定をデフォルト値に置き換え、自動的に保存します。",
   "TXT_CODE_PLUGIN_RESET_SETTINGS": "デフォルト設定に戻す",
   "TXT_CODE_PLUGIN_SETTINGS_RESET": "プラグイン設定をデフォルトに戻しました",
+  "TXT_CODE_PLUGIN_NODE_ENABLE_CONFIRM": "以下のノードにある同じプラグインも有効にしますか？対象のノードを選択してください。",
   "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM": "以下のノードにある同じプラグインも無効にしますか？対象のノードを選択してください。",
   "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM": "以下のノードにある同じプラグインも削除しますか？対象のノードを選択してください。",
   "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "以下のノードのプラグインを確認できませんでした：{nodes}。",

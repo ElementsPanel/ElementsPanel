@@ -754,28 +754,35 @@ test("plugin context actions target the clicked plugin and keep remarks isolated
   });
 });
 
-test("confirming panel plugin actions opens a separate node picker with all matching nodes selected", async (t) => {
-  for (const action of ["disable", "remove"]) await t.test(action, async (t) => {
-    const record = { id: "sample", enabled: true, removable: true };
+test("panel plugin actions select matching nodes before writing either side", async (t) => {
+  for (const action of ["enable", "disable", "remove"]) await t.test(action, async (t) => {
+    const record = { id: "sample", enabled: action !== "enable", removable: true };
     const f = pluginActionFixture(t, {
       one: [record], two: [record], unrelated: [{ ...record, id: "other" }],
-      disabled: [{ ...record, enabled: false }]
+      unchanged: [{ ...record, enabled: !record.enabled }]
     });
     const { state } = f;
     const confirm = () => state.confirmAction();
-    state.requestAction(f.plugin, action);
-    assert.equal(state.actionConfirmOpen.value, true);
-    assert.equal(state.nodePickerOpen.value, false);
-    assert.equal(state.actionCandidate.value.checkingNodes, false);
-    assert.deepEqual(f.calls, [], "opening the initial confirmation must not check nodes");
-    const preparing = confirm();
+    let preparing;
+    if (action === "enable") {
+      f.plugin.enabled = false;
+      preparing = state.toggle(f.plugin, true);
+      assert.equal(state.actionConfirmOpen.value, false, "enabling goes directly to node selection");
+    } else {
+      state.requestAction(f.plugin, action);
+      assert.equal(state.actionConfirmOpen.value, true);
+      assert.equal(state.nodePickerOpen.value, false);
+      assert.equal(state.actionCandidate.value.checkingNodes, false);
+      assert.deepEqual(f.calls, [], "opening the initial confirmation must not check nodes");
+      preparing = confirm();
+    }
     assert.equal(state.actionCandidate.value.checkingNodes, true);
     await confirm();
     assert.deepEqual(f.writes(), [], "confirmation must wait for the inventory checks");
     await preparing;
     assert.equal(state.actionConfirmOpen.value, false);
     assert.equal(state.nodePickerOpen.value, true);
-    const matchingNodes = action === "disable" ? ["one", "two"] : ["one", "two", "disabled"];
+    const matchingNodes = action === "remove" ? ["one", "two", "unchanged"] : ["one", "two"];
     assert.deepEqual(state.actionCandidate.value.nodeTargets.map(({ node }) => node.uuid),
       matchingNodes);
     assert.deepEqual(state.actionCandidate.value.selectedNodeIds, matchingNodes,
@@ -785,7 +792,7 @@ test("confirming panel plugin actions opens a separate node picker with all matc
     assert.equal(state.nodePickerOpen.value, true, "closing the first dialog must not cancel the node picker");
 
     const wait = deferred();
-    f.handlers[action === "disable" ? "setNodePluginEnabled" : "removeNodePlugin"] = () => wait.promise;
+    f.handlers[action === "remove" ? "removeNodePlugin" : "setNodePluginEnabled"] = () => wait.promise;
     state.actionCandidate.value.selectedNodeIds = ["one"];
     const saving = confirm();
     state.nodePickerOpen.value = false;
@@ -798,9 +805,9 @@ test("confirming panel plugin actions opens a separate node picker with all matc
     assert.equal(state.actionCandidate.value.plugin.id, "sample");
     wait.resolve({ result: { application: "applied" } });
     await saving;
-    assert.deepEqual(f.writes(), action === "disable" ? [
-      { name: "setNodePluginEnabled", config: { params: { daemonId: "one" }, data: { id: "sample", enabled: false } } },
-      { name: "setPluginEnabled", config: { data: { id: "sample", enabled: false } } }
+    assert.deepEqual(f.writes(), action !== "remove" ? [
+      { name: "setNodePluginEnabled", config: { params: { daemonId: "one" }, data: { id: "sample", enabled: action === "enable" } } },
+      { name: "setPluginEnabled", config: { data: { id: "sample", enabled: action === "enable" } } }
     ] : [
       { name: "removeNodePlugin", config: { params: { daemonId: "one", id: "sample" }, timeout: 11 * 60 * 1000 } },
       { name: "removePlugin", config: { params: { id: "sample" }, timeout: 11 * 60 * 1000 } }
@@ -866,15 +873,15 @@ test("failed removals close dependency loading and keep the config choice for re
 });
 
 test("users can deselect every node to apply a plugin action only to the panel", async (t) => {
-  for (const action of ["disable", "remove"]) await t.test(action, async (t) => {
-    const f = pluginActionFixture(t, { one: [{ id: "sample", enabled: true, removable: true }] });
+  for (const action of ["enable", "disable", "remove"]) await t.test(action, async (t) => {
+    const f = pluginActionFixture(t, { one: [{ id: "sample", enabled: action !== "enable", removable: true }] });
     f.state.requestAction(f.plugin, action);
     await f.state.confirmAction();
     assert.equal(f.state.nodePickerOpen.value, true);
     f.state.actionCandidate.value.selectedNodeIds = [];
     await f.state.confirmAction();
     assert.deepEqual(f.writes().map(({ name }) => name),
-      [action === "disable" ? "setPluginEnabled" : "removePlugin"]);
+      [action === "remove" ? "removePlugin" : "setPluginEnabled"]);
   });
 });
 
@@ -909,6 +916,17 @@ test("cancelling a plugin action discards its node scan and selection", async (t
   await f.state.confirmAction();
   assert.deepEqual(f.state.actionCandidate.value.selectedNodeIds, ["one"]);
   assert.deepEqual(f.writes(), []);
+  f.state.nodePickerOpen.value = false;
+  f.plugin.enabled = false;
+  f.handlers.nodePluginList = async () => [{ id: "sample", enabled: false }];
+  f.state.pluginContextMenu.value = { open: true, x: 0, y: 0, pluginId: "sample" };
+  await f.state.toggleContextPlugin();
+  assert.equal(f.state.pluginContextMenu.value.open, false);
+  assert.equal(f.state.nodePickerOpen.value, true);
+  assert.equal(f.state.actionCandidate.value.action, "enable");
+  f.state.nodePickerOpen.value = false;
+  assert.equal(f.state.actionCandidate.value, null);
+  assert.deepEqual(f.writes(), [], "cancelling an enable action must not write either side");
 });
 
 test("node removal reports unavailable and failed nodes, respects removability, and continues other actions", async (t) => {
@@ -943,18 +961,23 @@ test("node removal reports unavailable and failed nodes, respects removability, 
   assert.match(f.notices.find(({ color }) => color === "error").text, /failed.*node removal failed/);
 });
 
-test("a failed node disable result is reported without blocking the other nodes or the panel", async (t) => {
-  const record = { id: "sample", enabled: true, removable: true };
-  const f = pluginActionFixture(t, { failed: [record], good: [record] });
-  f.handlers.setNodePluginEnabled = async ({ params }) => ({ result: {
-    application: params.daemonId === "failed" ? "failed" : "applied", error: "dispose failed"
-  } });
-  f.state.toggle(f.plugin, false);
-  await f.state.confirmAction();
-  await f.state.confirmAction();
-  assert.deepEqual(f.writes().map(({ name }) => name), ["setNodePluginEnabled", "setNodePluginEnabled", "setPluginEnabled"]);
-  assert.equal(f.notices.some(({ color }) => color === "success"), false);
-  assert.match(f.notices.find(({ color }) => color === "error").text, /failed.*dispose failed/);
+test("failed node toggle results are reported without blocking the other nodes or the panel", async (t) => {
+  for (const enabled of [true, false]) await t.test(String(enabled), async (t) => {
+    const record = { id: "sample", enabled: !enabled, removable: true };
+    const f = pluginActionFixture(t, { failed: [record], good: [record] });
+    f.handlers.setNodePluginEnabled = async ({ params }) => ({ result: {
+      application: params.daemonId === "failed" ? "failed" : "applied", error: "dispose failed"
+    } });
+    if (enabled) await f.state.toggle(f.plugin, true);
+    else {
+      f.state.toggle(f.plugin, false);
+      await f.state.confirmAction();
+    }
+    await f.state.confirmAction();
+    assert.deepEqual(f.writes().map(({ name }) => name), ["setNodePluginEnabled", "setNodePluginEnabled", "setPluginEnabled"]);
+    assert.equal(f.notices.some(({ color }) => color === "success"), false);
+    assert.match(f.notices.find(({ color }) => color === "error").text, /failed.*dispose failed/);
+  });
 });
 
 test("retrying a panel removal does not repeat successful node removals", async (t) => {
@@ -984,6 +1007,10 @@ test("panel actions without a matching node plugin execute after the initial con
     assert.deepEqual(f.writes().map(({ name }) => name),
       [action === "disable" ? "setPluginEnabled" : "removePlugin"]);
   });
+  const f = pluginActionFixture(t, { one: [{ id: "sample", enabled: true }] });
+  await f.state.toggle(f.plugin, true);
+  assert.equal(f.state.actionCandidate.value, null);
+  assert.deepEqual(f.writes(), [{ name: "setPluginEnabled", config: { data: { id: "sample", enabled: true } } }]);
 });
 
 test("panels without node management and actions in the node scope do not scan other nodes", async (t) => {

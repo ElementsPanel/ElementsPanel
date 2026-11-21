@@ -3,6 +3,7 @@
   "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM": "此插件的当前设置将被替换为默认值并自动保存。",
   "TXT_CODE_PLUGIN_RESET_SETTINGS": "恢复默认设置",
   "TXT_CODE_PLUGIN_SETTINGS_RESET": "插件设置已恢复默认",
+  "TXT_CODE_PLUGIN_NODE_ENABLE_CONFIRM": "是否同时启用以下节点上的对应插件？请勾选需要同步操作的节点。",
   "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM": "是否同时禁用以下节点上的对应插件？请勾选需要同步操作的节点。",
   "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM": "是否同时删除以下节点上的对应插件？请勾选需要同步操作的节点。",
   "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "无法检查以下节点的插件：{nodes}。",

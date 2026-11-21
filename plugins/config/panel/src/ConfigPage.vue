@@ -61,7 +61,7 @@ import {
 import SchemaForm from "./SchemaForm.vue";
 
 type Scope = "panel" | "node";
-type PluginAction = "disable" | "remove";
+type PluginAction = "enable" | "disable" | "remove";
 
 interface NodePluginTarget {
   node: NodeSummary;
@@ -70,7 +70,7 @@ interface NodePluginTarget {
 
 interface PluginActionCandidate {
   action: PluginAction;
-  step: "confirm" | "nodes";
+  step: "checking" | "confirm" | "nodes";
   scope: Scope;
   plugin: PluginRecord | NodePluginRecord;
   nodeId: string;
@@ -1080,7 +1080,10 @@ const checkNodePlugins = async (candidate: PluginActionCandidate) => {
       const node = list[index];
       if (result.status === "rejected") {
         unchecked.push(nodeLabel(node));
-      } else if (result.value && (candidate.action === "remove" || result.value.enabled)) {
+      } else if (
+        result.value &&
+        (candidate.action === "remove" || result.value.enabled !== (candidate.action === "enable"))
+      ) {
         candidate.nodeTargets.push({ node, plugin: result.value });
       }
     });
@@ -1100,7 +1103,7 @@ const requestAction = (plugin: PluginRecord | NodePluginRecord, action: PluginAc
   if (disposed || actionBusy.value || (action === "remove" && !plugin.removable)) return;
   actionCandidate.value = {
     action,
-    step: "confirm",
+    step: action === "enable" ? "checking" : "confirm",
     scope: scope.value,
     plugin: { ...plugin },
     nodeId: selectedNodeId.value,
@@ -1138,7 +1141,7 @@ const syncNodePlugins = async (candidate: PluginActionCandidate) => {
         const result = (
           await setNodePluginEnabled().execute({
             params: { daemonId: node.uuid },
-            data: { id: plugin.id, enabled: false }
+            data: { id: plugin.id, enabled: candidate.action === "enable" }
           })
         ).value?.result;
         if (result && result.application !== "applied")
@@ -1153,7 +1156,7 @@ const syncNodePlugins = async (candidate: PluginActionCandidate) => {
               )
           );
       }
-      // Keep successful node removals out of retries after a panel failure.
+      // Skip successful node changes when retrying a panel failure.
       candidate.selectedNodeIds = candidate.selectedNodeIds.filter((id) => id !== node.uuid);
     } catch (error) {
       failures.push(`${nodeLabel(node)}: ${getValidatorErrorMsg(error, t("TXT_CODE_COMMON_OPERATION_FAILED"))}`);
@@ -1208,17 +1211,12 @@ const applyNode = async (
   }
 };
 
-/** Disabling a plugin can remove authentication or other services. */
 const toggle = (plugin: PluginRecord | NodePluginRecord, enabled: boolean) => {
-  if (actionBusy.value) return;
-  const targetScope = scope.value;
-  const nodeId = selectedNodeId.value;
-  const commit = () =>
-    targetScope === "panel"
-      ? apply(plugin as PluginRecord, enabled)
-      : applyNode(plugin as NodePluginRecord, enabled, nodeId);
-  if (enabled) return commit();
-  requestAction(plugin, "disable");
+  if (disposed || actionBusy.value) return;
+  if (enabled && scope.value === "node")
+    return applyNode(plugin as NodePluginRecord, true, selectedNodeId.value);
+  requestAction(plugin, enabled ? "enable" : "disable");
+  if (enabled) return confirmAction();
 };
 
 const toggleSelected = (enabled: boolean) => {
@@ -1231,17 +1229,18 @@ const toggleContextPlugin = () => {
   if (plugin && !pending.value) return toggle(plugin, !plugin.enabled);
 };
 
-const confirmDisable = async () => {
+const confirmToggle = async () => {
   const candidate = actionCandidate.value;
   if (
     !candidate ||
-    candidate.action !== "disable" ||
+    candidate.action === "remove" ||
     candidate.checkingNodes ||
     actionSubmitting.value
   )
     return;
-  if (candidate.scope === "panel") await apply(candidate.plugin as PluginRecord, false, candidate);
-  else await applyNode(candidate.plugin as NodePluginRecord, false, candidate.nodeId);
+  const enabled = candidate.action === "enable";
+  if (candidate.scope === "panel") await apply(candidate.plugin as PluginRecord, enabled, candidate);
+  else await applyNode(candidate.plugin as NodePluginRecord, enabled, candidate.nodeId);
   actionCandidate.value = null;
 };
 
@@ -1300,7 +1299,7 @@ const confirmRemove = async () => {
 const confirmAction = async () => {
   const candidate = actionCandidate.value;
   if (!candidate || candidate.checkingNodes || actionSubmitting.value) return;
-  if (candidate.step === "confirm") {
+  if (candidate.step !== "nodes") {
     await checkNodePlugins(candidate);
     if (disposed || actionCandidate.value !== candidate) return;
     if (candidate.nodeTargets.length || candidate.nodeCheckError) {
@@ -1311,7 +1310,7 @@ const confirmAction = async () => {
       return;
     }
   }
-  return candidate.action === "remove" ? confirmRemove() : confirmDisable();
+  return candidate.action === "remove" ? confirmRemove() : confirmToggle();
 };
 </script>
 
@@ -1462,7 +1461,10 @@ const confirmAction = async () => {
                     icon="mdi-power"
                     :color="selectedPlugin.enabled ? 'warning' : 'success'"
                     variant="text"
-                    :loading="pending === selectedPlugin.id"
+                    :loading="
+                      pending === selectedPlugin.id ||
+                      (actionCandidate?.plugin.id === selectedPlugin.id && actionCandidate.checkingNodes)
+                    "
                     :disabled="actionBusy"
                     :aria-label="
                       t(
@@ -1777,6 +1779,8 @@ const confirmAction = async () => {
               t(
                 actionCandidate.action === "remove"
                   ? "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM"
+                  : actionCandidate.action === "enable"
+                  ? "TXT_CODE_PLUGIN_NODE_ENABLE_CONFIRM"
                   : "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM"
               )
             }}
