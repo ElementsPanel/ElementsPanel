@@ -9,7 +9,7 @@ import type { DataType } from "@elementspanel/epanel-plugin-console/types/fileMa
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import dayjs from "dayjs";
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
-import { VBtn, VCard, VCardText, VCheckbox, VDataTableServer, VIcon, VList, VListItem, VMenu, VProgressCircular, VProgressLinear, VRadio, VRadioGroup, VSpacer, VTextField } from "vuetify/components";
+import { VBtn, VCheckbox, VDataTableServer, VIcon, VList, VListItem, VMenu, VProgressCircular, VProgressLinear, VRadio, VRadioGroup, VSpacer, VTextField } from "vuetify/components";
 import ArchivePreview from "../components/ArchivePreview.vue";
 import FileManagerTabs from "../components/FileManagerTabs.vue";
 import FileManagerPathBar from "../components/FileManagerPathBar.vue";
@@ -778,7 +778,10 @@ onUnmounted(() => {
                 <VBtn :disabled="!currentTabs.length" v-else variant="text" @click="reloadList"><VIcon icon="mdi-refresh" />{{ t("TXT_CODE_FILE_LIST_REFRESH") }}</VBtn>
                 <VMenu :disabled="!currentTabs.length" location="bottom end">
                     <template #activator="{ props: menuProps }"><VBtn :disabled="!currentTabs.length" v-bind="menuProps" color="primary" variant="text"><VIcon icon="mdi-plus" />{{ t("TXT_CODE_COMMON_NEW") }}</VBtn></template>
-                    <VCard rounded="xl"><VCardText class="dfm-menu-list"><VBtn :disabled="!currentTabs.length" variant="text" block @click="touchFile(true)"><VIcon icon="mdi-folder-plus-outline" />{{ t("TXT_CODE_COMMON_DIRECTORY") }}</VBtn><VBtn :disabled="!currentTabs.length" variant="text" block @click="touchFile()"><VIcon icon="mdi-file-plus-outline" />{{ t("TXT_CODE_COMMON_BLANK_FILE") }}</VBtn></VCardText></VCard>
+                    <VList>
+                        <VListItem :disabled="!currentTabs.length" :title="t('TXT_CODE_COMMON_BLANK_FILE')" prepend-icon="mdi-file-plus-outline" @click="touchFile()" />
+                        <VListItem :disabled="!currentTabs.length" :title="t('TXT_CODE_COMMON_DIRECTORY')" prepend-icon="mdi-folder-plus-outline" @click="touchFile(true)" />
+                    </VList>
                 </VMenu>
             </div>
             <div v-if="uploadData.current" class="dfm-upload-progress">
@@ -1041,7 +1044,5 @@ onUnmounted(() => {
 
 .dfm-vuetify { min-width: 0; }
 .dfm-vuetify .dfm-toolbar > .v-input { max-width: 260px; }
-.dfm-menu-list { display: flex; flex-direction: column; gap: 2px; padding: 8px !important; }
-.dfm-menu-list .v-btn { justify-content: flex-start; }
 .dfm-dialog-label { margin: 12px 0 4px; font-weight: 600; }
 </style>
