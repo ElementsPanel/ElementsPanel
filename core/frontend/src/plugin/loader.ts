@@ -161,6 +161,7 @@ function requiredServices(module: PanelFrontendPluginModule) {
 function scopeState(scope?: ForkScope): PluginState {
   if (!scope) return "failed";
   if (scope.error || scope.runtime.error) return "failed";
+  if (!scope.ready) return "pending";
   switch (scope.status) {
     case 0: // ScopeStatus.PENDING
       return "pending";
@@ -200,6 +201,7 @@ ctx.on("internal/status", (scope: EffectScope) => {
   const plugin = plugins.find((candidate) => candidate.fork === scope);
   if (plugin) notifyPluginDiagnostics();
 });
+ctx.on("internal/service", () => notifyPluginDiagnostics());
 
 function normalizeMetadata(value: Record<string, unknown>): PanelFrontendPluginMetadata | null {
   const id = typeof value.id === "string" ? value.id.trim() : "";

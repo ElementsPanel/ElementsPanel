@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_PLUGIN_DEPENDENCIES_UNAVAILABLE": "종속성을 사용할 수 없음",
+  "TXT_CODE_PLUGIN_MISSING_DEPENDENCIES": "누락되었거나 준비되지 않은 종속성: {dependencies}",
   "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM_TITLE": "{name}의 기본 설정을 복원할까요?",
   "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM": "이 플러그인의 현재 설정이 기본값으로 변경되고 자동으로 저장됩니다.",
   "TXT_CODE_PLUGIN_RESET_SETTINGS": "기본 설정 복원",

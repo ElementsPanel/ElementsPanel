@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { usePluginService } from "@elements-panel/sdk";
 import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import { GLOBAL_INSTANCE_UUID } from "@elementspanel/epanel-plugin-console/config/const";
 import { useAppRouters } from "@elementspanel/epanel-plugin-console/hooks/useAppRouters";
@@ -151,7 +152,7 @@ const nodeOperations = computed(() =>
           }
         });
       },
-      condition: () => remoteNode.value!.available
+      condition: () => remoteNode.value!.available && !!usePluginService("instance")
     },
     {
       title: t("TXT_CODE_COMMON_TERMINAL"),
@@ -167,7 +168,7 @@ const nodeOperations = computed(() =>
           }
         });
       },
-      condition: () => remoteNode.value!.available
+      condition: () => remoteNode.value!.available && !!usePluginService("instance")
     },
     {
       title: t("TXT_CODE_COMMON_MANAGE_IMAGES"),

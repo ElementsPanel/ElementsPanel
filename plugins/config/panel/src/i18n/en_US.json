@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_PLUGIN_DEPENDENCIES_UNAVAILABLE": "Dependencies unavailable",
+  "TXT_CODE_PLUGIN_MISSING_DEPENDENCIES": "Missing or unavailable dependencies: {dependencies}",
   "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM_TITLE": "Restore default settings for {name}?",
   "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM": "This plugin's current settings will be replaced with the defaults and saved automatically.",
   "TXT_CODE_PLUGIN_RESET_SETTINGS": "Restore default settings",

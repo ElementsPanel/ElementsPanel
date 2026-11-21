@@ -555,6 +555,7 @@ function pluginActionFixture(t, inventories = {}, nodeOverrides = {}, pluginMark
   const plugin = { id: "sample", enabled: true, running: true, removable: true };
   const panelPlugins = [plugin, { id: "node", enabled: true, running: true, removable: true }];
   const calls = [], notices = [];
+  const frontendPlugins = [];
   const nodes = Object.keys(inventories).map((uuid) => ({
     uuid, remarks: uuid, ip: uuid, port: 24444, available: true, ...nodeOverrides[uuid]
   }));
@@ -587,7 +588,7 @@ function pluginActionFixture(t, inventories = {}, nodeOverrides = {}, pluginMark
     },
     "@/lang/i18n": { t: (key, params) => params ? `${key}: ${Object.values(params).join(", ")}` : key },
     "@/plugin/context": { usePluginService: () => pluginMarket, ctx: { plugins: {
-      loaded: [], refresh: async () => calls.push({ name: "refresh" })
+      loaded: frontendPlugins, refresh: async () => calls.push({ name: "refresh" })
     } } },
     "@/tools/validator": { getValidatorErrorMsg: (error) => error.message },
     "@/tools/vuetifyToast": { message: {
@@ -599,10 +600,52 @@ function pluginActionFixture(t, inventories = {}, nodeOverrides = {}, pluginMark
   });
   state.plugins.value = panelPlugins;
   return {
-    state, plugin, handlers, calls, notices,
+    state, plugin, handlers, calls, notices, frontendPlugins,
     writes: () => calls.filter(({ name }) => /^(set|remove)/.test(name))
   };
 }
+
+test("plugin warnings and dependency details follow backend, frontend and node states", (t) => {
+  const f = pluginActionFixture(t);
+  const { state, plugin, frontendPlugins } = f;
+  state.selectedId.value = plugin.id;
+  plugin.state = "active";
+  assert.equal(state.pluginWarning(plugin), false);
+  plugin.state = "pending";
+  plugin.missingDependencies = ["node"];
+  assert.equal(state.pluginWarning(plugin), true);
+  assert.deepEqual(state.missingDependencies.value, ["node"]);
+  plugin.enabled = false;
+  assert.equal(state.pluginWarning(plugin), false);
+  plugin.enabled = true;
+  plugin.state = "active";
+  plugin.missingDependencies = [];
+  const frontend = {
+    metadata: { id: plugin.id, frontendInject: ["node"] },
+    state: "pending", missingServices: ["node"]
+  };
+  frontendPlugins.push(frontend);
+  assert.equal(state.pluginWarning(plugin), true);
+  assert.deepEqual(state.unavailableDependencies(plugin), ["node"]);
+  frontendPlugins.push({ metadata: { id: "node" }, state: "active" });
+  frontend.state = "active";
+  frontend.missingServices = [];
+  assert.equal(state.pluginWarning(plugin), false);
+  frontend.state = "failed";
+  frontend.error = new Error("browser plugin failed");
+  assert.equal(state.pluginWarning(plugin), true);
+  state.scope.value = "node";
+  state.nodeSelectedId.value = plugin.id;
+  state.nodePlugins.value = [plugin];
+  assert.equal(state.pluginWarning(plugin), false, "a node ignores browser-only failures");
+  plugin.state = "pending";
+  plugin.missingDependencies = ["node"];
+  assert.deepEqual(state.unavailableDependencies(plugin), ["node"]);
+  plugin.state = "failed";
+  plugin.missingDependencies = [];
+  plugin.error = "daemon plugin failed";
+  assert.equal(state.pluginWarning(plugin), true);
+});
 
 test("restoring plugin defaults targets the context menu plugin and isolates in-flight node changes", async (t) => {
   const f = pluginActionFixture(t, {

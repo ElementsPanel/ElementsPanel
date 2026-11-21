@@ -24,6 +24,8 @@ import {
   validatePluginSettings,
   createPluginQueue,
   trackPluginDisposal,
+  withBackendPluginDependencies,
+  missingBackendPluginDependencies,
   requestProcessRestart,
   isProcessRestartPending,
   type NpmUpdateBatchOptions,
@@ -216,7 +218,7 @@ async function installPlugin(plugin: DiscoveredPlugin): Promise<LoadedPanelPlugi
     record.backendRevision = backendRevision(plugin);
     validatePluginCompatibility(plugin.manifest.elements);
     codeRevisions.set(plugin.manifest.id, record.backendRevision!);
-    const module = toModule(
+    const exported = toModule(
       await loadPluginModule(
         plugin.entry,
         plugin.packageRoot || plugin.directory,
@@ -224,7 +226,8 @@ async function installPlugin(plugin: DiscoveredPlugin): Promise<LoadedPanelPlugi
       ),
       plugin.manifest.id
     );
-    if (!module) throw new Error(`Plugin "${plugin.manifest.id}" must export apply().`);
+    if (!exported) throw new Error(`Plugin "${plugin.manifest.id}" must export apply().`);
+    const module = withBackendPluginDependencies(exported, plugin.manifest.id, plugin.manifest.backendInject);
     // Apply plugins in priority order and await asynchronous setup.
     // Capture synchronous errors before Cordis disposes the scope so failed plugins are reported correctly.
     let applied: unknown;
@@ -561,6 +564,7 @@ export interface PanelPluginRecord {
   running: boolean;
   /** Why the backend half is not running, when it should be. */
   error?: string;
+  missingDependencies?: string[];
   /** Whether this npm dependency can be uninstalled from the running host. */
   removable: boolean;
 }
@@ -592,6 +596,7 @@ export function getPanelPluginInventory(): PanelPluginRecord[] {
       sides: { backend: has(ENTRY_FIELDS), frontend: has(FRONTEND_FIELDS) },
       running: state === "active",
       state,
+      missingDependencies: missingBackendPluginDependencies(ctx, plugin.manifest.backendInject, running?.fork?.runtime.inject),
       removable: !!plugin.packageRoot && !isEssentialNpmPlugin(plugin.manifest.id),
       error:
         running?.error?.message ||
@@ -688,6 +693,7 @@ function pluginState(plugin: DiscoveredPlugin, running?: LoadedPanelPlugin): Plu
     return "restart-required";
   const fork = running.fork;
   if (!fork) return "failed";
+  if (!fork.ready) return "pending";
   const state = fork.runtime.status === 2 ? fork.status : fork.runtime.status;
   return (
     (["pending", "loading", "active", "failed", "failed"] as PluginState[])[state] || "pending"

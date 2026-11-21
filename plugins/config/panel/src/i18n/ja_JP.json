@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_PLUGIN_DEPENDENCIES_UNAVAILABLE": "依存関係を利用できません",
+  "TXT_CODE_PLUGIN_MISSING_DEPENDENCIES": "不足している、または準備ができていない依存関係：{dependencies}",
   "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM_TITLE": "{name} の設定をデフォルトに戻しますか？",
   "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM": "このプラグインの現在の設定をデフォルト値に置き換え、自動的に保存します。",
   "TXT_CODE_PLUGIN_RESET_SETTINGS": "デフォルト設定に戻す",

@@ -20,6 +20,8 @@ import {
   validatePluginSettings,
   createPluginQueue,
   trackPluginDisposal,
+  withBackendPluginDependencies,
+  missingBackendPluginDependencies,
   requestProcessRestart,
   isProcessRestartPending,
   type NpmUpdateBatchOptions,
@@ -188,7 +190,7 @@ async function installPlugin(plugin: DiscoveredPlugin): Promise<DaemonPluginEntr
     record.backendRevision = backendRevision(plugin);
     validatePluginCompatibility(plugin.manifest.elements);
     codeRevisions.set(plugin.manifest.id, record.backendRevision!);
-    const module = toModule(
+    const exported = toModule(
       await loadPluginModule(
         plugin.entry,
         plugin.packageRoot || plugin.directory,
@@ -196,7 +198,8 @@ async function installPlugin(plugin: DiscoveredPlugin): Promise<DaemonPluginEntr
       ),
       plugin.manifest.id
     );
-    if (!module) throw new Error(`Plugin "${plugin.manifest.id}" must export apply().`);
+    if (!exported) throw new Error(`Plugin "${plugin.manifest.id}" must export apply().`);
+    const module = withBackendPluginDependencies(exported, plugin.manifest.id, plugin.manifest.backendInject);
     // Apply plugins in priority order and await asynchronous setup.
     // Capture synchronous errors before Cordis disposes the scope so failed plugins are reported correctly.
     let applied: unknown;
@@ -461,6 +464,7 @@ export interface DaemonPluginRecord {
   running: boolean;
   /** Why it is not running, when it should be. */
   error?: string;
+  missingDependencies?: string[];
   /** Whether the daemon may remove this plugin package in the current environment. */
   removable: boolean;
 }
@@ -488,6 +492,7 @@ export function getDaemonPluginInventory(): DaemonPluginRecord[] {
       hasEntry: ENTRY_FIELDS.some((field) => typeof plugin.manifest[field] === "string"),
       running: pluginState(plugin, running) === "active",
       state: pluginState(plugin, running),
+      missingDependencies: missingBackendPluginDependencies(ctx, plugin.manifest.backendInject, running?.fork?.runtime.inject),
       error:
         running?.error?.message ||
         running?.fork?.runtime.error?.message ||
@@ -584,6 +589,7 @@ function pluginState(plugin: DiscoveredPlugin, running?: DaemonPluginEntry): Plu
     return "restart-required";
   const fork = running.fork;
   if (!fork) return "failed";
+  if (!fork.ready) return "pending";
   const state = fork.runtime.status === 2 ? fork.status : fork.runtime.status;
   return (
     (["pending", "loading", "active", "failed", "failed"] as PluginState[])[state] || "pending"

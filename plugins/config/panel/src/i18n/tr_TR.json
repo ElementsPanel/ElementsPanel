@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_PLUGIN_DEPENDENCIES_UNAVAILABLE": "Bağımlılıklar kullanılamıyor",
+  "TXT_CODE_PLUGIN_MISSING_DEPENDENCIES": "Eksik veya kullanılamayan bağımlılıklar: {dependencies}",
   "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM_TITLE": "{name} için varsayılan ayarlar geri yüklensin mi?",
   "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM": "Bu eklentinin mevcut ayarları varsayılan değerlerle değiştirilecek ve otomatik olarak kaydedilecektir.",
   "TXT_CODE_PLUGIN_RESET_SETTINGS": "Varsayılan ayarları geri yükle",

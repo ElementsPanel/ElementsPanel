@@ -17,6 +17,7 @@ export interface PluginRecord {
   state?: PluginState;
   result?: PluginChangeResult;
   error?: string;
+  missingDependencies?: string[];
   hasSettings?: boolean;
   canResetSettings?: boolean;
   removable: boolean;
@@ -188,6 +189,7 @@ export interface NodePluginRecord {
   state?: PluginState;
   result?: PluginChangeResult;
   error?: string;
+  missingDependencies?: string[];
   hasSettings?: boolean;
   canResetSettings?: boolean;
   removable: boolean;

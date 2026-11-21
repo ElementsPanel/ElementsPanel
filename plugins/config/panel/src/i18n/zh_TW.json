@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_PLUGIN_DEPENDENCIES_UNAVAILABLE": "相依項目不可用",
+  "TXT_CODE_PLUGIN_MISSING_DEPENDENCIES": "缺少或尚未就緒的相依項目：{dependencies}",
   "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM_TITLE": "還原 {name} 的預設設定？",
   "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM": "此外掛的目前設定將替換為預設值並自動儲存。",
   "TXT_CODE_PLUGIN_RESET_SETTINGS": "還原預設設定",

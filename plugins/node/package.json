@@ -9,8 +9,7 @@
       "priority": 20,
       "frontendInject": [
         "console",
-        "i18n",
-        "instance"
+        "i18n"
       ],
       "directory": "panel",
       "folder": "node",

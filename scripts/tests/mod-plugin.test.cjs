@@ -536,7 +536,7 @@ test("instance owns mod APIs while mod views follow the file service lifetime", 
   const ctx = new Context();
   t.after(() => ctx.stop());
   for (const name of ["i18n", "routes", "ui", "actions"]) ctx.plugin(registrar(Service, name));
-  for (const name of ["console", "desktop", "slots"]) ctx.set(name, {});
+  for (const name of ["console", "desktop", "slots", "node"]) ctx.set(name, {});
   const user = { state: { settings: { canFileManager: true } }, isAdmin: { value: false } };
   const component = {};
   const availability = load("plugins/console/panel/src/hooks/useInstanceActionAvailability.ts", {

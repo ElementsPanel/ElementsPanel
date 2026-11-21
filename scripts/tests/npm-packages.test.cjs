@@ -272,6 +272,10 @@ test("workspace packaging includes runnable entry points and excludes user data 
   const instance = result.plugins.find((plugin) => plugin.elementspanel.id === "instance");
   assert.equal(instance.elementspanel.panel.folder, "instance");
   assert.equal(instance.elementspanel.daemon.folder, "instance");
+  assert.deepEqual(instance.elementspanel.panel.backendInject, ["node"]);
+  assert.deepEqual(instance.elementspanel.daemon.backendInject, ["node"]);
+  assert.ok(instance.elementspanel.panel.frontendInject.includes("node"));
+  assert.equal(result.plugins.find((plugin) => plugin.elementspanel.id === "node").elementspanel.panel.frontendInject.includes("instance"), false);
   assert.equal(result.plugins.some((plugin) => plugin.elementspanel.id === "mod-manager"), false);
   assert.ok(fs.existsSync(path.join(f.outputRoot, "panel/public/assets/shared.js")));
   assert.ok(fs.existsSync(path.join(f.sourceRoot, "core/panel/production/app.js")));

@@ -576,6 +576,31 @@ const frontendPlugin = computed(() =>
     ? ctx.plugins.loaded.find((item) => item.metadata.id === currentId.value)
     : undefined
 );
+const unavailableDependencies = (plugin: PluginRecord | NodePluginRecord) => {
+  const frontend = scope.value === "panel"
+    ? ctx.plugins?.loaded.find((item) => item.metadata.id === plugin.id)
+    : undefined;
+  const missing = (frontend?.metadata.frontendInject ?? []).filter((id) =>
+    ctx.plugins.loaded.find((item) => item.metadata.id === id)?.state !== "active"
+  );
+  return [...new Set([
+    ...(plugin.missingDependencies ?? []),
+    ...(frontend?.missingServices ?? []),
+    ...missing
+  ])];
+};
+const pluginWarning = (plugin: PluginRecord | NodePluginRecord) => {
+  if (!plugin.enabled) return false;
+  const frontend = scope.value === "panel"
+    ? ctx.plugins?.loaded.find((item) => item.metadata.id === plugin.id)
+    : undefined;
+  return plugin.state === "pending" || plugin.state === "failed" || !!plugin.error ||
+    frontend?.state === "pending" || frontend?.state === "failed" || !!frontend?.error ||
+    unavailableDependencies(plugin).length > 0;
+};
+const missingDependencies = computed(() =>
+  selectedPlugin.value ? unavailableDependencies(selectedPlugin.value) : []
+);
 const recordResult = (result?: PluginChangeResult | boolean) => {
   lastResult.value = result && typeof result === "object" ? result : null;
   if (lastResult.value?.application === "failed")
@@ -1410,7 +1435,8 @@ const confirmAction = async () => {
                     class="plugin-config-item-dot"
                     :class="{
                       'plugin-config-item-dot-off':
-                        !plugin.enabled || (plugin.state && plugin.state !== 'active')
+                        !plugin.enabled || (!pluginWarning(plugin) && plugin.state && plugin.state !== 'active'),
+                      'plugin-config-item-dot-warning': pluginWarning(plugin)
                     }"
                   ></span>
                 </template>
@@ -1577,6 +1603,16 @@ const confirmAction = async () => {
             :text="selectedPlugin.error"
           />
 
+          <VAlert
+            v-if="selectedPlugin.enabled && missingDependencies.length"
+            class="plugin-config-alert"
+            type="warning"
+            variant="tonal"
+            :title="t('TXT_CODE_PLUGIN_DEPENDENCIES_UNAVAILABLE')"
+            :text="t('TXT_CODE_PLUGIN_MISSING_DEPENDENCIES', {
+              dependencies: missingDependencies.map(pluginLabel).join(', ')
+            })"
+          />
           <VAlert
             v-if="lastResult?.application === 'restart-required' || frontendPlugin?.restartRequired"
             class="plugin-config-alert"
@@ -2115,6 +2151,10 @@ const confirmAction = async () => {
 
 .plugin-config-item-dot-off {
   background: var(--color-gray-6);
+}
+
+.plugin-config-item-dot-warning {
+  background: var(--color-yellow-6);
 }
 
 .plugin-config-content {

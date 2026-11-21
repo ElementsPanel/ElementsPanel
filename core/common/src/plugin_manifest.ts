@@ -19,6 +19,8 @@ export interface PluginManifest {
   enabled?: boolean;
   /** Ascending load order among plugins that do not depend on each other. */
   priority?: number;
+  /** Plugin ids required by this backend entry. */
+  backendInject?: string[];
   /** Passed to the plugin as its configuration. */
   config?: unknown;
   [key: string]: unknown;

@@ -329,6 +329,26 @@ test("batch imports and styles run concurrently while async activation retains d
   ]);
 });
 
+test("frontend dependency removal reports pending and missing services until the provider returns", async (t) => {
+  const f = fixture(t);
+  f.add("provider", { module: { apply: (scope) => { scope.set("node", {}); } } });
+  f.add("consumer", {
+    metadata: { frontendInject: ["provider"] },
+    module: { inject: ["node"], apply: (scope) => { scope.set("consumerValue", true); } }
+  });
+  await f.start();
+  const consumer = () => f.loader.getPluginDiagnostics().find((plugin) => plugin.id === "consumer");
+  assert.equal(consumer().state, "active");
+  await f.loader.unloadPlugin("provider");
+  assert.equal(consumer().state, "pending");
+  assert.deepEqual(consumer().missingServices, ["node"]);
+  assert.equal(f.ctx.get("consumerValue"), undefined);
+  await f.loader.loadPlugin("provider");
+  assert.equal(consumer().state, "active");
+  assert.deepEqual(consumer().missingServices, []);
+  assert.equal(f.ctx.get("consumerValue"), true);
+});
+
 test("download, stylesheet and activation failures are isolated and blocked plugins release styles", async (t) => {
   const f = fixture(t);
   const download = deferred();

@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_PLUGIN_DEPENDENCIES_UNAVAILABLE": "Зависимости недоступны",
+  "TXT_CODE_PLUGIN_MISSING_DEPENDENCIES": "Отсутствующие или недоступные зависимости: {dependencies}",
   "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM_TITLE": "Восстановить настройки {name} по умолчанию?",
   "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM": "Текущие настройки этого плагина будут заменены значениями по умолчанию и автоматически сохранены.",
   "TXT_CODE_PLUGIN_RESET_SETTINGS": "Восстановить настройки по умолчанию",

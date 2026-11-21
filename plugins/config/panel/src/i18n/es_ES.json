@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_PLUGIN_DEPENDENCIES_UNAVAILABLE": "Dependencias no disponibles",
+  "TXT_CODE_PLUGIN_MISSING_DEPENDENCIES": "Dependencias ausentes o no disponibles: {dependencies}",
   "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM_TITLE": "¿Restaurar los ajustes predeterminados de {name}?",
   "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM": "Los ajustes actuales de este plugin se sustituirán por los predeterminados y se guardarán automáticamente.",
   "TXT_CODE_PLUGIN_RESET_SETTINGS": "Restaurar ajustes predeterminados",

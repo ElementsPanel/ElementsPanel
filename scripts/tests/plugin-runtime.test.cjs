@@ -322,9 +322,11 @@ for (const side of ["panel", "daemon"]) {
     await f.ctx.events.flush();
     assert.equal(f.inventory().find((p) => p.id === "consumer").state, "pending");
     assert.equal(f.inventory().find((p) => p.id === "consumer").running, false);
+    assert.deepEqual(f.inventory().find((p) => p.id === "consumer").missingDependencies, ["example"]);
     const result = await f.enabled("provider", true);
     assert.equal(result.result.application, "applied");
     assert.equal(f.inventory().find((p) => p.id === "consumer").state, "active");
+    assert.deepEqual(f.inventory().find((p) => p.id === "consumer").missingDependencies, []);
     assert.equal(fs.readFileSync(path.join(provider, "plugin.json"), "utf8"), before);
     await f.enabled("consumer", false);
     fs.writeFileSync(
@@ -337,6 +339,37 @@ for (const side of ["panel", "daemon"]) {
         .consumer.enabled,
       false
     );
+  });
+  test(`${side}: declared plugin dependencies recover after installation, disabling and failure`, async (t) => {
+    const f = fixture(t, side);
+    f.write("consumer", 'exports.apply=ctx=>ctx.set("consumerValue",42);', {
+      priority: -100, backendInject: ["provider"]
+    });
+    await f.start();
+    const consumer = () => f.inventory().find((plugin) => plugin.id === "consumer");
+    assert.equal(consumer().state, "pending");
+    assert.deepEqual(consumer().missingDependencies, ["provider"]);
+    assert.equal(f.ctx.get("consumerValue"), undefined);
+    f.write("provider", 'exports.apply=()=>{};', { priority: 100 });
+    await f.reload();
+    assert.equal(consumer().state, "active");
+    assert.deepEqual(consumer().missingDependencies, []);
+    assert.equal(f.ctx.get("consumerValue"), 42);
+    await f.enabled("provider", false);
+    assert.equal(consumer().state, "pending");
+    assert.deepEqual(consumer().missingDependencies, ["provider"]);
+    assert.equal(f.ctx.get("consumerValue"), undefined);
+    await f.enabled("provider", true);
+    assert.equal(consumer().state, "active");
+    f.write("provider", 'exports.apply=()=>{throw new Error("provider failed")};');
+    await f.reload();
+    assert.equal(f.inventory().find((plugin) => plugin.id === "provider").state, "failed");
+    assert.equal(consumer().state, "pending");
+    assert.deepEqual(consumer().missingDependencies, ["provider"]);
+    f.write("provider", 'exports.apply=async()=>{await Promise.resolve()};');
+    await f.reload();
+    assert.equal(consumer().state, "active");
+    assert.deepEqual(consumer().missingDependencies, []);
   });
 }
 test("queued enable waits for async cleanup and failed activation is reported separately from saving", async (t) => {

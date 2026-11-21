@@ -11,7 +11,7 @@ import { localeMessages } from "./i18n";
 
 const ADMIN_PERMISSION = 10;
 
-export const inject = ["console", "i18n", "routes", "ui", "desktop", "instance"];
+export const inject = ["console", "i18n", "routes", "ui", "desktop"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);

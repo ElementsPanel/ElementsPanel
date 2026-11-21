@@ -35,7 +35,7 @@ import { apply as registerTerminalFrontend } from "./terminal/frontend";
 import { apply as registerBackupFrontend } from "./backup/frontend";
 import { apply as registerMonitoringFrontend } from "./monitor/frontend";
 
-export const inject = ["console", "i18n", "routes", "ui", "actions", "desktop", "slots"];
+export const inject = ["console", "i18n", "node", "routes", "ui", "actions", "desktop", "slots"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);

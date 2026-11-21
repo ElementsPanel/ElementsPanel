@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_PLUGIN_DEPENDENCIES_UNAVAILABLE": "ไม่สามารถใช้การพึ่งพาได้",
+  "TXT_CODE_PLUGIN_MISSING_DEPENDENCIES": "การพึ่งพาที่ขาดหายหรือยังไม่พร้อมใช้งาน: {dependencies}",
   "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM_TITLE": "คืนค่าการตั้งค่าเริ่มต้นของ {name} หรือไม่?",
   "TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM": "การตั้งค่าปัจจุบันของปลั๊กอินนี้จะถูกแทนที่ด้วยค่าเริ่มต้นและบันทึกโดยอัตโนมัติ",
   "TXT_CODE_PLUGIN_RESET_SETTINGS": "คืนค่าการตั้งค่าเริ่มต้น",
