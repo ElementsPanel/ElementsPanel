@@ -36,14 +36,14 @@ export function apply(ctx: PanelFrontendPluginContext) {
     meta: {
       mainMenu: true,
       permission: ROLE_ADMIN,
-      icon: "mdi-chart-areaspline",
+      icon: "mdi-chart-line",
     }
   });
 
   ctx.desktop.app({
     id: "overview",
     label: () => t("TXT_CODE_COMMON_OVERVIEW"),
-    icon: "mdi-view-dashboard-outline",
+    icon: "mdi-chart-line",
     color: "#52c41a",
     route: "/overview",
     component: DesktopOverview,

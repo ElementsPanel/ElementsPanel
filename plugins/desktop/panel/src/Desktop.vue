@@ -50,7 +50,7 @@ const UserOutlined = "mdi-account-outline";
 
 // Map legacy component icons to MDI glyphs at the desktop shell boundary.
 const DESKTOP_ICON_MAP: Record<string, string> = {
-    overview: "mdi-view-dashboard-outline",
+    overview: "mdi-chart-line",
     config: "mdi-cog-outline",
     market: "mdi-storefront-outline",
     nodes: "mdi-sitemap-outline",
