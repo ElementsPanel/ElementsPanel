@@ -359,7 +359,7 @@ onUnmounted(() => {
 <template>
   <main class="file-manager-page" :style="{ opacity: opacity ? 0.45 : 1 }" @dragover="handleDragover" @dragleave="handleDragleave" @drop="handleDrop">
     <VContainer fluid class="file-manager-container">
-      <VRow class="file-manager-toolbar app-align-center" density="comfortable">
+      <VRow class="file-manager-toolbar d-flex align-center" density="comfortable">
         <VCol cols="12" lg="3" class="file-manager-title">
           <VIcon icon="mdi-folder-open-outline" size="28" />
           <span>{{ pageTitle }}</span>
@@ -439,7 +439,7 @@ onUnmounted(() => {
           >
             <template #no-data><Empty icon="mdi-folder-open-outline" /></template>
             <template #item.name="{ item }">
-              <VBtn variant="text" class="file-name" @click="handleClickFile(rawFile(item))"><VIcon :icon="getMdiIconName(rawFile(item))" size="18" class="app-mr-2" />{{ rawFile(item).name }}</VBtn>
+              <VBtn variant="text" class="file-name" @click="handleClickFile(rawFile(item))"><VIcon :icon="getMdiIconName(rawFile(item))" size="18" class="mr-1" />{{ rawFile(item).name }}</VBtn>
             </template>
             <template #item.type="{ item }">{{ rawFile(item).type === 0 ? t("TXT_CODE_FILE_FOLDER") : filterFileName(rawFile(item).name) }}</template>
             <template #item.size="{ item }">{{ rawFile(item).type === 0 || !rawFile(item).size ? "--" : convertFileSize(String(rawFile(item).size)) }}</template>

@@ -136,7 +136,7 @@ const headers = computed(() => columns.value.map((column) => ({ title: column.ti
 <template>
   <AppDialog :visible="visible" :title="t('TXT_CODE_VERSION_SELECT')" :footer="null"
     :width="isPhone ? '100%' : '900px'" @update:visible="(val) => emit('update:visible', val)">
-    <div class="app-mb-4 text-body-medium text-medium-emphasis">
+    <div class="mb-1 text-body-medium text-medium-emphasis">
         <VIcon start icon="mdi-alert-outline" />
         {{ $t("TXT_CODE_COMMON_IF_DOWNLOADING_FAILS_SWITCH_SOURCES_OR_DOWNLOAD_FROM_THE_ORIGINAL_SITE") }}
     </div>

@@ -62,7 +62,7 @@ defineExpose({ openDialog });
 
 <template>
   <AppDialog v-model:open="open" :max-width="isPhone ? '100%' : '1200px'" :title="t('TXT_CODE_INSTANCE_SETTINGS_TITLE')" :confirm-loading="isLoading" :ok-text="t('TXT_CODE_COMMON_SAVE')" :mask-closable="false" @ok="submit">
-    <VForm v-if="options" ref="formRef" validate-on="input lazy" class="dialog-overflow-container" @submit.prevent="submit">
+    <VForm v-if="options" ref="formRef" validate-on="input lazy" class="instance-fundamental-form overflow-x-hidden" @submit.prevent="submit">
       <p class="text-medium-emphasis">{{ t("TXT_CODE_COMMON_NORMAL_USERS_CAN_ONLY_MODIFY_PART_OF_THE_SETTINGS") }}</p>
       <VRow>
         <VCol cols="12" lg="6"><VTextField v-model="options.config.nickname" :label="t('TXT_CODE_COMMON_INSTANCE_NAME')" disabled hide-details /></VCol>
@@ -73,8 +73,14 @@ defineExpose({ openDialog });
         </VSelect></VCol>
         <VCol cols="12"><VTextarea v-model="options.config.startCommand" :rules="isDockerMode ? commandRules : []" :label="t('TXT_CODE_COMMON_STARTUP_COMMAND')" :placeholder="isDockerMode ? t('TXT_CODE_COMMON_LEAVE_EMPTY_TO_USE_DEFAULT_DOCKER_IMAGE_COMMAND') : t('TXT_CODE_COMMON_ENTER_STARTUP_COMMAND')" :disabled="!isDockerMode" rows="5" hide-details="auto" /></VCol>
         <VCol cols="12" lg="9"><VTextField v-model="options.config.updateCommand" :label="t('TXT_CODE_COMMON_UPDATE_OR_INSTALL_COMMAND')" :hint="updateCommandDesc" persistent-hint :placeholder="UPDATE_CMD_TEMPLATE" :disabled="!isDockerMode" hide-details="auto" /></VCol>
-        <VCol cols="12" lg="3" class="d-flex app-align-center"><VBtn variant="tonal" @click="handleEditDockerEnv">{{ t('TXT_CODE_COMMON_EDIT') }}</VBtn></VCol>
+        <VCol cols="12" lg="3" class="d-flex align-center"><VBtn variant="tonal" @click="handleEditDockerEnv">{{ t('TXT_CODE_COMMON_EDIT') }}</VBtn></VCol>
       </VRow>
     </VForm>
   </AppDialog>
 </template>
+
+<style scoped>
+.instance-fundamental-form {
+  max-height: 80vh;
+}
+</style>

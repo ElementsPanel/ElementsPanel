@@ -374,7 +374,7 @@ async function createInstance() {
       @update:model-value="downloadSelection = $event"
       :instance-type="formData.type"
       :disabled="busy"
-      class="app-mt-3"
+      class="mt-1"
     />
     <component
       :is="javaService.setupComponent"
@@ -382,7 +382,7 @@ async function createInstance() {
       ref="javaSetup"
       :daemon-id="daemonId"
       :disabled="busy"
-      class="app-mt-3"
+      class="mt-1"
       @valid="javaValid = $event"
     />
     <VTextField
@@ -395,7 +395,7 @@ async function createInstance() {
       :rules="[javaPathRule]"
       density="compact"
       hide-details="auto"
-      class="app-mt-3"
+      class="mt-1"
     />
     <VRow v-if="createMethod === QUICKSTART_METHOD.DOCKER" density="compact">
       <VCol cols="12" md="6"
@@ -435,7 +435,7 @@ async function createInstance() {
       persistent-hint
       density="compact"
       hide-details="auto"
-      class="app-mt-3"
+      class="mt-1"
     />
     <VTextarea
       v-model="formData.startCommand"
@@ -445,7 +445,7 @@ async function createInstance() {
       rows="2"
       density="compact"
       hide-details="auto"
-      class="app-mt-3"
+      class="mt-1"
     />
     <VTextarea
       v-model="formData.updateCommand"
@@ -455,7 +455,7 @@ async function createInstance() {
       rows="2"
       density="compact"
       hide-details="auto"
-      class="app-mt-3"
+      class="mt-1"
     />
     <VTextField
       v-model="formData.stopCommand"
@@ -465,7 +465,7 @@ async function createInstance() {
       :rules="[requiredRule]"
       density="compact"
       hide-details="auto"
-      class="app-mt-3"
+      class="mt-1"
     />
     <VFileInput
       v-if="needUpload"
@@ -475,10 +475,10 @@ async function createInstance() {
       prepend-icon="mdi-upload-outline"
       density="compact"
       hide-details="auto"
-      class="app-mt-3"
+      class="mt-1"
       @update:model-value="onFileChange"
     />
-    <div v-else-if="!isDownloadMode" class="desktop-create-hint app-mt-3">
+    <div v-else-if="!isDownloadMode" class="desktop-create-hint mt-1">
       {{ t("TXT_CODE_COMMON_COMPLETE_THE_REQUIRED_FIELDS_TO_CREATE_OTHER_OPTIONS_CAN_BE_CHANGED_IN_INSTANCE_SETTINGS") }}
     </div>
     <div :class="{ 'create-form-actions': $slots['back-action'] }">
@@ -488,7 +488,7 @@ async function createInstance() {
         color="primary"
         :variant="$slots['back-action'] ? 'flat' : 'text'"
         rounded="xl"
-        :class="$slots['back-action'] ? '' : 'app-mt-3 align-self-start'"
+        :class="$slots['back-action'] ? '' : 'mt-1 align-self-start'"
         :disabled="busy || !uFile || (needsJava && !!javaService && !javaValid)"
         :loading="submitting"
         @click="finalConfirm"
@@ -501,7 +501,7 @@ async function createInstance() {
         color="primary"
         :variant="$slots['back-action'] ? 'flat' : 'text'"
         rounded="xl"
-        :class="$slots['back-action'] ? '' : 'app-mt-3 align-self-start'"
+        :class="$slots['back-action'] ? '' : 'mt-1 align-self-start'"
         :disabled="
           busy || (isDownloadMode && !downloadSelection) || (needsJava && !!javaService && !javaValid)
         "
@@ -520,7 +520,7 @@ async function createInstance() {
   <VBtn
     v-if="createdInstanceUuid && needUpload"
     variant="text"
-    class="app-mt-3"
+    class="mt-1"
     @click="emit('nextStep', createdInstanceUuid)"
     >{{ t("TXT_CODE_MINECRAFT_OPEN_CONSOLE") }}</VBtn
   >

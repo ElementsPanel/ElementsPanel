@@ -6,7 +6,7 @@ import { VIcon } from "vuetify/components";
 <template>
   <main class="page-404">
     <VIcon icon="mdi-alert-circle-outline" size="70" />
-    <h2 class="app-mt-24">
+    <h2 class="mt-6">
       {{ t("TXT_CODE_PAGE_NOT_FOUND_DESCRIPTION") }}
     </h2>
   </main>

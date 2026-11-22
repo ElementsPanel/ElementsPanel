@@ -649,7 +649,7 @@ usePolling(() => fetchInstances(true), 10000, { immediate: false });
 
         <div class="dim-list" :class="{ 'dim-list--loading': loading }">
             <div v-if="loading && instances.length === 0" class="dim-loading">
-                <VProgressCircular indeterminate class="app-mb-2" />
+                <VProgressCircular indeterminate class="mb-1" />
                 <p>{{ t("TXT_CODE_DESKTOP_IM_LOADING") }}</p>
             </div>
 

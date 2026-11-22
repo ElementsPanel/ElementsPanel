@@ -420,9 +420,9 @@ onMounted(async () => {
             <div class="mod-manager-content" @dragover.prevent="handleDragover"
               @dragleave.prevent="handleDragleave" @drop.prevent="handleDrop">
               <div v-if="opacity" class="drag-upload-mask">
-                <div class="app-text-center">
+                <div class="text-center">
                   <VIcon icon="mdi-upload" size="48" color="primary" />
-                  <div class="app-mt-2 text-lg font-bold" style="color: var(--color-primary)">
+                  <div class="mt-1 text-lg font-bold" style="color: var(--color-primary)">
                     {{ t("TXT_CODE_DRAG_TO_UPLOAD") }}
                   </div>
                 </div>
@@ -432,7 +432,7 @@ onMounted(async () => {
                 <template #text>
                   <div class="text-left">
                     <div class="font-bold">{{ t("TXT_CODE_MOD_WIN_FILE_LOCK_TITLE") }}</div>
-                    <div class="text-xs opacity-80 font-normal app-mt-1">
+                    <div class="text-xs opacity-80 font-normal mt-0">
                       {{ t("TXT_CODE_MOD_WIN_RUNNING_ALERT") }}
                     </div>
                   </div>
@@ -490,7 +490,7 @@ onMounted(async () => {
                           <template #no-data><Empty :icon="false" compact /></template>
                         </VSelect></VCol>
                       </VRow>
-                      <div class="d-flex app-flex-wrap ga-2 app-justify-end">
+                      <div class="d-flex flex-wrap ga-2 justify-end">
                         <VBtn color="primary" :loading="searchLoading" @click="onSearch"><VIcon start icon="mdi-magnify" />{{ t("TXT_CODE_SEARCH") }}</VBtn>
                         <VBtn variant="tonal" @click="resetSearch">{{ t("TXT_CODE_COMMON_RESET_FILTER_CONDITIONS") }}</VBtn>
                       </div>

@@ -102,13 +102,13 @@ onMounted(() => {
 <template>
   <VDialog v-model="open" max-width="1300" persistent>
     <VCard :title="props.title || t('TXT_CODE_COMMON_DEVICES')">
-      <VCardText class="dialog-overflow-container">
-      <div v-if="props.subTitle" class="text-body-medium text-medium-emphasis app-mb-4">
+      <VCardText class="docker-device-content overflow-x-hidden overflow-y-auto">
+      <div v-if="props.subTitle" class="text-body-medium text-medium-emphasis mb-1">
         <!-- eslint-disable-next-line vue/no-v-html -->
         <span v-html="props.subTitle"></span>
       </div>
 
-      <div class="d-flex app-justify-end app-mb-5">
+      <div class="d-flex justify-end mb-1">
         <VBtn variant="tonal" @click="operation('add')"><VIcon start icon="mdi-plus-circle-outline" />
           {{ t("TXT_CODE_COMMON_ADD_CONFIGURATION") }}
         </VBtn>
@@ -127,9 +127,8 @@ onMounted(() => {
 </template>
 
 <style lang="scss" scoped>
-.dialog-overflow-container {
+.docker-device-content {
   max-height: 600px;
-  overflow-y: auto;
 }
 
 </style>

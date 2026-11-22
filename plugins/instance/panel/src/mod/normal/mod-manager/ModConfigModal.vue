@@ -17,7 +17,7 @@ const emit = defineEmits(["update:visible", "edit"]);
 <template>
   <AppDialog :visible="visible" @update:visible="val => emit('update:visible', val)"
     :title="t('TXT_CODE_CONFIG') + ': ' + currentMod?.name" :footer="null">
-    <VProgressLinear v-if="configLoading" indeterminate color="primary" class="app-mb-2" />
+    <VProgressLinear v-if="configLoading" indeterminate color="primary" class="mb-1" />
     <VList v-else lines="two" class="app-responsive-list">
       <VListItem v-for="item in configFiles" :key="item.path" :title="item.name" :subtitle="item.path">
         <template #prepend><VIcon icon="mdi-file-document-outline" /></template>

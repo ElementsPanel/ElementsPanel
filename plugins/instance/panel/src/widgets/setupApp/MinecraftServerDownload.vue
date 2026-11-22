@@ -80,8 +80,8 @@ watch(selection, (value) => emit("update:modelValue", value), { immediate: true,
         </VAutocomplete>
       </VCol>
     </VRow>
-    <p v-if="description" class="text-medium-emphasis app-mt-3">{{ description }}</p>
-    <VAlert v-if="error" type="error" variant="tonal" class="app-mt-3">
+    <p v-if="description" class="text-medium-emphasis mt-1">{{ description }}</p>
+    <VAlert v-if="error" type="error" variant="tonal" class="mt-1">
       {{ error }}
       <template #append
         ><VBtn variant="text" :disabled="disabled" @click="retry">{{
@@ -89,7 +89,7 @@ watch(selection, (value) => emit("update:modelValue", value), { immediate: true,
         }}</VBtn></template
       >
     </VAlert>
-    <p v-if="server === 'bedrock-server'" class="text-medium-emphasis app-mt-2">
+    <p v-if="server === 'bedrock-server'" class="text-medium-emphasis mt-1">
       {{ t("TXT_CODE_MINECRAFT_BEDROCK_HINT") }}
     </p>
     <a

@@ -128,7 +128,7 @@ const toImageListPage = () => {
           class="images-button text-none"
           @click="selectType(i.type)"
         >
-          <span class="d-flex flex-column ga-2 app-w-100">
+          <span class="d-flex flex-column ga-2 w-100">
             <span class="text-body-large font-weight-bold">{{ i.title }}</span>
             <span class="text-body-medium text-medium-emphasis">{{ i.description }}</span>
           </span>

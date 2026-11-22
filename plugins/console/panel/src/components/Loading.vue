@@ -3,7 +3,7 @@ import { VProgressCircular } from "vuetify/components";
 </script>
 
 <template>
-  <div class="flex app-align-center app-justify-center app-h-100 app-w-100">
+  <div class="d-flex align-center justify-center h-100 w-100">
     <VProgressCircular indeterminate />
   </div>
 </template>

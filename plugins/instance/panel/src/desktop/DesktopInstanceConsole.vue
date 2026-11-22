@@ -159,8 +159,7 @@ const quickOperations = computed(() =>
             title: t("TXT_CODE_COMMON_START"),
             icon: PlayCircleOutlined,
             noConfirm: true,
-            type: "default",
-            class: "button-color-success",
+            type: "primary",
             click: toOpenInstance,
             props: {},
             condition: () => isStopped.value
@@ -217,7 +216,6 @@ const instanceOperations = computed(() =>
             confirmMessage: t("TXT_CODE_INSTANCE_FORCE_STOP_DATA_LOSS_WARNING"),
             icon: CloseOutlined,
             type: "danger",
-            class: "color-warning",
             click: async (): Promise<void> => {
                 try {
                     await killInstance().execute({
@@ -406,14 +404,14 @@ onUnmounted(() => {
                 </div>
                 <template v-for="item in [...quickOperations, ...instanceOperations]" :key="item.title">
                     <VBtn v-if="item.noConfirm" type="button" variant="text" height="auto" min-width="0" class="dim-btn dim-btn--sm text-none" :class="{
-                        'dim-btn--primary': item.class === 'button-color-success',
+                        'dim-btn--primary': item.type === 'primary',
                         'dim-btn--danger': item.type === 'danger'
                     }" :disabled="isOpenInstanceLoading" @click="item.click" :title="item.title">
                         <VIcon :icon="getTerminalActionIcon(item)" size="1em" />
                         {{ item.title }}
                     </VBtn>
                     <VBtn v-else type="button" variant="text" height="auto" min-width="0" class="dim-btn dim-btn--sm text-none" :class="{
-                            'dim-btn--primary': item.class === 'button-color-success',
+                            'dim-btn--primary': item.type === 'primary',
                             'dim-btn--danger': item.type === 'danger'
                         }" :title="item.title" @click="requestAction(item)">
                             <VIcon :icon="getTerminalActionIcon(item)" size="1em" />
@@ -496,7 +494,7 @@ onUnmounted(() => {
                 <VCardText>
                     <p v-for="line in errorDialog.lines" :key="line" class="dim-error-line">{{ line }}</p>
                 </VCardText>
-                <VCardActions class="app-justify-end">
+                <VCardActions class="d-flex justify-end">
                     <VBtn variant="text" @click="errorDialog.show = false">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn>
                 </VCardActions>
             </VCard>

@@ -223,7 +223,7 @@ defineExpose({ refresh, updateAll, canUpdate, preparingTargets, totalUpdates });
       v-if="updates?.uncheckedNodes.length"
       type="warning"
       variant="tonal"
-      class="app-mb-4"
+      class="mb-1"
       :text="
         t('TXT_CODE_PLUGIN_MARKET_UNCHECKED_NODES', {
           nodes: updates.uncheckedNodes.map((node) => node.label).join('、')
@@ -234,7 +234,7 @@ defineExpose({ refresh, updateAll, canUpdate, preparingTargets, totalUpdates });
       v-if="queuedChanges.length"
       type="info"
       variant="tonal"
-      class="app-mb-4"
+      class="mb-1"
       :text="t('TXT_CODE_PLUGIN_MARKET_UPDATES_QUEUE_HINT')"
     />
     <div v-if="loading && !updates && !updatingPlugins" class="plugin-market-loading">
@@ -245,7 +245,7 @@ defineExpose({ refresh, updateAll, canUpdate, preparingTargets, totalUpdates });
       :key="item.update.pluginId"
       type="error"
       variant="tonal"
-      class="app-mb-4"
+      class="mb-1"
       :title="item.update.displayName"
       :text="
         item.error
@@ -260,7 +260,7 @@ defineExpose({ refresh, updateAll, canUpdate, preparingTargets, totalUpdates });
       type="warning"
       variant="tonal"
       :text="t('TXT_CODE_PLUGIN_MARKET_RESTART_REQUIRED')"
-      class="app-mb-4"
+      class="mb-1"
     />
     <VTable v-if="visibleUpdates.length" class="plugin-updates-table">
       <thead>

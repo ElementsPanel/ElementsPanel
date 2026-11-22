@@ -13,7 +13,7 @@ withDefaults(
 </script>
 
 <template>
-  <VRow class="page-toolbar app-align-center" density="comfortable">
+  <VRow class="page-toolbar d-flex align-center" density="comfortable">
     <VCol cols="12" :md="$slots.search ? 3 : 4" class="page-toolbar-title">
       <VIcon :icon="icon" class="page-toolbar-icon" size="28" />
       <span>{{ title }}</span>

@@ -188,7 +188,7 @@ if (props.desktop) {
         />
         <VBtn
           v-if="showFinished"
-          class="app-ml-auto"
+          class="ml-auto"
           size="small"
           variant="text"
           :loading="clearing"
@@ -260,7 +260,7 @@ if (props.desktop) {
             height="5"
             rounded
             :indeterminate="task.state === 'running' && !task.total"
-            class="app-mt-3"
+            class="mt-1"
           />
         </VCard>
       </div>

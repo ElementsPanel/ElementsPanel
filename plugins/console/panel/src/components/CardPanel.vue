@@ -17,7 +17,7 @@ const props = defineProps({
     :class="{
       'card-panel': true,
       'global-card-container-shadow': true,
-      'app-h-100': props.fullHeight,
+      'h-100': props.fullHeight,
       padding: props.padding
     }"
   >

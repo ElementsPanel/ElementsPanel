@@ -54,7 +54,7 @@ function confirm() {
   >
     <VCard :title="t('TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS')">
       <VCardText>
-        <div class="app-mb-6">
+        <div class="mb-2">
           {{
             t(
               mode === "uninstall"

@@ -21,7 +21,7 @@ const {
   <div class="login-card-host">
     <VAlert
       v-if="pageInfoResult?.isFirstStartup"
-      class="app-mb-4"
+      class="mb-1"
       type="info"
       variant="tonal"
     >
@@ -57,7 +57,7 @@ const {
         </p>
         <div class="account-input-container">
           <div v-if="ssoInfo?.enabled && ssoInfo?.onlyMode" class="sso-only-container">
-            <VAlert class="app-mb-20" type="info" variant="tonal">
+            <VAlert class="mb-5" type="info" variant="tonal">
               {{ t("TXT_CODE_SSO_ONLY_MODE_WARN") }}
             </VAlert>
             <VBtn size="large" color="primary" block @click="handleSsoLogin">
@@ -88,7 +88,7 @@ const {
                 />
                 <VTextField
                   v-model="formData.password"
-                  class="app-mt-20 account"
+                  class="mt-5 account"
                   type="password"
                   name="mcsm-pw-input"
                   autocomplete="current-password"
@@ -101,7 +101,7 @@ const {
               <VTextField
                 v-else
                 v-model="formData.code"
-                class="app-mt-20 app-mb-20 account"
+                class="mt-5 mb-5 account"
                 type="text"
                 name="mcsm-pw-2fa"
                 autocomplete="one-time-code"

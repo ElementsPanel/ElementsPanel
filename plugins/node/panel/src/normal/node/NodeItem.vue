@@ -36,7 +36,7 @@ const { compatMenuOpen, compatPanelVersionText, detailList, nodeOperations, copy
   <div style="height: 100%" class="container">
     <VCard style="height: 100%" rounded="xl" flat class="node-card">
       <VCardTitle class="node-card-title">
-        <div class="node-card-heading" :class="{ 'color-danger': !remoteNode?.available }">
+        <div class="node-card-heading" :class="{ 'node-status-error': !remoteNode?.available }">
           <VIcon icon="mdi-server" size="20" class="node-card-icon" />
           <span class="node-card-name" :title="remoteNode?.remarks || remoteNode?.ip">
             {{ remoteNode?.remarks || remoteNode?.ip }}
@@ -99,13 +99,13 @@ const { compatMenuOpen, compatPanelVersionText, detailList, nodeOperations, copy
                     <span v-bind="menuProps" class="node-compat-toggle" role="button">
                       <VTooltip v-if="detail.warn" location="top">
                         <template #activator="{ props: tooltipProps }">
-                          <span v-bind="tooltipProps" class="color-warning">
+                          <span v-bind="tooltipProps" class="node-status-warning">
                             <VIcon icon="mdi-information-outline" size="16" /> {{ detail.value }}
                           </span>
                         </template>
                         <span>{{ detail.warnText }}</span>
                       </VTooltip>
-                      <span v-else :class="detail.success ? 'color-success' : ''">
+                      <span v-else :class="detail.success ? 'node-status-success' : ''">
                         <VIcon
                           v-if="detail.success"
                           icon="mdi-check-circle-outline"
@@ -134,7 +134,7 @@ const { compatMenuOpen, compatPanelVersionText, detailList, nodeOperations, copy
                         <span
                           :class="
                             remoteNode.available && remoteNode.compatibility?.version.ok === false
-                              ? 'color-danger'
+                              ? 'node-status-error'
                               : ''
                           "
                         >
@@ -192,7 +192,7 @@ const { compatMenuOpen, compatPanelVersionText, detailList, nodeOperations, copy
                 <!-- An MCSM node keeps no dropdown: the plugin comparison is meaningless. -->
                 <VTooltip v-else-if="detail.compatibility && detail.danger" location="top">
                   <template #activator="{ props: tooltipProps }">
-                    <span v-bind="tooltipProps" class="color-danger">
+                    <span v-bind="tooltipProps" class="node-status-error">
                       <VIcon icon="mdi-alert-circle-outline" size="16" /> {{ detail.value }}
                     </span>
                   </template>
@@ -204,10 +204,10 @@ const { compatMenuOpen, compatPanelVersionText, detailList, nodeOperations, copy
                       v-bind="tooltipProps"
                       :class="
                         detail.danger
-                          ? 'color-danger'
+                          ? 'node-status-error'
                           : remoteNode?.brand !== 'ElementsPanel'
-                          ? 'color-warning'
-                          : 'color-danger'
+                          ? 'node-status-warning'
+                          : 'node-status-error'
                       "
                     >
                       <VIcon icon="mdi-information-outline" size="16" /> {{ detail.value }}
@@ -219,7 +219,7 @@ const { compatMenuOpen, compatPanelVersionText, detailList, nodeOperations, copy
                   <VProgressCircular indeterminate size="16" width="2" />
                 </span>
                 <span v-else-if="detail.success">
-                  <span class="color-success">
+                  <span class="node-status-success">
                     <VIcon icon="mdi-check-circle-outline" size="16" /> {{ detail.value }}
                   </span>
                 </span>
@@ -244,6 +244,18 @@ const { compatMenuOpen, compatPanelVersionText, detailList, nodeOperations, copy
 </template>
 
 <style lang="scss" scoped>
+.node-status-error {
+  color: var(--color-danger);
+}
+
+.node-status-warning {
+  color: var(--color-warning);
+}
+
+.node-status-success {
+  color: var(--color-success);
+}
+
 
 .node-card {
   color: var(--text-color);

@@ -30,7 +30,7 @@ export const vuetify = createVuetify({
     },
     VList: {
       VDivider: {
-        class: "app-my-6"
+        class: "my-2"
       }
     },
     VCard: {

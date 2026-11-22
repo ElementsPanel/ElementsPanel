@@ -98,7 +98,7 @@ onMounted(async () => {
         <VCol cols="12">
           <CardPanel>
           <template #body>
-            <VProgressLinear v-if="isLoading" indeterminate color="primary" class="app-mb-2" />
+            <VProgressLinear v-if="isLoading" indeterminate color="primary" class="mb-1" />
             <VList v-if="realFiles && realFiles.length > 0" lines="three" class="app-responsive-list">
               <VListItem v-for="item in InstanceConfigsList.filter((entry) => entry.check)" :key="item.path">
                 <template #prepend><VIcon icon="mdi-file-document-outline" /></template>
@@ -106,7 +106,7 @@ onMounted(async () => {
                       <VChip v-if="item.conflict" color="warning" size="small" variant="tonal">
                         {{ t("TXT_CODE_COMMON_DUPLICATE_FILE_CLEAN_UP_DUPLICATES_FIRST") }}
                       </VChip>
-                      <span class="app-ml-2">{{ item.fileName }}</span>
+                      <span class="ml-1">{{ item.fileName }}</span>
                 </VListItemTitle>
                 <VListItemSubtitle>
                       {{ item.info }}

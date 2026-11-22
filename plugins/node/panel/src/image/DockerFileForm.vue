@@ -67,20 +67,20 @@ onMounted(() => {
 
 <template>
   <div>
-    <h5 class="text-title-large app-mb-2">{{ t("TXT_CODE_COMMON_ABOUT_DOCKER_FILES") }}</h5>
+    <h5 class="text-title-large mb-1">{{ t("TXT_CODE_COMMON_ABOUT_DOCKER_FILES") }}</h5>
     <p class="text-body-medium text-medium-emphasis">
         {{ t("TXT_CODE_COMMON_OFFICIAL_DOCUMENTATION_HTTPS_DOCS_DOCKER_COM_ENGINE_REFERENCE_BUILDER") }}
     </p>
-    <h5 class="text-title-large app-mb-2">{{ t("TXT_CODE_COMMON_IMPORTANT_NOTES") }}</h5>
+    <h5 class="text-title-large mb-1">{{ t("TXT_CODE_COMMON_IMPORTANT_NOTES") }}</h5>
     <p class="text-body-medium text-medium-emphasis">
         {{ t("TXT_CODE_DOCKER_WORKSPACE_DIRECTORY_REQUIRED") }}
     </p>
   </div>
 
-  <VTextarea v-model="options.dockerFile" rows="8" class="app-mb-4" />
+  <VTextarea v-model="options.dockerFile" rows="8" class="mb-1" />
 
-  <div class="app-mb-4">
-    <div class="text-body-medium text-medium-emphasis app-mb-1">
+  <div class="mb-1">
+    <div class="text-body-medium text-medium-emphasis mb-0">
       {{ t("TXT_CODE_COMMON_IMAGE_NAME_AND_VERSION_AFTER_CREATION") }}
     </div>
     <div class="d-flex ga-2"><VTextField v-model="options.name" /><VTextField v-model="options.version" /></div>

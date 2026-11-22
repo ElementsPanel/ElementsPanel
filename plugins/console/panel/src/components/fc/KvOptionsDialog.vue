@@ -111,12 +111,12 @@ const operation = (type: "add" | "del", index = 0) => {
 <template>
   <VDialog v-model="open" class="app-dialog" max-width="1300" persistent>
     <VCard :title="props.title">
-      <VCardText class="dialog-overflow-container">
-      <div v-if="props.subTitle" class="text-body-medium text-medium-emphasis app-mb-4">
+      <VCardText class="kv-options-content overflow-x-hidden">
+      <div v-if="props.subTitle" class="text-body-medium text-medium-emphasis mb-1">
         <!-- eslint-disable-next-line vue/no-v-html -->
         <span v-html="props.subTitle"></span>
       </div>
-      <div class="d-flex app-justify-end app-mb-5">
+      <div class="d-flex justify-end mb-1">
         <VBtn variant="tonal" @click="operation('add')">
           <VIcon start icon="mdi-plus-circle-outline" />
           {{ t("TXT_CODE_COMMON_ADD_CONFIGURATION") }}
@@ -163,3 +163,9 @@ const operation = (type: "add" | "del", index = 0) => {
     </VCard>
   </VDialog>
 </template>
+
+<style scoped>
+.kv-options-content {
+  max-height: 80vh;
+}
+</style>

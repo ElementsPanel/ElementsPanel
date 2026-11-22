@@ -36,7 +36,7 @@ const submit = () => {
         v-model="form.name"
         :label="t('TXT_CODE_COMMON_JAVA_NAME')"
         :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')"
-        class="app-mb-4"
+        class="mb-1"
       />
       <VTextField
         v-model="form.path"

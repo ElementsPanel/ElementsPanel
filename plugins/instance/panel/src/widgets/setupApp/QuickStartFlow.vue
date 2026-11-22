@@ -66,10 +66,10 @@ const handleNext = (key: string) => {
       <PageToolbar :title="t('TXT_CODE_COMMON_QUICKLY_DEPLOY_APPLICATION_INSTANCES')" icon="mdi-rocket-launch-outline" />
       <CardPanel class="card-wrapper">
         <template #body>
-      <div v-if="!isLoading" class="pd-24 app-h-100">
-        <VRow v-if="isNormalStep" class="app-h-100" density="compact">
+      <div v-if="!isLoading" class="pd-24 h-100">
+        <VRow v-if="isNormalStep" class="h-100" density="compact">
           <VCol v-if="!isPhone" lg="6">
-            <div class="quickstart-icon flex-center app-h-100">
+            <div class="quickstart-icon d-flex align-center justify-center h-100">
               <Transition name="global-action-float">
                 <VIcon :icon="currentIcon" size="180" />
               </Transition>
@@ -77,7 +77,7 @@ const handleNext = (key: string) => {
           </VCol>
           <VCol lg="6">
             <div class="text-left">
-              <h3 class="app-mb-24">
+              <h3 class="mb-6">
                 {{ formData.title }}
               </h3>
               <div style="max-height: 400px; overflow-x: hidden">
@@ -112,7 +112,7 @@ const handleNext = (key: string) => {
           />
         </div>
       </div>
-      <div v-else class="loading flex-center app-w-100 app-h-100">
+      <div v-else class="loading d-flex align-center justify-center w-100 h-100">
         <Loading />
       </div>
       </template>

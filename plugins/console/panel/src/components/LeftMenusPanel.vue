@@ -42,7 +42,7 @@ defineExpose({
 <template>
   <div v-if="!isPhone" class="menu-body">
     <div class="left-menu" data-app-surface="control">
-      <div v-for="item in props.menus" :key="item.key" class="app-mb-6" @click="handleChangeMenu(item)">
+      <div v-for="item in props.menus" :key="item.key" class="mb-2" @click="handleChangeMenu(item)">
         <LeftMenuBtn
           :title="item.title"
           :icon="item.icon"
@@ -55,9 +55,9 @@ defineExpose({
     </div>
   </div>
 
-  <div v-else class="app-ml-16 app-mr-16 app-mt-8 app-mb-8">
+  <div v-else class="ml-4 mr-4 mt-2 mb-2">
     <VTabs v-model="activeKey" @update:model-value="(key) => setActiveKey(String(key))">
-      <VTab v-for="item in props.menus" :key="item.key" :value="item.key" class="app-mb-6" @click="handleChangeMenu(item)">{{ item.title }}</VTab>
+      <VTab v-for="item in props.menus" :key="item.key" :value="item.key" class="mb-2" @click="handleChangeMenu(item)">{{ item.title }}</VTab>
     </VTabs>
     <div style="text-align: left">
       <slot :name="activeKey"></slot>

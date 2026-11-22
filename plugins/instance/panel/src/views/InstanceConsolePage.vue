@@ -382,7 +382,7 @@ onUnmounted(() => {
             :ignore-design-mode="true"
         /></VCardText>
       </VCard>
-      <VAlert v-else type="warning" variant="tonal" class="app-mt-4">{{
+      <VAlert v-else type="warning" variant="tonal" class="mt-1">{{
         t("TXT_CODE_COMMON_UNABLE_TO_RETRIEVE_REMOTE_DAEMON_INFORMATION")
       }}</VAlert>
 
@@ -390,7 +390,7 @@ onUnmounted(() => {
         <VCol cols="12" lg="7">
           <VCard class="console-state-card" rounded="xl" flat>
             <VCardTitle class="console-state-title">
-              <VIcon icon="mdi-chart-line" color="info" class="app-mr-4" />
+              <VIcon icon="mdi-chart-line" color="info" class="mr-1" />
               {{ t("TXT_CODE_COMMON_STATE") }}
             </VCardTitle>
             <VCardText class="console-state-content">
@@ -408,7 +408,7 @@ onUnmounted(() => {
         <VCol cols="12" lg="5">
           <VCard class="command-history-card" rounded="xl" flat>
             <VCardTitle class="command-history-title">
-              <VIcon icon="mdi-history" color="info" class="app-mr-4" />
+              <VIcon icon="mdi-history" color="info" class="mr-1" />
               {{ t("TXT_CODE_INSTANCE_COMMAND_HISTORY") }}
             </VCardTitle>
             <VCardText class="command-history-content">
@@ -442,7 +442,7 @@ onUnmounted(() => {
             flat
           >
             <VCardTitle class="console-function-title">
-              <VIcon icon="mdi-view-grid-outline" color="info" class="app-mr-4" />
+              <VIcon icon="mdi-view-grid-outline" color="info" class="mr-1" />
               {{ t("TXT_CODE_COMMON_MANAGE_INSTANCE") }}
             </VCardTitle>
             <VCardText class="console-function-content">
@@ -470,7 +470,7 @@ onUnmounted(() => {
         <VCol cols="12" lg="5" class="console-basic-column">
           <VCard ref="basicInfoCard" class="summary-card" rounded="xl" flat>
             <VCardTitle
-              ><VIcon icon="mdi-information-outline" color="info" class="app-mr-4" />{{
+              ><VIcon icon="mdi-information-outline" color="info" class="mr-1" />{{
                 t("TXT_CODE_COMMON_BASIC_INFORMATION")
               }}</VCardTitle
             >

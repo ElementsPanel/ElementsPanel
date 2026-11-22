@@ -12,7 +12,7 @@ export const compatStatusText = (status: IPanelNodeCompatibilityPluginItem["stat
 
 export const compatStatusClass = (status: IPanelNodeCompatibilityPluginItem["status"]) =>
   status === "ok"
-    ? "color-success"
+    ? "node-status-success"
     : status === "mismatch" || status.startsWith("missing_")
-    ? "color-danger"
+    ? "node-status-error"
     : "";

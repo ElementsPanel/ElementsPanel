@@ -161,7 +161,7 @@ onMounted(async () => {
     <div v-if="!isConnect && !socketError" class="terminal-loading">
       <VProgressCircular indeterminate color="white" />
     </div>
-    <div v-show="!socketError" class="terminal-button-group position-absolute-right position-absolute-top">
+    <div v-show="!socketError" class="terminal-button-group position-absolute right-0 top-0">
       <ul>
         <li>
           <VTooltip location="top">
@@ -181,7 +181,7 @@ onMounted(async () => {
         </li>
       </ul>
     </div>
-    <div class="terminal-wrapper global-card-container-shadow app-position-relative" data-app-surface="terminal">
+    <div class="terminal-wrapper global-card-container-shadow position-relative" data-app-surface="terminal">
       <div class="terminal-container">
         <div
           ref="terminalElement"

@@ -192,8 +192,8 @@ onMounted(() => {
 <template>
   <VDialog v-model="open" max-width="1300" persistent>
     <VCard :title="t('TXT_CODE_COMMON_CONTAINER_PORT_MAPPING_CONFIGURATION')">
-      <VCardText class="dialog-overflow-container">
-      <div class="text-body-medium text-medium-emphasis app-mb-4">
+      <VCardText class="docker-ports-content overflow-x-hidden">
+      <div class="text-body-medium text-medium-emphasis mb-1">
         {{
           t("TXT_CODE_INSTANCE_AUTOMATIC_PORT_ALLOCATION_HINT", {
             mcsm_port1: "{mcsm_port1}",
@@ -201,7 +201,7 @@ onMounted(() => {
           })
         }}
       </div>
-      <div class="d-flex app-justify-end app-mb-5">
+      <div class="d-flex justify-end mb-1">
         <VBtn variant="tonal" @click="operation('add')"><VIcon start icon="mdi-plus-circle-outline" />
           {{ t("TXT_CODE_COMMON_ADD_CONFIGURATION") }}
         </VBtn>
@@ -209,7 +209,7 @@ onMounted(() => {
       <VDataTable :headers="columns.map((column) => ({ title: column.title, key: String(column.dataIndex), align: 'center' as const, sortable: false }))" :items="dataSource" :items-per-page="-1" hide-default-footer density="comfortable">
         <template #no-data><Empty icon="mdi-format-list-bulleted" compact /></template>
         <template #item="{ item, index }"><tr><td v-for="column in columns" :key="String(column.dataIndex)">
-          <template v-if="column.dataIndex === 'host' || column.dataIndex === 'container'"><div class="d-flex app-align-center ga-2"><VTextField :model-value="getRecord(item)[String(column.dataIndex)]" type="number" min="1" max="65535" :placeholder="(column as any).placeholder" :disabled="getRecord(item)[column.dataIndex === 'host' ? 'autoAssignHostPort' : 'autoAssignContainerPort']" hide-details="auto" @update:model-value="(value) => (getRecord(item)[String(column.dataIndex)] = value)" /><VCheckbox :model-value="getRecord(item)[column.dataIndex === 'host' ? 'autoAssignHostPort' : 'autoAssignContainerPort']" :label="t('TXT_CODE_COMMON_AUTOMATIC')" hide-details @update:model-value="() => handleAutoAssignChange(getRecord(item), column.dataIndex as 'host' | 'container')" /></div></template>
+          <template v-if="column.dataIndex === 'host' || column.dataIndex === 'container'"><div class="d-flex align-center ga-2"><VTextField :model-value="getRecord(item)[String(column.dataIndex)]" type="number" min="1" max="65535" :placeholder="(column as any).placeholder" :disabled="getRecord(item)[column.dataIndex === 'host' ? 'autoAssignHostPort' : 'autoAssignContainerPort']" hide-details="auto" @update:model-value="(value) => (getRecord(item)[String(column.dataIndex)] = value)" /><VCheckbox :model-value="getRecord(item)[column.dataIndex === 'host' ? 'autoAssignHostPort' : 'autoAssignContainerPort']" :label="t('TXT_CODE_COMMON_AUTOMATIC')" hide-details @update:model-value="() => handleAutoAssignChange(getRecord(item), column.dataIndex as 'host' | 'container')" /></div></template>
           <VSelect v-else-if="column.dataIndex === 'protocol'" :model-value="getRecord(item).protocol" :items="[{ title: 'TCP', value: 'tcp' }, { title: 'UDP', value: 'udp' }]" hide-details @update:model-value="(value) => (getRecord(item).protocol = value)">
             <template #no-data><Empty :icon="false" compact /></template>
           </VSelect>
@@ -221,3 +221,9 @@ onMounted(() => {
     </VCard>
   </VDialog>
 </template>
+
+<style scoped>
+.docker-ports-content {
+  max-height: 80vh;
+}
+</style>

@@ -28,8 +28,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="time-wrapper app-h-100 flex-center app-overflow-hidden">
-    <div class="time app-mb-40">
+  <div class="time-wrapper h-100 d-flex align-center justify-center overflow-hidden">
+    <div class="time mb-10">
       <div class="time-container">
         <div class="h">
           <div class="left" :style="{ '--n': Number(time[0]) }">
@@ -61,12 +61,12 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <div class="flex-center app-mt-12 date">
+      <div class="d-flex align-center justify-center mt-3 date">
         <div>
-          <div class="flex-center">
+          <div class="d-flex align-center justify-center">
             <span>{{ t("TXT_CODE_UI_TIMESTAMP") }}: {{ st }}</span>
           </div>
-          <div class="flex-center">
+          <div class="d-flex align-center justify-center">
             {{ date }}
           </div>
         </div>

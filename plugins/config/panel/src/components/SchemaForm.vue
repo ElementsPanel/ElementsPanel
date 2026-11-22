@@ -256,7 +256,7 @@ const open = (field: SettingField) => {
             type="button"
             prepend-icon="mdi-plus"
             variant="tonal"
-            class="app-mt-3"
+            class="mt-1"
             :disabled="items(field).length >= (field.maxItems ?? 100)"
             @click="addItem(field)"
           >
@@ -413,7 +413,7 @@ const open = (field: SettingField) => {
             nested
           />
         </VCardText>
-        <VCardActions class="app-justify-end">
+        <VCardActions class="d-flex justify-end">
           <VBtn type="button" @click="cancelEditor">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn>
           <VBtn type="submit" color="primary" variant="flat" :disabled="!canConfirm">{{
             t("TXT_CODE_COMMON_CONFIRM")

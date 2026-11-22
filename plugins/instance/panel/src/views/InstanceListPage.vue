@@ -373,7 +373,7 @@ onMounted(async () => {
         </template>
       </PageToolbar>
 
-      <VRow class="instance-actions-row app-align-center">
+      <VRow class="instance-actions-row d-flex align-center">
         <VCol cols="12" md="7">
           <div v-if="multipleMode" class="batch-actions">
             <VBtn variant="text" prepend-icon="mdi-close" @click="exitMultiple">{{

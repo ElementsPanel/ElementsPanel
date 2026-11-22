@@ -1,6 +1,5 @@
 import { prepareApplication } from "./bootstrap";
 import "@/assets/base.scss";
-import "@/assets/tools.scss";
 import "@/assets/variables.scss";
 import "@/assets/variables-dark.scss";
 import "@/assets/global.scss";

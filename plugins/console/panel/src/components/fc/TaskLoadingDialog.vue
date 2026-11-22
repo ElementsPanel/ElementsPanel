@@ -25,21 +25,21 @@ defineExpose({
 
 <template>
   <AppDialog v-model:visible="open" width="600px" :title="props.title" :mask-closable="false" :closable="false" :footer="null" @cancel="cancel">
-    <div class="dialog-overflow-container">
-      <div class="flex flex-center">
+    <div class="task-loading-content overflow-x-hidden">
+      <div class="d-flex align-center justify-center">
         <div>
           <div>
             <h3>
-              <div class="flex flex-center app-mb-20">
+              <div class="d-flex align-center justify-center mb-5">
                 <VProgressCircular indeterminate />
               </div>
-              <div class="flex flex-center" style="gap: 10px">
+              <div class="d-flex align-center justify-center" style="gap: 10px">
                 {{ props.text }}
               </div>
             </h3>
             <span v-if="props.subTitle">
               <div
-                class="flex-center"
+                class="d-flex align-center justify-center"
                 style="font-size: 12px; opacity: 0.8; max-width: 300px; text-align: center"
               >
                 {{ props.subTitle }}
@@ -51,3 +51,9 @@ defineExpose({
     </div>
   </AppDialog>
 </template>
+
+<style scoped>
+.task-loading-content {
+  max-height: 80vh;
+}
+</style>

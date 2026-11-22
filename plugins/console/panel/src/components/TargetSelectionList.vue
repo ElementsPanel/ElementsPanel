@@ -112,7 +112,7 @@ function selectItem(item: TargetSelectionItem, selected: boolean) {
           </div>
         </template>
       </VCheckbox>
-      <div v-if="!pageItems.length" class="pa-4 app-text-center text-medium-emphasis" role="status">
+      <div v-if="!pageItems.length" class="pa-4 text-center text-medium-emphasis" role="status">
         {{ t("TXT_CODE_NO_DATA") }}
       </div>
     </div>
@@ -122,7 +122,7 @@ function selectItem(item: TargetSelectionItem, selected: boolean) {
       :length="pageCount"
       :disabled="disabled"
       density="compact"
-      class="app-mt-2"
+      class="mt-1"
     />
   </div>
 </template>

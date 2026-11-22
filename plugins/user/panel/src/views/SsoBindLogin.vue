@@ -97,22 +97,22 @@ const handleBind = async () => {
     <CardPanel class="sso-bind-card">
       <template #body>
         <div v-show="step === 0" class="sso-bind-body">
-          <h3 class="text-headline-small app-mb-3">
+          <h3 class="text-headline-small mb-1">
             {{ t("TXT_CODE_SSO_BIND_TITLE") }}
           </h3>
-          <p class="app-mb-5">
+          <p class="mb-1">
             {{ t("TXT_CODE_SSO_BIND_DESC") }}
           </p>
 
           <div v-if="loggedInUserName && !showLoginForm">
-            <VAlert type="info" variant="tonal" class="app-mb-5">
+            <VAlert type="info" variant="tonal" class="mb-1">
               <template #text>
                 {{ t('TXT_CODE_SSO_BIND_CURRENT_HINT') }}
                 <strong>{{ loggedInUserName }}</strong>
               </template>
             </VAlert>
 
-            <div class="app-mt-24" style="text-align: right">
+            <div class="mt-6" style="text-align: right">
               <VBtn variant="tonal" @click="showLoginForm = true">
                 <VIcon start icon="mdi-swap-horizontal" />
                 {{ t("TXT_CODE_SSO_BIND_OTHER_ACCOUNT") }}
@@ -124,8 +124,8 @@ const handleBind = async () => {
           </div>
 
           <div v-else>
-            <div v-if="loggedInUserName" class="app-mb-16">
-              <VBtn variant="text" class="app-px-0" @click="showLoginForm = false">
+            <div v-if="loggedInUserName" class="mb-4">
+              <VBtn variant="text" class="px-0" @click="showLoginForm = false">
                 &larr; {{ t("TXT_CODE_SSO_BIND_BACK_CURRENT") }}
               </VBtn>
             </div>
@@ -141,7 +141,7 @@ const handleBind = async () => {
                 />
                 <VTextField
                   v-model="formData.password"
-                  class="app-mt-20 account"
+                  class="mt-5 account"
                   type="password"
                   :placeholder="t('TXT_CODE_COMMON_PASSWORD')"
                   size="large"
@@ -152,7 +152,7 @@ const handleBind = async () => {
               <div v-else>
                 <VTextField
                   v-model="formData.code"
-                  class="app-mt-20 app-mb-20 account"
+                  class="mt-5 mb-5 account"
                   type="text"
                   :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_THE_TWO_FACTOR_AUTHENTICATION_CODE')"
                   size="large"
@@ -163,7 +163,7 @@ const handleBind = async () => {
               </div>
             </form>
 
-            <div class="app-mt-24" style="text-align: right">
+            <div class="mt-6" style="text-align: right">
               <VBtn size="large" color="primary" style="min-width: 95px" @click="handleBind">
                 {{ t("TXT_CODE_SSO_BIND_TITLE") }}
               </VBtn>
@@ -171,13 +171,13 @@ const handleBind = async () => {
           </div>
         </div>
 
-        <div v-show="step === 1" class="sso-bind-body flex-center">
+        <div v-show="step === 1" class="sso-bind-body d-flex align-center justify-center">
           <div style="text-align: center">
             <VProgressCircular indeterminate />
           </div>
         </div>
 
-        <div v-show="step >= 2" class="sso-bind-body flex-center">
+        <div v-show="step >= 2" class="sso-bind-body d-flex align-center justify-center">
           <div style="text-align: center">
             <VIcon icon="mdi-check-circle-outline" size="62" color="success" />
           </div>

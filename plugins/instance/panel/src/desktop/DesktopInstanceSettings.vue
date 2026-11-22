@@ -412,7 +412,7 @@ onBeforeUnmount(() => { generation++; });
           <VIcon icon="mdi-plus-circle-outline" start />{{ t("TXT_CODE_COMMON_ADD_CONFIGURATION") }}
         </VBtn>
       </div>
-      <VAlert v-if="listError" type="error" variant="tonal" class="app-mb-4" :text="listError" />
+      <VAlert v-if="listError" type="error" variant="tonal" class="mb-1" :text="listError" />
       <Empty v-if="!listRows.length" icon="mdi-format-list-bulleted" compact />
       <div v-for="(item, index) in listRows" :key="item.id" class="dis-list-editor__row"
         :style="{ '--dis-list-columns': listFields.length }">

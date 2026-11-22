@@ -12,14 +12,14 @@ const isMdiIcon = computed(() => typeof props.icon === "string" || !props.icon);
 </script>
 
 <template>
-  <div class="actions-button app-w-100">
+  <div class="actions-button w-100">
     <div class="action-col">
-      <VCard class="action-btn-item app-w-100 flex" data-app-surface="control" variant="text" rounded="6px" @click="click">
+      <VCard class="action-btn-item w-100 d-flex" data-app-surface="control" variant="text" rounded="6px" @click="click">
         <div>
           <VIcon v-if="isMdiIcon" :icon="(icon as string) || 'mdi-link-variant'" />
           <component :is="icon" v-else />
         </div>
-        <div class="app-ml-8">
+        <div class="ml-2">
           {{ title }}
         </div>
       </VCard>

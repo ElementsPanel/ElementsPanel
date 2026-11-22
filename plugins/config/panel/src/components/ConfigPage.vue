@@ -673,7 +673,7 @@ watch([scope, currentId, selectedNodeId, pluginGroupsLoading], syncRoute);
             :text="frontendPlugin.error.message"
           />
 
-          <VBtn v-if="frontendPlugin?.error" class="app-mb-4" variant="text" @click="retryFrontend">{{
+          <VBtn v-if="frontendPlugin?.error" class="mb-1" variant="text" @click="retryFrontend">{{
             t("TXT_CODE_COMMON_RETRY")
           }}</VBtn>
           <div v-if="schemaLoading" class="plugin-config-schema-loading">
