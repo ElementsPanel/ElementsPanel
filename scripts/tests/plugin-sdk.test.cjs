@@ -233,13 +233,17 @@ test("production URL identities share login state, registered routes and API aut
     store: "plugins/console/panel/src/stores/useAppStateStore.ts",
     api: "plugins/console/panel/src/services/apiService.ts",
     console: "plugins/console/panel/src/frontend.ts",
-    user: "plugins/user/panel/src/widgets/LoginCard.vue"
+    user: "plugins/user/panel/src/widgets/LoginCard.vue",
+    login: "plugins/user/panel/src/hooks/useLogin.ts"
   };
   const files = {
     router: "frontend/chunks/router.js", store: "frontend/chunks/store.js", api: "frontend/chunks/api.js",
-    console: "frontend/index.js", user: "frontend/index.js"
+    console: "frontend/index.js", user: "frontend/index.js", login: "frontend/chunks/login.js"
   };
-  const moduleUrl = id => `https://panel.test/prefix/plugins/${id === "user" ? "user" : "console"}@revision-${id === "user" ? "user" : "console"}/${files[id]}`;
+  const moduleUrl = id => {
+    const owner = id === "user" || id === "login" ? "user" : "console";
+    return `https://panel.test/prefix/plugins/${owner}@revision-${owner}/${files[id]}`;
+  };
   const aliases = {
     "@/config/router": "router",
     "@/stores/useAppStateStore": "store",
@@ -323,6 +327,7 @@ test("production URL identities share login state, registered routes and API aut
     const mod = new Module(filename, module);
     modules.set(url, mod);
     mod.require = (specifier) => {
+      if (specifier === "../hooks/useLogin") return loadAt("login", moduleUrl("login"));
       const local = specifier.replace("@elementspanel/epanel-plugin-console/", "@/");
       const target = aliases[local];
       if (target) return loadAt(target, moduleUrl(target));

@@ -1,45 +1,29 @@
 <script setup lang="ts">
 import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
-import { ref, computed, onMounted, h } from "vue";
+import { computed, h } from "vue";
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { notification } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
 import CardPanel from "@elementspanel/epanel-plugin-console/components/CardPanel";
 import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToolbar";
 import { arrayFilter } from "@elementspanel/epanel-plugin-console/tools/array";
-import { imageList, containerList } from "@elementspanel/epanel-plugin-console/services/apis/envImage";
 import type { ImageInfo, ContainerInfo } from "@elementspanel/epanel-plugin-console/types";
 import { useAppRouters } from "@elementspanel/epanel-plugin-console/hooks/useAppRouters";
 import { useRoute } from "vue-router";
-import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { VBtn, VCol, VContainer, VDataTable, VRow } from "vuetify/components";
+import { useNodeImages } from "./hooks/useNodeImages";
 
 const { toPage } = useAppRouters();
 const route = useRoute();
 const daemonId: string = String(route.query.daemonId ?? "");
 
-const { execute: execImageList, state: images, isLoading: imageListLoading } = imageList();
-const getImageList = async () => {
-  try {
-    await execImageList({
-      params: {
-        daemonId: daemonId ?? ""
-      },
-      method: "GET"
-    });
-    if (images.value) imageDataSource.value = images.value;
-  } catch (err: any) {
-    console.error(err);
-    return Modal.error({
-      centered: true,
-      closable: true,
-      content: err.message,
-      title: t("TXT_CODE_COMMON_ERROR")
-    });
-  }
-};
-
-const imageDataSource = ref<ImageInfo[]>();
+const {
+  imageListLoading,
+  containerListLoading,
+  getImageList,
+  imageDataSource,
+  delImage,
+  containerDataSource
+} = useNodeImages({ daemonId });
 const imageColumns = computed(() => {
   return arrayFilter<any>([
     {
@@ -90,26 +74,6 @@ const showDetail = (info: ImageInfo | ContainerInfo) => {
   });
 };
 
-const delImage = async (item: ImageInfo) => {
-  try {
-    await execImageList({
-      params: {
-        daemonId: daemonId ?? "",
-        imageId: item?.RepoTags?.[0] || ""
-      },
-      method: "DELETE"
-    });
-    notification["info"]({
-      message: t("TXT_CODE_COMMON_THE_DELETE_COMMAND_HAS_BEEN_SENT"),
-      description: t("TXT_CODE_DOCKER_IMAGE_DELETION_PENDING_HINT")
-    });
-  } catch (err: any) {
-    console.error(err);
-    return reportErrorMsg(err.message);
-  }
-};
-
-const containerDataSource = ref<ContainerInfo[]>();
 const containerColumns = computed(() => {
   return arrayFilter<any>([
     {
@@ -151,25 +115,6 @@ const containerColumns = computed(() => {
   ]);
 });
 
-const {
-  execute: execContainerList,
-  state: containers,
-  isLoading: containerListLoading
-} = containerList();
-const getContainerList = async () => {
-  try {
-    await execContainerList({
-      params: {
-        daemonId: daemonId ?? ""
-      }
-    });
-    if (containers.value) containerDataSource.value = containers.value;
-  } catch (err: any) {
-    console.error(err);
-    return reportErrorMsg(err.message);
-  }
-};
-
 const toNewImagePage = () => {
   toPage({
     path: "/node/image/new",
@@ -178,11 +123,6 @@ const toNewImagePage = () => {
     }
   });
 };
-
-onMounted(async () => {
-  await getImageList();
-  await getContainerList();
-});
 </script>
 
 <template>

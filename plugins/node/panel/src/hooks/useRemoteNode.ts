@@ -1,11 +1,9 @@
-import { useOverviewInfo, type ComputedNodeInfo } from "@elementspanel/epanel-plugin-console/hooks/useOverviewInfo";
-import { computed, ref, watch } from "vue";
 import {
-  addNode as addNodeApi,
-  connectNode,
-  deleteNode as deleteNodeApi,
-  editNode as editNodeApi
-} from "../api";
+  useOverviewInfo,
+  type ComputedNodeInfo
+} from "@elementspanel/epanel-plugin-console/hooks/useOverviewInfo";
+import { computed, ref, watch } from "vue";
+import { useNodeOperations } from "../services/nodeOperations";
 
 export interface RemoteNodeDetail {
   ip: string;
@@ -16,6 +14,7 @@ export interface RemoteNodeDetail {
 }
 
 export function useRemoteNode(options: { poll?: boolean } = {}) {
+  const operations = useNodeOperations();
   const operationForm = ref({ name: "", current: 1, pageSize: 8, total: 0 });
   const ALL = "all";
   const currentStatus = ref<any>(ALL);
@@ -51,20 +50,18 @@ export function useRemoteNode(options: { poll?: boolean } = {}) {
   });
 
   const addNode = async (data: any) => {
-    await addNodeApi().execute({ data });
+    await operations.add(data);
     await refresh(true);
   };
 
   const deleteNode = async (uuid: string) => {
-    await deleteNodeApi().execute({ params: { uuid } });
+    await operations.remove(uuid);
     await refresh(true);
   };
 
   const updateNode = async (uuid: string, data: any) => {
-    const { execute } = editNodeApi();
-    const { execute: tryConnectNode } = connectNode();
-    await execute({ params: { uuid }, data });
-    await tryConnectNode({ params: { uuid } });
+    await operations.edit(uuid, data);
+    await operations.connect(uuid);
     await refresh(true);
   };
 

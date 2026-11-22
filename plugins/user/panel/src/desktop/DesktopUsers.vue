@@ -3,395 +3,110 @@ import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import DesktopDialog from "@elementspanel/epanel-plugin-console/components/DesktopDialog";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import { usePluginService, type FrontendDesktopService } from "@elements-panel/sdk";
-import { addUser as addUserApi, deleteUser as deleteUserApi, editUserInfo as editUserInfoApi, getUserInfo as getUserInfoApi, remoteInstances, remoteNodeList, updateUserInstance, userInfoApiAdvanced } from "@elementspanel/epanel-plugin-console/services/apis";
-import { computeNodeName } from "@elementspanel/epanel-plugin-console/tools/nodes";
-import type { NodeStatus } from "@elementspanel/epanel-plugin-console/types";
 import { INSTANCE_STATUS } from "@elementspanel/epanel-plugin-console/types/const";
-import type { BaseUserInfo, EditUserInfo, UserInstance } from "@elementspanel/epanel-plugin-console/types/user";
-import { notifyDesktop } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
-import { computed, onMounted, onUnmounted, reactive, ref, shallowRef, watch } from "vue";
-import { VBtn, VChip, VDataTable, VIcon, VRadio, VRadioGroup, VSelect, VTextField } from "vuetify/components";
+import { computed } from "vue";
+import {
+  VBtn,
+  VChip,
+  VDataTable,
+  VIcon,
+  VRadio,
+  VRadioGroup,
+  VSelect,
+  VTextField
+} from "vuetify/components";
+import { useDesktopUserList } from "../hooks/useDesktopUserList";
+import { useDesktopUserEditor } from "../hooks/useDesktopUserEditor";
+import { useUserAssignments } from "../hooks/useUserAssignments";
 
-const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
-
+const ConfirmDialog = computed(
+  () => usePluginService<FrontendDesktopService>("desktop")?.confirmation
+);
 const PlusOutlined = "mdi-plus";
 const EditOutlined = "mdi-pencil-outline";
 const LinkOutlined = "mdi-link-variant";
-
-const { execute: fetchUsersApi, isLoading: loading } = getUserInfoApi();
-const { execute: addUserApiExec } = addUserApi();
-const { execute: editUserApiExec } = editUserInfoApi();
-const { execute: deleteUserApiExec } = deleteUserApi();
-const { execute: updateUserInstanceExec } = updateUserInstance();
-const { execute: fetchUserAdvanced } = userInfoApiAdvanced();
-
-const users = ref<BaseUserInfo[]>([]);
-const total = ref(0);
-const searchQuery = ref("");
-const currentPage = ref(1);
-const pageSize = 20;
-
+const {
+  users,
+  total,
+  loading,
+  fetchUsers,
+  searchQuery,
+  currentPage,
+  pageSize,
+  onSearchInput,
+  maxPage,
+  prevPage,
+  nextPage
+} = useDesktopUserList();
+const {
+  showDialog,
+  dialogMode,
+  form,
+  formError,
+  saving,
+  showDeleteConfirm,
+  deletingUser,
+  openAddDialog,
+  openEditDialog,
+  closeDialog,
+  saveUser,
+  confirmDelete,
+  executeDelete,
+  cancelDelete
+} = useDesktopUserEditor({ fetchUsers });
+const {
+  showAssignDialog,
+  assignedInstances,
+  assignSaving,
+  canAssignInstances,
+  nodeRequest,
+  nodes,
+  instances,
+  instancesLoading,
+  currentRemoteNode,
+  currentRemoteNodeId,
+  assignNodeItems,
+  assignForm,
+  openAssignDialog,
+  closeAssignDialog,
+  loadRemoteInstances,
+  handleAssignNodeChange,
+  handleAssignSearch,
+  isInstanceAssigned,
+  addAssignedInstance,
+  removeAssignedInstance,
+  saveAssignedInstances
+} = useUserAssignments({ fetchUsers });
 const userHeaders = [
-    { title: t("TXT_CODE_USER_USERNAME"), key: "userName" },
-    { title: t("TXT_CODE_FILE_PERMISSIONS"), key: "permission" },
-    { title: t("TXT_CODE_COMMON_REGISTRATION_TIME"), key: "registerTime" },
-    { title: t("TXT_CODE_COMMON_LAST_LOGIN"), key: "loginTime" },
-    { title: t("TXT_CODE_COMMON_INSTANCES"), key: "instances" },
-    { title: "2FA", key: "twoFactor", sortable: false },
-    { title: "SSO", key: "sso", sortable: false },
-    { title: t("TXT_CODE_OPERATE"), key: "actions", sortable: false }
+  { title: t("TXT_CODE_USER_USERNAME"), key: "userName" },
+  { title: t("TXT_CODE_FILE_PERMISSIONS"), key: "permission" },
+  { title: t("TXT_CODE_COMMON_REGISTRATION_TIME"), key: "registerTime" },
+  { title: t("TXT_CODE_COMMON_LAST_LOGIN"), key: "loginTime" },
+  { title: t("TXT_CODE_COMMON_INSTANCES"), key: "instances" },
+  { title: "2FA", key: "twoFactor", sortable: false },
+  { title: "SSO", key: "sso", sortable: false },
+  { title: t("TXT_CODE_OPERATE"), key: "actions", sortable: false }
 ];
 
-const showDialog = ref(false);
-const dialogMode = ref<"add" | "edit">("add");
-const editingUser = ref<BaseUserInfo | null>(null);
-const form = reactive({
-    username: "",
-    password: "",
-    permission: 1
-});
-const formError = ref("");
-const saving = ref(false);
-
-const showDeleteConfirm = ref(false);
-const deletingUser = ref<BaseUserInfo | null>(null);
-
-const showAssignDialog = ref(false);
-const assignTargetUser = ref<BaseUserInfo | null>(null);
-const assignedInstances = ref<UserInstance[]>([]);
-const assignSaving = ref(false);
-
-const instanceService = computed(() => usePluginService("instance"));
-const nodeService = computed(() => usePluginService("node"));
-const canAssignInstances = computed(() => !!instanceService.value && !!nodeService.value);
-// Only create domain requests while the optional resource-assignment UI is open.
-const nodeRequest = shallowRef<ReturnType<typeof remoteNodeList>>();
-const instanceRequest = shallowRef<ReturnType<typeof remoteInstances>>();
-const nodes = computed(() => nodeRequest.value?.state.value);
-const instances = computed(() => instanceRequest.value?.state.value);
-const instancesLoading = computed(() => instanceRequest.value?.isLoading.value ?? false);
-let assignmentRequest = 0;
-const currentRemoteNode = ref<NodeStatus>();
-const currentRemoteNodeId = ref("");
-const assignNodeItems = computed(() => (nodes.value || []).map((node) => ({
-    title: computeNodeName(node.ip, node.available, node.remarks),
-    value: node.uuid,
-    disabled: !node.available
-})));
-const assignForm = reactive({
-    instanceName: "",
-    currentPage: 1,
-    pageSize: 10,
-    status: ""
-});
-
-onMounted(() => {
-    fetchUsers();
-});
-
-let latestRequest = 0;
-const fetchUsers = async () => {
-    const request = ++latestRequest;
-    try {
-        const res = await fetchUsersApi({
-            params: {
-                userName: searchQuery.value || "",
-                page: currentPage.value,
-                page_size: pageSize,
-                role: ""
-            }
-        });
-        if (request === latestRequest && res?.value) {
-            users.value = res.value.data || [];
-            total.value = res.value.total || 0;
-        }
-    } catch {
-        if (request !== latestRequest) return;
-        users.value = [];
-        total.value = 0;
-    }
-};
-
-let searchTimer: ReturnType<typeof setTimeout> | undefined;
-onUnmounted(() => {
-    latestRequest++;
-    clearTimeout(searchTimer);
-});
-const onSearchInput = () => {
-    if (searchTimer) clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => {
-        currentPage.value = 1;
-        fetchUsers();
-    }, 300);
-};
-
-const maxPage = computed(() => Math.max(1, Math.ceil(total.value / pageSize)));
-
-const prevPage = () => {
-    if (currentPage.value > 1) {
-        currentPage.value--;
-        fetchUsers();
-    }
-};
-
-const nextPage = () => {
-    if (currentPage.value < maxPage.value) {
-        currentPage.value++;
-        fetchUsers();
-    }
-};
-
-const openAddDialog = () => {
-    dialogMode.value = "add";
-    editingUser.value = null;
-    form.username = "";
-    form.password = "";
-    form.permission = 1;
-    formError.value = "";
-    showDialog.value = true;
-};
-
-const openEditDialog = (user: BaseUserInfo) => {
-    dialogMode.value = "edit";
-    editingUser.value = user;
-    form.username = user.userName;
-    form.password = "";
-    form.permission = user.permission;
-    formError.value = "";
-    showDialog.value = true;
-};
-
-const closeDialog = () => {
-    showDialog.value = false;
-    formError.value = "";
-};
-
-const saveUser = async () => {
-    formError.value = "";
-
-    if (!form.username.trim()) {
-        formError.value = t("TXT_CODE_DESKTOP_USERS_USERNAME_REQUIRED");
-        return;
-    }
-
-    if (dialogMode.value === "add" && !form.password) {
-        formError.value = t("TXT_CODE_DESKTOP_USERS_PASSWORD_REQUIRED");
-        return;
-    }
-
-    saving.value = true;
-    try {
-        if (dialogMode.value === "add") {
-            await addUserApiExec({
-                data: {
-                    username: form.username.trim(),
-                    password: form.password,
-                    permission: form.permission
-                }
-            });
-        } else if (editingUser.value) {
-            const editData: EditUserInfo = {
-                uuid: editingUser.value.uuid,
-                userName: form.username.trim(),
-                passWord: form.password || undefined,
-                permission: form.permission,
-                loginTime: editingUser.value.loginTime,
-                registerTime: editingUser.value.registerTime,
-                instances: editingUser.value.instances || [],
-                apiKey: editingUser.value.apiKey || "",
-                isInit: editingUser.value.isInit || false,
-                secret: editingUser.value.secret || "",
-                open2FA: editingUser.value.open2FA || false,
-                ssoSub: editingUser.value.ssoSub || "",
-                ssoBound: editingUser.value.ssoBound || false
-            };
-            await editUserApiExec({
-                data: {
-                    config: editData,
-                    uuid: editingUser.value.uuid
-                }
-            });
-        }
-        showDialog.value = false;
-        fetchUsers();
-    } catch (e: any) {
-        formError.value = e?.message || "Error";
-    } finally {
-        saving.value = false;
-    }
-};
-
-const confirmDelete = (user: BaseUserInfo) => {
-    deletingUser.value = user;
-    showDeleteConfirm.value = true;
-};
-
-const executeDelete = async () => {
-    if (!deletingUser.value) return;
-    saving.value = true;
-    try {
-        await deleteUserApiExec({
-            data: [deletingUser.value.uuid]
-        });
-        showDeleteConfirm.value = false;
-        deletingUser.value = null;
-        fetchUsers();
-    } catch {
-    } finally {
-        saving.value = false;
-    }
-};
-
-const cancelDelete = () => {
-    showDeleteConfirm.value = false;
-    deletingUser.value = null;
-};
-
-const openAssignDialog = async (user: BaseUserInfo) => {
-    if (!canAssignInstances.value) return;
-    const request = ++assignmentRequest;
-    nodeRequest.value = remoteNodeList();
-    instanceRequest.value = remoteInstances();
-    assignTargetUser.value = user;
-    try {
-        const res = await fetchUserAdvanced({
-            params: { uuid: user.uuid, advanced: true }
-        });
-        if (request !== assignmentRequest) return;
-        if (res?.value?.instances) {
-            assignedInstances.value = res.value.instances.map((inst: any) => ({
-                instanceUuid: inst.instanceUuid,
-                daemonId: inst.daemonId,
-                nickname: inst.nickname || inst.config?.nickname || t("TXT_CODE_DESKTOP_IM_UNNAMED"),
-                status: inst.status ?? 0,
-                hostIp: inst.hostIp || ""
-            }));
-        } else {
-            assignedInstances.value = [];
-        }
-    } catch {
-        if (request !== assignmentRequest) return;
-        assignedInstances.value = user.instances ? [...user.instances] : [];
-    }
-    assignForm.instanceName = "";
-    assignForm.currentPage = 1;
-    assignForm.status = "";
-    showAssignDialog.value = true;
-
-    await initAssignNodes();
-};
-
-const closeAssignDialog = () => {
-    assignmentRequest++;
-    showAssignDialog.value = false;
-    assignTargetUser.value = null;
-    assignedInstances.value = [];
-    nodeRequest.value = undefined;
-    instanceRequest.value = undefined;
-    currentRemoteNode.value = undefined;
-    currentRemoteNodeId.value = "";
-};
-
-watch([instanceService, nodeService], closeAssignDialog, { flush: "sync" });
-onUnmounted(closeAssignDialog);
-
-const initAssignNodes = async () => {
-    const request = assignmentRequest;
-    await nodeRequest.value?.execute();
-    if (request !== assignmentRequest) return;
-    if (nodes?.value?.length) {
-        nodes.value.sort((a, b) => (a.available === b.available ? 0 : a.available ? -1 : 1));
-        currentRemoteNode.value = nodes.value[0];
-        currentRemoteNodeId.value = nodes.value[0].uuid;
-        await loadRemoteInstances();
-    }
-};
-
-const loadRemoteInstances = async () => {
-    if (!currentRemoteNode.value) return;
-    try {
-        await instanceRequest.value?.execute({
-            params: {
-                daemonId: currentRemoteNode.value.uuid,
-                page: assignForm.currentPage,
-                page_size: assignForm.pageSize,
-                instance_name: assignForm.instanceName.trim(),
-                status: assignForm.status
-            }
-        });
-    } catch {
-    }
-};
-
-const handleAssignNodeChange = async (nodeId: string) => {
-    const node = nodes.value?.find((item) => item.uuid === nodeId);
-    if (!node) return;
-    currentRemoteNode.value = node;
-    currentRemoteNodeId.value = node.uuid;
-    assignForm.currentPage = 1;
-    await loadRemoteInstances();
-};
-
-const handleAssignSearch = async () => {
-    assignForm.currentPage = 1;
-    await loadRemoteInstances();
-};
-
-const isInstanceAssigned = (instanceUuid: string): boolean => {
-    return assignedInstances.value.some(i => i.instanceUuid === instanceUuid);
-};
-
-const addAssignedInstance = (instance: UserInstance) => {
-    if (!isInstanceAssigned(instance.instanceUuid)) {
-        assignedInstances.value.push(instance);
-    }
-};
-
-const removeAssignedInstance = (instanceUuid: string) => {
-    assignedInstances.value = assignedInstances.value.filter(i => i.instanceUuid !== instanceUuid);
-};
-
-const saveAssignedInstances = async () => {
-    if (!assignTargetUser.value || !canAssignInstances.value) return;
-    assignSaving.value = true;
-    try {
-        await updateUserInstanceExec({
-            data: {
-                config: {
-                    instances: assignedInstances.value
-                },
-                uuid: assignTargetUser.value.uuid
-            }
-        });
-        notifyDesktop(t("TXT_CODE_DESKTOP_USERS_ASSIGN_SUCCESS"), "success");
-        showAssignDialog.value = false;
-        assignTargetUser.value = null;
-        assignedInstances.value = [];
-        fetchUsers();
-    } catch (e: any) {
-        notifyDesktop(e?.message || "Error", "error");
-    } finally {
-        assignSaving.value = false;
-    }
-};
-
 const permissionLabel = (perm: number): string => {
-    if (perm >= 10) return t("TXT_CODE_COMMON_ADMIN");
-    if (perm >= 1) return t("TXT_CODE_COMMON_USER");
-    return "--";
+  if (perm >= 10) return t("TXT_CODE_COMMON_ADMIN");
+  if (perm >= 1) return t("TXT_CODE_COMMON_USER");
+  return "--";
 };
 
 const formatTime = (time: string): string => {
-    if (!time) return "--";
-    try {
-        return new Date(time).toLocaleString();
-    } catch {
-        return time;
-    }
+  if (!time) return "--";
+  try {
+    return new Date(time).toLocaleString();
+  } catch {
+    return time;
+  }
 };
 
 const getInstanceStatusLabel = (status: number): string => {
-    return INSTANCE_STATUS[status as keyof typeof INSTANCE_STATUS] || t("TXT_CODE_DESKTOP_IM_UNKNOWN");
+  return (
+    INSTANCE_STATUS[status as keyof typeof INSTANCE_STATUS] || t("TXT_CODE_DESKTOP_IM_UNKNOWN")
+  );
 };
 </script>
 

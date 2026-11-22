@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import { router } from "@elementspanel/epanel-plugin-console/config/router";
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { loginUser } from "@elementspanel/epanel-plugin-console/services/apis";
 import { useAppConfigStore } from "@elementspanel/epanel-plugin-console/stores/useAppConfigStore";
-import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
-import { sleep } from "@elementspanel/epanel-plugin-console/tools/common";
-import { notifyDesktop, notifyDesktopError } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import { onBeforeUnmount, onMounted, reactive, ref } from "vue";
+import { useDesktopLogin } from "../hooks/useDesktopLogin";
 import { desktopIconDarkUrl, desktopIconUrl } from "../assets";
 import { VBtn, VIcon, VTextField } from "vuetify/components";
 
@@ -16,21 +13,14 @@ const LockOutlined = "mdi-lock-outline";
 const UserOutlined = "mdi-account-outline";
 
 const emit = defineEmits<{
-    (e: "login-success"): void;
+  (e: "login-success"): void;
 }>();
 
-const formData = reactive({
-    username: "",
-    password: "",
-    code: ""
-});
+const { formData, loginStep, is2Fa, handleLogin, handleNext } = useDesktopLogin(() =>
+  emit("login-success")
+);
 
-const { execute: login } = loginUser();
-const { updateUserInfo } = useAppStateStore();
 const { isDarkTheme } = useAppConfigStore();
-
-const loginStep = ref(0);
-const is2Fa = ref(false);
 
 const windowRef = ref<HTMLElement | null>(null);
 const pos = reactive({ x: 0, y: 0 });
@@ -38,93 +28,64 @@ const isDragging = ref(false);
 const dragStart = reactive({ x: 0, y: 0 });
 
 const fitWindow = () => {
-    const bounds = windowRef.value?.getBoundingClientRect();
-    const width = Math.min(bounds?.width || 380, window.innerWidth);
-    const height = Math.min(bounds?.height || 460, window.innerHeight);
-    pos.x = Math.max(0, Math.min(pos.x, window.innerWidth - width));
-    pos.y = Math.max(0, Math.min(pos.y, window.innerHeight - height));
+  const bounds = windowRef.value?.getBoundingClientRect();
+  const width = Math.min(bounds?.width || 380, window.innerWidth);
+  const height = Math.min(bounds?.height || 460, window.innerHeight);
+  pos.x = Math.max(0, Math.min(pos.x, window.innerWidth - width));
+  pos.y = Math.max(0, Math.min(pos.y, window.innerHeight - height));
 };
 
 const centerWindow = () => {
-    const bounds = windowRef.value?.getBoundingClientRect();
-    pos.x = Math.round((window.innerWidth - (bounds?.width || 380)) / 2);
-    pos.y = Math.round((window.innerHeight - (bounds?.height || 460)) / 2);
-    fitWindow();
+  const bounds = windowRef.value?.getBoundingClientRect();
+  pos.x = Math.round((window.innerWidth - (bounds?.width || 380)) / 2);
+  pos.y = Math.round((window.innerHeight - (bounds?.height || 460)) / 2);
+  fitWindow();
 };
 
 const onMouseDown = (e: MouseEvent) => {
-    const target = e.target as HTMLElement;
-    if (target.closest("input") || target.closest("button") || target.closest("a")) return;
-    isDragging.value = true;
-    dragStart.x = e.clientX - pos.x;
-    dragStart.y = e.clientY - pos.y;
-    e.preventDefault();
+  const target = e.target as HTMLElement;
+  if (target.closest("input") || target.closest("button") || target.closest("a")) return;
+  isDragging.value = true;
+  dragStart.x = e.clientX - pos.x;
+  dragStart.y = e.clientY - pos.y;
+  e.preventDefault();
 };
 
 const isOutsideBrowser = (e: MouseEvent) => {
-    return e.clientX <= 0 || e.clientX >= window.innerWidth - 1 ||
-        e.clientY <= 0 || e.clientY >= window.innerHeight - 1;
+  return (
+    e.clientX <= 0 ||
+    e.clientX >= window.innerWidth - 1 ||
+    e.clientY <= 0 ||
+    e.clientY >= window.innerHeight - 1
+  );
 };
 
 const onMouseMove = (e: MouseEvent) => {
-    if (!isDragging.value) return;
-    if (isOutsideBrowser(e)) {
-        isDragging.value = false;
-        return;
-    }
-    pos.x = e.clientX - dragStart.x;
-    pos.y = e.clientY - dragStart.y;
+  if (!isDragging.value) return;
+  if (isOutsideBrowser(e)) {
+    isDragging.value = false;
+    return;
+  }
+  pos.x = e.clientX - dragStart.x;
+  pos.y = e.clientY - dragStart.y;
 };
 
 const onMouseUp = () => {
-    isDragging.value = false;
+  isDragging.value = false;
 };
 
 onMounted(() => {
-    centerWindow();
-    window.addEventListener("resize", fitWindow);
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+  centerWindow();
+  window.addEventListener("resize", fitWindow);
+  document.addEventListener("mousemove", onMouseMove);
+  document.addEventListener("mouseup", onMouseUp);
 });
 
 onBeforeUnmount(() => {
-    window.removeEventListener("resize", fitWindow);
-    document.removeEventListener("mousemove", onMouseMove);
-    document.removeEventListener("mouseup", onMouseUp);
+  window.removeEventListener("resize", fitWindow);
+  document.removeEventListener("mousemove", onMouseMove);
+  document.removeEventListener("mouseup", onMouseUp);
 });
-
-const handleLogin = async () => {
-    if (!formData.username.trim() || !formData.password.trim()) {
-        return notifyDesktop(t("TXT_CODE_COMMON_PLEASE_COMPLETE_YOUR_ACCOUNT_PROFILE"), "error");
-    }
-    try {
-        loginStep.value = 1;
-        await sleep(600);
-        const result = await login({ data: formData });
-        if (result.value === "NEED_2FA") {
-            loginStep.value = 0;
-            is2Fa.value = true;
-            return;
-        }
-        is2Fa.value = false;
-        await sleep(600);
-        await handleNext();
-    } catch (error: any) {
-        loginStep.value = 0;
-        notifyDesktopError(error);
-    }
-};
-
-const handleNext = async () => {
-    try {
-        await updateUserInfo();
-        emit("login-success");
-    } catch (error: any) {
-        console.error(error);
-        loginStep.value = 0;
-        notifyDesktop({ message: t("TXT_CODE_COMMON_PAGE_NOT_FUNCTIONING_CORRECTLY"), description: t("TXT_CODE_COMMON_UNABLE_TO_LOAD_LOGIN_INFORMATION_REFRESH_THE_PAGE_IF_IT_STILL_FAILS_CHECK_YOUR_NETWORK_OR") }, "error");
-    }
-};
 </script>
 
 <template>

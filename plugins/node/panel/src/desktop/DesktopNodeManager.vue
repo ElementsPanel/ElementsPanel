@@ -2,22 +2,21 @@
 import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import DesktopDialog from "@elementspanel/epanel-plugin-console/components/DesktopDialog";
 import { usePluginService, type FrontendDesktopService } from "@elements-panel/sdk";
-import { useOverviewInfo } from "@elementspanel/epanel-plugin-console/hooks/useOverviewInfo";
-import { testSocketConnection, SocketStatus } from "@elementspanel/epanel-plugin-console/hooks/useSocketIo";
-import { usePolling } from "@elementspanel/epanel-plugin-console/hooks/usePolling";
+import { SocketStatus } from "@elementspanel/epanel-plugin-console/hooks/useSocketIo";
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { addNode, connectNode, deleteNode, editNode, remoteNodeList } from "../api";
-import { getValidatorErrorMsg, reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import type { NodeStatus } from "@elementspanel/epanel-plugin-console/types";
-import { computed, onUnmounted, reactive, ref } from "vue";
+import { computed } from "vue";
 import { VBtn, VDataTable, VIcon, VTextField, VTooltip } from "vuetify/components";
+import { useNodeList } from "../hooks/useNodeList";
+import { useDesktopNodeEditor } from "../hooks/useDesktopNodeEditor";
 
 const desktop = computed(() => usePluginService<FrontendDesktopService>("desktop"));
 const ConfirmDialog = computed(() => desktop.value?.confirmation);
-const pluginConfigAvailable = computed(() =>
-  desktop.value?.views.some(
-    (view) => view.id === "node-plugin-config" && (!view.condition || view.condition())
-  )
+const pluginConfigAvailable = computed(
+  () =>
+    desktop.value?.views.some(
+      (view) => view.id === "node-plugin-config" && (!view.condition || view.condition())
+    )
 );
 
 const openPluginConfig = (node: NodeStatus) => {
@@ -43,269 +42,25 @@ const nodeHeaders = [
   { title: t("TXT_CODE_OPERATE"), key: "actions", sortable: false }
 ];
 
-const { execute: fetchNodesApi, isLoading: loading } = remoteNodeList();
-const { execute: fetchNodesSilentApi } = remoteNodeList();
-const { execute: addNodeApiExec } = addNode();
-const { execute: editNodeApiExec } = editNode();
-const { execute: deleteNodeApiExec } = deleteNode();
-const { execute: connectNodeApiExec } = connectNode();
-
-const { state: allDaemonData } = useOverviewInfo();
-
-const nodes = ref<NodeStatus[]>([]);
-const searchQuery = ref("");
-
-const socketStatusMap = reactive<Record<string, SocketStatus>>({});
-const socketChecks = new Map<string, AbortController>();
-let disposed = false;
-let latestFetch = 0;
-const reconnecting = new Set<string>();
-
-const nodeCompatMap = computed<Record<string, IPanelNodeCompatibility | undefined>>(() => {
-  const map: Record<string, IPanelNodeCompatibility | undefined> = {};
-  const remotes = allDaemonData.value?.remote;
-  if (remotes) {
-    for (const remote of remotes) {
-      map[remote.uuid] = remote.compatibility;
-    }
-  }
-  return map;
-});
-
-const testNodeSocket = async (node: NodeStatus) => {
-  if (disposed || socketChecks.has(node.uuid)) return;
-  if (!node.available) {
-    socketStatusMap[node.uuid] = SocketStatus.Error;
-    return;
-  }
-  const controller = new AbortController();
-  socketChecks.set(node.uuid, controller);
-  try {
-    const addr = `${node.ip}:${node.port}`;
-    await testSocketConnection(addr, node.prefix, controller.signal);
-    if (!disposed && !controller.signal.aborted)
-      socketStatusMap[node.uuid] = SocketStatus.Connected;
-  } catch {
-    if (!disposed && !controller.signal.aborted) socketStatusMap[node.uuid] = SocketStatus.Error;
-  } finally {
-    if (socketChecks.get(node.uuid) === controller) socketChecks.delete(node.uuid);
-  }
-};
-
-const testAllSockets = async () => {
-  await Promise.all(nodes.value.map(testNodeSocket));
-};
-
-const showDialog = ref(false);
-const dialogMode = ref<"add" | "edit">("add");
-const editingNode = ref<NodeStatus | null>(null);
-const form = reactive({
-  ip: "",
-  port: 24444,
-  remarks: "",
-  apiKey: "",
-  prefix: ""
-});
-const formError = ref("");
-const saving = ref(false);
-
-const showDeleteConfirm = ref(false);
-const deletingNode = ref<NodeStatus | null>(null);
-
-onUnmounted(() => {
-  disposed = true;
-  socketChecks.forEach((controller) => controller.abort());
-  socketChecks.clear();
-});
-
-let firstRefresh = true;
-usePolling(async () => {
-  if (firstRefresh) {
-    firstRefresh = false;
-    await fetchNodes();
-  } else {
-    await fetchNodes(true);
-  }
-}, 3000);
-
-const fetchNodes = async (silent = false) => {
-  const request = ++latestFetch;
-  try {
-    const res = await (silent ? fetchNodesSilentApi : fetchNodesApi)({ forceRequest: !silent });
-    if (disposed || request !== latestFetch || !res.value) return;
-    for (const previous of nodes.value) {
-      const current = res.value.find((node) => node.uuid === previous.uuid);
-      if (
-        !current ||
-        current.ip !== previous.ip ||
-        current.port !== previous.port ||
-        current.prefix !== previous.prefix
-      ) {
-        socketChecks.get(previous.uuid)?.abort();
-        socketChecks.delete(previous.uuid);
-        delete socketStatusMap[previous.uuid];
-      }
-    }
-    nodes.value = res.value;
-    await testAllSockets();
-  } catch (error) {
-    if (!silent && !disposed && request === latestFetch) reportErrorMsg(error);
-  }
-};
-
-const filteredNodes = computed(() => {
-  if (!searchQuery.value) return nodes.value;
-  const q = searchQuery.value.toLowerCase();
-  return nodes.value.filter(
-    (n) => n.remarks.toLowerCase().includes(q) || n.ip.toLowerCase().includes(q)
-  );
-});
-
-const openAddDialog = () => {
-  dialogMode.value = "add";
-  editingNode.value = null;
-  form.ip = "";
-  form.port = 24444;
-  form.remarks = "";
-  form.apiKey = "";
-  form.prefix = "";
-  formError.value = "";
-  showDialog.value = true;
-};
-
-const openEditDialog = (node: NodeStatus) => {
-  dialogMode.value = "edit";
-  editingNode.value = node;
-  form.ip = node.ip;
-  form.port = node.port;
-  form.remarks = node.remarks;
-  form.prefix = node.prefix || "";
-  form.apiKey = "";
-  formError.value = "";
-  showDialog.value = true;
-};
-
-const closeDialog = () => {
-  showDialog.value = false;
-  formError.value = "";
-};
-
-const saveNode = async () => {
-  if (saving.value) return;
-  formError.value = "";
-
-  if (!form.ip.trim()) {
-    formError.value = t("TXT_CODE_DESKTOP_NODES_IP_REQUIRED");
-    return;
-  }
-
-  if (!Number.isInteger(Number(form.port)) || Number(form.port) < 1 || Number(form.port) > 65535) {
-    formError.value = t("TXT_CODE_COMMON_THE_PORT_NUMBER_MUST_BE_WITHIN_THE_RANGE_OF_0_65535");
-    return;
-  }
-
-  if (dialogMode.value === "add" && !form.apiKey.trim()) {
-    formError.value = t("TXT_CODE_DESKTOP_NODES_APIKEY_REQUIRED");
-    return;
-  }
-
-  saving.value = true;
-  try {
-    if (dialogMode.value === "add") {
-      await addNodeApiExec({
-        data: {
-          ip: form.ip.trim(),
-          port: Number(form.port),
-          remarks: form.remarks.trim(),
-          apiKey: form.apiKey.trim()
-        }
-      });
-    } else if (editingNode.value) {
-      const editData: {
-        ip: string;
-        port: number;
-        remarks: string;
-        prefix: string;
-        apiKey?: string;
-      } = {
-        ip: form.ip.trim(),
-        port: Number(form.port),
-        remarks: form.remarks.trim(),
-        prefix: form.prefix.trim()
-      };
-      if (form.apiKey.trim()) {
-        editData.apiKey = form.apiKey.trim();
-      }
-      await editNodeApiExec({
-        params: {
-          uuid: editingNode.value.uuid
-        },
-        data: editData
-      });
-      try {
-        await connectNodeApiExec({
-          params: {
-            uuid: editingNode.value.uuid
-          }
-        });
-      } catch (error) {
-        reportErrorMsg(error);
-      }
-    }
-    showDialog.value = false;
-    await fetchNodes();
-  } catch (error) {
-    formError.value = getValidatorErrorMsg(error, t("TXT_CODE_COMMON_OPERATION_FAILED"));
-  } finally {
-    saving.value = false;
-  }
-};
-
-const confirmDelete = (node: NodeStatus) => {
-  deletingNode.value = node;
-  showDeleteConfirm.value = true;
-};
-
-const executeDelete = async () => {
-  if (!deletingNode.value || saving.value) return;
-  saving.value = true;
-  try {
-    await deleteNodeApiExec({
-      params: {
-        uuid: deletingNode.value.uuid
-      }
-    });
-    showDeleteConfirm.value = false;
-    deletingNode.value = null;
-    await fetchNodes();
-  } catch (error) {
-    reportErrorMsg(error);
-  } finally {
-    saving.value = false;
-  }
-};
-
-const cancelDelete = () => {
-  showDeleteConfirm.value = false;
-  deletingNode.value = null;
-};
-
-const reconnectNode = async (node: NodeStatus) => {
-  if (reconnecting.has(node.uuid)) return;
-  reconnecting.add(node.uuid);
-  try {
-    await connectNodeApiExec({
-      params: {
-        uuid: node.uuid
-      }
-    });
-    await fetchNodes();
-  } catch (error) {
-    reportErrorMsg(error);
-  } finally {
-    reconnecting.delete(node.uuid);
-  }
-};
+const { loading, nodes, searchQuery, nodeCompatMap, socketStatusMap, fetchNodes, filteredNodes } =
+  useNodeList();
+const {
+  showDialog,
+  dialogMode,
+  form,
+  formError,
+  saving,
+  showDeleteConfirm,
+  deletingNode,
+  openAddDialog,
+  openEditDialog,
+  closeDialog,
+  saveNode,
+  confirmDelete,
+  executeDelete,
+  cancelDelete,
+  reconnectNode
+} = useDesktopNodeEditor({ fetchNodes });
 </script>
 
 <template>

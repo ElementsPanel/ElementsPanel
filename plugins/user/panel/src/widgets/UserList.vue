@@ -3,9 +3,8 @@ import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import AppDialog from "@elementspanel/epanel-plugin-console/components/AppDialog";
 import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToolbar";
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { usePluginService } from "@elements-panel/sdk";
-import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed } from "vue";
+import { PERMISSION_MAP } from "@elementspanel/epanel-plugin-console/config/const";
 import {
   VBtn,
   VCard,
@@ -18,218 +17,49 @@ import {
   VSelect,
   VTextField
 } from "vuetify/components";
-import { useAppRouters } from "@elementspanel/epanel-plugin-console/hooks/useAppRouters";
 import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
-import { throttle } from "lodash";
-import {
-  addUser as addUserApi,
-  deleteUser as deleteUserApi,
-  editUserInfo,
-  getUserInfo,
-  ssoUnbind as ssoUnbindApi
-} from "@elementspanel/epanel-plugin-console/services/apis";
-import { ssoConfig } from "../api";
-import type { BaseUserInfo, EditUserInfo } from "@elementspanel/epanel-plugin-console/types/user";
-import { PASSWORD_REGEX, reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
-import { PERMISSION_MAP } from "@elementspanel/epanel-plugin-console/config/const";
+import type { BaseUserInfo } from "@elementspanel/epanel-plugin-console/types/user";
+import { useUserManagement } from "../hooks/useUserManagement";
+import { useUserEditor } from "../hooks/useUserEditor";
 
-interface UserPageData {
-  total: number;
-  pageSize: number;
-  page: number;
-  maxPage: number;
-  data: BaseUserInfo[];
-}
-
-const { execute, isLoading: getUserInfoLoading } = getUserInfo();
-const { toPage } = useAppRouters();
 const { isPhone } = useScreen();
-const canAssignInstances = computed(() => !!usePluginService("instance") && !!usePluginService("node"));
-const ssoEnabled = ref(false);
-const data = ref<UserPageData>();
-const total = ref(0);
-const selectedUsers = ref<string[]>([]);
-const currentRole = ref("");
-const operationForm = ref({ name: "", currentPage: 1, pageSize: 20 });
-const dataSource = computed(() => data.value?.data ?? []);
-const permissionItems = computed(() =>
-  Object.entries(PERMISSION_MAP).map(([value, title]) => ({ title, value: Number(value) }))
-);
-const roleItems = computed(() => [
-  { title: t("TXT_CODE_COMMON_ALL"), value: "" },
-  ...permissionItems.value.map((item) => ({ title: item.title, value: String(item.value) }))
-]);
-
-let latestRequest = 0;
-const fetchData = async () => {
-  const request = ++latestRequest;
-  operationForm.value.currentPage = Math.max(1, operationForm.value.currentPage);
-  try {
-    const res = await execute({
-      params: {
-        userName: operationForm.value.name || "",
-        page: operationForm.value.currentPage,
-        page_size: operationForm.value.pageSize,
-        role: currentRole.value
-      }
-    });
-    if (request !== latestRequest) return;
-    data.value = res.value;
-    total.value = res.value?.total ?? 0;
-    const maxPage = Math.max(1, Math.ceil(total.value / operationForm.value.pageSize));
-    if (operationForm.value.currentPage > maxPage) {
-      operationForm.value.currentPage = maxPage;
-      await fetchData();
-    }
-  } catch (error: any) {
-    if (request === latestRequest) reportErrorMsg(error.message);
-  }
-};
-const reload = throttle(fetchData, 600);
-const search = throttle(async () => {
-  operationForm.value.currentPage = 1;
-  await fetchData();
-}, 600);
-onUnmounted(() => {
-  latestRequest++;
-  reload.cancel();
-  search.cancel();
-});
-const handleTableOptions = (options: { page: number; itemsPerPage: number }) => {
-  operationForm.value.currentPage = options.page;
-  operationForm.value.pageSize = options.itemsPerPage;
-  fetchData();
-};
-
-const deleteUsers = async (userList: string[]) => {
-  try {
-    await deleteUserApi().execute({ data: userList });
-    message.success(t("TXT_CODE_COMMON_DELETE_SUCCESS"));
-    selectedUsers.value = [];
-    await fetchData();
-  } catch (error: any) {
-    reportErrorMsg(error.message);
-  }
-};
-const handleBatchDelete = () => {
-  if (!selectedUsers.value.length) return message.warn(t("TXT_CODE_COMMON_PLEASE_SELECT_THE_USER_S_TO_BE_DELETED"));
-  deleteUsers(selectedUsers.value);
-};
-const handleToUserResources = (user: BaseUserInfo) =>
-  toPage({ path: "/users/resources", query: { uuid: user.uuid } });
-const handleSsoUnbind = async (user: BaseUserInfo) => {
-  try {
-    await ssoUnbindApi().execute({ data: { uuid: user.uuid } });
-    message.success(t("TXT_CODE_SSO_UNBIND_SUCCESS"));
-    await fetchData();
-  } catch (error: any) {
-    reportErrorMsg(error.message);
-  }
-};
-
-const confirmDialog = ref<{
-  open: boolean;
-  title: string;
-  text: string;
-  action: () => void | Promise<void>;
-}>({ open: false, title: "", text: "", action: () => undefined });
-const confirmAction = async () => {
-  const action = confirmDialog.value.action;
-  confirmDialog.value.open = false;
-  await action();
-};
-const openDeleteConfirm = (user: BaseUserInfo) => {
-  confirmDialog.value = {
-    open: true,
-    title: t("TXT_CODE_COMMON_DELETE"),
-    text: t("TXT_CODE_COMMON_ARE_YOU_SURE_YOU_WANT_TO_DELETE_THE_USER", { userName: user.userName } as any),
-    action: () => deleteUsers([user.uuid])
-  };
-};
-const openSsoConfirm = (user: BaseUserInfo) => {
-  confirmDialog.value = {
-    open: true,
-    title: t("TXT_CODE_SSO_UNBIND"),
-    text: t("TXT_CODE_SSO_UNBIND_CONFIRM", { userName: user.userName } as any),
-    action: () => handleSsoUnbind(user)
-  };
-};
-
-const isAddMode = ref(true);
-const userDialogOpen = ref(false);
-const userDialogTitle = ref("");
-const userDialogLoading = ref(false);
-const formRef = ref<{ validate: () => Promise<{ valid: boolean }> }>();
-const formDataOrigin: EditUserInfo = {
-  uuid: "",
-  userName: "",
-  passWord: "",
-  loginTime: "",
-  registerTime: "",
-  instances: [],
-  permission: 1,
-  apiKey: "",
-  isInit: false,
-  secret: "",
-  open2FA: false,
-  ssoSub: "",
-  ssoBound: false
-};
-const formData = ref<EditUserInfo>({ ...formDataOrigin });
-const requiredRule = (value: unknown) =>
-  Boolean(String(value ?? "").trim()) || t("TXT_CODE_COMMON_PLEASE_ENTER_A_USERNAME");
-const userNameRule = (value: unknown) => {
-  const text = String(value ?? "");
-  return !text || (text.length >= 3 && text.length <= 20) || t("TXT_CODE_COMMON_LENGTH_MUST_BE_3_TO_20_CHARACTERS");
-};
-const passwordRule = (value: unknown) => {
-  const text = String(value ?? "");
-  return (
-    (!isAddMode.value && !text) ||
-    (text.length >= 9 && text.length <= 36 && PASSWORD_REGEX.test(text)) ||
-    t("TXT_CODE_COMMON_9_TO_36_CHARACTERS_MUST_INCLUDE_UPPERCASE_LOWERCASE_LETTERS_AND_NUMBERS")
-  );
-};
-const handleAddUser = () => {
-  isAddMode.value = true;
-  userDialogTitle.value = t("TXT_CODE_COMMON_NEW_USER");
-  formData.value = { ...formDataOrigin };
-  userDialogOpen.value = true;
-};
-const handleEditUser = (user: BaseUserInfo) => {
-  isAddMode.value = false;
-  userDialogTitle.value = t("TXT_CODE_COMMON_EDIT_USER");
-  formData.value = { ...user };
-  userDialogOpen.value = true;
-};
-const submitUser = async () => {
-  if (userDialogLoading.value) return;
-  const result = await formRef.value?.validate();
-  if (!result?.valid) return;
-  try {
-    userDialogLoading.value = true;
-    if (isAddMode.value) {
-      await addUserApi().execute({
-        data: {
-          username: formData.value.userName,
-          password: formData.value.passWord!,
-          permission: formData.value.permission
-        }
-      });
-      message.success(t("TXT_CODE_COMMON_NEW_USER_ADDED"));
-    } else {
-      await editUserInfo().execute({ data: { config: formData.value, uuid: formData.value.uuid } });
-      message.success(t("TXT_CODE_COMMON_EDIT_SUCCESSFUL"));
-    }
-    userDialogOpen.value = false;
-    await fetchData();
-  } catch (error: any) {
-    reportErrorMsg(error.message);
-  } finally {
-    userDialogLoading.value = false;
-  }
-};
-
+const {
+  data,
+  total,
+  dataSource,
+  getUserInfoLoading,
+  fetchData,
+  canAssignInstances,
+  ssoEnabled,
+  selectedUsers,
+  currentRole,
+  operationForm,
+  permissionItems,
+  roleItems,
+  reload,
+  search,
+  handleTableOptions,
+  handleBatchDelete,
+  handleToUserResources,
+  confirmDialog,
+  confirmAction,
+  openDeleteConfirm,
+  openSsoConfirm
+} = useUserManagement();
+const {
+  isAddMode,
+  userDialogOpen,
+  userDialogTitle,
+  userDialogLoading,
+  formRef,
+  formData,
+  requiredRule,
+  userNameRule,
+  passwordRule,
+  handleAddUser,
+  handleEditUser,
+  submitUser
+} = useUserEditor({ fetchData });
 const headers = computed(() => {
   const result: any[] = [
     ...(!isPhone.value ? [{ title: "UUID", key: "uuid", sortable: false }] : []),
@@ -243,20 +73,16 @@ const headers = computed(() => {
       : [])
   ];
   if (ssoEnabled.value) result.push({ title: t("TXT_CODE_SSO_BOUND_STATUS"), key: "ssoBound" });
-  result.push({ title: t("TXT_CODE_COMMON_ACTIONS"), key: "actions", sortable: false, align: "end" });
+  result.push({
+    title: t("TXT_CODE_COMMON_ACTIONS"),
+    key: "actions",
+    sortable: false,
+    align: "end"
+  });
   return result;
 });
 const rawUser = (item: BaseUserInfo | { raw: BaseUserInfo }) =>
   (item as { raw?: BaseUserInfo }).raw ?? (item as BaseUserInfo);
-onMounted(async () => {
-  try {
-    const res = await ssoConfig().execute();
-    ssoEnabled.value = Boolean(res.value?.enabled);
-  } catch {
-    ssoEnabled.value = false;
-  }
-  await fetchData();
-});
 </script>
 
 <template>

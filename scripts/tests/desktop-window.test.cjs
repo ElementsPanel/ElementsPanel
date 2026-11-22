@@ -36,10 +36,17 @@ function loadSfc(relative, overrides = {}) {
   const { descriptor } = parse(fs.readFileSync(filename, "utf8"), { filename });
   const script = compileScript(descriptor, { id: "confirmation-test", inlineTemplate: true });
   const component = new Module(filename, module);
+  const hookOverrides = Object.fromEntries(Object.entries(overrides).map(([id, value]) => [
+    id, value?.default ? { __esModule: true, ...value } : value
+  ]));
   component.require = (request) => {
     const id = frontendTestImport(request, overrides);
     const runtime = windowRuntimeImports[request] ?? windowRuntimeImports[id];
     if (runtime) return runtime;
+    if (!Object.hasOwn(overrides, id) && id.startsWith(".")) {
+      const source = path.resolve(path.dirname(filename), id) + ".ts";
+      if (fs.existsSync(source)) return loadRuntime(source, hookOverrides);
+    }
     return Object.hasOwn(overrides, id) ? overrides[id]
     : id === "@/components/DesktopDialog.vue" ? { default: DesktopDialog }
     : id === "@/components/Empty.vue" ? { default: Empty }

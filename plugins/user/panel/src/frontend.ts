@@ -1,31 +1,20 @@
 import { restoreSession } from "./session";
-import { t } from "@elementspanel/epanel-plugin-i18n";
 import type { PanelFrontendPluginContext } from "@elements-panel/sdk";
-import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
-import { useAppToolsStore } from "@elementspanel/epanel-plugin-console/stores/useAppToolsStore";
-import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
-import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
 import * as userApi from "./api";
-import MyselfInfoDialog from "./components/MyselfInfoDialog.vue";
 import DesktopLoginWindow from "./desktop/DesktopLoginWindow.vue";
 import DesktopUserInfo from "./desktop/DesktopUserInfo.vue";
 import DesktopUsers from "./desktop/DesktopUsers.vue";
 import { localeMessages } from "./i18n";
-import CustomerPage from "./views/CustomerPage.vue";
-import LoginPage from "./views/Login.vue";
-import SsoBindLogin from "./views/SsoBindLogin.vue";
-import UserAccessSettings from "./widgets/AccessSettings.vue";
-import UserList from "./widgets/UserList.vue";
+import { registerAccountActions, registerUserAccounts } from "./accounts/frontend";
+import { registerLoginRoutes } from "./auth/frontend";
+import { registerCustomerRoute, registerUserResources } from "./resources/frontend";
 
-const ROLE_ADMIN = 10;
-const ROLE_USER = 1;
-const ROLE_GUEST = 0;
+export { ROLE_ADMIN, ROLE_GUEST, ROLE_USER } from "./roles";
 
 export const inject = ["console", "i18n", "routes", "slots"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);
-
   // Resolve account APIs and window providers at call time so unloading removes authentication.
   ctx.set("user", {
     api: userApi,
@@ -36,108 +25,9 @@ export function apply(ctx: PanelFrontendPluginContext) {
     desktopStartMenuAvatar: "mdi-account-outline"
   });
 
-  ctx.slots.register("shell.overlay", MyselfInfoDialog, { id: "user-self-dialog" });
-
-  const accountVisible = () => {
-    const { authEnabled, isLogged } = useAppStateStore();
-    return authEnabled.value && isLogged.value;
-  };
-  ctx.slots.register(
-    "shell.header.actions",
-    {
-      title: () => t("TXT_CODE_COMMON_PROFILE"),
-      mdiIcon: "mdi-account-outline",
-      taskbar: false,
-      click: () => {
-        useAppToolsStore().state.showUserInfoDialog = true;
-      }
-    },
-    { id: "user:profile-button", order: 40, condition: accountVisible }
-  );
-  ctx.slots.register(
-    "shell.header.actions",
-    {
-      title: () => t("TXT_CODE_COMMON_LOGOUT"),
-      mdiIcon: "mdi-logout",
-      customClass: "nav-button-danger",
-      taskbar: false,
-      click: async () => {
-        Modal.confirm({
-          title: t("TXT_CODE_COMMON_LOGOUT"),
-          content: t("TXT_CODE_COMMON_ARE_YOU_SURE_YOU_WANT_TO_LOG_OUT_THIS_USER"),
-          async onOk() {
-            await userApi.logoutUser().execute();
-            message.success(t("TXT_CODE_COMMON_SUCCESSFULLY_LOGGED_OUT"));
-            setTimeout(() => (window.location.href = "/"), 400);
-          }
-        });
-      }
-    },
-    { id: "user:logout-button", order: 50, condition: accountVisible }
-  );
-
-  ctx.routes.add({
-    path: "/login",
-    name: t("TXT_CODE_COMMON_LOGIN_PAGE"),
-    component: LoginPage,
-    meta: {
-      permission: ROLE_GUEST,
-      mainMenu: false
-    }
-  });
-
-  ctx.routes.add({
-    path: "/sso/bind",
-    name: t("TXT_CODE_SSO_BIND_TITLE"),
-    component: SsoBindLogin,
-    meta: {
-      permission: ROLE_GUEST,
-      mainMenu: false
-    }
-  });
-
-  ctx.routes.add({
-    path: "/customer",
-    name: t("TXT_CODE_COMMON_MY_APPLICATION"),
-    component: CustomerPage,
-    meta: {
-      permission: ROLE_USER,
-      mainMenu: true,
-      icon: "mdi-account-outline",
-      // Admins work from `/instances`; this page is the ordinary user's home.
-      condition: () => !useAppStateStore().isAdmin.value
-    }
-  });
-
-  ctx.routes.add({
-    path: "/users",
-    name: t("TXT_CODE_COMMON_USERS"),
-    component: UserList,
-    meta: {
-      mainMenu: true,
-      permission: ROLE_ADMIN,
-      icon: "mdi-account-group-outline"
-    }
-  });
-
-  ctx.inject(["instance", "node"], (scope) =>
-    scope.routes.add({
-      path: "/users/resources",
-      name: t("TXT_CODE_COMMON_CONFIGURATION"),
-      component: UserAccessSettings,
-      meta: {
-        permission: ROLE_ADMIN,
-        breadcrumbs: [
-          {
-            name: t("TXT_CODE_COMMON_USERS"),
-            path: "/users",
-            mainMenu: true,
-            permission: ROLE_ADMIN
-          }
-        ]
-      }
-    })
-  );
+  registerAccountActions(ctx);
+  registerLoginRoutes(ctx);
+  registerCustomerRoute(ctx);
+  registerUserAccounts(ctx);
+  registerUserResources(ctx);
 }
-
-export { ROLE_ADMIN, ROLE_GUEST, ROLE_USER };

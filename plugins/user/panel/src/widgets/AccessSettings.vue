@@ -1,77 +1,30 @@
 <script setup lang="ts">
 import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToolbar";
-import type { UserInstance } from "@elementspanel/epanel-plugin-console/types/user";
-import { computed, onMounted, ref } from "vue";
+import { computed } from "vue";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
 import { useRoute } from "vue-router";
-import { userInfoApiAdvanced, updateUserInstance } from "@elementspanel/epanel-plugin-console/services/apis";
-import { useSelectInstances } from "@elementspanel/epanel-plugin-console/components/fc";
-import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
-import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { INSTANCE_STATUS } from "@elementspanel/epanel-plugin-console/types/const";
 import dayjs from "dayjs";
-import WarningDialog from "@elementspanel/epanel-plugin-console/components/fc/WarningDialog";
-import { useMountComponent } from "@elementspanel/epanel-plugin-console/hooks/useMountComponent";
-import { VBtn, VCard, VCardActions, VCardText, VDataTable, VDialog, VSpacer } from "vuetify/components";
+import {
+  VBtn,
+  VCard,
+  VCardActions,
+  VCardText,
+  VDataTable,
+  VDialog,
+  VSpacer
+} from "vuetify/components";
+import { useUserAccess } from "../hooks/useUserAccess";
 
 const props = defineProps<{ uuid?: string }>();
 const { isPhone } = useScreen();
 const route = useRoute();
-interface AccessInstance extends UserInstance {
-  remarks?: string;
-  endTime?: number | string;
-}
-const dataSource = ref<AccessInstance[]>([]);
 const userUuid = props.uuid ?? String(route.query.uuid ?? "");
-const deleteDialog = ref<{ open: boolean; item: UserInstance | null }>({ open: false, item: null });
-
-const refreshTableData = async () => {
-  if (userUuid == null) return;
-  try {
-    const rawUserInfo = (await userInfoApiAdvanced().execute({ params: { uuid: String(userUuid), advanced: true }, forceRequest: true })).value;
-    dataSource.value = rawUserInfo?.instances ? [...rawUserInfo.instances] : [];
-  } catch (err: any) {
-    reportErrorMsg(err.message);
-  }
-};
-
-const saveData = async () => {
-  try {
-    await updateUserInstance().execute({ data: { config: { instances: dataSource.value }, uuid: String(userUuid) } });
-    message.success(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"));
-    await refreshTableData();
-  } catch (err: any) {
-    reportErrorMsg(err.message);
-  }
-};
-
-const handleDelete = async () => {
-  const deletedInstance = deleteDialog.value.item;
-  deleteDialog.value.open = false;
-  if (!deletedInstance) return;
-  dataSource.value = dataSource.value.filter((instance) => !(instance.daemonId === deletedInstance.daemonId && instance.instanceUuid === deletedInstance.instanceUuid));
-  await saveData();
-};
-
-const assignApp = async () => {
-  try {
-    const selectedInstances = await useSelectInstances(dataSource.value);
-    const warningInstances = (selectedInstances || []).filter((instance) => typeof instance.config?.docker?.image === "string" && !instance.config.docker.image).map((instance) => instance.nickname);
-    if (warningInstances.length > 0) {
-      const component = (await useMountComponent({ title: t("TXT_CODE_COMMON_SAFETY_WARNING"), subTitle: t("TXT_CODE_USER_UNPROTECTED_INSTANCES_WARNING") + warningInstances.join(", "), checkText: t("TXT_CODE_COMMON_I_M_AWARE_THAT_MALICIOUS_PROGRAMS_AND_OR_PERSONELL_CAN_GAIN_ACCESS_TO_MY_MACHINE_AS") })).load<InstanceType<typeof WarningDialog>>(WarningDialog);
-      await component.openDialog();
-    }
-    if (selectedInstances) {
-      dataSource.value = selectedInstances;
-      await saveData();
-    }
-  } catch (err: any) {
-    reportErrorMsg(err.message);
-  }
-};
-
+const { dataSource, deleteDialog, refreshTableData, handleDelete, assignApp } = useUserAccess({
+  userUuid
+});
 const headers = computed(() => [
   ...(!isPhone.value ? [{ title: t("TXT_CODE_COMMON_HOST_DAEMON"), key: "remarks" }] : []),
   { title: t("TXT_CODE_COMMON_INSTANCE_NAME"), key: "nickname" },
@@ -79,8 +32,6 @@ const headers = computed(() => [
   ...(!isPhone.value ? [{ title: t("TXT_CODE_COMMON_INSTANCES_STATUS"), key: "status" }] : []),
   { title: t("TXT_CODE_COMMON_ACTIONS"), key: "operation", sortable: false, align: "end" as const }
 ]);
-
-onMounted(refreshTableData);
 </script>
 
 <template>
