@@ -267,7 +267,8 @@ export function installOverlayScrollbars() {
             update: {
               debounce: {
                 mutation: [0, 33],
-                resize: [0, 33],
+                // Coalesce animated layout resizes instead of measuring every frame.
+                resize: [80, 300],
                 event: [33, 99],
                 env: [222, 666, true]
               }
