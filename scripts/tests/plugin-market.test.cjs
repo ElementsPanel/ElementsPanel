@@ -1453,6 +1453,7 @@ test("desktop browsing keeps list state and wires detail installation and back e
   const components = Object.fromEntries(
     [
       "VAvatar",
+      "VCard",
       "VChip",
       "VIcon",
       "VImg",

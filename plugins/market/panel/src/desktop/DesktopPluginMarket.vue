@@ -6,6 +6,7 @@ import { defineComponent, proxyRefs, ref } from "vue";
 import {
   VAvatar,
   VBtn,
+  VCard,
   VChip,
   VDivider,
   VIcon,
@@ -215,10 +216,14 @@ const DesktopPluginDetailController = defineComponent({
         </Empty>
 
         <div v-else-if="visiblePlugins.length" class="dpm-grid">
-          <article
+          <VCard
             v-for="plugin in pagedPlugins"
             :key="plugin.id"
             class="dpm-card"
+            tag="article"
+            variant="flat"
+            rounded="8px"
+            ripple
             role="button"
             tabindex="0"
             @click="selectPlugin(plugin)"
@@ -270,7 +275,7 @@ const DesktopPluginDetailController = defineComponent({
                 @installed="updateInstalled"
               />
             </div>
-          </article>
+          </VCard>
         </div>
 
         <Empty v-else-if="!loading" icon="mdi-magnify" :title="t('TXT_CODE_NO_DATA')" />
@@ -753,23 +758,20 @@ const DesktopPluginDetailController = defineComponent({
   gap: 10px;
   padding: 12px;
   border: 1px solid var(--desktop-window-border);
-  border-radius: 8px;
   background: var(--desktop-window-titlebar-bg);
   cursor: pointer;
   outline: none;
   transition:
     background 0.15s ease,
-    border-color 0.15s ease,
-    transform 0.15s ease;
+    border-color 0.15s ease;
 
   &:hover,
   &:focus-visible {
-    border-color: rgba(22, 119, 255, 0.55);
     background: var(--desktop-window-control-hover);
   }
 
-  &:active {
-    transform: translateY(1px);
+  &:focus-visible {
+    border-color: rgba(22, 119, 255, 0.55);
   }
 }
 

@@ -60,7 +60,14 @@ const originRouterConfig: RouterConfig[] = [];
 
 const router = createRouter({
   history: createWebHashHistory(),
-  routes: originRouterConfig as RouteRecordRaw[]
+  routes: originRouterConfig as RouteRecordRaw[],
+  scrollBehavior() {
+    // Page scrolling belongs to the shell viewports rather than the window.
+    for (const element of document.querySelectorAll<HTMLElement>("#app-mount-point, .main-content")) {
+      element.scrollTo({ left: 0, top: 0, behavior: "instant" });
+    }
+    return false;
+  }
 });
 
 router.beforeEach(async (to, from, next) => {

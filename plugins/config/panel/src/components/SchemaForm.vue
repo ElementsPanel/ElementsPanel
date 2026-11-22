@@ -487,8 +487,8 @@ const open = (field: SettingField) => {
 
 .setting-field-marker {
   position: absolute;
-  top: 0;
-  bottom: 0;
+  top: 8px;
+  bottom: 8px;
   left: 0;
   width: 6px;
   border-radius: 3px;
