@@ -632,6 +632,17 @@ body .v-navigation-drawer,
 :is(.v-select__content, .v-autocomplete__content, .v-combobox__content) {
   max-width: min(420px, calc(100vw - 32px));
 
+  // Virtual item measurements exclude margins.
+  .v-list > :is(.v-list-item, .v-divider) {
+    margin-block: 0 !important;
+  }
+
+  // Keep the visual gap inside each measured item.
+  .v-list > .v-list-item {
+    border-block-end: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
   :is(.v-list-item, .v-list-item-title, .v-list-item-subtitle, .v-icon) {
     color: var(--text-color) !important;
   }
