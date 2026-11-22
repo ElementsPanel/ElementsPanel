@@ -490,10 +490,17 @@ function fileManagerDialogFixture(t) {
     "@/tools/fileSize": {},
     "@/tools/desktopNotice": { notifyDesktopError() {} }
   };
+  const hookOverrides = Object.fromEntries(Object.entries(overrides).map(([id, value]) => [
+    id, value?.default ? { __esModule: true, ...value } : value
+  ]));
   fileManagerModule.require = (request) => {
     const id = frontendTestImport(request, overrides);
-    return Object.hasOwn(overrides, id) ? overrides[id]
-    : id === "vuetify/components" ? Vuetify.components : frontendRequire(id);
+    if (Object.hasOwn(overrides, id)) return overrides[id];
+    if (id.startsWith(".")) {
+      const source = path.resolve(path.dirname(fileManagerFilename), id) + ".ts";
+      if (fs.existsSync(source)) return loadRuntime(source, hookOverrides);
+    }
+    return id === "vuetify/components" ? Vuetify.components : frontendRequire(id);
   };
   fileManagerModule._compile(ts.transpileModule(fileManagerScript.content, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }

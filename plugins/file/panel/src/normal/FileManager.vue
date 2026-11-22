@@ -8,12 +8,14 @@ import { useDownloadFileDialog } from "../dialogs";
 import { useFileManager } from "../hooks/useFileManager";
 import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import uploadService from "../services/uploadService";
+import { useFileUploadProgress } from "../hooks/useFileUploadProgress";
+import { useFileDropzone } from "../hooks/useFileDropzone";
+import { formatDroppedFiles } from "../tools/fileNames";
 import { filterFileName, getFileExtName, isCompressFile } from "../tools/fileManager";
 import { convertFileSize } from "@elementspanel/epanel-plugin-console/tools/fileSize";
 import type { DataType } from "@elementspanel/epanel-plugin-console/types/fileManager";
 import dayjs from "dayjs";
-import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref } from "vue";
 import { useRoute } from "vue-router";
 import {
   VAlert,
@@ -104,40 +106,15 @@ const tableHeaders = computed(() => {
   if (!isPhone.value && fileStatus.value?.platform !== "win32") {
     headers.push({ title: t("TXT_CODE_FILE_PERMISSIONS"), key: "mode", sortable: false });
   }
-  if (!isMultiple.value) headers.push({ title: t("TXT_CODE_COMMON_ACTIONS"), key: "actions", sortable: false });
+  if (!isMultiple.value)
+    headers.push({ title: t("TXT_CODE_COMMON_ACTIONS"), key: "actions", sortable: false });
   return headers;
 });
 
-let uploading = false;
-const progress = computed(() => {
-  if (uploadService.uiData.value.current) {
-    return (uploadService.uiData.value.current[0] * 100) / uploadService.uiData.value.current[1];
-  }
-  return 0;
+const { progress, uploadData, uploadInstanceTag, uploadService } = useFileUploadProgress({
+  target: () => ({ instanceId, daemonId }),
+  refresh: getFileList
 });
-const uploadData = uploadService.uiData;
-const uploadInstanceTag = computed(() => {
-  if (
-    !uploadData.value.instanceInfo ||
-    uploadData.value.instanceInfo.instanceId != instanceId ||
-    uploadData.value.instanceInfo.daemonId != daemonId
-  ) {
-    return `(${t("TXT_CODE_COMMON_UPLOADING_TO_OTHER_INSTANCES")})`;
-  }
-  return "";
-});
-watch(
-  () => uploadService.uiData.value,
-  (newValue) => {
-    if (newValue.current) {
-      uploading = true;
-    } else if (uploading) {
-      uploading = false;
-      getFileList();
-    }
-  },
-  { immediate: true }
-);
 
 let task: ReturnType<typeof setInterval> | undefined;
 task = setInterval(async () => {
@@ -146,44 +123,14 @@ task = setInterval(async () => {
 
 const FileEditorDialog = ref<InstanceType<typeof FileEditor>>();
 
-const opacity = ref(false);
-const handleDragover = (e: DragEvent) => {
-  if (!e.dataTransfer?.types.includes("Files")) return;
-  e.preventDefault();
-  if (!currentTabs.value.length) return;
-  opacity.value = true;
-};
-
-const handleDragleave = (e: DragEvent) => {
-  e.preventDefault();
-  opacity.value = false;
-};
-
-const handleDrop = (e: DragEvent) => {
-  e.preventDefault();
-  const files = e.dataTransfer?.files;
-  opacity.value = false;
-  if (!currentTabs.value.length || !files) return;
-  if (files.length === 0) return;
-  let name = "";
-  if (files.length === 1) {
-    name = files[0].name;
-  } else {
-    for (const file of files) {
-      name += file.name + ", ";
-    }
-    name = name.slice(0, -2);
+const { opacity, handleDragover, handleDragleave, handleDrop } = useFileDropzone({
+  enabled: () => currentTabs.value.length > 0,
+  onFiles: (files) => {
+    dropConfirm.name = formatDroppedFiles(files);
+    dropConfirm.files = [...files];
+    dropConfirm.open = true;
   }
-  if (name.length > 30) {
-    name = name.slice(0, 27) + "...";
-  }
-  if (files.length > 1) {
-    name += ` (${files.length})`;
-  }
-  dropConfirm.name = name;
-  dropConfirm.files = [...files];
-  dropConfirm.open = true;
-};
+});
 const dropConfirm = reactive({ open: false, name: "", files: [] as File[] });
 const confirmDrop = () => {
   const files = [...dropConfirm.files];
@@ -297,13 +244,42 @@ const menuList = (record: DataType): FileMenuAction[] =>
   ].filter((item) => !item.condition || item.condition());
 
 const rowMenuItems = (record: DataType) => menuList(record);
-const actionMenuItems = computed<FileMenuAction[]>(() => [
-  { label: t("TXT_CODE_COMMON_CUT"), key: "cut", icon: "mdi-content-cut", onClick: () => setClipBoard("move") },
-  { label: t("TXT_CODE_COMMON_COPY"), key: "copy", icon: "mdi-content-copy", onClick: () => setClipBoard("copy") },
-  { label: t("TXT_CODE_COMMON_CHANGE_PERMISSIONS"), key: "changePermission", icon: "mdi-key-outline", onClick: () => changePermission("", 0), condition: () => fileStatus.value?.platform !== "win32" },
-  { label: t("TXT_CODE_COMMON_COMPRESS"), key: "zip", icon: "mdi-archive-arrow-up-outline", onClick: () => zipFile() },
-  { label: t("TXT_CODE_COMMON_DELETE"), key: "delete", icon: "mdi-delete-outline", color: "error", onClick: () => deleteFile() }
-].filter((item) => !item.condition || item.condition()));
+const actionMenuItems = computed<FileMenuAction[]>(() =>
+  [
+    {
+      label: t("TXT_CODE_COMMON_CUT"),
+      key: "cut",
+      icon: "mdi-content-cut",
+      onClick: () => setClipBoard("move")
+    },
+    {
+      label: t("TXT_CODE_COMMON_COPY"),
+      key: "copy",
+      icon: "mdi-content-copy",
+      onClick: () => setClipBoard("copy")
+    },
+    {
+      label: t("TXT_CODE_COMMON_CHANGE_PERMISSIONS"),
+      key: "changePermission",
+      icon: "mdi-key-outline",
+      onClick: () => changePermission("", 0),
+      condition: () => fileStatus.value?.platform !== "win32"
+    },
+    {
+      label: t("TXT_CODE_COMMON_COMPRESS"),
+      key: "zip",
+      icon: "mdi-archive-arrow-up-outline",
+      onClick: () => zipFile()
+    },
+    {
+      label: t("TXT_CODE_COMMON_DELETE"),
+      key: "delete",
+      icon: "mdi-delete-outline",
+      color: "error",
+      onClick: () => deleteFile()
+    }
+  ].filter((item) => !item.condition || item.condition())
+);
 const runMenuAction = (item: FileMenuAction, record: DataType) => {
   oneSelected(record.name, record);
   item.onClick();
@@ -313,9 +289,12 @@ const getMdiIconName = (file: DataType) => {
   if (file.type === 0) return "mdi-folder-outline";
   const ext = getFileExtName(file.name).toLowerCase();
   if (isCompressFile(file.name)) return "mdi-folder-zip-outline";
-  if (["png", "jpg", "jpeg", "gif", "webp", "svg", "ico"].includes(ext)) return "mdi-file-image-outline";
-  if (["mp3", "wav", "ogg", "flac", "mp4", "mkv", "mov"].includes(ext)) return "mdi-file-music-outline";
-  if (["js", "ts", "json", "css", "scss", "html", "vue", "xml", "yml", "yaml"].includes(ext)) return "mdi-file-code-outline";
+  if (["png", "jpg", "jpeg", "gif", "webp", "svg", "ico"].includes(ext))
+    return "mdi-file-image-outline";
+  if (["mp3", "wav", "ogg", "flac", "mp4", "mkv", "mov"].includes(ext))
+    return "mdi-file-music-outline";
+  if (["js", "ts", "json", "css", "scss", "html", "vue", "xml", "yml", "yaml"].includes(ext))
+    return "mdi-file-code-outline";
   return "mdi-file-outline";
 };
 const handleSelectedKeys = (keys: readonly any[]) => {
@@ -346,7 +325,9 @@ const contextMenu = reactive({ open: false, x: 0, y: 0, record: null as DataType
 const getRowProps = ({ item }: { item: unknown }) => ({
   onContextmenu: (event: MouseEvent) => handleRightClickRow(event, rawFile(item))
 });
-const dialogMaxWidth = computed(() => (dialog.value.style as { maxWidth?: string })?.maxWidth || "460px");
+const dialogMaxWidth = computed(
+  () => (dialog.value.style as { maxWidth?: string })?.maxWidth || "460px"
+);
 
 const downloadFromURLFile = async () => {
   const data = await useDownloadFileDialog();

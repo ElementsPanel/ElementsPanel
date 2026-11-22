@@ -9,750 +9,389 @@ import type { DataType } from "@elementspanel/epanel-plugin-console/types/fileMa
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import dayjs from "dayjs";
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
-import { VBtn, VCheckbox, VDataTableServer, VIcon, VList, VListItem, VMenu, VProgressCircular, VProgressLinear, VRadio, VRadioGroup, VSpacer, VTextField } from "vuetify/components";
+import {
+  VBtn,
+  VCheckbox,
+  VDataTableServer,
+  VIcon,
+  VList,
+  VListItem,
+  VMenu,
+  VProgressCircular,
+  VProgressLinear,
+  VRadio,
+  VRadioGroup,
+  VSpacer,
+  VTextField
+} from "vuetify/components";
 import ArchivePreview from "../components/ArchivePreview.vue";
 import FileManagerTabs from "../components/FileManagerTabs.vue";
 import FileManagerPathBar from "../components/FileManagerPathBar.vue";
 import { useFileManager } from "../hooks/useFileManager";
-import uploadService from "../services/uploadService";
+import { useFileUploadProgress } from "../hooks/useFileUploadProgress";
+import { useDesktopFileUpload } from "../hooks/useDesktopFileUpload";
+import { useDesktopFileSelection } from "../hooks/useDesktopFileSelection";
 import { filterFileName, getFileExtName, isCompressFile } from "../tools/fileManager";
 
-const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
+const ConfirmDialog = computed(
+  () => usePluginService<FrontendDesktopService>("desktop")?.confirmation
+);
 
 const desktopVuetifyMode = true;
 let disposed = false;
 
 const props = defineProps<{
-    instanceId: string;
-    daemonId: string;
-    sessionId?: string;
+  instanceId: string;
+  daemonId: string;
+  sessionId?: string;
 }>();
 
 const emit = defineEmits<{
-    (e: "open-file-editor", filePath: string, fileName: string): void;
-    (e: "open-image-viewer", filePath: string, fileName: string): void;
+  (e: "open-file-editor", filePath: string, fileName: string): void;
+  (e: "open-image-viewer", filePath: string, fileName: string): void;
 }>();
 
+const manager = useFileManager(props.instanceId, props.daemonId, props.sessionId || "");
 const {
-    dialog,
-    spinning,
-    fileStatus,
-    permission,
-    selectedRowKeys,
-    operationForm,
-    dataSource,
-    breadcrumbs,
-    currentPath,
-    clipboard,
-    currentDisk,
-    isMultiple,
-    activeTab,
-    currentTabs,
-    onEditTabs,
-    handleReorderTabs,
-    handleChangeTab,
-    getFileList,
-    touchFile,
-    reloadList,
-    setClipBoard,
-    paste,
-    resetName,
-    deleteFile,
-    zipFile,
-    unzipFile,
-    downloadFile,
-    downloadFromUrl,
-    handleChangeDir,
-    handleSearchChange,
-    selectedFiles,
-    rowClickTable,
-    handleTableChange,
-    getFileStatus,
-    changePermission,
-    toDisk,
-    oneSelected,
-    isImage,
-    selectionData,
-    archivePreview,
-    previewArchiveFile,
-    closeArchivePreview,
-    deleteDialog
-} = useFileManager(props.instanceId, props.daemonId, props.sessionId || "");
+  dialog,
+  spinning,
+  fileStatus,
+  permission,
+  selectedRowKeys,
+  operationForm,
+  dataSource,
+  breadcrumbs,
+  currentPath,
+  clipboard,
+  currentDisk,
+  isMultiple,
+  activeTab,
+  currentTabs,
+  onEditTabs,
+  handleReorderTabs,
+  handleChangeTab,
+  getFileList,
+  touchFile,
+  reloadList,
+  setClipBoard,
+  paste,
+  resetName,
+  deleteFile,
+  zipFile,
+  unzipFile,
+  downloadFile,
+  downloadFromUrl,
+  handleChangeDir,
+  handleSearchChange,
+  selectedFiles,
+  rowClickTable,
+  handleTableChange,
+  getFileStatus,
+  changePermission,
+  toDisk,
+  oneSelected,
+  isImage,
+  selectionData,
+  archivePreview,
+  previewArchiveFile,
+  closeArchivePreview,
+  deleteDialog
+} = manager;
 
 const desktopFileHeaders = computed(() => {
-    const headers = [
-        { title: t("TXT_CODE_FILE_NAME"), key: "name", value: "name", sortable: false },
-        { title: t("TXT_CODE_FILE_TYPE"), key: "type", value: "type", sortable: false },
-        { title: t("TXT_CODE_COMMON_SIZE"), key: "size", value: "size", sortable: false },
-        { title: t("TXT_CODE_COMMON_LAST_MODIFY"), key: "time", value: "time", sortable: false }
-    ];
-    if (fileStatus.value?.platform !== "win32") {
-        headers.push({ title: t("TXT_CODE_FILE_PERMISSIONS"), key: "mode", value: "mode", sortable: false });
-    }
-    return headers;
+  const headers = [
+    { title: t("TXT_CODE_FILE_NAME"), key: "name", value: "name", sortable: false },
+    { title: t("TXT_CODE_FILE_TYPE"), key: "type", value: "type", sortable: false },
+    { title: t("TXT_CODE_COMMON_SIZE"), key: "size", value: "size", sortable: false },
+    { title: t("TXT_CODE_COMMON_LAST_MODIFY"), key: "time", value: "time", sortable: false }
+  ];
+  if (fileStatus.value?.platform !== "win32") {
+    headers.push({
+      title: t("TXT_CODE_FILE_PERMISSIONS"),
+      key: "mode",
+      value: "mode",
+      sortable: false
+    });
+  }
+  return headers;
 });
 
 const getDesktopFileIcon = (name: string, type: number) => {
-    if (type === 0) return "mdi-folder-outline";
-    const ext = getFileExtName(name);
-    if (["zip", "tar", "gz", "bz2", "xz", "7z", "rar", "iso", "cab"].includes(ext)) return "mdi-archive-outline";
-    if (["png", "jpg", "jpeg", "gif", "bmp", "webp", "svg", "ico"].includes(ext)) return "mdi-file-image-outline";
-    if (["mp3", "wav", "ogg", "flac", "aac", "mp4", "mov", "avi", "mkv"].includes(ext)) return "mdi-file-music-outline";
-    if (["js", "ts", "vue", "css", "scss", "html", "json", "xml", "yml", "yaml", "php", "py", "sh", "bat"].includes(ext)) return "mdi-file-code-outline";
-    if (["pdf"].includes(ext)) return "mdi-file-pdf-box";
-    return "mdi-file-outline";
+  if (type === 0) return "mdi-folder-outline";
+  const ext = getFileExtName(name);
+  if (["zip", "tar", "gz", "bz2", "xz", "7z", "rar", "iso", "cab"].includes(ext))
+    return "mdi-archive-outline";
+  if (["png", "jpg", "jpeg", "gif", "bmp", "webp", "svg", "ico"].includes(ext))
+    return "mdi-file-image-outline";
+  if (["mp3", "wav", "ogg", "flac", "aac", "mp4", "mov", "avi", "mkv"].includes(ext))
+    return "mdi-file-music-outline";
+  if (
+    [
+      "js",
+      "ts",
+      "vue",
+      "css",
+      "scss",
+      "html",
+      "json",
+      "xml",
+      "yml",
+      "yaml",
+      "php",
+      "py",
+      "sh",
+      "bat"
+    ].includes(ext)
+  )
+    return "mdi-file-code-outline";
+  if (["pdf"].includes(ext)) return "mdi-file-pdf-box";
+  return "mdi-file-outline";
 };
 
-let uploading = false;
-const progress = computed(() => {
-    if (uploadService.uiData.value.current) {
-        return (uploadService.uiData.value.current[0] * 100) / uploadService.uiData.value.current[1];
-    }
-    return 0;
+const { progress, uploadData, uploadInstanceTag, uploadService } = useFileUploadProgress({
+  target: () => ({ instanceId: props.instanceId, daemonId: props.daemonId }),
+  refresh: getFileList
 });
-const uploadData = uploadService.uiData;
-const uploadInstanceTag = computed(() => {
-    if (
-        !uploadData.value.instanceInfo ||
-        uploadData.value.instanceInfo.instanceId != props.instanceId ||
-        uploadData.value.instanceInfo.daemonId != props.daemonId
-    ) {
-        return `(${t("TXT_CODE_COMMON_UPLOADING_TO_OTHER_INSTANCES")})`;
-    }
-    return "";
-});
-watch(
-    () => uploadService.uiData.value,
-    (newValue) => {
-        if (newValue.current) {
-            uploading = true;
-        } else if (uploading) {
-            uploading = false;
-            getFileList();
-        }
-    },
-    { immediate: true }
-);
 
 usePolling(getFileStatus, 3000);
 
-const opacity = ref(false);
-const handleDragover = (e: DragEvent) => {
-    if (!e.dataTransfer?.types.includes("Files")) return;
-    e.preventDefault();
-    if (!currentTabs.value.length) return;
-    opacity.value = true;
-};
-
-const handleDragleave = (e: DragEvent) => {
-    e.preventDefault();
-    opacity.value = false;
-};
-
-const uploadConfirmDialog = ref({
-    show: false,
-    files: null as FileList | null,
-    name: ""
-});
-
-const handleDrop = (e: DragEvent) => {
-    e.preventDefault();
-    const files = e.dataTransfer?.files;
-    opacity.value = false;
-    if (!currentTabs.value.length || !files) return;
-    if (files.length === 0) return;
-    let name = "";
-    if (files.length === 1) {
-        name = files[0].name;
-    } else {
-        for (const file of files) {
-            name += file.name + ", ";
-        }
-        name = name.slice(0, -2);
-    }
-    if (name.length > 30) {
-        name = name.slice(0, 27) + "...";
-    }
-    if (files.length > 1) {
-        name += ` (${files.length})`;
-    }
-    uploadConfirmDialog.value = {
-        show: true,
-        files,
-        name
-    };
-};
-
-interface OverwriteResult {
-    confirmed: boolean;
-    all: boolean;
-    overwrite: boolean;
-}
-
-const overwriteDialog = ref({
-    show: false,
-    count: 0,
-    fileName: "",
-    all: false,
-    overwrite: false,
-    resolve: null as ((value: OverwriteResult) => void) | null
-});
-
-const createOverwriteHandler = () => {
-    return (params: { count: number; fileName: string }) => {
-        finishOverwrite(false, true);
-        if (disposed) return Promise.resolve({ confirmed: false, all: true, overwrite: false });
-        return new Promise<OverwriteResult>((resolve) => {
-            overwriteDialog.value = {
-                show: true,
-                count: params.count,
-                fileName: params.fileName,
-                all: false,
-                overwrite: false,
-                resolve
-            };
-        });
-    };
-};
-
-const handleUploadConfirmOk = () => {
-    if (uploadConfirmDialog.value.files) {
-        selectedFiles([...uploadConfirmDialog.value.files], undefined, createOverwriteHandler());
-    }
-    uploadConfirmDialog.value.show = false;
-};
-
-const handleUploadConfirmCancel = () => {
-    uploadConfirmDialog.value.show = false;
-};
-
-const finishOverwrite = (confirmed: boolean, cancelAll = false) => {
-    const resolve = overwriteDialog.value.resolve;
-    overwriteDialog.value.resolve = null;
-    overwriteDialog.value.show = false;
-    resolve?.({
-        confirmed,
-        all: cancelAll || overwriteDialog.value.all,
-        overwrite: overwriteDialog.value.overwrite
-    });
-};
-
-const handleOverwriteOk = () => finishOverwrite(true);
-const handleOverwriteCancel = () => finishOverwrite(false);
-
-watch(() => overwriteDialog.value.show, (visible) => {
-    if (!visible && overwriteDialog.value.resolve) handleOverwriteCancel();
-}, { flush: "sync" });
-
-const desktopFileInput = ref<HTMLInputElement | null>(null);
-const onDesktopFileInput = (event: Event) => {
-    const files = (event.target as HTMLInputElement).files;
-    if (!files?.length) return;
-    const names = Array.from(files).map((file) => file.name).join(", ");
-    uploadConfirmDialog.value = { show: true, files, name: names.length > 30 ? `${names.slice(0, 27)}...` : names };
-    (event.target as HTMLInputElement).value = "";
-};
-
-const onDesktopSelectionChange = (keys: unknown[]) => {
-    const normalized = (keys as string[]).map(String);
-    selectedRowKeys.value = normalized;
-    selectionData.value = (dataSource.value || []).filter((item) => normalized.includes(item.name));
-};
+const {
+  uploadConfirmDialog,
+  overwriteDialog,
+  createOverwriteHandler,
+  handleUploadConfirmOk,
+  handleUploadConfirmCancel,
+  handleOverwriteOk,
+  handleOverwriteCancel,
+  desktopFileInput,
+  onDesktopFileInput,
+  opacity,
+  handleDragover,
+  handleDragleave,
+  handleDrop
+} = useDesktopFileUpload(manager);
 
 const desktopContextMenu = reactive({ open: false, x: 0, y: 0, record: null as DataType | null });
 
 const handleDesktopRightClickRow = (e: MouseEvent, record: DataType) => {
-    e.preventDefault();
-    e.stopPropagation();
-    oneSelected(record.name, record);
-    desktopContextMenu.open = false;
-    desktopContextMenu.x = e.clientX;
-    desktopContextMenu.y = e.clientY;
-    desktopContextMenu.record = record;
-    nextTick(() => (desktopContextMenu.open = true));
+  e.preventDefault();
+  e.stopPropagation();
+  oneSelected(record.name, record);
+  desktopContextMenu.open = false;
+  desktopContextMenu.x = e.clientX;
+  desktopContextMenu.y = e.clientY;
+  desktopContextMenu.record = record;
+  nextTick(() => (desktopContextMenu.open = true));
 };
 
 const getDesktopRowProps = ({ item }: { item: unknown }) => {
-    const record = ((item as any)?.raw ?? item) as DataType;
-    return {
-        "data-row-key": record.name,
-        onClick: (e: MouseEvent) => handleRowClick(e, record),
-        onDblclick: (e: MouseEvent) => {
-            const target = e.target as HTMLElement;
-            if (target.closest('input[type="checkbox"]') || target.closest('.v-btn') || target.closest('.v-menu')) return;
-            void handleClickFile(record);
-        },
-        onContextmenu: (e: MouseEvent) => handleDesktopRightClickRow(e, record)
-    };
+  const record = ((item as any)?.raw ?? item) as DataType;
+  return {
+    "data-row-key": record.name,
+    onClick: (e: MouseEvent) => handleRowClick(e, record),
+    onDblclick: (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        target.closest('input[type="checkbox"]') ||
+        target.closest(".v-btn") ||
+        target.closest(".v-menu")
+      )
+        return;
+      void handleClickFile(record);
+    },
+    onContextmenu: (e: MouseEvent) => handleDesktopRightClickRow(e, record)
+  };
 };
 
 const runDesktopMenuAction = (action: { action: () => void }) => {
-    action.action();
-    desktopContextMenu.open = false;
+  action.action();
+  desktopContextMenu.open = false;
 };
 
-const desktopRowMenu = (record: DataType) => [
-    { title: t("TXT_CODE_ARCHIVE_PREVIEW"), icon: "mdi-archive-outline", show: !isMultiple.value && record.type === 1 && isCompressFile(record.name), action: () => previewArchiveFile(record.name) },
-    { title: t("TXT_CODE_COMMON_UNZIP"), icon: "mdi-package-up", show: record.type === 1 && isCompressFile(record.name), action: () => unzipFile(record.name, false) },
-    { title: t("TXT_CODE_COMMON_EDIT"), icon: "mdi-pencil-outline", show: !isMultiple.value && record.type === 1, action: () => editFile(record.name) },
-    { title: t("TXT_CODE_COMMON_DOWNLOAD"), icon: "mdi-download-outline", show: !isMultiple.value && record.type === 1, action: () => downloadFile(record.name) },
-    { title: t("TXT_CODE_COMMON_CUT"), icon: "mdi-content-cut", show: true, action: () => setClipBoard("move") },
-    { title: t("TXT_CODE_COMMON_COPY"), icon: "mdi-content-copy", show: true, action: () => setClipBoard("copy") },
-    { title: t("TXT_CODE_COMMON_RENAME"), icon: "mdi-form-textbox", show: !isMultiple.value, action: () => resetName(record.name) },
-    { title: t("TXT_CODE_COMMON_CHANGE_PERMISSIONS"), icon: "mdi-key-outline", show: fileStatus.value?.platform !== "win32", action: () => changePermission(record.name, record.mode) },
-    { title: t("TXT_CODE_COMMON_COMPRESS"), icon: "mdi-package-down", show: true, action: () => zipFile(false) },
-    { title: t("TXT_CODE_COMMON_DELETE"), icon: "mdi-delete-outline", show: true, action: () => deleteFile(record.name), color: "error" }
-].filter((item) => item.show);
+const desktopRowMenu = (record: DataType) =>
+  [
+    {
+      title: t("TXT_CODE_ARCHIVE_PREVIEW"),
+      icon: "mdi-archive-outline",
+      show: !isMultiple.value && record.type === 1 && isCompressFile(record.name),
+      action: () => previewArchiveFile(record.name)
+    },
+    {
+      title: t("TXT_CODE_COMMON_UNZIP"),
+      icon: "mdi-package-up",
+      show: record.type === 1 && isCompressFile(record.name),
+      action: () => unzipFile(record.name, false)
+    },
+    {
+      title: t("TXT_CODE_COMMON_EDIT"),
+      icon: "mdi-pencil-outline",
+      show: !isMultiple.value && record.type === 1,
+      action: () => editFile(record.name)
+    },
+    {
+      title: t("TXT_CODE_COMMON_DOWNLOAD"),
+      icon: "mdi-download-outline",
+      show: !isMultiple.value && record.type === 1,
+      action: () => downloadFile(record.name)
+    },
+    {
+      title: t("TXT_CODE_COMMON_CUT"),
+      icon: "mdi-content-cut",
+      show: true,
+      action: () => setClipBoard("move")
+    },
+    {
+      title: t("TXT_CODE_COMMON_COPY"),
+      icon: "mdi-content-copy",
+      show: true,
+      action: () => setClipBoard("copy")
+    },
+    {
+      title: t("TXT_CODE_COMMON_RENAME"),
+      icon: "mdi-form-textbox",
+      show: !isMultiple.value,
+      action: () => resetName(record.name)
+    },
+    {
+      title: t("TXT_CODE_COMMON_CHANGE_PERMISSIONS"),
+      icon: "mdi-key-outline",
+      show: fileStatus.value?.platform !== "win32",
+      action: () => changePermission(record.name, record.mode)
+    },
+    {
+      title: t("TXT_CODE_COMMON_COMPRESS"),
+      icon: "mdi-package-down",
+      show: true,
+      action: () => zipFile(false)
+    },
+    {
+      title: t("TXT_CODE_COMMON_DELETE"),
+      icon: "mdi-delete-outline",
+      show: true,
+      action: () => deleteFile(record.name),
+      color: "error"
+    }
+  ].filter((item) => item.show);
 
 const editFile = (fileName: string) => {
-    const path = currentPath.value + fileName;
-    emit("open-file-editor", path, fileName);
+  const path = currentPath.value + fileName;
+  emit("open-file-editor", path, fileName);
 };
 
 const handleClickFile = async (file: DataType) => {
-    if (file.type === 0) return rowClickTable(file.name, file.type);
-    if (isCompressFile(file.name)) return previewArchiveFile(file.name);
-    const fileExtName = getFileExtName(file.name);
-    if (isImage(fileExtName)) {
-        const path = currentPath.value + file.name;
-        return emit("open-image-viewer", path, file.name);
-    }
-    return editFile(file.name);
+  if (file.type === 0) return rowClickTable(file.name, file.type);
+  if (isCompressFile(file.name)) return previewArchiveFile(file.name);
+  const fileExtName = getFileExtName(file.name);
+  if (isImage(fileExtName)) {
+    const path = currentPath.value + file.name;
+    return emit("open-image-viewer", path, file.name);
+  }
+  return editFile(file.name);
 };
 
 const downloadDialog = ref({
-    show: false,
-    url: "",
-    fileName: ""
+  show: false,
+  url: "",
+  fileName: ""
 });
 
 const getFileNameFromUrl = (url: string | undefined): string | undefined => {
-    if (!url) return undefined;
-    try {
-        const urlObject = new URL(url);
-        const pathSegments = urlObject.pathname.split("/").filter(Boolean);
-        const lastPathSegment = pathSegments.pop() || "";
-        return decodeURIComponent(lastPathSegment);
-    } catch (_) {
-        return undefined;
-    }
+  if (!url) return undefined;
+  try {
+    const urlObject = new URL(url);
+    const pathSegments = urlObject.pathname.split("/").filter(Boolean);
+    const lastPathSegment = pathSegments.pop() || "";
+    return decodeURIComponent(lastPathSegment);
+  } catch (_) {
+    return undefined;
+  }
 };
 
 watch(
-    () => downloadDialog.value.url,
-    (newUrl, oldUrl) => {
-        if (newUrl == oldUrl) return;
-        const fileName = getFileNameFromUrl(newUrl);
-        if (!fileName) return;
-        downloadDialog.value.fileName = fileName;
-    }
+  () => downloadDialog.value.url,
+  (newUrl, oldUrl) => {
+    if (newUrl == oldUrl) return;
+    const fileName = getFileNameFromUrl(newUrl);
+    if (!fileName) return;
+    downloadDialog.value.fileName = fileName;
+  }
 );
 
 const downloadFromURLFile = async () => {
-    downloadDialog.value.url = "";
-    downloadDialog.value.fileName = "";
-    downloadDialog.value.show = true;
+  downloadDialog.value.url = "";
+  downloadDialog.value.fileName = "";
+  downloadDialog.value.show = true;
 };
 
 const submitDownloadDialog = async () => {
-    if (!downloadDialog.value.url) return notifyDesktopError(t("TXT_CODE_COMMON_URL_REQUIRED"));
-    if (!downloadDialog.value.fileName) return notifyDesktopError(t("TXT_CODE_COMMON_FILE_NAME_REQUIRED"));
-    try {
-        new URL(downloadDialog.value.url);
-    } catch (_) {
-        return notifyDesktopError(t("TXT_CODE_COMMON_INVALID_URL"));
-    }
-    downloadDialog.value.show = false;
-    await downloadFromUrl({
-        url: downloadDialog.value.url,
-        fileName: downloadDialog.value.fileName
-    }, false);
+  if (!downloadDialog.value.url) return notifyDesktopError(t("TXT_CODE_COMMON_URL_REQUIRED"));
+  if (!downloadDialog.value.fileName)
+    return notifyDesktopError(t("TXT_CODE_COMMON_FILE_NAME_REQUIRED"));
+  try {
+    new URL(downloadDialog.value.url);
+  } catch (_) {
+    return notifyDesktopError(t("TXT_CODE_COMMON_INVALID_URL"));
+  }
+  downloadDialog.value.show = false;
+  await downloadFromUrl(
+    {
+      url: downloadDialog.value.url,
+      fileName: downloadDialog.value.fileName
+    },
+    false
+  );
 };
 
 const cancelDownloadDialog = () => {
-    downloadDialog.value.show = false;
+  downloadDialog.value.show = false;
 };
 
-const lastClickedIndex = ref(-1);
+const {
+  onDesktopSelectionChange,
+  handleRowClick,
+  dfmRootRef,
+  dragSelectRect,
+  dragSelectVisible,
+  onTableMouseDown,
+  bindSelectionEvents
+} = useDesktopFileSelection(manager);
 
-const handleRowClick = (e: MouseEvent, record: DataType) => {
-    const target = e.target as HTMLElement;
-    if (target.closest('input[type="checkbox"]') ||
-        target.closest('.v-btn') ||
-        target.closest('.v-menu') ||
-        target.closest('.v-input')) {
-        return;
-    }
-
-    const key = record.name;
-    const index = dataSource.value?.findIndex(d => d.name === key) ?? -1;
-
-    if (e.ctrlKey || e.metaKey) {
-        const existingIdx = selectedRowKeys.value.indexOf(key);
-        if (existingIdx > -1) {
-            selectedRowKeys.value = selectedRowKeys.value.filter(k => k !== key);
-            if (selectionData.value) {
-                selectionData.value = selectionData.value.filter(d => d.name !== key);
-            }
-        } else {
-            selectedRowKeys.value = [...selectedRowKeys.value, key];
-            if (selectionData.value) {
-                selectionData.value = [...selectionData.value, record];
-            } else {
-                selectionData.value = [record];
-            }
-        }
-        lastClickedIndex.value = index;
-        return;
-    }
-
-    if (e.shiftKey) {
-        if (lastClickedIndex.value > -1 && dataSource.value) {
-            const start = Math.min(lastClickedIndex.value, index);
-            const end = Math.max(lastClickedIndex.value, index);
-            const rangeKeys: string[] = [];
-            const rangeRows: DataType[] = [];
-            for (let i = start; i <= end; i++) {
-                const row = dataSource.value[i];
-                if (row) {
-                    rangeKeys.push(row.name);
-                    rangeRows.push(row);
-                }
-            }
-            selectedRowKeys.value = rangeKeys;
-            selectionData.value = rangeRows;
-        } else {
-            selectedRowKeys.value = [key];
-            selectionData.value = [record];
-            lastClickedIndex.value = index;
-        }
-        return;
-    }
-
-    selectedRowKeys.value = [key];
-    selectionData.value = [record];
-    lastClickedIndex.value = index;
-    const rowEl = (e.currentTarget as HTMLElement)?.closest('tr');
-    if (rowEl) {
-        if (!rowEl.hasAttribute('tabindex')) {
-            rowEl.setAttribute('tabindex', '-1');
-        }
-        rowEl.focus({ preventScroll: true });
-    }
+const getDesktopDialogProps = (
+  name: string,
+  preferredWidth: number,
+  preferredHeight: number,
+  layer = 0
+) => {
+  return {
+    id: `file-manager:${props.daemonId}:${props.instanceId}:${
+      props.sessionId || "default"
+    }:${name}`,
+    width: preferredWidth,
+    height: preferredHeight,
+    zIndex: 10010 + layer
+  };
 };
-
-let lastShortcutKey = "";
-let lastShortcutTime = 0;
-const SHORTCUT_DEBOUNCE_MS = 200;
-
-const dfmRootRef = ref<HTMLElement | null>(null);
-const isDragSelecting = ref(false);
-const isDragAdditive = ref(false);
-const dragSelectStart = ref({ x: 0, y: 0 });
-const dragSelectRect = ref({ x: 0, y: 0, w: 0, h: 0 });
-const dragSelectVisible = ref(false);
-
-const dataSourceMap = computed(() => {
-    const map = new Map<string, DataType>();
-    if (dataSource.value) {
-        for (const item of dataSource.value) {
-            map.set(item.name, item);
-        }
-    }
-    return map;
-});
-
-const getTableBodyEl = (): HTMLElement | null => {
-    if (!dfmRootRef.value) return null;
-    return dfmRootRef.value.querySelector('.dfm-table tbody');
-};
-
-const getRowEls = (): NodeListOf<HTMLElement> => {
-    if (!dfmRootRef.value) return document.querySelectorAll('');
-    return dfmRootRef.value.querySelectorAll('.dfm-table tbody tr');
-};
-
-const getRowDataKey = (rowEl: HTMLElement): string | null => {
-    return rowEl.getAttribute('data-row-key');
-};
-
-const getTableWrapperEl = (): HTMLElement | null => {
-    if (!dfmRootRef.value) return null;
-    return dfmRootRef.value.querySelector('.dfm-table-wrapper');
-};
-
-const onTableMouseDown = (e: MouseEvent) => {
-    if (e.button !== 0) return;
-    if (e.shiftKey || e.metaKey) return;
-    const target = e.target as HTMLElement;
-    if (target.closest('input[type="checkbox"]') ||
-        target.closest('.v-btn') ||
-        target.closest('.v-menu') ||
-        target.closest('.v-input') ||
-        target.closest('.v-pagination') ||
-        target.closest('.v-tabs') ||
-        target.closest('.file-path-bar') ||
-        target.closest('.dfm-toolbar') ||
-        target.closest('.dfm-upload-progress')) {
-        return;
-    }
-
-    const tableBody = getTableBodyEl();
-    if (!tableBody || !tableBody.contains(target)) return;
-
-    const wrapper = getTableWrapperEl();
-    if (!wrapper) return;
-
-    const wrapperRect = wrapper.getBoundingClientRect();
-    isDragSelecting.value = true;
-    isDragAdditive.value = e.ctrlKey;
-    dragSelectStart.value = { x: e.clientX, y: e.clientY };
-    dragSelectRect.value = {
-        x: e.clientX - wrapperRect.left,
-        y: e.clientY - wrapperRect.top,
-        w: 0,
-        h: 0
-    };
-    dragSelectVisible.value = true;
-
-    if (!isDragAdditive.value) {
-        selectedRowKeys.value = [];
-        selectionData.value = [];
-    }
-
-    if (dfmRootRef.value) {
-        if (!dfmRootRef.value.hasAttribute('tabindex')) {
-            dfmRootRef.value.setAttribute('tabindex', '-1');
-        }
-        dfmRootRef.value.focus({ preventScroll: true });
-    }
-
-    e.preventDefault();
-    e.stopPropagation();
-};
-
-let dragSelectRafId: number | null = null;
-
-const onTableMouseMove = (e: MouseEvent) => {
-    if (!isDragSelecting.value) return;
-
-    if (dragSelectRafId !== null) {
-        cancelAnimationFrame(dragSelectRafId);
-    }
-
-    dragSelectRafId = requestAnimationFrame(() => {
-        dragSelectRafId = null;
-        performDragSelection(e);
-    });
-};
-
-const performDragSelection = (e: MouseEvent) => {
-    if (!isDragSelecting.value) return;
-
-    const wrapper = getTableWrapperEl();
-    if (!wrapper) return;
-
-    const wrapperRect = wrapper.getBoundingClientRect();
-    const currentX = e.clientX - wrapperRect.left;
-    const currentY = e.clientY - wrapperRect.top;
-
-    const startX = dragSelectStart.value.x - wrapperRect.left;
-    const startY = dragSelectStart.value.y - wrapperRect.top;
-
-    dragSelectRect.value = {
-        x: Math.min(startX, currentX),
-        y: Math.min(startY, currentY),
-        w: Math.abs(currentX - startX),
-        h: Math.abs(currentY - startY)
-    };
-
-    const selRect = {
-        left: dragSelectRect.value.x,
-        top: dragSelectRect.value.y,
-        right: dragSelectRect.value.x + dragSelectRect.value.w,
-        bottom: dragSelectRect.value.y + dragSelectRect.value.h
-    };
-
-    const rows = getRowEls();
-    const newlySelected: string[] = [];
-    const newlySelectedRows: DataType[] = [];
-    const map = dataSourceMap.value;
-
-    for (let i = 0; i < rows.length; i++) {
-        const row = rows[i];
-        const rowRect = row.getBoundingClientRect();
-        const rowRelTop = rowRect.top - wrapperRect.top;
-        const rowRelBottom = rowRect.bottom - wrapperRect.top;
-
-        if (rowRelBottom > selRect.top && rowRelTop < selRect.bottom) {
-            const key = getRowDataKey(row);
-            if (key) {
-                const found = map.get(key);
-                if (found) {
-                    newlySelected.push(key);
-                    newlySelectedRows.push(found);
-                }
-            }
-        }
-    }
-
-    if (isDragAdditive.value) {
-        const existingKeys = selectedRowKeys.value;
-        const existingRows = selectionData.value ?? [];
-        const mergedKeys = [...existingKeys];
-        const mergedRows = [...existingRows];
-        for (let i = 0; i < newlySelected.length; i++) {
-            if (!existingKeys.includes(newlySelected[i])) {
-                mergedKeys.push(newlySelected[i]);
-                mergedRows.push(newlySelectedRows[i]);
-            }
-        }
-        if (mergedKeys.length !== existingKeys.length) {
-            selectedRowKeys.value = mergedKeys;
-            selectionData.value = mergedRows;
-        }
-    } else {
-        const prevSelected = selectedRowKeys.value;
-        if (prevSelected.length !== newlySelected.length || prevSelected.some((k, i) => k !== newlySelected[i])) {
-            selectedRowKeys.value = newlySelected;
-            selectionData.value = newlySelectedRows;
-        }
-    }
-};
-
-const finishDragSelection = (restoreFocus = true) => {
-    if (isDragSelecting.value) {
-        isDragSelecting.value = false;
-        isDragAdditive.value = false;
-        dragSelectVisible.value = false;
-        if (dragSelectRafId !== null) {
-            cancelAnimationFrame(dragSelectRafId);
-            dragSelectRafId = null;
-        }
-        if (restoreFocus && dfmRootRef.value) {
-            if (!dfmRootRef.value.hasAttribute('tabindex')) {
-                dfmRootRef.value.setAttribute('tabindex', '-1');
-            }
-            dfmRootRef.value.focus({ preventScroll: true });
-        }
-    }
-};
-
-const onTableMouseUp = () => finishDragSelection();
-
-const getDesktopDialogProps = (name: string, preferredWidth: number, preferredHeight: number, layer = 0) => {
-    return {
-        id: `file-manager:${props.daemonId}:${props.instanceId}:${props.sessionId || "default"}:${name}`,
-        width: preferredWidth,
-        height: preferredHeight,
-        zIndex: 10010 + layer
-    };
-};
-const handleWindowBlur = () => finishDragSelection(false);
-
-const handleKeyboardShortcut = (e: KeyboardEvent) => {
-    if (!currentTabs.value.length) return;
-    if (dfmRootRef.value && !dfmRootRef.value.contains(e.target as Node)) {
-        return;
-    }
-
-    const shortcutSig = `${e.ctrlKey || e.metaKey ? "M" : ""}${e.shiftKey ? "S" : ""}${e.altKey ? "A" : ""}:${e.key}`;
-    const now = Date.now();
-    if (shortcutSig === lastShortcutKey && now - lastShortcutTime < SHORTCUT_DEBOUNCE_MS) {
-        return;
-    }
-    lastShortcutKey = shortcutSig;
-    lastShortcutTime = now;
-
-    const target = e.target as HTMLElement;
-    const tag = target?.tagName;
-    const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
-    const isContentEditable = target?.isContentEditable;
-
-    const isTableCheckbox = isInput && tag === 'INPUT' && (target as HTMLInputElement)?.type === 'checkbox' && target.closest('.dfm .dfm-table');
-    if (isInput && !isTableCheckbox) return;
-    if (isContentEditable && !isTableCheckbox) return;
-
-    const isCtrl = e.ctrlKey || e.metaKey;
-
-    if (isCtrl && e.key === 'c') {
-        e.preventDefault();
-        if (!selectionData.value || selectionData.value.length === 0) return;
-        setClipBoard('copy');
-        return;
-    }
-
-    if (isCtrl && e.key === 'x') {
-        e.preventDefault();
-        if (!selectionData.value || selectionData.value.length === 0) return;
-        setClipBoard('move');
-        return;
-    }
-
-    if (isCtrl && e.key === 'v') {
-        e.preventDefault();
-        paste();
-        return;
-    }
-
-    if (isCtrl && e.key === 'a') {
-        e.preventDefault();
-        if (!dataSource.value || dataSource.value.length === 0) return;
-        const allKeys = dataSource.value.map(d => d.name);
-        const allRows = [...dataSource.value];
-        selectedRowKeys.value = allKeys;
-        selectionData.value = allRows;
-        return;
-    }
-
-    if (e.key === 'Delete' || e.key === 'Del') {
-        e.preventDefault();
-        if (e.repeat || deleteDialog.value.show || deleteDialog.value.loading) return;
-        if (!selectionData.value || selectionData.value.length === 0) return;
-        finishDragSelection(false);
-        const file = selectionData.value.length === 1 ? selectionData.value[0].name : undefined;
-        void deleteFile(file);
-        return;
-    }
-};
-
 onMounted(async () => {
-    window.addEventListener('blur', handleWindowBlur);
+  dialog.value.loading = true;
+  await getFileStatus();
+  if (disposed) return;
 
-    dialog.value.loading = true;
-    await getFileStatus();
-    if (disposed) return;
+  if (currentTabs.value.length) {
+    const thisTab = currentTabs.value[0];
+    activeTab.value = thisTab.key;
+    await getFileList(false, thisTab.path);
+  } else {
+    await getFileList(false);
+  }
 
-    if (currentTabs.value.length) {
-        const thisTab = currentTabs.value[0];
-        activeTab.value = thisTab.key;
-        await getFileList(false, thisTab.path);
-    } else {
-        await getFileList(false);
-    }
+  if (disposed) return;
+  dialog.value.loading = false;
 
-    if (disposed) return;
-    dialog.value.loading = false;
-
-    document.addEventListener('mousemove', onTableMouseMove);
-    document.addEventListener('mouseup', onTableMouseUp);
-    document.addEventListener('keydown', handleKeyboardShortcut);
+  bindSelectionEvents();
 });
 
 onUnmounted(() => {
-    disposed = true;
-    finishOverwrite(false, true);
-    uploadConfirmDialog.value.files = null;
-    finishDragSelection(false);
-    if (dragSelectRafId !== null) {
-        cancelAnimationFrame(dragSelectRafId);
-        dragSelectRafId = null;
-    }
-    document.removeEventListener('mousemove', onTableMouseMove);
-    document.removeEventListener('mouseup', onTableMouseUp);
-    document.removeEventListener('keydown', handleKeyboardShortcut);
-
-    window.removeEventListener('blur', handleWindowBlur);
+  disposed = true;
 });
 </script>
 
