@@ -896,6 +896,7 @@ onUnmounted(() => {
 .dfm-drag-select-rect {
   position: absolute;
   background: rgba(22, 119, 255, 0.12);
+  border: 1px solid rgba(22, 119, 255, 0.4);
   border-radius: 3px;
   pointer-events: none;
   z-index: 10;

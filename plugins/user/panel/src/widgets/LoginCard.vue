@@ -1,7 +1,16 @@
 <script setup lang="ts">
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import { markdownToHTML } from "@elementspanel/epanel-plugin-console/tools/safe";
-import { VAlert, VBtn, VCard, VCardText, VDivider, VForm, VTextField } from "vuetify/components";
+import {
+  VAlert,
+  VBtn,
+  VCard,
+  VCardText,
+  VDivider,
+  VForm,
+  VTextField,
+  VTooltip
+} from "vuetify/components";
 import { useLogin } from "../hooks/useLogin";
 
 const {
@@ -25,17 +34,24 @@ const {
     <VCard class="login-panel" data-app-surface="card" elevation="0" rounded="xl">
       <VCardText class="login-panel-body">
         <div v-if="loginActions.length" class="login-actions">
-          <template v-for="(action, index) in loginActions" :key="index">
-            <VBtn
-              :aria-label="action.title"
-              :title="action.title"
-              icon
-              variant="text"
-              @click="action.click()"
-            >
-              <component :is="action.icon" v-if="action.icon" />
-            </VBtn>
-          </template>
+          <VTooltip
+            v-for="(action, index) in loginActions"
+            :key="index"
+            :text="action.title"
+            location="bottom"
+          >
+            <template #activator="{ props: tooltipProps }">
+              <VBtn
+                v-bind="tooltipProps"
+                :aria-label="action.title"
+                icon
+                variant="text"
+                @click="action.click()"
+              >
+                <component :is="action.icon" v-if="action.icon" />
+              </VBtn>
+            </template>
+          </VTooltip>
         </div>
         <h2 class="login-title glitch-wrapper">
           <div class="glitch" :data-text="t('TXT_CODE_LOGIN_AUTHENTICATION_TITLE')">
