@@ -7,7 +7,7 @@ import {
 
 const INTERNAL_ELEMENTS = ".os-scrollbar, .os-size-observer, .os-trinsic-observer, .os-environment";
 const NATIVE_CONTROLS =
-  "input, textarea, select, option, iframe, .xterm, .cm-editor, .monaco-editor, [data-native-scrollbars]";
+  "input, textarea, select, option, iframe, .xterm, .cm-editor, .monaco-editor, .v-menu, [data-native-scrollbars]";
 const TREE_STYLE_PROPERTIES = [
   "all",
   "display",

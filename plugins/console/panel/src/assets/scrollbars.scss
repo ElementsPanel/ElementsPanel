@@ -11,6 +11,15 @@
   scrollbar-gutter: auto !important;
 }
 
+.v-menu,
+.v-menu * {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 .os-theme-app {
   --os-size: 12px;
   --os-padding-perpendicular: 4px;
