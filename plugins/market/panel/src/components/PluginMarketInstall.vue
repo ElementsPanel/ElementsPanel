@@ -323,8 +323,8 @@ onBeforeUnmount(() => {
     <VCard :title="t('TXT_CODE_PLUGIN_MARKET_MANAGE', { name: plugin.displayName })">
       <VProgressLinear v-if="loading" indeterminate />
       <VCardText>
-        <div class="text-body-2 text-medium-emphasis mb-4">{{ plugin.name }}</div>
-        <VAlert v-if="error" type="error" variant="tonal" :text="error" class="mb-4" />
+        <div class="text-body-2 text-medium-emphasis app-mb-4">{{ plugin.name }}</div>
+        <VAlert v-if="error" type="error" variant="tonal" :text="error" class="app-mb-4" />
         <VAlert
           v-if="plugin.installedVersion && plugin.installedRemovable === false"
           type="info"
@@ -336,9 +336,9 @@ onBeforeUnmount(() => {
                 : 'TXT_CODE_PLUGIN_MARKET_UNINSTALL_PROTECTED'
             )
           "
-          class="mb-4"
+          class="app-mb-4"
         />
-        <div v-if="plugin.installedVersion" class="mb-4">
+        <div v-if="plugin.installedVersion" class="app-mb-4">
           {{ t("TXT_CODE_PLUGIN_MARKET_INSTALLED_VERSION", { version: plugin.installedVersion }) }}
         </div>
         <VSelect
@@ -347,7 +347,7 @@ onBeforeUnmount(() => {
           :label="t('TXT_CODE_PLUGIN_MARKET_TARGET_VERSION')"
           :disabled="loading || busy || applyingChanges"
           hide-details
-          class="mb-4"
+          class="app-mb-4"
         >
           <template #no-data><Empty :icon="false" compact /></template>
         </VSelect>
@@ -357,16 +357,16 @@ onBeforeUnmount(() => {
           type="warning"
           variant="tonal"
           :text="t('TXT_CODE_PLUGIN_MARKET_DEPRECATED', { reason: version.deprecated })"
-          class="my-4"
+          class="app-my-4"
         />
         <VAlert
           v-if="majorWarning"
           type="warning"
           variant="tonal"
           :text="t('TXT_CODE_PLUGIN_MARKET_MAJOR_WARNING')"
-          class="my-4"
+          class="app-my-4"
         />
-        <VTable v-if="requirements.length" density="compact" class="my-4">
+        <VTable v-if="requirements.length" density="compact" class="app-my-4">
           <thead>
             <tr>
               <th>{{ t("TXT_CODE_PLUGIN_MARKET_DEPENDENCY") }}</th>
@@ -386,7 +386,7 @@ onBeforeUnmount(() => {
             </tr>
           </tbody>
         </VTable>
-        <p class="text-caption text-medium-emphasis my-3">
+        <p class="text-caption text-medium-emphasis app-my-3">
           {{ t("TXT_CODE_PLUGIN_MARKET_NPM_DEPENDENCIES") }}
         </p>
         <VSelect
@@ -396,11 +396,11 @@ onBeforeUnmount(() => {
           :label="t('TXT_CODE_PLUGIN_MARKET_CONFIG_TARGET')"
           :disabled="busy"
           hide-details
-          class="mb-4"
+          class="app-mb-4"
         >
           <template #no-data><Empty :icon="false" compact /></template>
         </VSelect>
-        <div v-if="installed?.daemonIds.length" class="text-caption text-medium-emphasis mb-4">
+        <div v-if="installed?.daemonIds.length" class="text-caption text-medium-emphasis app-mb-4">
           <div v-for="daemonId in installed.daemonIds" :key="daemonId">
             {{ daemonId }} · {{ installed.daemonVersions?.[daemonId] ?? installed.version }}
           </div>
@@ -413,7 +413,7 @@ onBeforeUnmount(() => {
           persistent-hint
         />
       </VCardText>
-      <VCardActions class="flex-wrap ga-2">
+      <VCardActions class="app-flex-wrap ga-2">
         <VBtn variant="text" :disabled="busy || applyingChanges" @click="shown = false">{{
           t("TXT_CODE_PLUGIN_MARKET_CANCEL")
         }}</VBtn>

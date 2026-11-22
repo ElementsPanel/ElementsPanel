@@ -209,7 +209,7 @@ onMounted(fetchData);
         <VCol cols="12">
           <VCard class="monitor-card monitor-overview-card" flat>
             <VCardTitle class="monitor-card-title">
-              <VIcon icon="mdi-information-outline" class="mr-2" />
+              <VIcon icon="mdi-information-outline" class="app-mr-2" />
               {{ t("TXT_CODE_COMMON_DATA_OVERVIEW") }}
             </VCardTitle>
             <VCardText>
@@ -227,7 +227,7 @@ onMounted(fetchData);
                       :color="progressColor(item.progress)"
                       height="5"
                       rounded="xl"
-                      class="mt-2"
+                      class="app-mt-2"
                     />
                   </div>
                 </VCol>
@@ -241,7 +241,7 @@ onMounted(fetchData);
         <VCol cols="12" lg="6">
           <VCard class="monitor-card chart-card" flat>
             <VCardTitle class="monitor-card-title">
-              <VIcon icon="mdi-chart-line" class="mr-2" />
+              <VIcon icon="mdi-chart-line" class="app-mr-2" />
               {{ t("TXT_CODE_COMMON_INTERFACE_REQUESTS") }}
             </VCardTitle>
             <VCardText>
@@ -254,7 +254,7 @@ onMounted(fetchData);
         <VCol cols="12" lg="6">
           <VCard class="monitor-card chart-card" flat>
             <VCardTitle class="monitor-card-title">
-              <VIcon icon="mdi-chart-areaspline" class="mr-2" />
+              <VIcon icon="mdi-chart-areaspline" class="app-mr-2" />
               {{ t("TXT_CODE_COMMON_RUNNING_INSTANCES") }}
             </VCardTitle>
             <VCardText>
@@ -270,7 +270,7 @@ onMounted(fetchData);
         <VCol cols="12" lg="7">
           <VCard class="monitor-card" flat>
             <VCardTitle class="monitor-card-title">
-              <VIcon icon="mdi-format-list-bulleted" class="mr-2" />
+              <VIcon icon="mdi-format-list-bulleted" class="app-mr-2" />
               {{ t("TXT_CODE_COMMON_OPERATION_LOG") }}
             </VCardTitle>
             <VCardText class="log-card-body">
@@ -298,7 +298,7 @@ onMounted(fetchData);
         <VCol cols="12" lg="5">
           <VCard class="monitor-card node-card" flat>
             <VCardTitle class="monitor-card-title">
-              <VIcon icon="mdi-lan" class="mr-2" />
+              <VIcon icon="mdi-lan" class="app-mr-2" />
               {{ t("TXT_CODE_OVERVIEW_ONLINE_NODE_COUNT") }} ({{ remoteNodes.length }})
             </VCardTitle>
             <VCardText class="pa-0">

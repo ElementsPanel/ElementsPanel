@@ -1,0 +1,12 @@
+@use "./theme-colors";
+
+// Export the same Sass colors to the Vuetify configuration.
+:export {
+  @each $theme in "light", "dark" {
+    @each $name in "background", "surface", "field-surface", "surface-variant", "on-background",
+      "on-surface", "on-surface-variant", "primary", "error", "info"
+    {
+      #{$theme}-#{$name}: theme-colors.theme-color($theme, $name);
+    }
+  }
+}

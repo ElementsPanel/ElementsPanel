@@ -75,7 +75,7 @@ const nodePickerOpen = computed({
           :disabled="actionSubmitting || actionCandidate.checkingNodes"
           density="compact"
           hide-details
-          class="mt-3"
+          class="app-mt-3"
         />
       </VCardText>
       <VCardActions>
@@ -105,7 +105,7 @@ const nodePickerOpen = computed({
   <VDialog v-model="nodePickerOpen" :persistent="actionSubmitting" max-width="640" scrollable>
     <VCard :title="t('TXT_CODE_PLUGIN_NODE_SELECT')">
       <VCardText v-if="actionCandidate">
-        <div v-if="actionCandidate.nodeTargets.length" class="mb-6">
+        <div v-if="actionCandidate.nodeTargets.length" class="app-mb-6">
           {{
             t(
               actionCandidate.action === "remove"
@@ -118,7 +118,7 @@ const nodePickerOpen = computed({
         </div>
         <VAlert
           v-if="actionCandidate.nodeCheckError"
-          class="mb-6"
+          class="app-mb-6"
           type="warning"
           variant="tonal"
           :text="actionCandidate.nodeCheckError"

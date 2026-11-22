@@ -496,7 +496,7 @@ onUnmounted(() => {
                 <VCardText>
                     <p v-for="line in errorDialog.lines" :key="line" class="dim-error-line">{{ line }}</p>
                 </VCardText>
-                <VCardActions class="justify-end">
+                <VCardActions class="app-justify-end">
                     <VBtn variant="text" @click="errorDialog.show = false">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn>
                 </VCardActions>
             </VCard>

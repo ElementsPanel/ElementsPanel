@@ -128,7 +128,7 @@ onBeforeUnmount(() => {
                     </div>
                     <VBtn type="submit" class="desktop-login-btn" block variant="flat"
                         :loading="loginStep === 1" :disabled="loginStep === 1">
-                        <VIcon v-if="loginStep === 1" icon="mdi-loading" class="mr-2" />
+                        <VIcon v-if="loginStep === 1" icon="mdi-loading" class="app-mr-2" />
                         {{ loginStep === 1 ? t("TXT_CODE_DESKTOP_LOGGING_IN") : t("TXT_CODE_LOGIN_SUBMIT") }}
                     </VBtn>
                 </form>

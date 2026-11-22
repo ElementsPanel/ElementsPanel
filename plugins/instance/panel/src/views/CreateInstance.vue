@@ -312,7 +312,7 @@ const handleCreated = (instanceUuid: string) => {
                             v-if="!canSelectNode(node)"
                             type="warning"
                             variant="tonal"
-                            class="mt-3"
+                            class="app-mt-3"
                             >{{ t("TXT_CODE_MINECRAFT_NODE_UNSUPPORTED") }}</VAlert
                           >
                         </VCardText>

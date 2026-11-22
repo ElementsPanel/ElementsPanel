@@ -51,7 +51,7 @@ const modified = (fields: SettingField[]) => fields.some((field) =>
       v-model="selectedPage"
       color="primary"
       show-arrows
-      class="settings-pages-tabs"
+      class="settings-pages-tabs app-ui-root"
     >
       <VTab v-for="page in pages" :key="page.id" :value="page.id" rounded="xl">
         <VBadge :model-value="modified(page.fields)" color="warning" dot inline>

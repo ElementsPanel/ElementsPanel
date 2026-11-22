@@ -340,7 +340,7 @@ onScopeDispose(() => {
     :text="t('TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE')"
   />
   <div>
-    <div class="d-flex flex-wrap ga-2">
+    <div class="d-flex app-flex-wrap ga-2">
       <VBtn
         v-if="canInstall"
         color="primary"
@@ -404,7 +404,7 @@ onScopeDispose(() => {
           :label="t('TXT_CODE_PLUGIN_MARKET_REMOVE_CONFIG')"
           hide-details
         />
-        <p class="text-caption text-medium-emphasis mt-2">
+        <p class="text-caption text-medium-emphasis app-mt-2">
           {{ t("TXT_CODE_PLUGIN_MARKET_KEEP_DATA") }}
         </p>
       </template>

@@ -429,6 +429,7 @@ watch([scope, currentId, selectedNodeId, pluginGroupsLoading], syncRoute);
       <component
         :is="isPhone ? VNavigationDrawer : 'aside'"
         v-bind="navigationProps"
+        class="app-ui-root"
         @keydown.esc="sidebarOpen = false"
       >
         <div class="plugin-config-sidebar" :data-app-surface="isPhone ? 'card' : 'transparent'">
@@ -672,7 +673,7 @@ watch([scope, currentId, selectedNodeId, pluginGroupsLoading], syncRoute);
             :text="frontendPlugin.error.message"
           />
 
-          <VBtn v-if="frontendPlugin?.error" class="mb-4" variant="text" @click="retryFrontend">{{
+          <VBtn v-if="frontendPlugin?.error" class="app-mb-4" variant="text" @click="retryFrontend">{{
             t("TXT_CODE_COMMON_RETRY")
           }}</VBtn>
           <div v-if="schemaLoading" class="plugin-config-schema-loading">

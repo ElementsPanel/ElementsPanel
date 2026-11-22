@@ -524,7 +524,7 @@ onUnmounted(() => {
           @close="cancelDownloadDialog"
         >
           <VTextField v-model="downloadDialog.url" :label="t('TXT_CODE_COMMON_FILE_URL_ADDRESS')"
-              density="compact" hide-details autofocus class="mb-4" />
+              density="compact" hide-details autofocus class="app-mb-4" />
           <VTextField v-model="downloadDialog.fileName" :label="t('TXT_CODE_COMMON_FILE_NAME')"
               density="compact" hide-details />
           <template #footer>

@@ -13,7 +13,7 @@ import { applyingChanges, changingDependencies } from "../operations";
     no-click-animation
   >
     <VCard>
-      <VCardText class="d-flex flex-column align-center ga-4 pa-6">
+      <VCardText class="d-flex flex-column app-align-center ga-4 pa-6">
         <VProgressLinear
           indeterminate
           color="primary"
@@ -21,7 +21,7 @@ import { applyingChanges, changingDependencies } from "../operations";
           rounded
           aria-hidden="true"
         />
-        <div class="text-body-2 text-center" role="status">
+        <div class="text-body-2 app-text-center" role="status">
           {{ t("TXT_CODE_PLUGIN_MARKET_UPDATING_DEPENDENCIES") }}
         </div>
       </VCardText>

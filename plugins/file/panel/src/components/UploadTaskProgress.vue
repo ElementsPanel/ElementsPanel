@@ -7,7 +7,7 @@ const props = defineProps<{
 
 <template>
   <div
-    class="flex overflow-hidden"
+    class="flex app-overflow-hidden"
     :style="`width: 16px; height: 16px; border-radius: 6px; border: 1px solid #ccc; overflow: hidden; background-color: rgba(255, 0, 0, ${
       props.retries / 5
     })`"

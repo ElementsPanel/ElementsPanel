@@ -4,6 +4,16 @@ import "vuetify/styles";
 import type { App } from "vue";
 import { createVuetify } from "vuetify";
 import { aliases, mdi } from "vuetify/iconsets/mdi";
+import themeColors from "./assets/theme-colors.module.scss";
+
+const getThemeColors = (theme: "light" | "dark") => {
+  const prefix = `${theme}-`;
+  return Object.fromEntries(
+    Object.entries(themeColors)
+      .filter(([name]) => name.startsWith(prefix))
+      .map(([name, value]) => [name.slice(prefix.length), value])
+  );
+};
 
 /** Share one Vuetify component and theme context across feature plugins. */
 export const vuetify = createVuetify({
@@ -13,12 +23,14 @@ export const vuetify = createVuetify({
     },
     VDataTableFooter: {
       VSelect: {
-        flat: true, rounded: "xl", variant: "solo-filled"
+        flat: true,
+        rounded: "xl",
+        variant: "solo-filled"
       }
     },
     VList: {
       VDivider: {
-        class: "my-6"
+        class: "app-my-6"
       }
     },
     VCard: {
@@ -28,16 +40,20 @@ export const vuetify = createVuetify({
       rounded: "xl"
     },
     VAutocomplete: {
-      flat: true, rounded: "xl", variant: "solo-filled"
+      flat: true,
+      rounded: "xl",
+      variant: "solo-filled"
     },
     VBtn: {
-      flat: true, rounded: "xl"
+      flat: true,
+      rounded: "xl"
     },
     VColorPicker: {
       rounded: "xl"
     },
     VCombobox: {
-      flat: true, rounded: "xl"
+      flat: true,
+      rounded: "xl"
     },
     VField: {
       flat: true,
@@ -46,19 +62,29 @@ export const vuetify = createVuetify({
       baseColor: "var(--text-color)"
     },
     VFileInput: {
-      flat: true, rounded: "xl", variant: "solo-filled"
+      flat: true,
+      rounded: "xl",
+      variant: "solo-filled"
     },
     VSelect: {
-      flat: true, rounded: "xl", variant: "solo-filled"
+      flat: true,
+      rounded: "xl",
+      variant: "solo-filled"
     },
     VSwitch: {
-      color: "primary", inset: true, hideDetails: true
+      color: "primary",
+      inset: true,
+      hideDetails: true
     },
     VTextarea: {
-      flat: true, rounded: "xl", variant: "solo-filled"
+      flat: true,
+      rounded: "xl",
+      variant: "solo-filled"
     },
     VTextField: {
-      flat: true, rounded: "xl", variant: "solo-filled"
+      flat: true,
+      rounded: "xl",
+      variant: "solo-filled"
     }
   },
   icons: {
@@ -71,33 +97,11 @@ export const vuetify = createVuetify({
     themes: {
       light: {
         dark: false,
-        colors: {
-          background: "#f5f5f5",
-          surface: "#ffffff",
-          "field-surface": "#e8e8e8",
-          "surface-variant": "#f0f0f0",
-          "on-background": "#262626",
-          "on-surface": "#262626",
-          "on-surface-variant": "#262626",
-          primary: "#1677ff",
-          error: "#f5222d",
-          info: "#8c8c8c"
-        }
+        colors: getThemeColors("light")
       },
       dark: {
         dark: true,
-        colors: {
-          background: "#232429",
-          surface: "#202020",
-          "field-surface": "#202020",
-          "surface-variant": "#303136",
-          "on-background": "#bfbfbf",
-          "on-surface": "#bfbfbf",
-          "on-surface-variant": "#ffffff",
-          primary: "#3c89e8",
-          error: "#e84749",
-          info: "#8c8c8c"
-        }
+        colors: getThemeColors("dark")
       }
     }
   }

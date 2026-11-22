@@ -12,7 +12,7 @@ const props = defineProps<{
       <strong>
         <slot name="title"></slot>
       </strong>
-      <div class="mt-10">
+      <div class="app-mt-10">
         <span>
           <slot name="body"></slot>
         </span>

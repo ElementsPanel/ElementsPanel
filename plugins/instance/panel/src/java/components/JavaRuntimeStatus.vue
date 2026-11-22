@@ -33,7 +33,7 @@ defineProps<{ runtime: JavaRuntime }>();
         >{{ runtime.info.progress }}%</span
       >
     </VChip>
-    <p v-if="runtime.info.error" class="text-error text-caption mt-1 java-error">
+    <p v-if="runtime.info.error" class="text-error text-caption app-mt-1 java-error">
       {{ runtime.info.error }}
     </p>
   </div>

@@ -11,6 +11,7 @@ export function useMountComponent(data: object = {}) {
     onDestroy?: () => void
   ) => {
     const div = document.createElement("div");
+    div.className = "app-ui-root";
     document.body.appendChild(div);
     let app: App;
     let closing = false;

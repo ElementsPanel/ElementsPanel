@@ -30,7 +30,7 @@ defineExpose({
         <div>
           <div>
             <h3>
-              <div class="flex flex-center mb-20">
+              <div class="flex flex-center app-mb-20">
                 <VProgressCircular indeterminate />
               </div>
               <div class="flex flex-center" style="gap: 10px">

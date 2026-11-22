@@ -154,7 +154,7 @@ const desktopHeaders = computed(() => columns.value.map((column: any) => ({
       :z-index="10001"
       @close="emit('update:visible', false)"
     >
-      <p class="mb-8 desktop-modal-hint"><VIcon icon="mdi-alert-outline" /> {{ $t("TXT_CODE_COMMON_IF_DOWNLOADING_FAILS_SWITCH_SOURCES_OR_DOWNLOAD_FROM_THE_ORIGINAL_SITE") }}</p>
+      <p class="app-mb-8 desktop-modal-hint"><VIcon icon="mdi-alert-outline" /> {{ $t("TXT_CODE_COMMON_IF_DOWNLOADING_FAILS_SWITCH_SOURCES_OR_DOWNLOAD_FROM_THE_ORIGINAL_SITE") }}</p>
       <VDataTable class="mod-version-table" :headers="desktopHeaders" :items="sortedVersions" item-value="id"
         :loading="versionsLoading" density="comfortable">
         <template #no-data><Empty icon="mdi-puzzle-outline" compact /></template>
@@ -162,10 +162,10 @@ const desktopHeaders = computed(() => columns.value.map((column: any) => ({
         <template #item.name="{ item }"><strong>{{ item.name }}</strong></template>
         <template #item.version_number="{ item }">{{ item.version_number }}</template>
         <template #item.game_versions="{ item }">
-          <VChip v-for="v in item.game_versions?.slice(0, 3)" :key="v" size="small" variant="tonal" :color="v === searchFilters?.version ? 'primary' : undefined" class="mr-1">{{ v }}</VChip>
+          <VChip v-for="v in item.game_versions?.slice(0, 3)" :key="v" size="small" variant="tonal" :color="v === searchFilters?.version ? 'primary' : undefined" class="app-mr-1">{{ v }}</VChip>
         </template>
         <template #item.loaders="{ item }">
-          <VChip v-for="l in item.loaders" :key="l" size="small" variant="tonal" :color="l.toLowerCase() === searchFilters?.loader?.toLowerCase() ? 'success' : 'orange'" class="mr-1">{{ l }}</VChip>
+          <VChip v-for="l in item.loaders" :key="l" size="small" variant="tonal" :color="l.toLowerCase() === searchFilters?.loader?.toLowerCase() ? 'success' : 'orange'" class="app-mr-1">{{ l }}</VChip>
         </template>
         <template #item.action="{ item }">
           <VBtn icon variant="text" size="small" :disabled="isInstalled(item) || downloadingVersionId === item.id"
@@ -178,18 +178,18 @@ const desktopHeaders = computed(() => columns.value.map((column: any) => ({
   </template>
   <AppDialog v-else :visible="visible" :title="t('TXT_CODE_VERSION_SELECT')" :footer="null"
     :width="isPhone ? '100%' : '900px'" @update:visible="(val) => emit('update:visible', val)">
-    <p class="mb-8 desktop-modal-hint"><VIcon icon="mdi-alert-outline" /> {{ $t("TXT_CODE_COMMON_IF_DOWNLOADING_FAILS_SWITCH_SOURCES_OR_DOWNLOAD_FROM_THE_ORIGINAL_SITE") }}</p>
+    <p class="app-mb-8 desktop-modal-hint"><VIcon icon="mdi-alert-outline" /> {{ $t("TXT_CODE_COMMON_IF_DOWNLOADING_FAILS_SWITCH_SOURCES_OR_DOWNLOAD_FROM_THE_ORIGINAL_SITE") }}</p>
     <VDataTable :headers="desktopHeaders" :items="sortedVersions" item-value="id" :loading="versionsLoading"
       :items-per-page="isPhone ? 5 : 10" density="comfortable">
       <template #no-data><Empty icon="mdi-puzzle-outline" compact /></template>
       <template #item.name="{ item }"><strong>{{ item.name }}</strong></template>
       <template #item.game_versions="{ item }">
         <VChip v-for="v in item.game_versions?.slice(0, 3)" :key="v" size="small" variant="tonal"
-          :color="v === searchFilters?.version ? 'primary' : undefined" class="mr-1">{{ v }}</VChip>
+          :color="v === searchFilters?.version ? 'primary' : undefined" class="app-mr-1">{{ v }}</VChip>
       </template>
       <template #item.loaders="{ item }">
         <VChip v-for="l in item.loaders" :key="l" size="small" variant="tonal"
-          :color="l.toLowerCase() === searchFilters?.loader?.toLowerCase() ? 'success' : 'warning'" class="mr-1">{{ l }}</VChip>
+          :color="l.toLowerCase() === searchFilters?.loader?.toLowerCase() ? 'success' : 'warning'" class="app-mr-1">{{ l }}</VChip>
       </template>
       <template #item.action="{ item }">
         <VBtn icon variant="text" size="small"

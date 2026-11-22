@@ -357,16 +357,16 @@ defineExpose({ openDialog });
         <VTab :value="TabSettings.Advanced">{{ t("TXT_CODE_COMMON_ADVANCED_SETTINGS") }}</VTab>
         <VTab v-if="!isGlobalTerminal" :value="TabSettings.ResLimit">{{ t("TXT_CODE_COMMON_CONTAINER_LIMITS") }}</VTab>
       </VTabs>
-      <VTabsWindow v-model="activeKey" class="pt-4">
+      <VTabsWindow v-model="activeKey" class="app-pt-4">
         <VTabsWindowItem v-if="isTemplateMode" :value="TabSettings.Template">
           <VRow>
             <VCol cols="12" md="6">
               <div class="field-title">{{ t("TXT_CODE_COMMON_COVER_IMAGE") }}</div>
-              <div class="template-cover cursor-pointer" @click="handleUploadImg">
+              <div class="template-cover app-cursor-pointer" @click="handleUploadImg">
                 <VImg v-if="formData.template.image" :src="formData.template.image" height="180" cover class="rounded-lg" />
                 <div v-else class="template-cover-placeholder"><VIcon icon="mdi-image-plus-outline" size="42" /></div>
               </div>
-              <VTextField v-model="formData.template.image" class="mt-3" :placeholder="t('TXT_CODE_COMMON_IE_HTTPS_EXAMPLE_COM_IMAGE_PNG')" hide-details />
+              <VTextField v-model="formData.template.image" class="app-mt-3" :placeholder="t('TXT_CODE_COMMON_IE_HTTPS_EXAMPLE_COM_IMAGE_PNG')" hide-details />
             </VCol>
             <VCol cols="12" md="6">
               <VTextField v-model="formData.template.title" :label="t('TXT_CODE_COMMON_TEMPLATE_NAME')" />
@@ -456,7 +456,7 @@ defineExpose({ openDialog });
             <VCol cols="12" sm="6" lg="4"><VTextField v-model.number="formData.instance.config.docker.memorySwappiness" type="number" :label="t('TXT_CODE_COMMON_VIRTUAL_MEMORY_USAGE_PREFERENCE')" /></VCol>
             <VCol cols="12" sm="6" lg="4"><VTextField v-model.number="formData.instance.config.docker.uploadSpeedLimit" type="number" suffix="KB/s" :label="t('TXT_CODE_NETWORK_UPLOAD_LIMIT')" /></VCol>
             <VCol cols="12" sm="6" lg="4"><VTextField v-model.number="formData.instance.config.docker.downloadSpeedLimit" type="number" suffix="KB/s" :label="t('TXT_CODE_NETWORK_DOWNLOAD_LIMIT')" /></VCol>
-            <VCol cols="12"><VDivider class="my-2" /><div class="section-title">{{ t('TXT_CODE_GPU_SECTION_TITLE') }}</div></VCol>
+            <VCol cols="12"><VDivider class="app-my-2" /><div class="section-title">{{ t('TXT_CODE_GPU_SECTION_TITLE') }}</div></VCol>
             <VCol cols="12" lg="4"><VSwitch v-model="formData.instance.config.docker.gpuEnabled" :label="t('TXT_CODE_GPU_ENABLE')" color="primary" /></VCol>
             <template v-if="formData.instance.config.docker.gpuEnabled">
               <VCol cols="12" lg="4"><VTextField v-model="formData.instance.config.docker.gpuDriver" :label="t('TXT_CODE_GPU_DRIVER')" /></VCol>

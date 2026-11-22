@@ -71,7 +71,7 @@ onUnmounted(() => {
     >
       <template #no-data><Empty :icon="false" compact /></template>
     </VAutocomplete>
-    <VAlert v-if="error" type="error" variant="tonal" class="mt-3">
+    <VAlert v-if="error" type="error" variant="tonal" class="app-mt-3">
       {{ error }}
       <template #append>
         <VBtn variant="text" :disabled="disabled || loading" @click="refresh">{{

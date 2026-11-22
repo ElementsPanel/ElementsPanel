@@ -1,0 +1,374 @@
+// Scope framework overrides to application roots and teleported overlays.
+$app-root: ":where(#app-mount-point, .app-ui-root, .v-overlay-container)";
+
+@mixin fields {
+  #{$app-root} {
+    .v-field {
+      // Give fields their own surface so they remain distinct from flat cards.
+      background-color: rgb(var(--app-field-surface, var(--v-theme-field-surface)));
+      box-shadow: none !important;
+    }
+
+    // Apply theme text colors to native inputs, select values and floating labels.
+    .v-field,
+    .v-field__input,
+    .v-field__input input,
+    .v-field__input textarea,
+    .v-field-label,
+    .v-select__selection-text,
+    .v-autocomplete__selection-text,
+    .v-combobox__selection-text,
+    .v-field__prepend-inner > .v-icon,
+    .v-field__append-inner > .v-icon {
+      color: var(--text-color) !important;
+    }
+
+    .v-field__input input::placeholder,
+    .v-field__input textarea::placeholder {
+      color: var(--text-color) !important;
+      opacity: 0.55 !important;
+    }
+
+    @layer vuetify-overrides {
+      // Theme neutral buttons without overriding explicit semantic colors.
+      .v-btn--variant-text,
+      .v-btn--variant-plain,
+      .v-btn--variant-tonal,
+      .v-btn--variant-outlined {
+        color: var(--text-color);
+      }
+
+      @media (forced-colors: none) {
+        // Keep inactive switches distinct from light surfaces and white thumbs.
+        .v-switch.v-theme--light
+          .v-selection-control:not(.v-selection-control--dirty, .v-selection-control--error)
+          .v-switch__track {
+          background-color: var(--color-gray-7);
+          opacity: 1;
+        }
+      }
+    }
+  }
+}
+
+@mixin tables {
+  #{$app-root} {
+    // Inset the table viewport so row and header separators stay clear of card edges.
+    .v-table {
+      min-width: 0;
+    }
+
+    .v-table > .v-table__wrapper {
+      margin-inline: var(--app-list-inset);
+      min-width: 0;
+      overscroll-behavior-x: contain;
+    }
+
+    // Keep column labels readable while the wrapper handles horizontal overflow.
+    .v-table > .v-table__wrapper > table > thead > tr > th {
+      white-space: nowrap;
+      overflow-wrap: normal;
+      word-break: normal;
+    }
+
+    // Empty messages stay centered in the visible viewport of wide tables.
+    .v-data-table > .v-table__wrapper {
+      container-type: inline-size;
+    }
+
+    .v-data-table-rows-no-data > td > .app-empty {
+      position: sticky;
+      inset-inline-start: 16px;
+      width: calc(100cqw - 32px);
+    }
+
+    .v-table > .v-divider:not(.v-divider--vertical),
+    .v-list .v-divider:not(.v-divider--vertical) {
+      margin-inline: var(--app-list-inset);
+      max-width: calc(100% - var(--app-list-inset) * 2);
+    }
+
+    // Use consistent row padding while preserving Vuetify compact density.
+    .v-data-table:not(.v-table--density-compact) tbody > tr > td {
+      padding-block: 10px;
+    }
+
+    .v-pagination__list {
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 992px) {
+      .v-table
+        > .v-table__wrapper
+        > table
+        > tbody
+        > tr:not(.v-data-table__tr--mobile)
+        > td:not([colspan]):not(.v-data-table__td--select-row):not(
+          .v-data-table__td--expanded-row
+        ):not(:has(> .v-avatar)) {
+        min-width: 6rem;
+        max-width: 28rem;
+        overflow-wrap: anywhere;
+      }
+
+      // Editable rows need enough room for the actual controls as well as labels.
+      .v-table > .v-table__wrapper > table > tbody :is(.v-text-field, .v-textarea) {
+        min-width: 10rem;
+      }
+
+      .v-table > .v-table__wrapper > table > tbody .v-checkbox {
+        flex: 0 0 auto;
+        white-space: nowrap;
+      }
+
+      .v-data-table-footer {
+        justify-content: center;
+        gap: 8px 12px;
+        padding: 12px var(--app-list-inset);
+      }
+
+      .v-data-table-footer__items-per-page {
+        max-width: 100%;
+        flex-wrap: wrap;
+        gap: 8px;
+
+        > span {
+          padding-inline-end: 0;
+        }
+
+        > .v-select {
+          flex: 0 0 90px;
+        }
+      }
+
+      .v-data-table-footer__info {
+        min-width: 0;
+        padding: 0;
+        overflow-wrap: anywhere;
+      }
+
+      .v-data-table-footer__pagination {
+        max-width: 100%;
+        margin-inline-start: 0;
+      }
+
+      .v-pagination {
+        min-width: 0;
+        max-width: 100%;
+      }
+
+      // Content lists opt in so navigation and popup menus retain their layout.
+      .app-responsive-list > .v-list-item {
+        --v-list-prepend-gap: 12px;
+        grid-template-areas: "prepend content" ". append";
+        grid-template-columns: max-content minmax(0, 1fr);
+        row-gap: 8px;
+        padding-block: 12px;
+
+        > .v-list-item__content {
+          min-width: 0;
+        }
+
+        .v-list-item-title,
+        .v-list-item-subtitle {
+          white-space: normal;
+          overflow-wrap: anywhere;
+        }
+
+        .v-list-item-subtitle {
+          display: block;
+          -webkit-line-clamp: unset;
+        }
+
+        > .v-list-item__append {
+          min-width: 0;
+          max-width: 100%;
+          flex-wrap: wrap;
+          gap: 8px;
+          padding-top: 0;
+
+          > .v-list-item__spacer {
+            display: none;
+          }
+        }
+      }
+    }
+
+    @media (max-width: 600px) {
+      .v-data-table-footer__items-per-page {
+        flex-basis: 100%;
+      }
+    }
+  }
+}
+
+@mixin dialogs {
+  #{$app-root} {
+    .v-dialog > .v-overlay__content {
+      border-radius: var(--app-dialog-radius) !important;
+    }
+
+    // Keep centered dialogs inside viewport margins without constraining fullscreen dialogs or bottom sheets.
+    .v-dialog:not(.v-dialog--fullscreen):not(.v-bottom-sheet) > .v-overlay__content > .v-card,
+    .v-dialog:not(.v-dialog--fullscreen):not(.v-bottom-sheet) > .v-overlay__content > .v-sheet,
+    .v-dialog:not(.v-dialog--fullscreen):not(.v-bottom-sheet)
+      > .v-overlay__content
+      > form
+      > .v-card {
+      max-width: calc(100vw - 48px);
+    }
+
+    .v-bottom-sheet > .v-overlay__content > .v-card,
+    .v-bottom-sheet > .v-overlay__content > form > .v-card,
+    .v-overlay__content.v-bottom-sheet__content > .v-card,
+    .v-overlay__content.v-bottom-sheet__content > form > .v-card {
+      border-radius: var(--app-dialog-radius) var(--app-dialog-radius) 0 0 !important;
+    }
+
+    .v-dialog > .v-overlay__content > .v-card,
+    .v-dialog > .v-overlay__content > .v-sheet {
+      border-radius: inherit !important;
+    }
+
+    .v-dialog > .v-overlay__content > .v-card > .v-card-actions,
+    .v-dialog > .v-overlay__content > form > .v-card > .v-card-actions {
+      min-height: 0;
+      flex-wrap: wrap;
+      padding: var(--app-dialog-actions-padding);
+    }
+
+    // Set tooltip contrast independently because overlays are teleported.
+    .v-tooltip > .v-overlay__content {
+      background: #262626 !important;
+      color: #ffffff !important;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+    }
+  }
+}
+
+@mixin tabs {
+  #{$app-root} {
+    // Allow the native tab slider to cross button boundaries above adjacent content.
+    .v-btn.v-tab {
+      overflow: visible !important;
+    }
+
+    .v-btn.v-tab > .v-btn__overlay,
+    .v-btn.v-tab > .v-btn__underlay,
+    .v-btn.v-tab > .v-ripple__container {
+      border-radius: inherit;
+    }
+
+    // Clip tab ripples to rounded borders while allowing the slider to cross button boundaries.
+    .v-btn.v-tab > .v-ripple__container {
+      overflow: hidden;
+      clip-path: border-box;
+    }
+
+    // Inset the tab indicator without replacing Vuetify's slider animation.
+    .v-btn.v-tab .v-tab__slider {
+      z-index: 1;
+      height: 4px !important;
+      background: transparent !important;
+    }
+
+    .v-btn.v-tab .v-tab__slider::after {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 40%;
+      height: 4px;
+      border-radius: 4px 4px 0 0;
+      background-color: currentColor;
+      content: "";
+      transform: translateX(-50%);
+    }
+  }
+}
+
+@mixin navigation {
+  // Include drawers whose root is teleported directly to the body.
+  body #{$app-root} .v-navigation-drawer,
+  body .v-navigation-drawer:where(.app-ui-root),
+  #{$app-root}
+    .v-navigation-drawer
+    > .v-navigation-drawer__content
+    > :is(.v-card, .v-sheet, [data-app-surface="card"]):not(
+      :where([data-app-surface="none"], [data-app-surface="transparent"], [class*="bg-"])
+    ),
+  .v-navigation-drawer:where(.app-ui-root)
+    > .v-navigation-drawer__content
+    > :is(.v-card, .v-sheet, [data-app-surface="card"]):not(
+      :where([data-app-surface="none"], [data-app-surface="transparent"], [class*="bg-"])
+    ) {
+    background-color: var(--app-header-bg) !important;
+  }
+
+  #{$app-root} {
+    // Style list menus without overriding card or picker defaults.
+    .v-menu > .v-overlay__content:has(> .v-list),
+    .v-select__content,
+    .v-autocomplete__content,
+    .v-combobox__content {
+      overflow: hidden;
+      border-radius: 16px !important;
+      background-color: rgb(var(--v-theme-surface)) !important;
+      color: var(--text-color) !important;
+    }
+
+    // Paint menu shadows outside the rounded, clipped content.
+    .v-menu > .v-overlay__content {
+      box-shadow:
+        0 1px 2px 0 rgba(var(--v-shadow-color), var(--v-shadow-key-opacity, 0.3)),
+        0 2px 6px 2px rgba(var(--v-shadow-color), var(--v-shadow-ambient-opacity, 0.15));
+
+      > :is(.v-list, .v-card, .v-sheet) {
+        box-shadow: none !important;
+      }
+    }
+
+    .v-menu,
+    .v-select__content,
+    .v-autocomplete__content,
+    .v-combobox__content {
+      .v-list {
+        margin: 0;
+        padding: 8px !important;
+        background-color: rgb(var(--v-theme-surface)) !important;
+        border-radius: inherit !important;
+        // Action items inherit this unless they specify a semantic color.
+        color: var(--text-color) !important;
+      }
+
+      .v-list-item {
+        border-radius: 8px !important;
+        margin-bottom: 2px !important;
+      }
+
+      .v-list-item__overlay,
+      .v-list-item__underlay {
+        border-radius: inherit;
+      }
+
+      // Vuetify disables overlay transitions for navigable select and autocomplete menus.
+      .v-list.v-list--navigable .v-list-item__overlay {
+        transition: 0.2s ease-in-out;
+        transition-property: opacity, color;
+      }
+
+      .v-list-item:last-child {
+        margin-bottom: 0 !important;
+      }
+    }
+
+    // Limit field sizing and text-color overrides to selection menus.
+    :is(.v-select__content, .v-autocomplete__content, .v-combobox__content) {
+      max-width: min(420px, calc(100vw - 32px));
+
+      :is(.v-list-item, .v-list-item-title, .v-list-item-subtitle, .v-icon) {
+        color: var(--text-color) !important;
+      }
+    }
+  }
+}

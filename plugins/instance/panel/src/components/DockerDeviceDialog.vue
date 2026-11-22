@@ -103,12 +103,12 @@ onMounted(() => {
   <VDialog v-model="open" max-width="1300" persistent>
     <VCard :title="props.title || t('TXT_CODE_COMMON_DEVICES')">
       <VCardText class="dialog-overflow-container">
-      <div v-if="props.subTitle" class="text-body-medium text-medium-emphasis mb-4">
+      <div v-if="props.subTitle" class="text-body-medium text-medium-emphasis app-mb-4">
         <!-- eslint-disable-next-line vue/no-v-html -->
         <span v-html="props.subTitle"></span>
       </div>
 
-      <div class="d-flex justify-end mb-5">
+      <div class="d-flex app-justify-end app-mb-5">
         <VBtn variant="tonal" @click="operation('add')"><VIcon start icon="mdi-plus-circle-outline" />
           {{ t("TXT_CODE_COMMON_ADD_CONFIGURATION") }}
         </VBtn>

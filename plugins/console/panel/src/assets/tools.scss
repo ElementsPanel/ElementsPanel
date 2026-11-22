@@ -1,6 +1,8 @@
 @use "./text-shadows";
 
-.cursor-pointer {
+// Application utilities retain pixel spacing without redefining Vuetify helpers.
+
+.app-cursor-pointer {
   cursor: pointer;
 }
 
@@ -21,7 +23,7 @@
   @include text-shadows.white;
 }
 
-.text-center {
+.app-text-center {
   text-align: center;
 }
 
@@ -40,12 +42,12 @@
   justify-content: space-evenly;
 }
 
-.flex-wrap {
+.app-flex-wrap {
   display: flex;
   flex-wrap: wrap;
 }
 
-.flex-nowrap {
+.app-flex-nowrap {
   display: flex;
   flex-wrap: nowrap;
 }
@@ -58,7 +60,7 @@
   flex-direction: column;
 }
 
-.flex-row {
+.app-flex-row {
   flex-direction: row;
 }
 
@@ -68,11 +70,11 @@
   justify-content: center;
 }
 
-.position-relative {
+.app-position-relative {
   position: relative;
 }
 
-.position-absolute {
+.app-position-absolute {
   position: absolute;
 }
 
@@ -100,53 +102,53 @@
   flex-direction: column;
 }
 
-.align-center {
+.app-align-center {
   display: flex;
   align-items: center;
 }
 
-.justify-center {
+.app-justify-center {
   display: flex;
   justify-content: center;
 }
 
-.justify-start {
+.app-justify-start {
   display: flex;
   justify-content: flex-start;
 }
 
-.justify-end {
+.app-justify-end {
   display: flex;
   justify-content: flex-end;
 }
 
-.justify-space-between,
+.app-justify-space-between,
 .justify-between {
   display: flex;
   justify-content: space-between;
 }
 
-.justify-space-around,
+.app-justify-space-around,
 .justify-around {
   display: flex;
   justify-content: space-around;
 }
 
-.h-100,
+.app-h-100,
 .h-full {
   height: 100% !important;
 }
 
-.h-50 {
+.app-h-50 {
   height: 50% !important;
 }
 
-.w-100,
+.app-w-100,
 .w-full {
   width: 100% !important;
 }
 
-.w-50 {
+.app-w-50 {
   width: 50% !important;
 }
 
@@ -222,31 +224,31 @@
   align-items: flex-start;
 }
 
-.m-auto {
+.app-m-auto {
   margin: auto;
 }
 
-.ml-auto {
+.app-ml-auto {
   margin-left: auto;
 }
 
-.mr-auto {
+.app-mr-auto {
   margin-right: auto;
 }
 
-.mb-auto {
+.app-mb-auto {
   margin-bottom: auto;
 }
 
-.mt-auto {
+.app-mt-auto {
   margin-top: auto;
 }
 
-.float-right {
+.app-float-right {
   float: right;
 }
 
-.float-left {
+.app-float-left {
   float: left;
 }
 
@@ -258,7 +260,7 @@
   }
 }
 
-.overflow-hidden {
+.app-overflow-hidden {
   overflow: hidden;
 }
 
@@ -274,50 +276,50 @@
 }
 
 @mixin generate-styles($depth) {
-  .m-#{$depth} {
+  .app-m-#{$depth} {
     margin: #{$depth}px !important;
   }
-  .ml-#{$depth} {
+  .app-ml-#{$depth} {
     margin-left: #{$depth}px !important;
   }
-  .mr-#{$depth} {
+  .app-mr-#{$depth} {
     margin-right: #{$depth}px !important;
   }
-  .mb-#{$depth} {
+  .app-mb-#{$depth} {
     margin-bottom: #{$depth}px !important;
   }
-  .mt-#{$depth} {
+  .app-mt-#{$depth} {
     margin-top: #{$depth}px !important;
   }
-  .mx-#{$depth} {
+  .app-mx-#{$depth} {
     margin-left: #{$depth}px !important;
     margin-right: #{$depth}px !important;
   }
-  .my-#{$depth} {
+  .app-my-#{$depth} {
     margin-top: #{$depth}px !important;
     margin-bottom: #{$depth}px !important;
   }
-  .p-#{$depth} {
+  .app-p-#{$depth} {
     padding: #{$depth}px !important;
   }
-  .pl-#{$depth} {
+  .app-pl-#{$depth} {
     padding-left: #{$depth}px !important;
   }
-  .pr-#{$depth} {
+  .app-pr-#{$depth} {
     padding-right: #{$depth}px !important;
   }
-  .pb-#{$depth} {
+  .app-pb-#{$depth} {
     padding-bottom: #{$depth}px !important;
   }
-  .pt-#{$depth} {
+  .app-pt-#{$depth} {
     padding-top: #{$depth}px !important;
   }
-  .px-#{$depth} {
+  .app-px-#{$depth} {
     padding-left: #{$depth}px !important;
     padding-right: #{$depth}px !important;
   }
 
-  .gap-#{$depth} {
+  .app-gap-#{$depth} {
     gap: #{$depth}px;
   }
 

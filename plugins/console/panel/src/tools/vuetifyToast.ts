@@ -95,7 +95,7 @@ const hasContent = (value: Renderable): boolean => {
 const ensureMounted = () => {
   if (app || typeof document === "undefined") return;
   host = document.createElement("div");
-  host.className = "vuetify-toast-host";
+  host.className = "vuetify-toast-host app-ui-root";
   document.body.appendChild(host);
 
   const ToastHost = defineComponent({

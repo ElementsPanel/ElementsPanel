@@ -138,7 +138,7 @@ defineExpose({ open: openDialog, openDialog });
     :ok-text="t('TXT_CODE_JAVA_RUNTIME_SETUP_DONE')"
     @ok="close"
   >
-    <div class="text-medium-emphasis mb-4">
+    <div class="text-medium-emphasis app-mb-4">
       {{ t("TXT_CODE_COMMON_SELECT_JAVA_FOR_THE_INSTANCE_DOCKER_INSTANCES_USE_THE_IMAGE_S_RUNTIME") }}<br />{{ javaDescription }}
     </div>
     <div class="java-actions">

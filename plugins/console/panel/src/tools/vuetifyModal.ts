@@ -45,6 +45,7 @@ function openDialog(options: ModalOptions, variant: "confirm" | "alert"): ModalH
     variant
   });
   const host = document.createElement("div");
+  host.className = "app-ui-root";
   document.body.appendChild(host);
 
   let app: ReturnType<typeof createApp>;

@@ -218,7 +218,7 @@ const rawUser = (item: BaseUserInfo | { raw: BaseUserInfo }) =>
           :hint="t('TXT_CODE_USER_PERMISSION_LEVEL_HINT')"
           persistent-hint
           :rules="[requiredRule]"
-          class="mb-4"
+          class="app-mb-4"
         >
           <template #no-data><Empty :icon="false" compact /></template>
         </VSelect><VTextField
@@ -228,7 +228,7 @@ const rawUser = (item: BaseUserInfo | { raw: BaseUserInfo }) =>
           persistent-hint
           :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')"
           :rules="[requiredRule, userNameRule]"
-          class="mb-4"
+          class="app-mb-4"
         /><VTextField
           v-model="formData.passWord"
           type="password"
@@ -237,15 +237,15 @@ const rawUser = (item: BaseUserInfo | { raw: BaseUserInfo }) =>
           persistent-hint
           :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')"
           :rules="[passwordRule]"
-          class="mb-4"
+          class="app-mb-4"
         /><VTextField
           v-if="!isAddMode && formData.apiKey"
           v-model="formData.apiKey"
           :label="t('TXT_CODE_UI_API_KEY')"
           readonly
-          class="mb-4"
+          class="app-mb-4"
         />
-        <div v-else-if="!isAddMode" class="text-medium-emphasis mb-4">
+        <div v-else-if="!isAddMode" class="text-medium-emphasis app-mb-4">
           {{ t("TXT_CODE_COMMON_THIS_USER_HAS_NOT_ENABLED_AN_API_KEY") }}
         </div>
         <div v-if="isAddMode" class="text-medium-emphasis">

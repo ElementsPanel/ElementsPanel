@@ -35,7 +35,7 @@ const parsedConfig = computed(() => jsonToMap(props.config));
     <VCol v-if="data" cols="12">
       <div class="config-editor-section">
         <div v-if="!isEmpty(props.config)">
-          <div v-for="(item, index) in parsedConfig" :key="index" class="p-1">
+          <div v-for="(item, index) in parsedConfig" :key="index" class="app-p-1">
             <LineOption :option-value="parsedConfig" :option-key="String(index)" is-desktop>
               <template #title>{{ index }}</template>
               <template #info>{{ getDescriptionByTitle(data?.config, String(index)) }}</template>

@@ -124,7 +124,7 @@ defineExpose({
                 }"
               >
                 <template v-if="props.targetPlatforms && props.targetPlatforms.length > 0 && !isNodeSupported(item)">
-                  <VIcon icon="mdi-alert-circle-outline" class="mr-1" />
+                  <VIcon icon="mdi-alert-circle-outline" class="app-mr-1" />
                 </template>
                 {{ t("TXT_CODE_UI_DOCKER_PLATFORMS") }}: {{ item?.dockerPlatforms?.join(", ") || "--" }}
               </span>

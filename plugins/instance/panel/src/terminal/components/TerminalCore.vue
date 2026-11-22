@@ -181,7 +181,7 @@ onMounted(async () => {
         </li>
       </ul>
     </div>
-    <div class="terminal-wrapper global-card-container-shadow position-relative" data-app-surface="terminal">
+    <div class="terminal-wrapper global-card-container-shadow app-position-relative" data-app-surface="terminal">
       <div class="terminal-container">
         <div
           ref="terminalElement"

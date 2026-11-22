@@ -137,7 +137,7 @@ defineExpose({ prepare });
       :disabled="disabled || preparing"
       density="compact"
       hide-details="auto"
-      class="mb-3"
+      class="app-mb-3"
     >
       <template #no-data><Empty :icon="false" compact /></template>
     </VSelect>
@@ -169,7 +169,7 @@ defineExpose({ prepare });
           <Empty :icon="false" :title="t('TXT_CODE_JAVA_MSL_NO_INSTALLED')" compact />
         </template>
       </VSelect>
-      <VAlert v-if="error" type="error" variant="tonal" class="mt-3">{{
+      <VAlert v-if="error" type="error" variant="tonal" class="app-mt-3">{{
         error
       }}</VAlert>
       <VBtn
@@ -185,8 +185,8 @@ defineExpose({ prepare });
       :daemon-id="daemonId"
       :disabled="disabled || preparing"
     />
-    <div v-if="preparing" class="mt-3" role="status" aria-live="polite">
-      <p class="mb-2">
+    <div v-if="preparing" class="app-mt-3" role="status" aria-live="polite">
+      <p class="app-mb-2">
         {{ t("TXT_CODE_JAVA_MSL_PREPARING") }}<span v-if="progress != null"> {{ progress }}%</span>
       </p>
       <VProgressLinear
@@ -196,7 +196,7 @@ defineExpose({ prepare });
         rounded
       />
     </div>
-    <VAlert v-if="installError" type="error" variant="tonal" class="mt-3">{{
+    <VAlert v-if="installError" type="error" variant="tonal" class="app-mt-3">{{
       installError
     }}</VAlert>
   </div>

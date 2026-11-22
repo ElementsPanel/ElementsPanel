@@ -148,7 +148,7 @@ const disable2FACode = async () => {
         <div class="info-section">
             <h3 class="section-title">{{ t('TXT_CODE_COMMON_TWO_FACTOR_AUTHENTICATION') }}</h3>
             <div v-if="!formState?.qrcode">
-                <VBtn class="mr-8" variant="text" @click="handleBind2FA">
+                <VBtn class="app-mr-8" variant="text" @click="handleBind2FA">
                     {{ state.userInfo?.open2FA ? t("TXT_CODE_COMMON_REBIND") : t("TXT_CODE_COMMON_START_BINDING") }}
                 </VBtn>
                 <VBtn v-if="state.userInfo?.open2FA" color="error" variant="text" @click="disable2FACode">

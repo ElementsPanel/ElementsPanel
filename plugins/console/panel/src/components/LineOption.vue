@@ -65,7 +65,7 @@ onMounted(() => {
     <VCard class="line-option-card" :variant="card || isDesktop ? 'tonal' : 'outlined'" rounded="xl">
       <VCardText>
         <div v-if="!custom">
-          <VRow :density="card ? 'comfortable' : 'compact'" :class="card ? 'option-card-body' : 'align-center'">
+          <VRow :density="card ? 'comfortable' : 'compact'" :class="card ? 'option-card-body' : 'app-align-center'">
             <VCol cols="12" :md="card ? 12 : 7" class="option-title"><slot name="title"></slot></VCol>
             <VCol cols="12" :md="card ? 12 : 11" class="option-info"><slot name="info"></slot></VCol>
             <VCol cols="12" :md="card ? 12 : 6">

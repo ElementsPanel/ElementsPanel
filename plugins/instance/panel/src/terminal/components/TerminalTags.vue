@@ -18,7 +18,7 @@ defineProps<{
     <VChip
       v-for="tag in tags"
       :key="tag.label"
-      class="tag m-0"
+      class="tag app-m-0"
       :color="tag.color"
       :style="{
         cursor: tag.onClick ? 'pointer' : 'default'

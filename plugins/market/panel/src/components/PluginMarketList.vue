@@ -210,7 +210,7 @@ defineExpose({ updateInstalled });
         <VRow v-else-if="visiblePlugins.length" class="plugin-market-grid">
           <VCol v-for="plugin in pagedPlugins" :key="plugin.id" cols="12" md="6" lg="4">
             <VCard
-              class="plugin-market-card h-100"
+              class="plugin-market-card app-h-100"
               elevation="0"
               :to="
                 embedded
@@ -256,7 +256,7 @@ defineExpose({ updateInstalled });
                     </div>
                   </div>
                 </div>
-                <div class="plugin-market-card-summary text-body-2 mt-2">
+                <div class="plugin-market-card-summary text-body-2 app-mt-2">
                   {{ plugin.summary || t("TXT_CODE_PLUGIN_MARKET_NO_SUMMARY") }}
                 </div>
               </VCardText>

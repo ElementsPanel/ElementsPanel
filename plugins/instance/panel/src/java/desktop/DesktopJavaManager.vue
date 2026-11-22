@@ -233,7 +233,7 @@ onUnmounted(() => {
                     >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn>
                 </template>
             </Empty>
-            <VDataTable v-if="!listError || javaList.length" :loading="listLoading" class="djava-table mt-3" :headers="headers" :items="javaList || []" :items-per-page="15">
+            <VDataTable v-if="!listError || javaList.length" :loading="listLoading" class="djava-table app-mt-3" :headers="headers" :items="javaList || []" :items-per-page="15">
               <template #no-data><Empty icon="mdi-language-java" /></template>
                 <template #item.fullname="{ item }">{{ item.info.fullname || "-" }}</template>
                 <template #item.installTime="{ item }">{{ item.info.installTime ? parseTimestamp(item.info.installTime) : "-" }}</template>
@@ -279,7 +279,7 @@ onUnmounted(() => {
           @close="cancelAddJava"
         >
           <VTextField v-model="addJavaDialog.data.name" :label="t('TXT_CODE_COMMON_JAVA_NAME')"
-              :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')" density="compact" hide-details class="mb-4" />
+              :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')" density="compact" hide-details class="app-mb-4" />
           <VTextField v-model="addJavaDialog.data.path" :label="t('TXT_CODE_COMMON_JAVA_PATH')"
               :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')" density="compact" hide-details />
           <template #footer>
