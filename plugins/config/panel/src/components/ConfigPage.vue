@@ -478,7 +478,6 @@ const preparePluginDrag = (pluginId: string, event: PointerEvent) => {
   if (!event.isPrimary || event.button !== 0 || event.pointerType === "touch" || pluginDragPointer) return;
   const list = (event.currentTarget as HTMLElement).closest<HTMLElement>(".plugin-config-list");
   if (!list) return;
-  event.preventDefault();
   suppressPluginClick = false;
   pluginDragPointer = { pluginId, pointerId: event.pointerId, x: event.clientX, y: event.clientY, list };
   document.addEventListener("selectstart", preventPluginTextSelection, true);
