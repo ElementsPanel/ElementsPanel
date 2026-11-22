@@ -22,6 +22,8 @@ function setupSfc(filename, overrides = {}, props = {}) {
       "@/components/TargetSelectionList.vue": {},
       "@/components/DesktopDialog.vue": {},
       "./PluginConfigTargetSelector.vue": {},
+      "./PluginConfigList.vue": {},
+      "./PluginActionDialogs.vue": {},
       "@/hooks/useScreen": { useScreen: () => ({ isPhone: vue.ref(false) }) },
       "@/hooks/usePolling": { usePolling() {} },
       "vuetify/components": {},

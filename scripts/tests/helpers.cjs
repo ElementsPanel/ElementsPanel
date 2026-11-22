@@ -52,10 +52,17 @@ function transpile(filename, source = fs.readFileSync(filename, "utf8"), compile
 function createLoader({ host, resolve, globals = false, transform, compiler = ts } = {}) {
   const hostRequire = host ? from(host) : null;
   let sourceCache;
+  let sourceOverrides;
   return function load(relative, overrides = {}, input) {
     const topLevel = !sourceCache;
     sourceCache ??= new Map();
     const filename = path.resolve(root, relative);
+    if (topLevel) {
+      // Match source mocks after modules move into subdirectories.
+      sourceOverrides = new Map(Object.entries(overrides)
+        .filter(([id]) => id.startsWith("."))
+        .map(([id, value]) => [path.resolve(path.dirname(filename), id), value]));
+    }
     if (sourceCache.has(filename)) return sourceCache.get(filename).exports;
     try {
       const nativeRequire = Module.createRequire(filename);
@@ -90,9 +97,14 @@ function createLoader({ host, resolve, globals = false, transform, compiler = ts
       mod.paths = Module._nodeModulePaths(path.dirname(filename));
       sourceCache.set(filename, mod);
       mod.environment = globals ? input ?? {} : {};
+      const resolvedOverrides = sourceOverrides;
       mod.require = (id) => {
         id = frontendTestImport(id, overrides);
         if (Object.hasOwn(overrides, id)) return overrides[id];
+        if (id.startsWith(".")) {
+          const dependency = path.resolve(path.dirname(filename), id);
+          if (resolvedOverrides.has(dependency)) return resolvedOverrides.get(dependency);
+        }
         if (resolve) return resolve(id, { filename, localRequire, load, overrides });
         return hostRequire && !id.startsWith(".") ? hostRequire(id) : localRequire(id);
       };
@@ -107,7 +119,10 @@ function createLoader({ host, resolve, globals = false, transform, compiler = ts
       sourceCache.delete(filename);
       throw error;
     } finally {
-      if (topLevel) sourceCache = undefined;
+      if (topLevel) {
+        sourceCache = undefined;
+        sourceOverrides = undefined;
+      }
     }
   };
 }

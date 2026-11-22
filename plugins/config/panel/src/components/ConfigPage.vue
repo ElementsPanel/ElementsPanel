@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
-import TargetSelectionList from "@elementspanel/epanel-plugin-console/components/TargetSelectionList";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
-import { ctx, usePluginService, type FrontendPluginMarketService } from "@elements-panel/sdk";
-import { getValidatorErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
-import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
+import { ctx } from "@elements-panel/sdk";
+import { computed, ref, watch } from "vue";
 import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import {
   VAlert,
@@ -14,13 +11,11 @@ import {
   VCard,
   VCardActions,
   VCardText,
-  VCheckbox,
   VChip,
   VDialog,
   VDivider,
   VList,
   VListItem,
-  VListSubheader,
   VMenu,
   VNavigationDrawer,
   VProgressCircular,
@@ -29,56 +24,20 @@ import {
   VSpacer,
   VTooltip
 } from "vuetify/components";
-import {
-  nodeList,
-  nodePluginGroupList,
-  nodePluginList,
-  nodePluginSettings,
-  pluginList,
-  pluginGroupList,
-  pluginRemarkList,
-  pluginSettings,
-  removePlugin,
-  removeNodePlugin,
-  resetPluginSettings,
-  resetNodePluginSettings,
-  setNodePluginEnabled,
-  setPluginEnabled,
-  updateNodePluginSettings,
-  updateNodePluginGroupList,
-  updatePluginSettings,
-  updatePluginGroupList,
-  updatePluginRemark,
-  type NodePluginRecord,
-  type NodeSummary,
-  type PluginRecord,
-  type PluginGroup,
-  type PluginChangeResult,
-  type SettingsSchema
-} from "../api";
+import { type PluginRecord, type NodePluginRecord, type PluginChangeResult } from "../api";
+import { pluginLabel } from "../labels";
+import { notify } from "../notifications";
+import type { Scope } from "../types";
+import { usePluginGroups } from "../hooks/usePluginGroups";
+import { usePluginDrag } from "../hooks/usePluginDrag";
+import { usePluginRemarks } from "../hooks/usePluginRemarks";
+import { usePluginSettings } from "../hooks/usePluginSettings";
+import { usePluginInventory } from "../hooks/usePluginInventory";
+import { usePluginActions } from "../hooks/usePluginActions";
+import PluginActionDialogs from "./PluginActionDialogs.vue";
+import PluginConfigList from "./PluginConfigList.vue";
 import SettingsPages from "./SettingsPages.vue";
 import PluginConfigTargetSelector from "./PluginConfigTargetSelector.vue";
-
-type Scope = "panel" | "node";
-type PluginAction = "enable" | "disable" | "remove";
-
-interface NodePluginTarget {
-  node: NodeSummary;
-  plugin: NodePluginRecord;
-}
-
-interface PluginActionCandidate {
-  action: PluginAction;
-  step: "checking" | "confirm" | "nodes";
-  scope: Scope;
-  plugin: PluginRecord | NodePluginRecord;
-  nodeId: string;
-  checkingNodes: boolean;
-  nodeTargets: NodePluginTarget[];
-  selectedNodeIds: string[];
-  nodeCheckError: string;
-  removeConfig: boolean;
-}
 
 const props = defineProps<{
   scope?: Scope;
@@ -117,30 +76,27 @@ const route = useRoute();
 const router = useRouter();
 const preferredPluginId = ref(String(props.pluginId ?? route.query.plugin ?? ""));
 
-const loading = ref(true);
-const pending = ref<string>("");
-const plugins = ref<PluginRecord[]>([]);
 const selectedId = ref("");
-
-const nodes = ref<NodeSummary[]>([]);
-const nodesLoading = ref(false);
 const selectedNodeId = ref("");
-const nodePlugins = ref<NodePluginRecord[]>([]);
 const nodeSelectedId = ref("");
-const nodeError = ref("");
-
-const nodeLabel = (node: NodeSummary) =>
-  `${node.remarks || `${node.ip}:${node.port}`}${
-    node.available ? "" : ` (${t("TXT_CODE_PLUGIN_NODE_OFFLINE")})`
-  }`;
-
-const PLUGIN_NAME_PREFIX = "epanel-plugin-";
-const pluginLabel = (id?: string) => {
-  if (!id) return "";
-  const slash = id.indexOf("/");
-  const name = id.startsWith("@") && slash >= 0 ? id.slice(slash + 1) : id;
-  return name.startsWith(PLUGIN_NAME_PREFIX) ? name.slice(PLUGIN_NAME_PREFIX.length) : id;
-};
+const {
+  loading,
+  plugins,
+  nodes,
+  nodesLoading,
+  nodePlugins,
+  nodeError,
+  load,
+  loadNodes,
+  loadNodePlugins,
+  reloadNodePluginsAfterToggle,
+  refreshInventory,
+  isDisposed
+} = usePluginInventory({
+  scope,
+  selectedNodeId,
+  isBusy: () => actionSubmitting.value
+});
 
 const selectedTargetId = computed({
   get: () => (scope.value === "panel" ? "" : selectedNodeId.value || undefined),
@@ -156,346 +112,50 @@ const currentList = computed<Array<PluginRecord | NodePluginRecord>>(() =>
   scope.value === "panel" ? plugins.value : nodePlugins.value
 );
 
-interface PluginGroupView extends PluginGroup {
-  plugins: Array<PluginRecord | NodePluginRecord>;
-  unassigned: boolean;
-}
-
-const UNASSIGNED_GROUP_ID = "__unassigned__";
-const pluginGroupsState = ref<PluginGroup[]>([]);
-const pluginGroupsLoading = ref(true);
-const pluginContextMenu = ref({ open: false, x: 0, y: 0, pluginId: "" });
-const pluginContextPlugin = computed(() =>
-  currentList.value.find((plugin) => plugin.id === pluginContextMenu.value.pluginId)
-);
-const pluginRemarks = ref(new Map<string, string>());
-const remarksLoading = ref(false);
-const savingRemark = ref(false);
-const remarkDialog = ref({
-  open: false,
-  pluginId: "",
-  remarks: "",
-  scope: "panel" as Scope,
-  nodeId: ""
-});
-const draggedPluginId = ref("");
-const dragOverGroupId = ref("");
-const PLUGIN_DRAG_THRESHOLD = 20;
-let pluginDragPointer: {
-  pluginId: string;
-  pointerId: number;
-  x: number;
-  y: number;
-  list: HTMLElement;
-} | null = null;
-let pluginDragPosition = { x: 0, y: 0 };
-let pluginDragScrollFrame = 0;
-let suppressPluginClick = false;
-let dragPreview: HTMLElement | null = null;
-const groupDialogOpen = ref(false);
-const groupDialogMode = ref<"create" | "rename">("create");
-const groupDialogName = ref("");
-const editingGroupId = ref("");
-const groupDeleteConfirmOpen = ref(false);
-const groupDeleteCandidate = ref<PluginGroupView | null>(null);
-
-let groupsRequest = 0;
-
-const loadPluginGroups = async () => {
-  const request = ++groupsRequest;
-  pluginGroupsLoading.value = true;
-  pluginGroupsState.value = [];
-  if (scope.value === "node" && !selectedNodeId.value) {
-    pluginGroupsLoading.value = false;
-    return;
-  }
-  try {
-    const stored =
-      scope.value === "panel"
-        ? (await pluginGroupList().execute()).value
-        : (
-            await nodePluginGroupList().execute({
-              params: { daemonId: selectedNodeId.value }
-            })
-          ).value;
-    if (request === groupsRequest) pluginGroupsState.value = Array.isArray(stored) ? stored : [];
-  } catch (error) {
-    if (request !== groupsRequest) return;
-    pluginGroupsState.value = [];
-    console.error("Failed to load plugin groups:", error);
-  } finally {
-    if (request === groupsRequest) pluginGroupsLoading.value = false;
-  }
+const lastResult = ref<PluginChangeResult | null>(null);
+const recordResult = (result?: PluginChangeResult | boolean) => {
+  lastResult.value = result && typeof result === "object" ? result : null;
+  if (lastResult.value?.application === "failed")
+    notify(lastResult.value.error || t("TXT_CODE_PLUGIN_LOAD_FAILED"), "error");
 };
 
-const savePluginGroups = async () => {
-  const groups = pluginGroupsState.value.map((group) => ({
-    id: group.id,
-    name: group.name,
-    pluginIds: [...group.pluginIds]
-  }));
-  try {
-    if (scope.value === "panel") {
-      await updatePluginGroupList().execute({ data: { groups } });
-    } else if (selectedNodeId.value) {
-      await updateNodePluginGroupList().execute({
-        params: { daemonId: selectedNodeId.value },
-        data: { groups }
-      });
-    }
-  } catch (error) {
-    notifyError(error);
-  }
-};
-
-const pluginGroups = computed<PluginGroupView[]>(() => {
-  const assigned = new Set<string>();
-  const groups: PluginGroupView[] = pluginGroupsState.value.map((group) => {
-    const plugins = currentList.value.filter(
-      (plugin) => group.pluginIds.includes(plugin.id) && !assigned.has(plugin.id)
-    );
-    plugins.forEach((plugin) => assigned.add(plugin.id));
-    return { ...group, plugins, unassigned: false };
+const {
+  pluginGroupsState,
+  pluginGroupsLoading,
+  pluginContextMenu,
+  pluginContextPlugin,
+  groupDialogOpen,
+  groupDialogName,
+  groupDeleteConfirmOpen,
+  groupDeleteCandidate,
+  loadPluginGroups,
+  pluginGroups,
+  pluginContextGroups,
+  closePluginContextMenu,
+  openPluginContextMenu,
+  openCreateGroup,
+  openRenameGroup,
+  saveGroup,
+  requestRemoveGroup,
+  confirmRemoveGroup,
+  movePluginToGroup,
+  moveContextPluginToGroup
+} = usePluginGroups({ scope, selectedNodeId, currentList });
+const { draggedPluginId, dragOverGroupId, endPluginDrag, preparePluginDrag, selectPluginFromList } =
+  usePluginDrag({
+    closePluginContextMenu,
+    movePluginToGroup,
+    selectPlugin: (id) => selectPlugin(id)
   });
-  const unassigned = currentList.value.filter((plugin) => !assigned.has(plugin.id));
-  if (unassigned.length || !groups.length) {
-    groups.push({
-      id: UNASSIGNED_GROUP_ID,
-      name: t("TXT_CODE_PLUGIN_GROUP_UNASSIGNED"),
-      pluginIds: [],
-      plugins: unassigned,
-      unassigned: true
-    });
-  }
-  return groups;
-});
-
-const pluginContextGroups = computed(() => {
-  const currentGroupId =
-    pluginGroups.value.find((group) =>
-      group.plugins.some((plugin) => plugin.id === pluginContextMenu.value.pluginId)
-    )?.id ?? UNASSIGNED_GROUP_ID;
-  return [
-    ...pluginGroupsState.value.map((group) => ({ id: group.id, name: group.name })),
-    { id: UNASSIGNED_GROUP_ID, name: t("TXT_CODE_PLUGIN_GROUP_UNASSIGNED") }
-  ].map((group) => ({ ...group, current: group.id === currentGroupId }));
-});
-
-const closePluginContextMenu = () => {
-  pluginContextMenu.value.open = false;
-  pluginContextMenu.value.pluginId = "";
-};
-
-const openPluginContextMenu = async (pluginId: string, event: MouseEvent) => {
-  event.preventDefault();
-  event.stopPropagation();
-  pluginContextMenu.value = { open: false, x: event.clientX, y: event.clientY, pluginId };
-  await nextTick();
-  if (
-    pluginContextMenu.value.pluginId === pluginId &&
-    currentList.value.some((plugin) => plugin.id === pluginId)
-  ) {
-    pluginContextMenu.value.open = true;
-  }
-};
-
-const createGroupId = () =>
-  `group-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-
-const openCreateGroup = () => {
-  groupDialogMode.value = "create";
-  groupDialogName.value = "";
-  editingGroupId.value = "";
-  groupDialogOpen.value = true;
-};
-
-const openRenameGroup = (group: PluginGroupView) => {
-  if (group.unassigned) return;
-  groupDialogMode.value = "rename";
-  groupDialogName.value = group.name;
-  editingGroupId.value = group.id;
-  groupDialogOpen.value = true;
-};
-
-const saveGroup = () => {
-  const name = groupDialogName.value.trim();
-  if (!name) return;
-  if (groupDialogMode.value === "create") {
-    pluginGroupsState.value.push({ id: createGroupId(), name, pluginIds: [] });
-  } else {
-    const group = pluginGroupsState.value.find((item) => item.id === editingGroupId.value);
-    if (group) group.name = name;
-  }
-  void savePluginGroups();
-  groupDialogOpen.value = false;
-};
-
-const requestRemoveGroup = (group: PluginGroupView) => {
-  if (group.unassigned) return;
-  groupDeleteCandidate.value = group;
-  groupDeleteConfirmOpen.value = true;
-};
-
-const confirmRemoveGroup = () => {
-  const group = groupDeleteCandidate.value;
-  if (!group) return;
-  pluginGroupsState.value = pluginGroupsState.value.filter((item) => item.id !== group.id);
-  void savePluginGroups();
-  groupDeleteConfirmOpen.value = false;
-  groupDeleteCandidate.value = null;
-};
-
-watch(groupDeleteConfirmOpen, (open) => {
-  if (!open) groupDeleteCandidate.value = null;
-});
-
-const movePluginToGroup = (pluginId: string, groupId: string) => {
-  for (const group of pluginGroupsState.value) {
-    group.pluginIds = group.pluginIds.filter((id) => id !== pluginId);
-  }
-  if (groupId !== UNASSIGNED_GROUP_ID) {
-    pluginGroupsState.value.find((group) => group.id === groupId)?.pluginIds.push(pluginId);
-  }
-  void savePluginGroups();
-};
-
-const moveContextPluginToGroup = (groupId: string) => {
-  const pluginId = pluginContextMenu.value.pluginId;
-  const group = pluginContextGroups.value.find((item) => item.id === groupId);
-  closePluginContextMenu();
-  if (!group || group.current || !currentList.value.some((plugin) => plugin.id === pluginId))
-    return;
-  movePluginToGroup(pluginId, groupId);
-};
-
-const clearDragPreview = () => {
-  dragPreview?.remove();
-  dragPreview = null;
-};
-
-const preventPluginTextSelection = (event: Event) => event.preventDefault();
-
-const startPluginDrag = (pluginId: string) => {
-  closePluginContextMenu();
-  draggedPluginId.value = pluginId;
-  suppressPluginClick = true;
-  window.getSelection()?.removeAllRanges();
-
-  clearDragPreview();
-  dragPreview = document.createElement("span");
-  dragPreview.textContent = pluginId;
-  Object.assign(dragPreview.style, {
-    position: "fixed",
-    top: "0",
-    left: "0",
-    pointerEvents: "none",
-    userSelect: "none",
-    zIndex: "21000",
-    padding: "4px 10px",
-    borderRadius: "14px",
-    background: "rgb(var(--v-theme-surface, 255 255 255))",
-    color: "rgb(var(--v-theme-on-surface, 0 0 0))",
-    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
-    font: "12px sans-serif",
-    whiteSpace: "nowrap"
-  });
-  document.body.appendChild(dragPreview);
-};
-
-const updatePluginDragTarget = () => {
-  const group = document.elementFromPoint(pluginDragPosition.x, pluginDragPosition.y)
-    ?.closest<HTMLElement>(".plugin-config-group");
-  dragOverGroupId.value = group && pluginDragPointer?.list.contains(group)
-    ? group.dataset.pluginGroupId || ""
-    : "";
-};
-
-const scrollPluginDragList = () => {
-  pluginDragScrollFrame = 0;
-  if (!draggedPluginId.value || !pluginDragPointer) return;
-  const list = pluginDragPointer.list;
-  if (!list.contains(document.elementFromPoint(pluginDragPosition.x, pluginDragPosition.y))) return;
-  const bounds = list.getBoundingClientRect();
-  const delta = pluginDragPosition.y < bounds.top + 28 ? -8
-    : pluginDragPosition.y > bounds.bottom - 28 ? 8 : 0;
-  const previousScroll = list.scrollTop;
-  list.scrollTop += delta;
-  if (list.scrollTop !== previousScroll) {
-    updatePluginDragTarget();
-    pluginDragScrollFrame = requestAnimationFrame(scrollPluginDragList);
-  }
-};
-
-const movePluginDrag = (event: PointerEvent) => {
-  const pointer = pluginDragPointer;
-  if (!pointer || event.pointerId !== pointer.pointerId) return;
-  if (!(event.buttons & 1)) {
-    endPluginDrag();
-    return;
-  }
-  if (!draggedPluginId.value) {
-    if (Math.hypot(event.clientX - pointer.x, event.clientY - pointer.y) < PLUGIN_DRAG_THRESHOLD) return;
-    startPluginDrag(pointer.pluginId);
-  }
-  event.preventDefault();
-  pluginDragPosition = { x: event.clientX, y: event.clientY };
-  if (dragPreview) dragPreview.style.transform = `translate(${event.clientX + 12}px, ${event.clientY + 14}px)`;
-  updatePluginDragTarget();
-  if (!pluginDragScrollFrame) pluginDragScrollFrame = requestAnimationFrame(scrollPluginDragList);
-};
-
-const endPluginDrag = () => {
-  if (pluginDragPointer) {
-    document.removeEventListener("selectstart", preventPluginTextSelection, true);
-    window.removeEventListener("pointermove", movePluginDrag);
-    window.removeEventListener("pointerup", finishPluginDrag);
-    window.removeEventListener("pointercancel", cancelPluginDrag);
-    window.removeEventListener("blur", endPluginDrag);
-  }
-  pluginDragPointer = null;
-  draggedPluginId.value = "";
-  dragOverGroupId.value = "";
-  clearDragPreview();
-  if (pluginDragScrollFrame) cancelAnimationFrame(pluginDragScrollFrame);
-  pluginDragScrollFrame = 0;
-};
-
-const finishPluginDrag = (event: PointerEvent) => {
-  if (!pluginDragPointer || event.pointerId !== pluginDragPointer.pointerId) return;
-  pluginDragPosition = { x: event.clientX, y: event.clientY };
-  if (draggedPluginId.value) updatePluginDragTarget();
-  const pluginId = draggedPluginId.value;
-  const groupId = dragOverGroupId.value;
-  endPluginDrag();
-  if (pluginId && groupId) movePluginToGroup(pluginId, groupId);
-};
-
-const cancelPluginDrag = (event: PointerEvent) => {
-  if (event.pointerId === pluginDragPointer?.pointerId) endPluginDrag();
-};
-
-const preparePluginDrag = (pluginId: string, event: PointerEvent) => {
-  if (!event.isPrimary || event.button !== 0 || event.pointerType === "touch" || pluginDragPointer) return;
-  const list = (event.currentTarget as HTMLElement).closest<HTMLElement>(".plugin-config-list");
-  if (!list) return;
-  suppressPluginClick = false;
-  pluginDragPointer = { pluginId, pointerId: event.pointerId, x: event.clientX, y: event.clientY, list };
-  document.addEventListener("selectstart", preventPluginTextSelection, true);
-  window.addEventListener("pointermove", movePluginDrag);
-  window.addEventListener("pointerup", finishPluginDrag);
-  window.addEventListener("pointercancel", cancelPluginDrag);
-  window.addEventListener("blur", endPluginDrag);
-};
-
-const selectPluginFromList = (pluginId: string, event: MouseEvent | KeyboardEvent) => {
-  if (suppressPluginClick && event.detail) {
-    event.preventDefault();
-    event.stopPropagation();
-    suppressPluginClick = false;
-    return;
-  }
-  selectPlugin(pluginId);
-};
+const {
+  pluginRemarks,
+  remarksLoading,
+  savingRemark,
+  remarkDialog,
+  loadPluginRemarks,
+  editContextPluginRemark,
+  savePluginRemark
+} = usePluginRemarks({ scope, selectedNodeId, pluginContextPlugin, closePluginContextMenu });
 
 watch(
   [scope, selectedNodeId],
@@ -525,17 +185,35 @@ const selectedPlugin = computed(() =>
   currentList.value.find((item) => item.id === currentId.value)
 );
 
-const schema = ref<SettingsSchema | null>(null);
-const settingsPage = ref("");
 const settingsPagesTarget = ref<HTMLElement | null>(null);
-watch([scope, selectedNodeId, currentId], () => { settingsPage.value = ""; });
-const savedSettings = ref("");
-const savedValues = computed<Record<string, unknown> | undefined>(() =>
-  savedSettings.value ? JSON.parse(savedSettings.value) : undefined
-);
-const settingsDirty = computed(
-  () => !!schema.value && JSON.stringify(schema.value.values) !== savedSettings.value
-);
+const {
+  schema,
+  settingsPage,
+  savedValues,
+  settingsDirty,
+  schemaLoading,
+  savingSettings,
+  resetCandidate,
+  resetConfirmOpen,
+  loadSchema,
+  saveSettings,
+  requestResetContextPluginSettings,
+  confirmResetSettings
+} = usePluginSettings({
+  scope,
+  selectedNodeId,
+  currentId,
+  pluginContextPlugin,
+  closePluginContextMenu,
+  lastResult,
+  recordResult,
+  load: (quiet) => load(quiet),
+  loadNodePlugins: (quiet) => loadNodePlugins(quiet),
+  isDisposed,
+  isActionBusy: () => actionBusy.value,
+  isActionSubmitting: () => actionSubmitting.value
+});
+
 const toggleTooltipOpen = ref(false);
 const deleteTooltipOpen = ref(false);
 const saveTooltipActive = ref(false);
@@ -555,23 +233,6 @@ watch(sidebarOpen, (open) => {
   deleteTooltipOpen.value = false;
   saveTooltipActive.value = false;
 });
-// Take a baseline when a form loads, without treating nested field edits as a new baseline.
-watch(
-  schema,
-  (value) => {
-    savedSettings.value = value ? JSON.stringify(value.values) : "";
-  },
-  { flush: "sync" }
-);
-const schemaLoading = ref(false);
-let schemaRequest = 0;
-let nodePluginsRequest = 0;
-let pluginsRequest = 0;
-let inventoryTimer: ReturnType<typeof setInterval> | undefined;
-let refreshingInventory = false;
-let disposed = false;
-const savingSettings = ref(false);
-const lastResult = ref<PluginChangeResult | null>(null);
 const stateLabels = {
   disabled: "TXT_CODE_PLUGIN_STATE_DISABLED",
   pending: "TXT_CODE_PLUGIN_STATE_PENDING",
@@ -587,413 +248,70 @@ const frontendPlugin = computed(() =>
     : undefined
 );
 const unavailableDependencies = (plugin: PluginRecord | NodePluginRecord) => {
-  const frontend = scope.value === "panel"
-    ? ctx.plugins?.loaded.find((item) => item.metadata.id === plugin.id)
-    : undefined;
-  const missing = (frontend?.metadata.frontendInject ?? []).filter((id) =>
-    ctx.plugins.loaded.find((item) => item.metadata.id === id)?.state !== "active"
+  const frontend =
+    scope.value === "panel"
+      ? ctx.plugins?.loaded.find((item) => item.metadata.id === plugin.id)
+      : undefined;
+  const missing = (frontend?.metadata.frontendInject ?? []).filter(
+    (id) => ctx.plugins.loaded.find((item) => item.metadata.id === id)?.state !== "active"
   );
-  return [...new Set([
-    ...(plugin.missingDependencies ?? []),
-    ...(frontend?.missingServices ?? []),
-    ...missing
-  ])];
+  return [
+    ...new Set([
+      ...(plugin.missingDependencies ?? []),
+      ...(frontend?.missingServices ?? []),
+      ...missing
+    ])
+  ];
 };
 const pluginWarning = (plugin: PluginRecord | NodePluginRecord) => {
   if (!plugin.enabled) return false;
-  const frontend = scope.value === "panel"
-    ? ctx.plugins?.loaded.find((item) => item.metadata.id === plugin.id)
-    : undefined;
-  return plugin.state === "pending" || plugin.state === "failed" || !!plugin.error ||
-    frontend?.state === "pending" || frontend?.state === "failed" || !!frontend?.error ||
-    unavailableDependencies(plugin).length > 0;
+  const frontend =
+    scope.value === "panel"
+      ? ctx.plugins?.loaded.find((item) => item.metadata.id === plugin.id)
+      : undefined;
+  return (
+    plugin.state === "pending" ||
+    plugin.state === "failed" ||
+    !!plugin.error ||
+    frontend?.state === "pending" ||
+    frontend?.state === "failed" ||
+    !!frontend?.error ||
+    unavailableDependencies(plugin).length > 0
+  );
 };
 const missingDependencies = computed(() =>
   selectedPlugin.value ? unavailableDependencies(selectedPlugin.value) : []
 );
-const recordResult = (result?: PluginChangeResult | boolean) => {
-  lastResult.value = result && typeof result === "object" ? result : null;
-  if (lastResult.value?.application === "failed")
-    notify(lastResult.value.error || t("TXT_CODE_PLUGIN_LOAD_FAILED"), "error");
-};
-const deletingPlugin = ref(false);
-const actionCandidate = ref<PluginActionCandidate | null>(null);
-const resetCandidate = ref<{ id: string; scope: Scope; nodeId: string } | null>(null);
-const actionSubmitting = computed(() => Boolean(pending.value || deletingPlugin.value || savingSettings.value));
-const actionBusy = computed(() => actionSubmitting.value || Boolean(actionCandidate.value || resetCandidate.value));
-const resetConfirmOpen = computed({
-  get: () => Boolean(resetCandidate.value),
-  set: (open: boolean) => {
-    if (!open && !savingSettings.value) resetCandidate.value = null;
-  }
-});
-watch([scope, selectedNodeId], () => {
-  if (!savingSettings.value) resetCandidate.value = null;
-});
-const actionConfirmOpen = computed({
-  get: () => actionCandidate.value?.step === "confirm",
-  set: (open: boolean) => {
-    if (!open && actionCandidate.value?.step === "confirm" && !actionSubmitting.value)
-      actionCandidate.value = null;
-  }
-});
-const nodePickerOpen = computed({
-  get: () => actionCandidate.value?.step === "nodes",
-  set: (open: boolean) => {
-    if (!open && actionCandidate.value?.step === "nodes" && !actionSubmitting.value)
-      actionCandidate.value = null;
-  }
-});
-const nodeTargetItems = computed(() =>
-  (actionCandidate.value?.nodeTargets ?? []).map((target) => ({
-    value: target.node.uuid,
-    title: nodeLabel(target.node),
-    subtitle: target.node.remarks ? `${target.node.ip}:${target.node.port}` : undefined,
-    disabled: actionCandidate.value?.action === "remove" && !target.plugin.removable,
-    hint:
-      actionCandidate.value?.action === "remove" && !target.plugin.removable
-        ? t("TXT_CODE_PLUGIN_DELETE_UNAVAILABLE")
-        : undefined
-  }))
-);
-const notify = (text: string, color: "success" | "error") => {
-  if (color === "error") message.error(text);
-  else message.success(text);
-};
-
-const notifyError = (error: unknown) => {
-  console.error("Plugin configuration error:", error);
-  notify(getValidatorErrorMsg(error, t("TXT_CODE_COMMON_OPERATION_FAILED")), "error");
-};
-
-let remarksRequest = 0;
-
-const loadPluginRemarks = async () => {
-  const request = ++remarksRequest;
-  pluginRemarks.value = new Map();
-  if (scope.value === "node" && !selectedNodeId.value) {
-    remarksLoading.value = false;
-    return;
-  }
-  remarksLoading.value = true;
-  try {
-    const stored = (
-      await pluginRemarkList().execute({
-        params: scope.value === "node" ? { daemonId: selectedNodeId.value } : undefined,
-        forceRequest: true
-      })
-    ).value;
-    if (request === remarksRequest) {
-      pluginRemarks.value = new Map((stored ?? []).map((entry) => [entry.id, entry.remarks]));
-    }
-  } catch (error) {
-    if (request === remarksRequest) notifyError(error);
-  } finally {
-    if (request === remarksRequest) remarksLoading.value = false;
-  }
-};
-
-const editContextPluginRemark = () => {
-  const plugin = pluginContextPlugin.value;
-  closePluginContextMenu();
-  if (!plugin || remarksLoading.value || savingRemark.value) return;
-  remarkDialog.value = {
-    open: true,
-    pluginId: plugin.id,
-    remarks: (pluginRemarks.value.get(plugin.id) ?? "").replace(/[\r\n]+/g, " "),
-    scope: scope.value,
-    nodeId: selectedNodeId.value
-  };
-};
-
-const savePluginRemark = async () => {
-  const dialog = remarkDialog.value;
-  if (!dialog.pluginId || savingRemark.value) return;
-  const remarks = String(dialog.remarks ?? "").replace(/[\r\n]+/g, " ").trim();
-  savingRemark.value = true;
-  try {
-    await updatePluginRemark().execute({
-      params: dialog.scope === "node" ? { daemonId: dialog.nodeId } : undefined,
-      data: { id: dialog.pluginId, remarks }
-    });
-    if (scope.value === dialog.scope && selectedNodeId.value === dialog.nodeId) {
-      if (remarks) pluginRemarks.value.set(dialog.pluginId, remarks);
-      else pluginRemarks.value.delete(dialog.pluginId);
-    }
-    if (remarkDialog.value === dialog) remarkDialog.value.open = false;
-    notify(t("TXT_CODE_COMMON_SAVED"), "success");
-  } catch (error) {
-    notifyError(error);
-  } finally {
-    savingRemark.value = false;
-  }
-};
-
-watch(
-  [scope, selectedNodeId],
-  () => {
-    remarkDialog.value.open = false;
-    void loadPluginRemarks();
-  },
-  { immediate: true }
-);
-
-const loadSchema = async () => {
-  if (disposed) return;
-  const request = ++schemaRequest;
-  schema.value = null;
-  schemaLoading.value = false;
-  const id = currentId.value;
-  if (!id) return;
-  if (scope.value === "node" && !selectedNodeId.value) return;
-  schemaLoading.value = true;
-  try {
-    if (scope.value === "panel") {
-      const { execute } = pluginSettings();
-      const res = await execute({ params: { id }, forceRequest: true });
-      if (request === schemaRequest) schema.value = res.value ?? null;
-    } else {
-      const { execute } = nodePluginSettings();
-      const res = await execute({
-        params: { daemonId: selectedNodeId.value, id },
-        forceRequest: true
-      });
-      if (request === schemaRequest) schema.value = res.value ?? null;
-    }
-  } catch (error: any) {
-    // Missing settings are normal; the inventory request reports connection failures.
-    if (request === schemaRequest) schema.value = null;
-  } finally {
-    if (request === schemaRequest) schemaLoading.value = false;
-  }
-};
-
-const retryFrontend = async () => {
-  if (!currentId.value || pending.value) return;
-  pending.value = currentId.value;
-  try {
-    await ctx.plugins.reload(currentId.value);
-  } catch (error) {
-    notifyError(error);
-  } finally {
-    pending.value = "";
-  }
-};
-
-const saveSettings = async () => {
-  if (!schema.value || savingSettings.value) return;
-  const targetSchema = schema.value;
-  const targetScope = scope.value;
-  const targetNode = selectedNodeId.value;
-  const targetId = targetSchema.id;
-  const submittedSettings = JSON.stringify(targetSchema.values);
-  savingSettings.value = true;
-  const reloadPanel = targetScope === "panel" && ["i18n", "console"].includes(targetId);
-  try {
-    const values = JSON.parse(submittedSettings) as Record<string, unknown>;
-    if (targetScope === "panel") {
-      const { execute } = updatePluginSettings();
-      recordResult((await execute({ params: { id: targetId }, data: values })).value);
-    } else {
-      const { execute } = updateNodePluginSettings();
-      recordResult(
-        (
-          await execute({
-            params: { daemonId: targetNode, id: targetId },
-            data: values
-          })
-        ).value
-      );
-    }
-    if (targetScope === "panel" && (!lastResult.value || lastResult.value.application === "applied")) {
-      window.dispatchEvent(new CustomEvent("elementspanel:plugin-settings-changed", {
-        detail: { id: targetId }
-      }));
-    }
-    if (!lastResult.value || lastResult.value.application === "applied")
-      notify(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"), "success");
-    const editedDuringSave = JSON.stringify(targetSchema.values) !== submittedSettings;
-    if (schema.value === targetSchema) savedSettings.value = submittedSettings;
-    if (reloadPanel && !editedDuringSave) {
-      window.setTimeout(() => window.location.reload(), 400);
-      return;
-    }
-    if (
-      scope.value === targetScope &&
-      selectedNodeId.value === targetNode &&
-      currentId.value === targetId &&
-      schema.value === targetSchema &&
-      !editedDuringSave
-    ) {
-      await loadSchema();
-    }
-  } catch (error: any) {
-    notifyError(error);
-  } finally {
-    savingSettings.value = false;
-  }
-};
-
-const requestResetContextPluginSettings = () => {
-  const plugin = pluginContextPlugin.value;
-  closePluginContextMenu();
-  if (!plugin?.canResetSettings || actionBusy.value) return;
-  resetCandidate.value = { id: plugin.id, scope: scope.value, nodeId: selectedNodeId.value };
-};
-
-const confirmResetSettings = async () => {
-  const candidate = resetCandidate.value;
-  if (!candidate || actionSubmitting.value) return;
-  const { id: targetId, scope: targetScope, nodeId: targetNode } = candidate;
-  savingSettings.value = true;
-  try {
-    const response = targetScope === "panel"
-      ? await resetPluginSettings().execute({ params: { id: targetId } })
-      : await resetNodePluginSettings().execute({ params: { daemonId: targetNode, id: targetId } });
-    const result = response.value;
-    if (resetCandidate.value === candidate) resetCandidate.value = null;
-    const currentTarget =
-      scope.value === targetScope &&
-      selectedNodeId.value === targetNode &&
-      currentId.value === targetId;
-    if (currentTarget) recordResult(result);
-    else if (result?.application === "failed")
-      notify(result.error || t("TXT_CODE_PLUGIN_LOAD_FAILED"), "error");
-    if (!result || result.application === "applied") {
-      notify(t("TXT_CODE_PLUGIN_SETTINGS_RESET"), "success");
-      if (targetScope === "panel") {
-        window.dispatchEvent(new CustomEvent("elementspanel:plugin-settings-changed", {
-          detail: { id: targetId }
-        }));
-        if (["i18n", "console"].includes(targetId)) {
-          window.setTimeout(() => window.location.reload(), 400);
-          return;
-        }
-      }
-    } else if (!currentTarget && result.application !== "failed") {
-      notify(t(result.application === "pending"
-        ? "TXT_CODE_PLUGIN_SAVED_PENDING"
-        : "TXT_CODE_PLUGIN_RESTART_REQUIRED"), "success");
-    }
-    if (scope.value === targetScope && selectedNodeId.value === targetNode) {
-      if (targetScope === "panel") await load(true);
-      else await loadNodePlugins(true);
-      if (scope.value === targetScope && selectedNodeId.value === targetNode && currentId.value === targetId)
-        await loadSchema();
-    }
-  } catch (error) {
-    notifyError(error);
-  } finally {
-    savingSettings.value = false;
-  }
-};
-
-const load = async (quiet = false) => {
-  if (disposed) return;
-  const request = ++pluginsRequest;
-  if (!quiet) loading.value = true;
-  try {
-    const res = await pluginList().execute({ forceRequest: true });
-    if (
-      !disposed &&
-      request === pluginsRequest &&
-      JSON.stringify(plugins.value) !== JSON.stringify(res.value ?? [])
-    )
-      plugins.value = res.value ?? [];
-  } catch (error: any) {
-    if (!quiet && !disposed) notifyError(error);
-  } finally {
-    if (!quiet && request === pluginsRequest) loading.value = false;
-  }
-};
-
-async function loadNodes() {
-  if (nodesLoading.value || disposed) return;
-  nodesLoading.value = true;
-  nodeError.value = "";
-  try {
-    const { execute } = nodeList();
-    const res = await execute({ forceRequest: true });
-    if (disposed) return;
-    nodes.value = res.value ?? [];
-    if (scope.value === "node" && !nodes.value.some((item) => item.uuid === selectedNodeId.value)) {
-      selectedNodeId.value = nodes.value.find((item) => item.available)?.uuid || "";
-    }
-  } catch (error: any) {
-    if (disposed) return;
-    nodes.value = [];
-    if (scope.value === "node") selectedNodeId.value = "";
-    nodeError.value = error?.message ?? String(error);
-  } finally {
-    nodesLoading.value = false;
-  }
-}
-
-const loadNodePlugins = async (quiet = false) => {
-  if (disposed) return;
-  const request = ++nodePluginsRequest;
-  if (!quiet) nodePlugins.value = [];
-  if (!selectedNodeId.value) return;
-  if (!quiet) loading.value = true;
-  nodeError.value = "";
-  try {
-    const { execute } = nodePluginList();
-    const res = await execute({ params: { daemonId: selectedNodeId.value }, forceRequest: true });
-    if (
-      !disposed &&
-      request === nodePluginsRequest &&
-      JSON.stringify(nodePlugins.value) !== JSON.stringify(res.value ?? [])
-    )
-      nodePlugins.value = res.value ?? [];
-  } catch (error: any) {
-    if (request === nodePluginsRequest) nodeError.value = error?.message ?? String(error);
-  } finally {
-    if (!quiet && request === nodePluginsRequest) loading.value = false;
-  }
-};
-
-const reloadNodePluginsAfterToggle = async () => {
-  for (let attempt = 0; attempt < 4; attempt++) {
-    if (disposed) return;
-    await loadNodePlugins();
-    if (!nodeError.value) return;
-    await new Promise((resolve) => setTimeout(resolve, 700));
-  }
-};
-
-const refreshInventory = async () => {
-  if (
-    disposed ||
-    refreshingInventory ||
-    loading.value ||
-    actionSubmitting.value ||
-    savingSettings.value
-  )
-    return;
-  refreshingInventory = true;
-  try {
-    if (scope.value === "panel") await load(true);
-    else await loadNodePlugins(true);
-  } finally {
-    refreshingInventory = false;
-  }
-};
-
-onMounted(() => {
-  load();
-  window.addEventListener("elementspanel:plugins-changed", refreshInventory);
-  inventoryTimer = setInterval(refreshInventory, 4000);
-});
-onUnmounted(() => {
-  endPluginDrag();
-  window.removeEventListener("elementspanel:plugins-changed", refreshInventory);
-  clearInterval(inventoryTimer);
-  pluginsRequest++;
-  groupsRequest++;
-  disposed = true;
-  schemaRequest++;
-  nodePluginsRequest++;
-  remarksRequest++;
+const {
+  pending,
+  deletingPlugin,
+  actionCandidate,
+  actionSubmitting,
+  actionBusy,
+  actionConfirmOpen,
+  nodePickerOpen,
+  nodeTargetItems,
+  retryFrontend,
+  requestAction,
+  toggle,
+  toggleSelected,
+  toggleContextPlugin,
+  confirmAction
+} = usePluginActions({
+  scope,
+  selectedNodeId,
+  currentId,
+  plugins,
+  selectedPlugin,
+  pluginContextPlugin,
+  closePluginContextMenu,
+  savingSettings,
+  resetCandidate,
+  lastResult,
+  recordResult,
+  load: (quiet) => load(quiet),
+  reloadNodePluginsAfterToggle: () => reloadNodePluginsAfterToggle(),
+  isDisposed
 });
 
 /** Drop page-specific query parameters while preserving the target link's values. */
@@ -1051,7 +369,8 @@ watch(
     if (list.some((item) => item.id === currentId.value)) return;
     currentId.value =
       list.find((item) => item.id === preferredPluginId.value)?.id ||
-      pluginGroups.value.find((group) => group.plugins.length)?.plugins[0]?.id || "";
+      pluginGroups.value.find((group) => group.plugins.length)?.plugins[0]?.id ||
+      "";
   },
   { immediate: true }
 );
@@ -1095,266 +414,6 @@ const syncRoute = () => {
 };
 
 watch([scope, currentId, selectedNodeId, pluginGroupsLoading], syncRoute);
-
-/** Re-read inventories to include plugins installed outside the market. */
-const checkNodePlugins = async (candidate: PluginActionCandidate) => {
-  if (
-    candidate.scope !== "panel" ||
-    !plugins.value.some((plugin) => plugin.id === "node" && plugin.enabled && plugin.running)
-  )
-    return;
-
-  candidate.checkingNodes = true;
-  try {
-    const list = (await nodeList().execute()).value ?? [];
-    if (disposed || actionCandidate.value !== candidate) return;
-    const results = await Promise.allSettled(
-      list.map(async (node) => {
-        if (!node.available) throw new Error(t("TXT_CODE_PLUGIN_NODE_OFFLINE"));
-        const inventory = (await nodePluginList().execute({ params: { daemonId: node.uuid } }))
-          .value;
-        if (!Array.isArray(inventory)) throw new Error(t("TXT_CODE_PLUGIN_NODE_LIST_FAILED"));
-        return inventory.find((plugin) => plugin.id === candidate.plugin.id);
-      })
-    );
-    if (disposed || actionCandidate.value !== candidate) return;
-    const unchecked: string[] = [];
-    results.forEach((result, index) => {
-      const node = list[index];
-      if (result.status === "rejected") {
-        unchecked.push(nodeLabel(node));
-      } else if (
-        result.value &&
-        (candidate.action === "remove" || result.value.enabled !== (candidate.action === "enable"))
-      ) {
-        candidate.nodeTargets.push({ node, plugin: result.value });
-      }
-    });
-    if (unchecked.length)
-      candidate.nodeCheckError = t("TXT_CODE_PLUGIN_NODE_CHECK_FAILED", {
-        nodes: unchecked.join(", ")
-      });
-  } catch (error) {
-    if (!disposed && actionCandidate.value === candidate)
-      candidate.nodeCheckError = getValidatorErrorMsg(error, t("TXT_CODE_PLUGIN_NODE_LIST_FAILED"));
-  } finally {
-    candidate.checkingNodes = false;
-  }
-};
-
-const requestAction = (plugin: PluginRecord | NodePluginRecord, action: PluginAction) => {
-  if (disposed || actionBusy.value || (action === "remove" && !plugin.removable)) return;
-  actionCandidate.value = {
-    action,
-    step: action === "enable" ? "checking" : "confirm",
-    scope: scope.value,
-    plugin: { ...plugin },
-    nodeId: selectedNodeId.value,
-    checkingNodes: false,
-    nodeTargets: [],
-    selectedNodeIds: [],
-    nodeCheckError: "",
-    removeConfig: false
-  };
-};
-
-/** Finish node changes before the panel can unload its remote connection service. */
-const syncNodePlugins = async (candidate: PluginActionCandidate) => {
-  const targets = candidate.nodeTargets.filter(
-    ({ node, plugin }) =>
-      candidate.selectedNodeIds.includes(node.uuid) &&
-      (candidate.action !== "remove" || plugin.removable)
-  );
-  const failures: string[] = [];
-  for (const { node, plugin } of targets) {
-    try {
-      if (candidate.action === "remove") {
-        await removeNodePlugin().execute({
-          params: {
-            daemonId: node.uuid,
-            id: plugin.id,
-            ...(candidate.removeConfig ? { removeConfig: true } : {})
-          },
-          timeout: 11 * 60 * 1000
-        });
-        candidate.nodeTargets = candidate.nodeTargets.filter(
-          (target) => target.node.uuid !== node.uuid
-        );
-      } else {
-        const result = (
-          await setNodePluginEnabled().execute({
-            params: { daemonId: node.uuid },
-            data: { id: plugin.id, enabled: candidate.action === "enable" }
-          })
-        ).value?.result;
-        if (result && result.application !== "applied")
-          throw new Error(
-            result.error ||
-              t(
-                result.application === "restart-required"
-                  ? "TXT_CODE_PLUGIN_RESTART_REQUIRED"
-                  : result.application === "pending"
-                  ? "TXT_CODE_PLUGIN_SAVED_PENDING"
-                  : "TXT_CODE_PLUGIN_LOAD_FAILED"
-              )
-          );
-      }
-      // Skip successful node changes when retrying a panel failure.
-      candidate.selectedNodeIds = candidate.selectedNodeIds.filter((id) => id !== node.uuid);
-    } catch (error) {
-      failures.push(`${nodeLabel(node)}: ${getValidatorErrorMsg(error, t("TXT_CODE_COMMON_OPERATION_FAILED"))}`);
-    }
-  }
-  if (failures.length)
-    notify(t("TXT_CODE_PLUGIN_NODE_ACTION_FAILED", { nodes: failures.join("; ") }), "error");
-  return failures.length === 0;
-};
-
-const apply = async (plugin: PluginRecord, enabled: boolean, candidate?: PluginActionCandidate) => {
-  pending.value = plugin.id;
-  try {
-    const nodesSucceeded = candidate ? await syncNodePlugins(candidate) : true;
-    const { execute } = setPluginEnabled();
-    recordResult((await execute({ data: { id: plugin.id, enabled } })).value?.result);
-    await ctx.plugins.refresh();
-    await load();
-    if (nodesSucceeded && (!lastResult.value || lastResult.value.application === "applied"))
-      notify(t(enabled ? "TXT_CODE_PLUGIN_ENABLED" : "TXT_CODE_PLUGIN_DISABLED"), "success");
-  } catch (error: any) {
-    notifyError(error);
-    await load();
-  } finally {
-    pending.value = "";
-  }
-};
-
-const applyNode = async (
-  plugin: NodePluginRecord,
-  enabled: boolean,
-  daemonId = selectedNodeId.value
-) => {
-  pending.value = plugin.id;
-  try {
-    const { execute } = setNodePluginEnabled();
-    recordResult(
-      (
-        await execute({
-          params: { daemonId },
-          data: { id: plugin.id, enabled }
-        })
-      ).value?.result
-    );
-    if (!lastResult.value || lastResult.value.application === "applied")
-      notify(t(enabled ? "TXT_CODE_PLUGIN_ENABLED" : "TXT_CODE_PLUGIN_DISABLED"), "success");
-  } catch (error: any) {
-    notifyError(error);
-  } finally {
-    pending.value = "";
-    await reloadNodePluginsAfterToggle();
-  }
-};
-
-const toggle = (plugin: PluginRecord | NodePluginRecord, enabled: boolean) => {
-  if (disposed || actionBusy.value) return;
-  if (enabled && scope.value === "node")
-    return applyNode(plugin as NodePluginRecord, true, selectedNodeId.value);
-  requestAction(plugin, enabled ? "enable" : "disable");
-  if (enabled) return confirmAction();
-};
-
-const toggleSelected = (enabled: boolean) => {
-  if (selectedPlugin.value) toggle(selectedPlugin.value, enabled);
-};
-
-const toggleContextPlugin = () => {
-  const plugin = pluginContextPlugin.value;
-  closePluginContextMenu();
-  if (plugin && !pending.value) return toggle(plugin, !plugin.enabled);
-};
-
-const confirmToggle = async () => {
-  const candidate = actionCandidate.value;
-  if (
-    !candidate ||
-    candidate.action === "remove" ||
-    candidate.checkingNodes ||
-    actionSubmitting.value
-  )
-    return;
-  const enabled = candidate.action === "enable";
-  if (candidate.scope === "panel") await apply(candidate.plugin as PluginRecord, enabled, candidate);
-  else await applyNode(candidate.plugin as NodePluginRecord, enabled, candidate.nodeId);
-  actionCandidate.value = null;
-};
-
-const confirmRemove = async () => {
-  const candidate = actionCandidate.value;
-  if (
-    !candidate ||
-    candidate.action !== "remove" ||
-    !candidate.plugin.removable ||
-    candidate.checkingNodes ||
-    actionSubmitting.value
-  )
-    return;
-  const finishDependencyChange = usePluginService<FrontendPluginMarketService>(
-    "pluginMarket"
-  )?.beginDependencyChange();
-  deletingPlugin.value = true;
-  try {
-    let nodesSucceeded = true;
-    if (candidate.scope === "panel") {
-      nodesSucceeded = await syncNodePlugins(candidate);
-      const { execute } = removePlugin();
-      await execute({
-        params: {
-          id: candidate.plugin.id,
-          ...(candidate.removeConfig ? { removeConfig: true } : {})
-        },
-        timeout: 11 * 60 * 1000
-      });
-      await ctx.plugins
-        .refresh()
-        .catch((error) => console.error("Failed to refresh plugins:", error));
-      await load();
-    } else {
-      const { execute } = removeNodePlugin();
-      await execute({
-        params: {
-          daemonId: candidate.nodeId,
-          id: candidate.plugin.id,
-          ...(candidate.removeConfig ? { removeConfig: true } : {})
-        },
-        timeout: 11 * 60 * 1000
-      });
-      await reloadNodePluginsAfterToggle();
-    }
-    actionCandidate.value = null;
-    if (nodesSucceeded) notify(t("TXT_CODE_PLUGIN_DELETED"), "success");
-  } catch (error) {
-    notifyError(error);
-  } finally {
-    deletingPlugin.value = false;
-    finishDependencyChange?.();
-  }
-};
-
-const confirmAction = async () => {
-  const candidate = actionCandidate.value;
-  if (!candidate || candidate.checkingNodes || actionSubmitting.value) return;
-  if (candidate.step !== "nodes") {
-    await checkNodePlugins(candidate);
-    if (disposed || actionCandidate.value !== candidate) return;
-    if (candidate.nodeTargets.length || candidate.nodeCheckError) {
-      candidate.selectedNodeIds = candidate.nodeTargets
-        .filter(({ plugin }) => candidate.action !== "remove" || plugin.removable)
-        .map(({ node }) => node.uuid);
-      candidate.step = "nodes";
-      return;
-    }
-  }
-  return candidate.action === "remove" ? confirmRemove() : confirmToggle();
-};
 </script>
 
 <template>
@@ -1392,61 +451,20 @@ const confirmAction = async () => {
               @click="openCreateGroup"
             />
           </div>
-          <VList class="plugin-config-list" data-app-surface="transparent" density="compact">
-            <div
-              v-for="group in pluginGroups"
-              :key="group.id"
-              class="plugin-config-group"
-              :data-plugin-group-id="group.id"
-              :class="{ 'plugin-config-group-over': dragOverGroupId === group.id }"
-            >
-              <VListSubheader class="plugin-config-group-heading">
-                <span>{{ group.name }}</span>
-                <span v-if="!group.unassigned" class="plugin-config-group-actions">
-                  <VBtn
-                    icon="mdi-pencil-outline"
-                    size="x-small"
-                    variant="text"
-                    :aria-label="t('TXT_CODE_PLUGIN_GROUP_RENAME')"
-                    @click.stop="openRenameGroup(group)"
-                  />
-                  <VBtn
-                    icon="mdi-delete-outline"
-                    size="x-small"
-                    variant="text"
-                    :aria-label="t('TXT_CODE_PLUGIN_GROUP_DELETE')"
-                    @click.stop="requestRemoveGroup(group)"
-                  />
-                </span>
-              </VListSubheader>
-              <VListItem
-                v-for="plugin in group.plugins"
-                :key="plugin.id"
-                class="plugin-config-item"
-                draggable="false"
-                :active="plugin.id === currentId"
-                :class="{ 'plugin-config-item-off': !plugin.enabled, 'plugin-config-item-dragging': draggedPluginId === plugin.id }"
-                :title="pluginLabel(plugin.id)"
-                :subtitle="pluginRemarks.get(plugin.id)"
-                @click="selectPluginFromList(plugin.id, $event)"
-                @contextmenu="openPluginContextMenu(plugin.id, $event)"
-                @pointerdown="preparePluginDrag(plugin.id, $event)"
-                @dragstart.prevent
-              >
-                <template #append>
-                  <span
-                    class="plugin-config-item-dot"
-                    :class="{
-                      'plugin-config-item-dot-off':
-                        !plugin.enabled || (!pluginWarning(plugin) && plugin.state && plugin.state !== 'active'),
-                      'plugin-config-item-dot-warning': pluginWarning(plugin)
-                    }"
-                  ></span>
-                </template>
-              </VListItem>
-            </div>
-            <Empty v-if="!currentList.length" icon="mdi-puzzle-outline" compact />
-          </VList>
+          <PluginConfigList
+            :groups="pluginGroups"
+            :current-id="currentId"
+            :remarks="pluginRemarks"
+            :dragged-plugin-id="draggedPluginId"
+            :drag-over-group-id="dragOverGroupId"
+            :empty="!currentList.length"
+            :warning="pluginWarning"
+            @select="selectPluginFromList"
+            @contextmenu="openPluginContextMenu"
+            @pointerdown="preparePluginDrag"
+            @rename="openRenameGroup"
+            @remove="requestRemoveGroup"
+          />
         </div>
       </component>
     </Teleport>
@@ -1496,7 +514,8 @@ const confirmAction = async () => {
                       variant="text"
                       :loading="
                         pending === selectedPlugin.id ||
-                        (actionCandidate?.plugin.id === selectedPlugin.id && actionCandidate.checkingNodes)
+                        (actionCandidate?.plugin.id === selectedPlugin.id &&
+                          actionCandidate.checkingNodes)
                       "
                       :disabled="actionBusy"
                       :aria-label="
@@ -1515,7 +534,11 @@ const confirmAction = async () => {
                 v-if="schema?.fields.some((field) => field.type !== 'link')"
                 v-model="saveTooltipOpen"
                 :text="
-                  t(settingsDirty ? 'TXT_CODE_PLUGIN_SAVE_REMINDER' : 'TXT_CODE_PLUGIN_SAVE_SETTINGS')
+                  t(
+                    settingsDirty
+                      ? 'TXT_CODE_PLUGIN_SAVE_REMINDER'
+                      : 'TXT_CODE_PLUGIN_SAVE_SETTINGS'
+                  )
                 "
                 location="top"
               >
@@ -1586,7 +609,8 @@ const confirmAction = async () => {
               :loading="loading || nodesLoading"
               :disabled="actionBusy"
               @click="selectedNodeId ? loadNodePlugins() : loadNodes()"
-            >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn>
+              >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn
+            >
           </template>
         </Empty>
         <template v-if="selectedPlugin">
@@ -1612,9 +636,11 @@ const confirmAction = async () => {
             type="warning"
             variant="tonal"
             :title="t('TXT_CODE_PLUGIN_DEPENDENCIES_UNAVAILABLE')"
-            :text="t('TXT_CODE_PLUGIN_MISSING_DEPENDENCIES', {
-              dependencies: missingDependencies.map(pluginLabel).join(', ')
-            })"
+            :text="
+              t('TXT_CODE_PLUGIN_MISSING_DEPENDENCIES', {
+                dependencies: missingDependencies.map(pluginLabel).join(', ')
+              })
+            "
           />
           <VAlert
             v-if="lastResult?.application === 'restart-required' || frontendPlugin?.restartRequired"
@@ -1724,7 +750,11 @@ const confirmAction = async () => {
 
     <VDialog v-model="resetConfirmOpen" :persistent="savingSettings" max-width="460">
       <VCard
-        :title="t('TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM_TITLE', { name: pluginLabel(resetCandidate?.id) })"
+        :title="
+          t('TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM_TITLE', {
+            name: pluginLabel(resetCandidate?.id)
+          })
+        "
         rounded="xl"
       >
         <VCardText>{{ t("TXT_CODE_PLUGIN_RESET_SETTINGS_CONFIRM") }}</VCardText>
@@ -1765,99 +795,14 @@ const confirmAction = async () => {
       </VCard>
     </VDialog>
 
-    <VDialog v-model="actionConfirmOpen" :persistent="actionSubmitting" max-width="460">
-      <VCard
-        :title="
-          t(
-            actionCandidate?.action === 'remove'
-              ? 'TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE'
-              : 'TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE',
-            { name: pluginLabel(actionCandidate?.plugin.id) }
-          )
-        "
-        class="plugin-config-confirm-card"
-        rounded="xl"
-      >
-        <VCardText>
-          {{
-            t(
-              actionCandidate?.action === "remove"
-                ? "TXT_CODE_PLUGIN_DELETE_CONFIRM"
-                : "TXT_CODE_PLUGIN_DISABLE_CONFIRM"
-            )
-          }}
-          <VCheckbox
-            v-if="actionCandidate?.action === 'remove'"
-            v-model="actionCandidate.removeConfig"
-            :label="t('TXT_CODE_PLUGIN_REMOVE_CONFIG')"
-            :disabled="actionSubmitting || actionCandidate.checkingNodes"
-            density="compact"
-            hide-details
-            class="mt-3"
-          />
-        </VCardText>
-        <VCardActions>
-          <VSpacer />
-          <VBtn variant="text" :disabled="actionSubmitting" @click="actionConfirmOpen = false">
-            {{ t("TXT_CODE_PLUGIN_CANCEL") }}
-          </VBtn>
-          <VBtn
-            color="error"
-            :prepend-icon="actionCandidate?.action === 'remove' ? 'mdi-delete' : undefined"
-            :loading="actionSubmitting || actionCandidate?.checkingNodes"
-            :disabled="actionCandidate?.checkingNodes"
-            @click="confirmAction"
-          >
-            {{
-              t(
-                actionCandidate?.action === "remove"
-                  ? "TXT_CODE_PLUGIN_DELETE"
-                  : "TXT_CODE_PLUGIN_DISABLE"
-              )
-            }}
-          </VBtn>
-        </VCardActions>
-      </VCard>
-    </VDialog>
-
-    <VDialog v-model="nodePickerOpen" :persistent="actionSubmitting" max-width="640" scrollable>
-      <VCard :title="t('TXT_CODE_PLUGIN_NODE_SELECT')">
-        <VCardText v-if="actionCandidate">
-          <div v-if="actionCandidate.nodeTargets.length" class="mb-6">
-            {{
-              t(
-                actionCandidate.action === "remove"
-                  ? "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM"
-                  : actionCandidate.action === "enable"
-                  ? "TXT_CODE_PLUGIN_NODE_ENABLE_CONFIRM"
-                  : "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM"
-              )
-            }}
-          </div>
-          <VAlert
-            v-if="actionCandidate.nodeCheckError"
-            class="mb-6"
-            type="warning"
-            variant="tonal"
-            :text="actionCandidate.nodeCheckError"
-          />
-          <TargetSelectionList
-            v-model="actionCandidate.selectedNodeIds"
-            :items="nodeTargetItems"
-            :disabled="actionSubmitting"
-          />
-        </VCardText>
-        <VCardActions>
-          <VSpacer />
-          <VBtn variant="text" :disabled="actionSubmitting" @click="nodePickerOpen = false">
-            {{ t("TXT_CODE_PLUGIN_CANCEL") }}
-          </VBtn>
-          <VBtn color="primary" :loading="actionSubmitting" @click="confirmAction">
-            {{ t("TXT_CODE_COMMON_CONFIRM") }}
-          </VBtn>
-        </VCardActions>
-      </VCard>
-    </VDialog>
+    <PluginActionDialogs
+      v-model:confirm-open="actionConfirmOpen"
+      v-model:picker-open="nodePickerOpen"
+      :candidate="actionCandidate"
+      :submitting="actionSubmitting"
+      :items="nodeTargetItems"
+      @confirm="confirmAction"
+    />
 
     <VDialog v-model="groupDialogOpen" max-width="460">
       <VCard
@@ -1987,138 +932,6 @@ const confirmAction = async () => {
 
 .plugin-config-heading:first-child {
   margin-top: 0;
-}
-
-.plugin-config-list {
-  min-height: 0;
-  flex: 1;
-  width: 100%;
-  box-sizing: border-box;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-gutter: auto;
-  padding: 0 10px 4px;
-}
-
-.plugin-config-list :deep(.v-list-item) {
-  --v-activated-opacity: 0;
-
-  min-height: 36px;
-  margin: 0 0 6px;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  overflow: hidden;
-  border-radius: 24px !important;
-  color: var(--text-color);
-}
-
-.plugin-config-list :deep(.plugin-config-group-heading) {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 28px;
-  padding-inline: 8px;
-  background: transparent;
-  color: var(--text-color);
-  font-size: 11px;
-  font-weight: 600;
-  opacity: 0.55;
-}
-
-.plugin-config-group {
-  border-radius: 8px;
-}
-
-.plugin-config-group-over {
-  background: rgba(var(--v-theme-primary), 0.12);
-}
-
-.plugin-config-group-over :deep(.plugin-config-group-heading) {
-  opacity: 1;
-}
-
-.plugin-config-group-actions {
-  display: inline-flex;
-  align-items: center;
-  margin-left: 8px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s ease;
-}
-
-.plugin-config-list :deep(.plugin-config-group-heading:hover .plugin-config-group-actions),
-.plugin-config-list :deep(.plugin-config-group-heading:focus-within .plugin-config-group-actions) {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.plugin-config-group-actions :deep(.v-btn) {
-  --v-btn-height: 16px;
-
-  width: 16px;
-  min-width: 16px;
-  height: 16px;
-  min-height: 16px;
-  padding: 0;
-  opacity: 0.62;
-}
-
-.plugin-config-group-actions :deep(.v-icon) {
-  font-size: 12px;
-}
-
-.plugin-config-group-actions :deep(.v-btn:hover) {
-  opacity: 1;
-}
-
-.plugin-config-list :deep(.plugin-config-item) {
-  cursor: grab;
-  user-select: none;
-}
-
-.plugin-config-list :deep(.plugin-config-item-dragging) {
-  cursor: grabbing;
-}
-
-.plugin-config-list :deep(.v-list-item__content) {
-  min-width: 0;
-  overflow: hidden;
-}
-
-.plugin-config-list :deep(.v-list-item-title),
-.plugin-config-list :deep(.v-list-item-subtitle) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.plugin-config-list :deep(.v-list-item--active) {
-  background: rgba(22, 119, 255, 0.12);
-}
-
-.plugin-config-list :deep(.v-list-item__overlay),
-.plugin-config-list :deep(.v-list-item__underlay) {
-  border-radius: inherit;
-}
-
-.plugin-config-list :deep(.plugin-config-item-off .v-list-item-title) {
-  opacity: 0.42;
-}
-
-.plugin-config-item-dot {
-  flex-shrink: 0;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--color-success);
-}
-
-.plugin-config-item-dot-off {
-  background: var(--color-gray-6);
-}
-
-.plugin-config-item-dot-warning {
-  background: var(--color-yellow-6);
 }
 
 .plugin-config-content {
