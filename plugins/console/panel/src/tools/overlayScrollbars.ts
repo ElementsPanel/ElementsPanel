@@ -1,34 +1,109 @@
-import { OverlayScrollbars, type OverflowBehavior } from "overlayscrollbars";
+import {
+  ClickScrollPlugin,
+  OverlayScrollbars,
+  type OverflowBehavior,
+  type State
+} from "overlayscrollbars";
 
 const INTERNAL_ELEMENTS = ".os-scrollbar, .os-size-observer, .os-trinsic-observer, .os-environment";
-const NATIVE_CONTROLS = "input, textarea, select, option, iframe";
-const VIEWPORT_ATTRIBUTES = ["data-overlayscrollbars", "data-overlayscrollbars-viewport"];
-const TREE_STYLE_PROPERTIES = ["all", "display", "visibility", "contain", "container-type", "content-visibility"];
+const NATIVE_CONTROLS =
+  "input, textarea, select, option, iframe, .xterm, .cm-editor, .monaco-editor, [data-native-scrollbars]";
+const TREE_STYLE_PROPERTIES = [
+  "all",
+  "display",
+  "visibility",
+  "contain",
+  "container-type",
+  "content-visibility"
+];
 const OVERFLOW_STYLE_PROPERTIES = ["overflow", "overflow-x", "overflow-y"];
-const WINDOW_VISUAL_STYLES = new Set(["left", "top", "translate", "transform", "opacity", "z-index", "box-shadow", "border-radius", "will-change", "transition"]);
+const WINDOW_VISUAL_STYLES = new Set([
+  "left",
+  "top",
+  "translate",
+  "transform",
+  "opacity",
+  "z-index",
+  "box-shadow",
+  "border-radius",
+  "will-change",
+  "transition"
+]);
+const VISUAL_STYLES = new Set([
+  "opacity",
+  "z-index",
+  "box-shadow",
+  "border-radius",
+  "will-change",
+  "transition",
+  "color",
+  "background",
+  "background-color",
+  "background-image",
+  "cursor",
+  "pointer-events"
+]);
 const WINDOW_VISUAL_CLASS = /^desktop-window(?:--|-enter-|-leave-|-move$)/;
 
 const isCachedWindowContent = (element: HTMLElement) => {
-  const owner = element.closest<HTMLElement>("[data-desktop-window-content]")?.dataset.desktopWindowContent;
+  const owner = element.closest<HTMLElement>("[data-desktop-window-content]")?.dataset
+    .desktopWindowContent;
   return owner !== undefined && !!document.getElementById(`${owner}-title`);
 };
 
 type Overflow = { x: OverflowBehavior; y: OverflowBehavior };
-type ScrollbarEntry = { instance: OverlayScrollbars; overflow: Overflow };
+type ScrollbarEntry = { instance: OverlayScrollbars; overflow: Overflow; sleeping: boolean };
 
-const clampScrollPosition = (instance: OverlayScrollbars) => {
-  const { scrollCoordinates: { start, end } } = instance.state();
-  const { scrollOffsetElement } = instance.elements();
-  if (!scrollOffsetElement.isConnected || scrollOffsetElement.closest(".desktop-window--suspended")) return;
-  const clamp = (value: number, a: number, b: number) =>
-    Math.min(Math.max(value, Math.min(a, b)), Math.max(a, b));
-  const left = clamp(scrollOffsetElement.scrollLeft, start.x, end.x);
-  const top = clamp(scrollOffsetElement.scrollTop, start.y, end.y);
-  if (left !== scrollOffsetElement.scrollLeft) scrollOffsetElement.scrollLeft = left;
-  if (top !== scrollOffsetElement.scrollTop) scrollOffsetElement.scrollTop = top;
+const createScrollPositionGuard = () => {
+  let previous: State["scrollCoordinates"] | undefined;
+  return (instance: OverlayScrollbars) => {
+    const { scrollCoordinates, sleeping } = instance.state();
+    const { scrollOffsetElement } = instance.elements();
+    if (
+      sleeping ||
+      !scrollOffsetElement.isConnected ||
+      scrollOffsetElement.closest(".desktop-window--suspended") ||
+      !scrollOffsetElement.clientWidth ||
+      !scrollOffsetElement.clientHeight
+    )
+      return;
+
+    const old = previous;
+    previous = scrollCoordinates;
+    if (!old) return;
+    // Only shrinking bounds need correction; preserve native overscroll and fractional offsets.
+    for (const [axis, property] of [
+      ["x", "scrollLeft"],
+      ["y", "scrollTop"]
+    ] as const) {
+      const min = Math.min(scrollCoordinates.start[axis], scrollCoordinates.end[axis]);
+      const max = Math.max(scrollCoordinates.start[axis], scrollCoordinates.end[axis]);
+      if (
+        min <= Math.min(old.start[axis], old.end[axis]) &&
+        max >= Math.max(old.start[axis], old.end[axis])
+      )
+        continue;
+      const value = scrollOffsetElement[property];
+      const clamped = Math.min(Math.max(value, min), max);
+      if (Math.abs(clamped - value) > 1) scrollOffsetElement[property] = clamped;
+    }
+  };
 };
 
 export function installOverlayScrollbars() {
+  if (
+    typeof CSS === "undefined" ||
+    !CSS.supports("overflow", "revert-layer") ||
+    typeof MutationObserver === "undefined" ||
+    typeof requestAnimationFrame === "undefined" ||
+    !OverlayScrollbars.env().scrollbarsHiding
+  )
+    return () => {};
+
+  OverlayScrollbars.plugin(ClickScrollPlugin);
+  const forcedColors = window.matchMedia("(forced-colors: active)");
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const finePointer = window.matchMedia("(any-hover: hover) and (any-pointer: fine)");
   const instances = new Map<HTMLElement, ScrollbarEntry>();
   const pendingRoots = new Set<HTMLElement>([document.body]);
   const pendingElements = new Set<HTMLElement>();
@@ -37,6 +112,7 @@ export function installOverlayScrollbars() {
   let frame = 0;
   let resizeTimer: number | undefined;
   let disposed = false;
+  let pendingLifecycle = false;
 
   const isInternal = (element: HTMLElement) => !!element.closest(INTERNAL_ELEMENTS);
   const queueContentUpdate = (element: HTMLElement) => {
@@ -57,17 +133,44 @@ export function installOverlayScrollbars() {
 
   const collectMutations = (mutations: MutationRecord[]) => {
     for (const mutation of mutations) {
-      const element = mutation.target instanceof HTMLElement
-        ? mutation.target : mutation.type === "characterData" ? mutation.target.parentElement : null;
+      const element =
+        mutation.target instanceof HTMLElement
+          ? mutation.target
+          : mutation.type === "characterData"
+          ? mutation.target.parentElement
+          : null;
       if (!(element instanceof HTMLElement) || isInternal(element)) continue;
+      if (element.closest(NATIVE_CONTROLS)) {
+        if (
+          mutation.type === "attributes" &&
+          (mutation.attributeName === "class" ||
+            mutation.attributeName === "data-native-scrollbars")
+        ) {
+          pendingLifecycle = true;
+        }
+        queueContentUpdate(element);
+        continue;
+      }
       if (mutation.type === "characterData") {
         queueContentUpdate(element);
         continue;
       }
       if (mutation.type === "attributes") {
         if (mutation.attributeName === "class" && element.classList.contains("desktop-window")) {
-          const layoutClasses = (value: string) => value.split(/\s+/).filter(name => name && !WINDOW_VISUAL_CLASS.test(name)).sort().join(" ");
-          if (layoutClasses(mutation.oldValue || "") === layoutClasses(element.className)) continue;
+          const layoutClasses = (value: string) =>
+            value
+              .split(/\s+/)
+              .filter((name) => name && !WINDOW_VISUAL_CLASS.test(name))
+              .sort()
+              .join(" ");
+          if (layoutClasses(mutation.oldValue || "") === layoutClasses(element.className)) {
+            if (
+              (mutation.oldValue || "").split(/\s+/).includes("desktop-window--suspended") !==
+              element.classList.contains("desktop-window--suspended")
+            )
+              pendingLifecycle = true;
+            continue;
+          }
         }
         if (mutation.attributeName !== "style") {
           queueContentUpdate(element);
@@ -80,9 +183,15 @@ export function installOverlayScrollbars() {
         const changed = (name: string) =>
           previousStyle.getPropertyValue(name) !== element.style.getPropertyValue(name) ||
           previousStyle.getPropertyPriority(name) !== element.style.getPropertyPriority(name);
+        const names = new Set([...Array.from(previousStyle), ...Array.from(element.style)]);
+        const changedNames = [...names].filter(changed);
+        if (changedNames.every((name) => VISUAL_STYLES.has(name) || name.startsWith("--os-")))
+          continue;
         if (element.classList.contains("desktop-window")) {
-          const names = new Set([...Array.from(previousStyle), ...Array.from(element.style)]);
-          if ([...names].filter(changed).every(name => WINDOW_VISUAL_STYLES.has(name) || name.startsWith("--os-"))) continue;
+          if (
+            changedNames.every((name) => WINDOW_VISUAL_STYLES.has(name) || name.startsWith("--os-"))
+          )
+            continue;
         }
         let affectsTree = TREE_STYLE_PROPERTIES.some(changed);
         for (const style of [previousStyle, element.style]) {
@@ -126,6 +235,12 @@ export function installOverlayScrollbars() {
     }
   };
 
+  const scrollbarOptions = () => ({
+    clickScroll: reducedMotion.matches ? ("instant" as const) : true,
+    autoHide: finePointer.matches ? ("leave" as const) : ("scroll" as const),
+    autoHideSuspend: false
+  });
+
   const update = (element: HTMLElement, overflow: Overflow) => {
     const entry = instances.get(element);
     if (overflow.x === "hidden" && overflow.y === "hidden") {
@@ -144,6 +259,7 @@ export function installOverlayScrollbars() {
     } else {
       instances.set(element, {
         overflow,
+        sleeping: false,
         instance: OverlayScrollbars(
           { target: element, elements: { viewport: element } },
           {
@@ -151,19 +267,18 @@ export function installOverlayScrollbars() {
             update: {
               debounce: {
                 mutation: [0, 33],
-                resize: [80, 300],
+                resize: [0, 33],
                 event: [33, 99],
                 env: [222, 666, true]
               }
             },
             scrollbars: {
               theme: "os-theme-app",
-              clickScroll: "instant",
-              autoHide: "scroll",
+              ...scrollbarOptions(),
               autoHideDelay: 800
             }
           },
-          { updated: clampScrollPosition }
+          { updated: createScrollPositionGuard() }
         )
       });
     }
@@ -173,11 +288,21 @@ export function installOverlayScrollbars() {
     frame = 0;
     if (disposed) return;
     collectMutations(observer.takeRecords());
+    pendingLifecycle = false;
+    if (forcedColors.matches) {
+      observer.disconnect();
+      instances.forEach(({ instance }) => instance.destroy());
+      instances.clear();
+      pendingRoots.clear();
+      pendingElements.clear();
+      pendingUpdates.clear();
+      return;
+    }
     const updates = new Set(pendingUpdates);
     pendingUpdates.clear();
     const candidates = new Set(pendingElements);
     for (const root of pendingRoots) {
-      if (!root.isConnected) continue;
+      if (!root.isConnected || root.closest(NATIVE_CONTROLS) || isInternal(root)) continue;
       let covered = false;
       for (let parent = root.parentElement; parent; parent = parent.parentElement) {
         if (pendingRoots.has(parent)) {
@@ -194,51 +319,50 @@ export function installOverlayScrollbars() {
     pendingRoots.clear();
     pendingElements.clear();
     const elements = [...candidates].filter(
-      (element) => element.isConnected && !element.matches(NATIVE_CONTROLS) && !isInternal(element) &&
+      (element) =>
+        element.isConnected &&
+        !element.closest(NATIVE_CONTROLS) &&
+        !isInternal(element) &&
         !element.closest(".desktop-window--suspended")
     );
 
-    // Ignore our own DOM writes and batch marker changes around all style reads.
+    // Keep viewport markers intact and batch style reads before DOM writes.
     observer.disconnect();
     try {
-      const markers = elements.filter((element) => instances.has(element)).map((element) => ({
-        element,
-        values: VIEWPORT_ATTRIBUTES.map((name) => element.getAttribute(name))
-      }));
       const plans: Array<{ element: HTMLElement; overflow: Overflow }> = [];
-      try {
-        markers.forEach(({ element }) => {
-          VIEWPORT_ATTRIBUTES.forEach((name) => element.removeAttribute(name));
-        });
-        for (const element of elements) {
-          const style = getComputedStyle(element);
-          plans.push({
-            element,
-            overflow: {
-              x: /^(auto|scroll|overlay)$/.test(style.overflowX) ? "scroll" : "hidden",
-              y: /^(auto|scroll|overlay)$/.test(style.overflowY) ? "scroll" : "hidden"
-            }
-          });
-        }
-      } finally {
-        markers.forEach(({ element, values }) => {
-          VIEWPORT_ATTRIBUTES.forEach((name, index) => {
-            if (values[index] !== null) element.setAttribute(name, values[index]!);
-          });
+      for (const element of elements) {
+        const style = getComputedStyle(element);
+        plans.push({
+          element,
+          overflow: {
+            x: /^(auto|scroll|overlay)$/.test(style.overflowX) ? "scroll" : "hidden",
+            y: /^(auto|scroll|overlay)$/.test(style.overflowY) ? "scroll" : "hidden"
+          }
         });
       }
       for (const [element, entry] of instances) {
-        if (!element.isConnected && !isCachedWindowContent(element)) {
+        if (
+          element.closest(NATIVE_CONTROLS) ||
+          (!element.isConnected && !isCachedWindowContent(element))
+        ) {
           entry.instance.destroy();
           instances.delete(element);
+          continue;
+        }
+        const sleeping = !element.isConnected || !!element.closest(".desktop-window--suspended");
+        if (entry.sleeping !== sleeping) {
+          entry.sleeping = sleeping;
+          entry.instance.sleep(sleeping);
         }
       }
       plans.forEach(({ element, overflow }) => {
         if (instances.has(element)) updates.add(element);
         update(element, overflow);
       });
-      // Measure final content without the translated scrollbar tracks inflating its extent.
-      updates.forEach((element) => instances.get(element)?.instance.update(true));
+      updates.forEach((element) => {
+        const entry = instances.get(element);
+        if (entry && !entry.sleeping) entry.instance.update();
+      });
     } finally {
       if (!disposed) {
         observer.observe(document.body, {
@@ -247,7 +371,7 @@ export function installOverlayScrollbars() {
           characterData: true,
           attributes: true,
           attributeOldValue: true,
-          attributeFilter: ["class", "style", "hidden", "open", "dir"]
+          attributeFilter: ["class", "style", "hidden", "open", "dir", "data-native-scrollbars"]
         });
       }
     }
@@ -257,6 +381,7 @@ export function installOverlayScrollbars() {
     if (!disposed && !frame) frame = requestAnimationFrame(refresh);
   };
   const onResize = () => {
+    if (forcedColors.matches) return;
     // Existing instances resize themselves; rediscover media-query changes once settled.
     window.clearTimeout(resizeTimer);
     resizeTimer = window.setTimeout(() => {
@@ -267,8 +392,29 @@ export function installOverlayScrollbars() {
   };
   const observer = new MutationObserver((mutations) => {
     collectMutations(mutations);
-    if (pendingRoots.size || pendingElements.size || pendingUpdates.size) schedule();
+    if (pendingLifecycle || pendingRoots.size || pendingElements.size || pendingUpdates.size)
+      schedule();
   });
+  const onPreferencesChange = () => {
+    instances.forEach(({ instance }) => instance.options({ scrollbars: scrollbarOptions() }));
+  };
+  const onForcedColorsChange = () => {
+    queueTree(document.body);
+    schedule();
+  };
+  const listen = (query: MediaQueryList, listener: () => void) => {
+    if (query.addEventListener) {
+      query.addEventListener("change", listener);
+      return () => query.removeEventListener("change", listener);
+    }
+    query.addListener(listener);
+    return () => query.removeListener(listener);
+  };
+  const removeListeners = [
+    listen(forcedColors, onForcedColorsChange),
+    listen(reducedMotion, onPreferencesChange),
+    listen(finePointer, onPreferencesChange)
+  ];
 
   queueAncestors(document.body);
   refresh();
@@ -279,6 +425,7 @@ export function installOverlayScrollbars() {
     disposed = true;
     observer.disconnect();
     window.removeEventListener("resize", onResize);
+    removeListeners.forEach((remove) => remove());
     cancelAnimationFrame(frame);
     window.clearTimeout(resizeTimer);
     instances.forEach(({ instance }) => instance.destroy());

@@ -18,8 +18,26 @@ function fixture(t, nodes = 0) {
   const rules = new Map();
   const events = [];
   const queries = [];
+  const media = new Map();
   let nextId = 1;
   let dispose;
+
+  global.CSS.supports = () => true;
+  window.matchMedia = query => {
+    if (!media.has(query)) {
+      const listeners = new Set();
+      media.set(query, {
+        matches: query.includes("any-pointer"), listeners,
+        addEventListener(_event, listener) { listeners.add(listener); },
+        removeEventListener(_event, listener) { listeners.delete(listener); },
+        change(matches) {
+          this.matches = matches;
+          listeners.forEach(listener => listener());
+        }
+      });
+    }
+    return media.get(query);
+  };
 
   global.requestAnimationFrame = callback => {
     const id = nextId++;
@@ -51,7 +69,7 @@ function fixture(t, nodes = 0) {
   };
   global.getComputedStyle = element => {
     events.push({ type: "read", element });
-    assert.equal(markers.some(name => element.hasAttribute(name)), false, "Read application overflow without library markers");
+    assert.equal(markers.every(name => element.hasAttribute(name)), active.has(element), "Keep initialized viewport markers intact");
     const rule = rules.get(element)?.() || {};
     return {
       overflowX: element.style.overflowX || element.style.overflow || rule.x || "hidden",
@@ -61,6 +79,10 @@ function fixture(t, nodes = 0) {
   };
 
   const OverlayScrollbars = ({ target }, options, handlers) => {
+    Object.defineProperties(target, {
+      clientWidth: { configurable: true, value: 400 },
+      clientHeight: { configurable: true, value: 300 }
+    });
     const horizontal = document.createElement("div");
     const vertical = document.createElement("div");
     horizontal.className = vertical.className = "os-scrollbar";
@@ -68,20 +90,30 @@ function fixture(t, nodes = 0) {
     target.setAttribute(markers[0], "host");
     target.setAttribute(markers[1], "");
     const record = {
-      target, horizontal, vertical, changes: [], updates: [], destroyed: 0,
-      coordinates: { start: { x: 0, y: 0 }, end: { x: 0, y: 0 } }
+      target, horizontal, vertical, options, changes: [], updates: [], sleeps: [], sleeping: false, destroyed: 0,
+      coordinates: { start: { x: 0, y: 0 }, end: { x: 600, y: 800 } }
     };
     records.push(record);
     active.set(target, record);
     const instance = {
       options(options) { record.changes.push(options); },
-      state() { return { scrollCoordinates: record.coordinates }; },
+      state() {
+        return {
+          sleeping: record.sleeping,
+          scrollCoordinates: { start: { ...record.coordinates.start }, end: { ...record.coordinates.end } }
+        };
+      },
       update(force) {
         assert.ok(markers.every(name => target.hasAttribute(name)), "Measure with viewport styles restored");
         assert.equal(horizontal.parentElement, target);
         assert.equal(vertical.parentElement, target);
         record.updates.push(force);
         handlers.updated(instance);
+      },
+      sleep(sleeping) {
+        record.sleeping = sleeping;
+        record.sleeps.push(sleeping);
+        if (!sleeping) instance.update(true);
       },
       elements() {
         return {
@@ -99,15 +131,18 @@ function fixture(t, nodes = 0) {
       }
     };
     record.updated = () => handlers.updated(instance);
+    record.updated();
     return instance;
   };
+  OverlayScrollbars.env = () => ({ scrollbarsHiding: true });
+  OverlayScrollbars.plugin = () => {};
   const { installOverlayScrollbars } = createLoader({ host: "frontend" })(
     "plugins/console/panel/src/tools/overlayScrollbars.ts",
     { overlayscrollbars: { OverlayScrollbars } }
   );
 
   const f = {
-    dom, root, frames, timers, active, records, rules, events, queries,
+    dom, root, frames, timers, active, records, rules, events, queries, media,
     install() { dispose = installOverlayScrollbars(); },
     dispose() { dispose?.(); },
     reset() { events.length = queries.length = 0; },
@@ -193,6 +228,7 @@ test("cached desktop viewports retain their scrollbar instance until the owning 
   content.remove();
   await f.flush();
   assert.equal(original.destroyed, 0);
+  assert.equal(original.sleeping, true);
   original.coordinates.end = { x: 0, y: 0 };
   original.updated();
   assert.equal(f.root.scrollTop, 400);
@@ -201,7 +237,10 @@ test("cached desktop viewports retain their scrollbar instance until the owning 
   await f.flush();
   assert.equal(f.active.get(f.root), original);
   assert.equal(f.root.scrollTop, 400);
+  assert.equal(original.sleeping, false);
   window.classList.add("desktop-window--suspended");
+  await f.flush();
+  assert.equal(original.sleeping, true);
   original.coordinates.end = { x: 0, y: 0 };
   original.updated();
   assert.equal(f.root.scrollTop, 400);
@@ -262,7 +301,7 @@ test("content replacement restores scrollbar nodes and removing a region destroy
   await f.flush();
   assert.equal(original.horizontal.parentElement, f.root);
   assert.equal(original.vertical.parentElement, f.root);
-  assert.deepEqual(original.updates, [true]);
+  assert.deepEqual(original.updates, [undefined]);
   assert.ok(f.active.has(child));
   f.root.remove();
   await f.flush();
@@ -286,7 +325,7 @@ test("shorter text refreshes the existing viewport and clamps both axes to their
   await f.flush();
   assert.equal(f.active.get(f.root), original);
   assert.equal(original.destroyed, 0);
-  assert.deepEqual(original.updates, [true]);
+  assert.deepEqual(original.updates, [undefined]);
   assert.equal(f.root.scrollTop, 80);
   assert.equal(f.root.scrollLeft, 120);
   assert.equal(f.events.length, 0);
@@ -315,7 +354,7 @@ test("child size changes refresh ancestor scrollbars and preserve valid reversed
   f.reset();
   child.style.height = "100px";
   await f.flush();
-  assert.deepEqual(original.updates, [true]);
+  assert.deepEqual(original.updates, [undefined]);
   assert.equal(f.root.scrollLeft, -60);
   assert.equal(f.root.scrollTop, 500);
   assert.equal(f.events.length, 0);
@@ -343,7 +382,7 @@ test("ancestor classes and inherited custom properties can change descendant scr
   assert.ok(f.active.has(child));
 });
 
-test("all viewport marker changes are batched around the style reads", async t => {
+test("style discovery never removes viewport markers or forces an unchanged instance", async t => {
   const f = fixture(t);
   const other = document.createElement("aside");
   other.className = "scrollable";
@@ -354,11 +393,97 @@ test("all viewport marker changes are batched around the style reads", async t =
   f.settleResize();
   await f.flush();
   const types = f.events.map(event => event.type);
-  const firstRead = types.indexOf("read");
-  const lastRead = types.lastIndexOf("read");
-  assert.ok(firstRead > types.lastIndexOf("remove"));
-  assert.ok(lastRead < types.indexOf("restore"));
+  assert.ok(types.includes("read"));
+  assert.equal(types.includes("remove"), false);
+  assert.equal(types.includes("restore"), false);
   assert.ok(f.records.every(record => record.changes.length === 0));
+  assert.ok(f.records.every(record => record.updates.every(force => !force)));
+});
+
+test("native editors remain untouched and their content mutations do not rescan descendants", async t => {
+  const f = fixture(t);
+  const editors = ["xterm", "cm-editor", "monaco-editor"];
+  const contents = editors.map(className => {
+    const editor = document.createElement("div");
+    editor.className = className;
+    const content = document.createElement("div");
+    content.className = "scrollable";
+    editor.append(content);
+    f.root.append(editor);
+    return content;
+  });
+  f.install();
+  assert.ok(contents.every(element => !f.active.has(element)));
+  f.reset();
+  contents.forEach(element => element.replaceChildren(document.createElement("div")));
+  await f.flush();
+  assert.equal(f.queries.length, 0);
+  assert.equal(f.events.length, 0);
+  assert.deepEqual(f.active.get(f.root).updates, [undefined]);
+  f.root.setAttribute("data-native-scrollbars", "");
+  await f.flush();
+  assert.equal(f.active.size, 0);
+  f.root.removeAttribute("data-native-scrollbars");
+  await f.flush();
+  assert.ok(f.active.has(f.root));
+});
+
+test("unchanged or growing bounds preserve overscroll and temporarily hidden viewports retain position", t => {
+  const f = fixture(t);
+  f.install();
+  const original = f.active.get(f.root);
+  f.root.scrollTop = -30;
+  original.updated();
+  assert.equal(f.root.scrollTop, -30);
+  original.coordinates.end.y = 1000;
+  original.updated();
+  assert.equal(f.root.scrollTop, -30);
+  f.root.scrollTop = 500;
+  Object.defineProperty(f.root, "clientHeight", { configurable: true, value: 0 });
+  original.coordinates.end.y = 0;
+  original.updated();
+  assert.equal(f.root.scrollTop, 500);
+  Object.defineProperty(f.root, "clientHeight", { configurable: true, value: 300 });
+  original.coordinates.end.y = 800;
+  original.updated();
+  assert.equal(f.root.scrollTop, 500);
+});
+
+test("pointer and motion preferences update live and forced colors restore native scrollbars", async t => {
+  const f = fixture(t);
+  f.install();
+  const original = f.active.get(f.root);
+  assert.equal(original.options.scrollbars.autoHide, "leave");
+  assert.equal(original.options.scrollbars.clickScroll, true);
+  f.media.get("(prefers-reduced-motion: reduce)").change(true);
+  assert.equal(original.changes.at(-1).scrollbars.clickScroll, "instant");
+  f.media.get("(any-hover: hover) and (any-pointer: fine)").change(false);
+  assert.equal(original.changes.at(-1).scrollbars.autoHide, "scroll");
+  f.media.get("(forced-colors: active)").change(true);
+  await f.flush();
+  assert.equal(original.destroyed, 1);
+  assert.equal(f.active.size, 0);
+  f.reset();
+  f.root.classList.add("native-mode");
+  f.resize();
+  await f.flush();
+  assert.equal(f.queries.length, 0);
+  assert.equal(f.events.length, 0);
+  f.media.get("(forced-colors: active)").change(false);
+  await f.flush();
+  assert.ok(f.active.has(f.root));
+  f.dispose();
+  assert.ok([...f.media.values()].every(query => query.listeners.size === 0));
+});
+
+test("unsupported overflow isolation falls back to native scrolling", t => {
+  const f = fixture(t);
+  global.CSS.supports = () => false;
+  f.install();
+  assert.equal(f.active.size, 0);
+  assert.equal(f.events.length, 0);
+  assert.equal(f.frames.size, 0);
+  assert.equal(f.media.size, 0);
 });
 
 test("disposing cancels deferred scans and releases each scrollbar once", async t => {

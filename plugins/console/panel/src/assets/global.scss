@@ -22,6 +22,7 @@ html {
 #app-mount-point {
   width: 100vw !important;
   max-width: 100vw !important;
+  height: 100vh;
   height: 100svh;
   overflow-y: auto;
   overflow-x: hidden;
@@ -268,6 +269,7 @@ html {
   display: flex;
   flex-direction: column;
   max-width: var(--app-max-width);
+  height: 100vh;
   height: 100svh;
   margin: auto;
 
@@ -468,10 +470,14 @@ html {
   opacity: 1;
 }
 
-// Use native thin scrollbars where WebKit styling is unavailable.
-@supports not selector(::-webkit-scrollbar) {
+// Standard scrollbar properties also cover browsers without WebKit pseudo-elements.
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(140, 140, 140, 0.45) transparent;
+}
+
+@supports (color: color-mix(in srgb, black, transparent)) {
   * {
-    scrollbar-width: thin;
     scrollbar-color: color-mix(in srgb, var(--color-gray-7, #8c8c8c) 45%, transparent) transparent;
   }
 }
@@ -484,6 +490,7 @@ html {
 
 *::-webkit-scrollbar-thumb {
   border-radius: 999px;
+  background: rgba(140, 140, 140, 0.45);
   background: color-mix(in srgb, var(--color-gray-7, #8c8c8c) 45%, transparent);
 }
 
@@ -494,6 +501,27 @@ html {
 *::-webkit-scrollbar-track,
 *::-webkit-scrollbar-corner {
   background: transparent;
+}
+
+@media (forced-colors: active) {
+  * {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+
+  *::-webkit-scrollbar {
+    width: auto;
+    height: auto;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: CanvasText;
+  }
+
+  *::-webkit-scrollbar-track,
+  *::-webkit-scrollbar-corner {
+    background: Canvas;
+  }
 }
 
 // Allow the native tab slider to cross button boundaries above adjacent content.
