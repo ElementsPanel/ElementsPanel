@@ -62,11 +62,7 @@ export class SetupDockerContainer extends AsyncTask {
       );
     });
 
-    try {
-      await instance.forceExec(new DockerPullCommand(this.imageOverride?.trim()));
-    } catch (error: any) {
-      throw error;
-    }
+    await instance.forceExec(new DockerPullCommand(this.imageOverride?.trim()));
 
     let commandList: string[];
     if (instance.config?.startCommand?.trim() || customCommand?.trim()) {
@@ -88,11 +84,13 @@ export class SetupDockerContainer extends AsyncTask {
     const exposedPorts: ExposedPorts = {};
     for (const portConfigText of portMap) {
       const elem = (await instance.parseTextParams(portConfigText)).split("/");
-      if (elem.length != 2) throw new Error($t("TXT_CODE_COMMON_INCORRECT_PORT_OPEN_CONFIGURATION_FOR_THIS_CONTAINER"));
+      if (elem.length != 2)
+        throw new Error($t("TXT_CODE_COMMON_INCORRECT_PORT_OPEN_CONFIGURATION_FOR_THIS_CONTAINER"));
       const ports = elem[0];
       const protocol = elem[1];
       const publicAndPrivatePort = ports.split(":");
-      if (publicAndPrivatePort.length != 2) throw new Error($t("TXT_CODE_DOCKER_PORT_MAPPING_INVALID"));
+      if (publicAndPrivatePort.length != 2)
+        throw new Error($t("TXT_CODE_DOCKER_PORT_MAPPING_INVALID"));
       publicPortArray[`${publicAndPrivatePort[1]}/${protocol}`] = [
         { HostPort: publicAndPrivatePort[0] }
       ];
@@ -107,7 +105,12 @@ export class SetupDockerContainer extends AsyncTask {
     const extraVolumes = dockerConfig.extraVolumes || [];
     const extraBinds: { hostPath: string; containerPath: string }[] = [];
     for (const item of extraVolumes) {
-      if (!item) throw new Error($t("TXT_CODE_COMMON_THE_ADDITIONAL_MOUNTING_PATH_OF_THE_INSTANCE_CONTAINER_IS_CONFIGURED_INCORRECTLY"));
+      if (!item)
+        throw new Error(
+          $t(
+            "TXT_CODE_COMMON_THE_ADDITIONAL_MOUNTING_PATH_OF_THE_INSTANCE_CONTAINER_IS_CONFIGURED_INCORRECTLY"
+          )
+        );
       const paths = item.split("|");
       if (paths.length < 2) throw new Error($t("TXT_CODE_DOCKER_VOLUME_MAPPING_LENGTH_INVALID"));
       const hostPath = path.normalize(paths[0]);
@@ -165,9 +168,15 @@ export class SetupDockerContainer extends AsyncTask {
       CgroupPermissions: string;
     }[] = [];
     for (const item of devices) {
-      if (!item) throw new Error($t("TXT_CODE_COMMON_THE_DEVICES_OF_THE_INSTANCE_CONTAINER_ARE_CONFIGURED_INCORRECTLY"));
+      if (!item)
+        throw new Error(
+          $t("TXT_CODE_COMMON_THE_DEVICES_OF_THE_INSTANCE_CONTAINER_ARE_CONFIGURED_INCORRECTLY")
+        );
       const parts = item.split("|").map((p) => p.trim());
-      if (!parts[0]) throw new Error($t("TXT_CODE_COMMON_THE_DEVICES_OF_THE_INSTANCE_CONTAINER_ARE_CONFIGURED_INCORRECTLY"));
+      if (!parts[0])
+        throw new Error(
+          $t("TXT_CODE_COMMON_THE_DEVICES_OF_THE_INSTANCE_CONTAINER_ARE_CONFIGURED_INCORRECTLY")
+        );
       parsedDevices.push({
         PathOnHost: parts[0],
         PathInContainer: parts[1] || parts[0],
@@ -184,9 +193,7 @@ export class SetupDockerContainer extends AsyncTask {
       const gpuDriver = dockerConfig.gpuDriver ?? "";
 
       if (!Number.isInteger(gpuCount) || gpuCount < -1 || gpuCount > 128) {
-        throw new Error(
-          $t("TXT_CODE_GPU_INVALID_COUNT", { v: String(gpuCount) })
-        );
+        throw new Error($t("TXT_CODE_GPU_INVALID_COUNT", { v: String(gpuCount) }));
       }
 
       if (gpuDeviceIds.length > 128) {
@@ -197,16 +204,12 @@ export class SetupDockerContainer extends AsyncTask {
       const gpuIdPattern = /^[a-zA-Z0-9_-]+$/;
       for (const id of gpuDeviceIds) {
         if (typeof id !== "string" || !id.trim() || id.length > 128 || !gpuIdPattern.test(id)) {
-          throw new Error(
-            $t("TXT_CODE_GPU_INVALID_DEVICE_ID", { v: id })
-          );
+          throw new Error($t("TXT_CODE_GPU_INVALID_DEVICE_ID", { v: id }));
         }
       }
 
       if (gpuDriver && (gpuDriver.length > 32 || !/^[a-zA-Z0-9]+$/.test(gpuDriver))) {
-        throw new Error(
-          $t("TXT_CODE_GPU_INVALID_DRIVER", { v: gpuDriver })
-        );
+        throw new Error($t("TXT_CODE_GPU_INVALID_DRIVER", { v: gpuDriver }));
       }
 
       // Docker accepts GPU IDs or a count, not both.
@@ -222,7 +225,7 @@ export class SetupDockerContainer extends AsyncTask {
         if (privileged) {
           logger.warn(
             `[SetupDockerContainer] GPU passthrough is configured alongside privileged mode. ` +
-            `In privileged mode the container already has access to all host devices. Instance: ${instance.instanceUuid}`
+              `In privileged mode the container already has access to all host devices. Instance: ${instance.instanceUuid}`
           );
         }
 
@@ -286,17 +289,21 @@ export class SetupDockerContainer extends AsyncTask {
         memorySwap ? (memorySwap / 1024 / 1024).toFixed(2) : "--"
       } MB`
     );
-    logger.info(
-      `GPU: ${gpuDeviceRequests ? JSON.stringify(gpuDeviceRequests) : "disabled"}`
-    );
+    logger.info(`GPU: ${gpuDeviceRequests ? JSON.stringify(gpuDeviceRequests) : "disabled"}`);
 
     if (workingDir) {
-      instance.println("INFO", $t("TXT_CODE_COMMON_MOUNTED_WORKING_DIRECTORY") + cwd + " --> " + workingDir + "\n");
+      instance.println(
+        "INFO",
+        $t("TXT_CODE_COMMON_MOUNTED_WORKING_DIRECTORY") + cwd + " --> " + workingDir + "\n"
+      );
     }
 
     if (logOpenedPorts.length) {
       instance.info.allocatedPorts = logOpenedPorts;
-      instance.println("INFO", $t("TXT_CODE_COMMON_THE_FOLLOWING_PORTS_HAVE_BEEN_OPENED_FOR_THE_INSTANCE"));
+      instance.println(
+        "INFO",
+        $t("TXT_CODE_COMMON_THE_FOLLOWING_PORTS_HAVE_BEEN_OPENED_FOR_THE_INSTANCE")
+      );
       logOpenedPorts.forEach((v) => {
         instance.println(
           "INFO",
@@ -425,15 +432,21 @@ export class SetupDockerContainer extends AsyncTask {
 
     try {
       await this.container?.kill();
-    } catch (error) {}
+    } catch (error) {
+      // The container may have already stopped.
+    }
     try {
       await this.container?.remove();
-    } catch (error) {}
+    } catch (error) {
+      // The container may have already been removed.
+    }
 
     if (containerId) {
       try {
         await NetworkLimitService.getInstance().clearBandwidthLimit(containerId);
-      } catch (error) {}
+      } catch (error) {
+        // Continue cleanup if the network interface is unavailable.
+      }
     }
   }
 
@@ -462,7 +475,7 @@ export class SetupDockerContainer extends AsyncTask {
     }
   }
 
-  public async onError(err: Error) {}
+  public async onError(_err: Error) {}
 
   public toObject() {}
 }
@@ -513,7 +526,7 @@ export class DockerProcessAdapter extends EventEmitter implements IInstanceProce
     if (this.stream && data) this.stream.write(data);
   }
 
-  public async kill(s?: string) {
+  public async kill(_s?: string) {
     await this.container?.kill();
     return true;
   }
@@ -521,7 +534,9 @@ export class DockerProcessAdapter extends EventEmitter implements IInstanceProce
   public async destroy() {
     try {
       await this.container?.remove();
-    } catch (error: any) {}
+    } catch (error: any) {
+      // The container may have already been removed.
+    }
   }
 
   private wait() {

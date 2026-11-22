@@ -229,7 +229,9 @@ export class ModManagerService {
         const primary = this.preference === "mirror" ? "MCIM " : "";
         const alternate = this.preference === "mirror" ? "the original API" : "the MCIM mirror";
         this.ctx.logger.warn(
-          `${primary}${source} search failed${shouldFallback ? `; falling back to ${alternate}` : ""}:`,
+          `${primary}${source} search failed${
+            shouldFallback ? `; falling back to ${alternate}` : ""
+          }:`,
           {
             url: config.url,
             status: err.response?.status,
@@ -373,7 +375,7 @@ export class ModManagerService {
     }
 
     if (vn.includes("-") || vn.includes("_")) {
-      const parts = vn.split(/[-_\s]+/);
+      vn.split(/[-_\s]+/);
     }
 
     return vn;
@@ -464,7 +466,9 @@ export class ModManagerService {
     filters?: { version?: string; type?: string; loader?: string; environment?: string }
   ) {
     try {
-      const facets: string[][] = [...EXCLUDED_PROJECT_TYPES].map((type) => [`project_type!=${type}`]);
+      const facets: string[][] = [...EXCLUDED_PROJECT_TYPES].map((type) => [
+        `project_type!=${type}`
+      ]);
       if (filters?.version) {
         facets.push([`versions:${filters.version}`]);
       }
@@ -528,7 +532,9 @@ export class ModManagerService {
         return { hits: [], total_hits: 0 };
       }
 
-      const hits = res.data.hits.filter((hit: any) => !EXCLUDED_PROJECT_TYPES.has(hit.project_type));
+      const hits = res.data.hits.filter(
+        (hit: any) => !EXCLUDED_PROJECT_TYPES.has(hit.project_type)
+      );
       const versionIds = hits.map((h: any) => h.latest_version).filter((id: any) => !!id);
       let versionsMap: Record<string, string> = {};
 
@@ -657,34 +663,36 @@ export class ModManagerService {
         return { hits: [], total_hits: 0 };
       }
 
-      const hits = res.data.data.filter((mod: any) => mod.classId !== 4471).map((mod: any) => {
-        const latestFile = mod.latestFiles?.[0];
-        const vn = this.cleanCurseForgeVersionName(
-          latestFile?.displayName || latestFile?.fileName || "",
-          mod.name
-        );
+      const hits = res.data.data
+        .filter((mod: any) => mod.classId !== 4471)
+        .map((mod: any) => {
+          const latestFile = mod.latestFiles?.[0];
+          const vn = this.cleanCurseForgeVersionName(
+            latestFile?.displayName || latestFile?.fileName || "",
+            mod.name
+          );
 
-        return {
-          id: String(mod.id),
-          slug: mod.slug,
-          title: mod.name,
-          description: mod.summary,
-          icon_url: mod.logo?.url,
-          author: mod.authors?.[0]?.name,
-          downloads: mod.downloadCount,
-          updated: mod.dateModified,
-          categories: mod.categories?.map((c: any) => c.name),
-          version_number: vn,
-          game_versions:
-            mod.latestFilesIndexes
-              ?.map((f: any) => f.gameVersion)
-              .filter((v: string, i: number, a: string[]) => a.indexOf(v) === i)
-              .slice(0, 3) || [],
-          display_categories: mod.categories?.slice(0, 3).map((c: any) => c.name),
-          source: "CurseForge",
-          project_type: mod.classId === 12 ? "plugin" : "mod"
-        };
-      });
+          return {
+            id: String(mod.id),
+            slug: mod.slug,
+            title: mod.name,
+            description: mod.summary,
+            icon_url: mod.logo?.url,
+            author: mod.authors?.[0]?.name,
+            downloads: mod.downloadCount,
+            updated: mod.dateModified,
+            categories: mod.categories?.map((c: any) => c.name),
+            version_number: vn,
+            game_versions:
+              mod.latestFilesIndexes
+                ?.map((f: any) => f.gameVersion)
+                .filter((v: string, i: number, a: string[]) => a.indexOf(v) === i)
+                .slice(0, 3) || [],
+            display_categories: mod.categories?.slice(0, 3).map((c: any) => c.name),
+            source: "CurseForge",
+            project_type: mod.classId === 12 ? "plugin" : "mod"
+          };
+        });
 
       return {
         hits,
@@ -752,7 +760,9 @@ export class ModManagerService {
         });
         modData = modRes.data.data;
         projectName = modData.name;
-      } catch (e) { }
+      } catch (e) {
+        // Use the project ID when optional metadata is unavailable.
+      }
 
       const res = await this.requestWithRetry({
         method: "GET",
@@ -867,11 +877,15 @@ export class ModManagerService {
                   if (vRes.data?.name) {
                     versionNamesMap[item.version.id] = vRes.data.name;
                   }
-                } catch (e) { }
+                } catch (e) {
+                  // Keep the version ID when its name is unavailable.
+                }
               }
             })
           );
-        } catch (e) { }
+        } catch (e) {
+          // Keep the search results when version enrichment fails.
+        }
       }
 
       const hits = data.map((item: any) => ({
@@ -915,7 +929,9 @@ export class ModManagerService {
           url: `https://api.spiget.org/v2/resources/${projectId}`
         });
         resourceName = resourceRes.data.name;
-      } catch (e) { }
+      } catch (e) {
+        // Use the resource ID when optional metadata is unavailable.
+      }
 
       const res = await this.requestWithRetry({
         method: "GET",
@@ -926,6 +942,7 @@ export class ModManagerService {
       return versions.map((v: any, index: number) => {
         // Sanitize generated filenames because release labels may contain path separators.
         const baseName = `${resourceName}-${v.name}`
+          // eslint-disable-next-line no-control-regex -- Strip control characters from file names.
           .replace(/[\\/:*?"<>|\x00-\x1f\x7f]/g, "_")
           .replace(/\s+/g, "_");
         let safeName = "";

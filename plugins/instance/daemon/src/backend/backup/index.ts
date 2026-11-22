@@ -9,68 +9,69 @@ import type { DaemonPluginContext } from "../../../../../../core/daemon/src/plug
 type InstanceEntity = any;
 
 export function apply(ctx: DaemonPluginContext, service = ctx.instances) {
-
   const BACKUP_FORMATS = ["zip", "tar.gz", "7z"];
 
-  ctx.inject(["settingsForm"], (scope) => scope.settingsForm.declare({
-    defaults: () => ({ ...ctx.settings.defaults() }),
-    page: () => ({ id: "backups", title: ctx.i18n.$t("TXT_CODE_SETTINGS_PAGE_BACKUPS") }),
-    fields: () => [
-      {
-        key: "instanceBackupPath",
-        type: "string",
-        title: ctx.i18n.$t("TXT_CODE_DBACKUP_PATH"),
-        description: ctx.i18n.$t("TXT_CODE_DBACKUP_PATH_TIP")
-      },
-      {
-        key: "instanceBackupFormat",
-        type: "select",
-        title: ctx.i18n.$t("TXT_CODE_DBACKUP_FORMAT"),
-        options: BACKUP_FORMATS.map((format) => ({ value: format, label: format }))
-      },
-      {
-        key: "instanceBackupCompressionLevel",
-        type: "number",
-        title: ctx.i18n.$t("TXT_CODE_DBACKUP_LEVEL"),
-        description: ctx.i18n.$t("TXT_CODE_DBACKUP_LEVEL_TIP"),
-        min: 0,
-        max: 9
-      },
-      {
-        key: "instanceBackupMaxSize",
-        type: "number",
-        title: ctx.i18n.$t("TXT_CODE_DBACKUP_MAX_SIZE"),
-        description: ctx.i18n.$t("TXT_CODE_DBACKUP_MAX_SIZE_TIP"),
-        unit: "GB",
-        min: 0
+  ctx.inject(["settingsForm"], (scope) =>
+    scope.settingsForm.declare({
+      defaults: () => ({ ...ctx.settings.defaults() }),
+      page: () => ({ id: "backups", title: ctx.i18n.$t("TXT_CODE_SETTINGS_PAGE_BACKUPS") }),
+      fields: () => [
+        {
+          key: "instanceBackupPath",
+          type: "string",
+          title: ctx.i18n.$t("TXT_CODE_DBACKUP_PATH"),
+          description: ctx.i18n.$t("TXT_CODE_DBACKUP_PATH_TIP")
+        },
+        {
+          key: "instanceBackupFormat",
+          type: "select",
+          title: ctx.i18n.$t("TXT_CODE_DBACKUP_FORMAT"),
+          options: BACKUP_FORMATS.map((format) => ({ value: format, label: format }))
+        },
+        {
+          key: "instanceBackupCompressionLevel",
+          type: "number",
+          title: ctx.i18n.$t("TXT_CODE_DBACKUP_LEVEL"),
+          description: ctx.i18n.$t("TXT_CODE_DBACKUP_LEVEL_TIP"),
+          min: 0,
+          max: 9
+        },
+        {
+          key: "instanceBackupMaxSize",
+          type: "number",
+          title: ctx.i18n.$t("TXT_CODE_DBACKUP_MAX_SIZE"),
+          description: ctx.i18n.$t("TXT_CODE_DBACKUP_MAX_SIZE_TIP"),
+          unit: "GB",
+          min: 0
+        }
+      ],
+      read: () => ({
+        instanceBackupPath: ctx.settings.config.instanceBackupPath,
+        instanceBackupFormat: ctx.settings.config.instanceBackupFormat,
+        instanceBackupCompressionLevel: ctx.settings.config.instanceBackupCompressionLevel,
+        instanceBackupMaxSize: ctx.settings.config.instanceBackupMaxSize
+      }),
+      write: (values) => {
+        const config = ctx.settings.config;
+        if (values.instanceBackupPath != null) {
+          config.instanceBackupPath = String(values.instanceBackupPath);
+        }
+        const format = values.instanceBackupFormat;
+        if (typeof format === "string" && BACKUP_FORMATS.includes(format)) {
+          config.instanceBackupFormat = format;
+        }
+        const level = Number(values.instanceBackupCompressionLevel);
+        if (Number.isInteger(level) && level >= 0 && level <= 9) {
+          config.instanceBackupCompressionLevel = level;
+        }
+        const maxSize = Number(values.instanceBackupMaxSize);
+        if (Number.isFinite(maxSize) && maxSize >= 0) {
+          config.instanceBackupMaxSize = maxSize;
+        }
+        ctx.settings.save();
       }
-    ],
-    read: () => ({
-      instanceBackupPath: ctx.settings.config.instanceBackupPath,
-      instanceBackupFormat: ctx.settings.config.instanceBackupFormat,
-      instanceBackupCompressionLevel: ctx.settings.config.instanceBackupCompressionLevel,
-      instanceBackupMaxSize: ctx.settings.config.instanceBackupMaxSize
-    }),
-    write: (values) => {
-      const config = ctx.settings.config;
-      if (values.instanceBackupPath != null) {
-        config.instanceBackupPath = String(values.instanceBackupPath);
-      }
-      const format = values.instanceBackupFormat;
-      if (typeof format === "string" && BACKUP_FORMATS.includes(format)) {
-        config.instanceBackupFormat = format;
-      }
-      const level = Number(values.instanceBackupCompressionLevel);
-      if (Number.isInteger(level) && level >= 0 && level <= 9) {
-        config.instanceBackupCompressionLevel = level;
-      }
-      const maxSize = Number(values.instanceBackupMaxSize);
-      if (Number.isFinite(maxSize) && maxSize >= 0) {
-        config.instanceBackupMaxSize = maxSize;
-      }
-      ctx.settings.save();
-    }
-  }));
+    })
+  );
 
   const { AsyncTask, Center: TaskCenter } = ctx.tasks;
   const {
@@ -289,7 +290,8 @@ export function apply(ctx: DaemonPluginContext, service = ctx.instances) {
         };
 
         if (backupFormat === "7z") {
-          if (!(await check7zipStatus())) throw new Error(t("TXT_CODE_COMMON_7ZIP_PROGRAM_NOT_FOUND"));
+          if (!(await check7zipStatus()))
+            throw new Error(t("TXT_CODE_COMMON_7ZIP_PROGRAM_NOT_FOUND"));
           const absoluteTargetArchivePath = path.resolve(targetArchivePath);
           const listFilePath = path.join(
             os.tmpdir(),
@@ -507,7 +509,8 @@ export function apply(ctx: DaemonPluginContext, service = ctx.instances) {
   ctx.protocol.on("instance/backup/list", async (routerCtx, data) => {
     try {
       const instanceUuid = data.instanceUuid;
-      if (!instances.getInstance(instanceUuid)) throw new Error(t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
+      if (!instances.getInstance(instanceUuid))
+        throw new Error(t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
       const backups = await listBackupFiles(instanceUuid);
       protocol.response(
         routerCtx,
@@ -520,7 +523,8 @@ export function apply(ctx: DaemonPluginContext, service = ctx.instances) {
 
   ctx.protocol.on("instance/backup/delete", async (routerCtx, data) => {
     try {
-      if (!instances.getInstance(data.instanceUuid)) throw new Error(t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
+      if (!instances.getInstance(data.instanceUuid))
+        throw new Error(t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
       const filePath = getBackupPath(data.instanceUuid, data.backupName);
       if (fs.existsSync(filePath)) await fs.remove(filePath);
       protocol.response(routerCtx, true);

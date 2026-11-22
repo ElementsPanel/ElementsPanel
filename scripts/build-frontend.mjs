@@ -21,16 +21,20 @@ for (const plugin of layout.sourcePlugins("panel", repository)) {
   const config = builtinPluginConfig(plugin, outputRoot);
   if (!config) continue;
   await build(config);
-  const result = JSON.parse(await fs.readFile(path.join(outputRoot, plugin.folder, "manifest.json"), "utf8"));
+  const result = JSON.parse(
+    await fs.readFile(path.join(outputRoot, plugin.folder, "manifest.json"), "utf8")
+  );
   const toPath = (filename) => `./${plugin.folder}/${filename}`;
   const { packageMetadata } = readPluginMetadata(plugin.directory);
   manifest.push({
     metadata: {
       id: plugin.id,
       version: packageMetadata.version,
-      ...Object.fromEntries(["elements", "priority", "frontendInject", "frontendImmediate", "frontendRequired"]
-        .filter((key) => packageMetadata.elementspanel[key] !== undefined)
-        .map((key) => [key, packageMetadata.elementspanel[key]])),
+      ...Object.fromEntries(
+        ["elements", "priority", "frontendInject", "frontendImmediate", "frontendRequired"]
+          .filter((key) => packageMetadata.elementspanel[key] !== undefined)
+          .map((key) => [key, packageMetadata.elementspanel[key]])
+      ),
       frontendApi: result.frontendApi,
       frontendImports: result.imports
     },
@@ -38,10 +42,15 @@ for (const plugin of layout.sourcePlugins("panel", repository)) {
     assetDirectory: plugin.folder,
     entry: toPath(result.entry),
     styles: result.styles.map(toPath),
-    exports: Object.fromEntries(Object.entries(result.exports).map(([name, entry]) => [name, toPath(entry)])),
+    exports: Object.fromEntries(
+      Object.entries(result.exports).map(([name, entry]) => [name, toPath(entry)])
+    ),
     imports: result.imports,
     frontendApi: result.frontendApi
   });
 }
 await fs.mkdir(outputRoot, { recursive: true });
-await fs.writeFile(path.join(outputRoot, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+await fs.writeFile(
+  path.join(outputRoot, "manifest.json"),
+  `${JSON.stringify(manifest, null, 2)}\n`
+);

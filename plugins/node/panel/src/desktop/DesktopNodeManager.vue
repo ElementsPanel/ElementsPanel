@@ -42,7 +42,7 @@ const nodeHeaders = [
   { title: t("TXT_CODE_OPERATE"), key: "actions", sortable: false }
 ];
 
-const { loading, nodes, searchQuery, nodeCompatMap, socketStatusMap, fetchNodes, filteredNodes } =
+const { loading, searchQuery, nodeCompatMap, socketStatusMap, fetchNodes, filteredNodes } =
   useNodeList();
 const {
   showDialog,
@@ -105,7 +105,11 @@ const {
           class="dn-badge-icon--yes"
         /><VTooltip
           v-else-if="socketStatusMap[item.uuid] === SocketStatus.Error"
-          :text="t('TXT_CODE_COMMON_THE_WEB_FRONT_END_CANNOT_ESTABLISH_A_WEB_SOCKET_CONNECTION_WITH_THE_NODE_PLEASE_CHECK_THE')"
+          :text="
+            t(
+              'TXT_CODE_COMMON_THE_WEB_FRONT_END_CANNOT_ESTABLISH_A_WEB_SOCKET_CONNECTION_WITH_THE_NODE_PLEASE_CHECK_THE'
+            )
+          "
           ><template #activator="{ props: tooltipProps }"
             ><span v-bind="tooltipProps" class="dn-badge-icon--no"
               ><VIcon icon="mdi-information-outline" /></span></template></VTooltip
@@ -124,7 +128,11 @@ const {
           class="dn-badge-icon--yes"
         /><VTooltip
           v-else-if="item.available && nodeCompatMap[item.uuid]"
-          :text="t('TXT_CODE_COMMON_THE_NODE_S_PLUGINS_OR_VERSION_DO_NOT_MATCH_THE_PANEL_WHICH_MAY_CAUSE_FUNCTIONAL_ISSUES')"
+          :text="
+            t(
+              'TXT_CODE_COMMON_THE_NODE_S_PLUGINS_OR_VERSION_DO_NOT_MATCH_THE_PANEL_WHICH_MAY_CAUSE_FUNCTIONAL_ISSUES'
+            )
+          "
           ><template #activator="{ props: tooltipProps }"
             ><span v-bind="tooltipProps" class="dn-badge-icon--warn"
               ><VIcon icon="mdi-alert-circle-outline" /></span></template></VTooltip
@@ -182,7 +190,9 @@ const {
 
     <DesktopDialog
       id="node-edit-dialog"
-      :title="dialogMode === 'add' ? t('TXT_CODE_DESKTOP_NODES_ADD') : t('TXT_CODE_DESKTOP_NODES_EDIT')"
+      :title="
+        dialogMode === 'add' ? t('TXT_CODE_DESKTOP_NODES_ADD') : t('TXT_CODE_DESKTOP_NODES_EDIT')
+      "
       :icon="dialogMode === 'add' ? PlusOutlined : EditOutlined"
       :model-value="showDialog"
       :width="420"
@@ -238,9 +248,7 @@ const {
           density="compact"
           hide-details
           autocomplete="new-password"
-          :placeholder="
-            dialogMode === 'edit' ? t('TXT_CODE_DESKTOP_NODES_APIKEY_HELP') : ''
-          "
+          :placeholder="dialogMode === 'edit' ? t('TXT_CODE_DESKTOP_NODES_APIKEY_HELP') : ''"
         />
         <span v-if="dialogMode === 'edit'" class="dn-form-hint">
           {{ t("TXT_CODE_DESKTOP_NODES_APIKEY_HELP") }}
@@ -258,7 +266,11 @@ const {
           :placeholder="t('TXT_CODE_NODE_CONNECTION_PATH_PREFIX')"
         />
         <span class="dn-form-hint">
-          {{ t("TXT_CODE_COMMON_USED_WHEN_REUSING_PORTS_IN_MOST_CASES_NO_CONFIGURATION_IS_REQUIRED_HERE") }}
+          {{
+            t(
+              "TXT_CODE_COMMON_USED_WHEN_REUSING_PORTS_IN_MOST_CASES_NO_CONFIGURATION_IS_REQUIRED_HERE"
+            )
+          }}
         </span>
       </div>
       <div v-if="formError" class="dn-form-error">{{ formError }}</div>
@@ -266,22 +278,29 @@ const {
         <VBtn class="dn-btn dn-btn--default" variant="text" @click="closeDialog">
           {{ t("TXT_CODE_COMMON_CANCEL") }}
         </VBtn>
-        <VBtn
-          class="dn-btn dn-btn--primary"
-          variant="text"
-          :disabled="saving"
-          @click="saveNode"
-        >
+        <VBtn class="dn-btn dn-btn--primary" variant="text" :disabled="saving" @click="saveNode">
           {{ t("TXT_CODE_COMMON_SAVE") }}
         </VBtn>
       </template>
     </DesktopDialog>
 
-    <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="showDeleteConfirm" id="node-delete-dialog"
+    <component
+      :is="ConfirmDialog"
+      v-if="ConfirmDialog"
+      id="node-delete-dialog"
+      v-model="showDeleteConfirm"
       :title="t('TXT_CODE_COMMON_REMOVE_DAEMON')"
-      :message="t('TXT_CODE_DESKTOP_NODES_DELETE_CONFIRM', { name: deletingNode?.remarks || deletingNode?.ip })"
-      danger :loading="saving" :ok-text="t('TXT_CODE_COMMON_REMOVE_DAEMON')"
-      @cancel="cancelDelete" @confirm="executeDelete" />
+      :message="
+        t('TXT_CODE_DESKTOP_NODES_DELETE_CONFIRM', {
+          name: deletingNode?.remarks || deletingNode?.ip
+        })
+      "
+      danger
+      :loading="saving"
+      :ok-text="t('TXT_CODE_COMMON_REMOVE_DAEMON')"
+      @cancel="cancelDelete"
+      @confirm="executeDelete"
+    />
   </div>
 </template>
 
@@ -473,5 +492,4 @@ const {
   font-size: 12px;
   margin-top: 8px;
 }
-
 </style>

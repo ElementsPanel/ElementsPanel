@@ -157,7 +157,9 @@ export function apply(ctx: DaemonPluginContext) {
         if (url) {
           try {
             headers.Referer = new URL(url).origin;
-          } catch {}
+          } catch {
+            // Omit the optional Referer for invalid URLs.
+          }
         }
         return headers;
       },

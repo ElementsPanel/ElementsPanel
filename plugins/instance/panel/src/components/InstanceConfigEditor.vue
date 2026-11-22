@@ -3,7 +3,10 @@ import CardPanel from "@elementspanel/epanel-plugin-console/components/CardPanel
 import LineOption from "@elementspanel/epanel-plugin-console/components/LineOption";
 import { configData } from "../config/instanceConfigMap";
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { getDescriptionByTitle, jsonToMap } from "@elementspanel/epanel-plugin-console/tools/common";
+import {
+  getDescriptionByTitle,
+  jsonToMap
+} from "@elementspanel/epanel-plugin-console/tools/common";
 import isEmpty from "lodash/isEmpty";
 
 const props = defineProps<{
@@ -14,9 +17,9 @@ const props = defineProps<{
 
 const data:
   | {
-    desc: string;
-    config: Record<string, any>;
-  }
+      desc: string;
+      config: Record<string, any>;
+    }
   | undefined = configData[props.configName];
 
 import { computed } from "vue";
@@ -29,7 +32,15 @@ const parsedConfig = computed(() => jsonToMap(props.config));
   <template v-if="isDesktop">
     <VCol cols="12">
       <div class="config-editor-section">
-        <p class="config-editor-description">{{ data ? data.desc : t("TXT_CODE_COMMON_THIS_FILE_DOES_NOT_SUPPORT_DIRECT_CONFIGURATION_PLEASE_EDIT_IT_THROUGH_FILE_MANAGEMENT") }}</p>
+        <p class="config-editor-description">
+          {{
+            data
+              ? data.desc
+              : t(
+                  "TXT_CODE_COMMON_THIS_FILE_DOES_NOT_SUPPORT_DIRECT_CONFIGURATION_PLEASE_EDIT_IT_THROUGH_FILE_MANAGEMENT"
+                )
+          }}
+        </p>
       </div>
     </VCol>
     <VCol v-if="data" cols="12">
@@ -42,40 +53,54 @@ const parsedConfig = computed(() => jsonToMap(props.config));
             </LineOption>
           </div>
         </div>
-        <div v-else>{{ t("TXT_CODE_COMMON_THE_CONFIGURATION_FILE_IS_EMPTY_PLEASE_CHECK_IF_THE_FILE_IS_CORRECT_OR_CLICK_THE_EDIT") }}</div>
+        <div v-else>
+          {{
+            t(
+              "TXT_CODE_COMMON_THE_CONFIGURATION_FILE_IS_EMPTY_PLEASE_CHECK_IF_THE_FILE_IS_CORRECT_OR_CLICK_THE_EDIT"
+            )
+          }}
+        </div>
       </div>
     </VCol>
   </template>
   <template v-else>
-  <VCol cols="12">
-    <CardPanel class="config-editor-panel">
-      <template #body>
+    <VCol cols="12">
+      <CardPanel class="config-editor-panel">
+        <template #body>
           <p v-if="data">
             {{ data?.desc }}
           </p>
           <p v-else>
-            {{ t("TXT_CODE_COMMON_THIS_FILE_DOES_NOT_SUPPORT_DIRECT_CONFIGURATION_PLEASE_EDIT_IT_THROUGH_FILE_MANAGEMENT") }}
+            {{
+              t(
+                "TXT_CODE_COMMON_THIS_FILE_DOES_NOT_SUPPORT_DIRECT_CONFIGURATION_PLEASE_EDIT_IT_THROUGH_FILE_MANAGEMENT"
+              )
+            }}
           </p>
-      </template>
-    </CardPanel>
-  </VCol>
-  <VCol v-if="data" cols="12">
-    <CardPanel class="config-editor-panel">
-      <template #body>
-        <VRow v-if="!isEmpty(props.config)" class="config-option-grid">
-          <VCol v-for="(item, index) in parsedConfig" :key="index" cols="12" sm="6" lg="4">
-            <LineOption card :option-value="parsedConfig" :option-key="String(index)">
-              <template #title>{{ index }}</template>
-              <template #info>{{ getDescriptionByTitle(data?.config, String(index)) }}</template>
-            </LineOption>
-          </VCol>
-        </VRow>
-        <div v-else>
-          {{ t("TXT_CODE_COMMON_THE_CONFIGURATION_FILE_IS_EMPTY_PLEASE_CHECK_IF_THE_FILE_IS_CORRECT_OR_CLICK_THE_EDIT") }}
-        </div>
-      </template>
-    </CardPanel>
-  </VCol>
+        </template>
+      </CardPanel>
+    </VCol>
+    <VCol v-if="data" cols="12">
+      <CardPanel class="config-editor-panel">
+        <template #body>
+          <VRow v-if="!isEmpty(props.config)" class="config-option-grid">
+            <VCol v-for="(item, index) in parsedConfig" :key="index" cols="12" sm="6" lg="4">
+              <LineOption card :option-value="parsedConfig" :option-key="String(index)">
+                <template #title>{{ index }}</template>
+                <template #info>{{ getDescriptionByTitle(data?.config, String(index)) }}</template>
+              </LineOption>
+            </VCol>
+          </VRow>
+          <div v-else>
+            {{
+              t(
+                "TXT_CODE_COMMON_THE_CONFIGURATION_FILE_IS_EMPTY_PLEASE_CHECK_IF_THE_FILE_IS_CORRECT_OR_CLICK_THE_EDIT"
+              )
+            }}
+          </div>
+        </template>
+      </CardPanel>
+    </VCol>
   </template>
 </template>
 
@@ -89,5 +114,9 @@ const parsedConfig = computed(() => jsonToMap(props.config));
   margin: 0;
 }
 
-.config-editor-description { margin: 0; color: var(--desktop-window-text-secondary, rgba(0, 0, 0, 0.6)); line-height: 1.5; }
+.config-editor-description {
+  margin: 0;
+  color: var(--desktop-window-text-secondary, rgba(0, 0, 0, 0.6));
+  line-height: 1.5;
+}
 </style>

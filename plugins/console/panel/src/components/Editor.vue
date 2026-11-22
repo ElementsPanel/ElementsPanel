@@ -200,7 +200,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="editor-wrapper">
     <div ref="editorContainer" class="editor-container">
-      <div ref="editorElement" :id="DOM_ID" class="file-editor"></div>
+      <div :id="DOM_ID" ref="editorElement" class="file-editor"></div>
     </div>
   </div>
 </template>

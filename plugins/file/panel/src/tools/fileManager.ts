@@ -61,10 +61,9 @@ const fileType = new Map<string, string>([
   ["CAB", "mdi-folder-zip-outline"],
   ["BZ2", "mdi-folder-zip-outline"],
   ["TAR.BZ2", "mdi-folder-zip-outline"],
-  
+
   ["7Z.001", "mdi-folder-zip-outline"],
   ["R00", "mdi-folder-zip-outline"],
-
 
   ["JPG", "mdi-file-image-outline"],
   ["JPEG", "mdi-file-image-outline"],

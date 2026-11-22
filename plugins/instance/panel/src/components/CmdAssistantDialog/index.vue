@@ -15,7 +15,17 @@ import {
 import AnyAppFormComponent from "./AnyAppForm.vue";
 import MinecraftJavaForm from "./MinecraftJavaForm.vue";
 import type { Component } from "vue";
-import { VBtn, VCard, VCardActions, VCardText, VDialog, VRow, VSpacer, VTab, VTabs } from "vuetify/components";
+import {
+  VBtn,
+  VCard,
+  VCardActions,
+  VCardText,
+  VDialog,
+  VRow,
+  VSpacer,
+  VTab,
+  VTabs
+} from "vuetify/components";
 
 const { minecraftJava, buildCmd, setGameType, gameType, appType, anyAppForm } =
   useStartCmdBuilder();
@@ -66,7 +76,8 @@ const cancel = async () => {
 const submit = async () => {
   try {
     const result = await formRef.value?.validate();
-    if (!result?.valid) return reportErrorMsg(t("TXT_CODE_COMMON_PLEASE_COMPLETE_ALL_REQUIRED_FIELDS_IN_THE_FORM"));
+    if (!result?.valid)
+      return reportErrorMsg(t("TXT_CODE_COMMON_PLEASE_COMPLETE_ALL_REQUIRED_FIELDS_IN_THE_FORM"));
   } catch (error: any) {
     return reportErrorMsg(t("TXT_CODE_COMMON_PLEASE_COMPLETE_ALL_REQUIRED_FIELDS_IN_THE_FORM"));
   }
@@ -114,44 +125,60 @@ const actions = [
   <VDialog v-model="open" max-width="800" persistent>
     <VCard :title="t('TXT_CODE_COMMON_COMMAND_HELPER')">
       <VCardText>
-      <div v-if="step === STEP.SELECT_TYPE">
-        <VRow>
-          <p class="text-body-medium text-medium-emphasis">
-            {{ t("TXT_CODE_COMMON_PLEASE_SELECT_YOUR_SERVER_PROGRAM_TYPE") }}
-          </p>
-          <fade-up-animation>
-            <action-button
-              v-for="(action, index) in actions"
-              :key="action.title"
-              :title="action.title"
-              :click="actions[index].click"
-              :icon="action.icon"
-              :data-index="index"
-            />
-          </fade-up-animation>
-        </VRow>
-      </div>
-      <div v-if="gameType === QUICKSTART_ACTION_TYPE.Minecraft">
-        <VTabs v-model="appType" color="primary">
-          <VTab
-            v-for="typeName in [TYPE_MINECRAFT_JAVA, TYPE_MINECRAFT_BEDROCK]"
-            :key="typeName" :value="typeName">{{ tabFormComponent[typeName].title }}</VTab>
-        </VTabs>
-      </div>
-      <div v-else-if="gameType === QUICKSTART_ACTION_TYPE.SteamGameServer">
-        <VTabs v-model="appType" color="primary"><VTab :value="TYPE_STEAM_SERVER_UNIVERSAL">{{ t("TXT_CODE_COMMAND_ASSISTANT_STEAM_GAME_SERVER") }}</VTab></VTabs>
-      </div>
-      <div v-else-if="gameType != null">
-        <VTabs v-model="appType" color="primary"><VTab :value="TYPE_UNIVERSAL">{{ t("TXT_CODE_COMMAND_ASSISTANT_ALL_TYPES") }}</VTab></VTabs>
-      </div>
-      <component
-        :is="tabFormComponent[appType].component"
-        v-if="appType && tabFormComponent[appType]?.component"
-        ref="formRef"
-        v-model:data="tabFormComponent[appType].form"
-      />
+        <div v-if="step === STEP.SELECT_TYPE">
+          <VRow>
+            <p class="text-body-medium text-medium-emphasis">
+              {{ t("TXT_CODE_COMMON_PLEASE_SELECT_YOUR_SERVER_PROGRAM_TYPE") }}
+            </p>
+            <fade-up-animation>
+              <action-button
+                v-for="(action, index) in actions"
+                :key="action.title"
+                :title="action.title"
+                :click="actions[index].click"
+                :icon="action.icon"
+                :data-index="index"
+              />
+            </fade-up-animation>
+          </VRow>
+        </div>
+        <div v-if="gameType === QUICKSTART_ACTION_TYPE.Minecraft">
+          <VTabs v-model="appType" color="primary">
+            <VTab
+              v-for="typeName in [TYPE_MINECRAFT_JAVA, TYPE_MINECRAFT_BEDROCK]"
+              :key="typeName"
+              :value="typeName"
+              >{{ tabFormComponent[typeName].title }}</VTab
+            >
+          </VTabs>
+        </div>
+        <div v-else-if="gameType === QUICKSTART_ACTION_TYPE.SteamGameServer">
+          <VTabs v-model="appType" color="primary"
+            ><VTab :value="TYPE_STEAM_SERVER_UNIVERSAL">{{
+              t("TXT_CODE_COMMAND_ASSISTANT_STEAM_GAME_SERVER")
+            }}</VTab></VTabs
+          >
+        </div>
+        <div v-else-if="gameType != null">
+          <VTabs v-model="appType" color="primary"
+            ><VTab :value="TYPE_UNIVERSAL">{{
+              t("TXT_CODE_COMMAND_ASSISTANT_ALL_TYPES")
+            }}</VTab></VTabs
+          >
+        </div>
+        <component
+          :is="tabFormComponent[appType].component"
+          v-if="appType && tabFormComponent[appType]?.component"
+          ref="formRef"
+          v-model:data="tabFormComponent[appType].form"
+        />
       </VCardText>
-      <VCardActions><VSpacer /><VBtn variant="text" @click="cancel">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn><VBtn color="primary" :disabled="step !== STEP.SELECT_SOFTWARE" @click="submit">{{ t("TXT_CODE_COMMON_CONFIRM") }}</VBtn></VCardActions>
+      <VCardActions
+        ><VSpacer /><VBtn variant="text" @click="cancel">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn
+        ><VBtn color="primary" :disabled="step !== STEP.SELECT_SOFTWARE" @click="submit">{{
+          t("TXT_CODE_COMMON_CONFIRM")
+        }}</VBtn></VCardActions
+      >
     </VCard>
   </VDialog>
 </template>

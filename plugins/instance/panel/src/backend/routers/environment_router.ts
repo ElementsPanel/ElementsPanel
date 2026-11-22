@@ -175,10 +175,10 @@ export function createEnvironmentRouter() {
       };
       if (token) headers.Authorization = `Bearer ${token}`;
 
-      const manifestResponse = await axios.get(
-        `${registryUrl}/v2/${repository}/manifests/${tag}`,
-        { headers, timeout: 3000 }
-      );
+      const manifestResponse = await axios.get(`${registryUrl}/v2/${repository}/manifests/${tag}`, {
+        headers,
+        timeout: 3000
+      });
       const platforms: string[] = [];
       if (manifestResponse.data?.manifests instanceof Array) {
         for (const manifest of manifestResponse.data.manifests) {

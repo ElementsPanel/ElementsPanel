@@ -9,7 +9,6 @@ import themeCss from "./theme.scss?inline";
 import { h } from "vue";
 import { VIcon } from "vuetify/components";
 
-
 // Use the console application registry so features can register without the desktop shell.
 
 const openDesktop = () => {

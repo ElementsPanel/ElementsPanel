@@ -20,14 +20,18 @@ export async function readOutputLogTail(filename: string, size: unknown) {
     const position = stat.size - buffer.length;
     let length = 0;
     while (length < buffer.length) {
-      const { bytesRead } = await file.read(buffer, length, buffer.length - length, position + length);
+      const { bytesRead } = await file.read(
+        buffer,
+        length,
+        buffer.length - length,
+        position + length
+      );
       if (bytesRead === 0) break;
       length += bytesRead;
     }
     let start = 0;
     // A byte limit can begin in the middle of a UTF-8 character.
-    if (position > 0)
-      while (start < length && (buffer[start] & 0xc0) === 0x80) start++;
+    if (position > 0) while (start < length && (buffer[start] & 0xc0) === 0x80) start++;
     return buffer.subarray(start, length).toString("utf8");
   } finally {
     await file.close();

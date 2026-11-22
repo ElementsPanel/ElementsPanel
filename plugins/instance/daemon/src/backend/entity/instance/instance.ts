@@ -157,7 +157,10 @@ export default class Instance extends EventEmitter {
     }
 
     if (cfg?.enableRcon != null && cfg?.enableRcon !== this.config.enableRcon) {
-      if (!this.isStoppedOrBusy()) throw new Error($t("TXT_CODE_COMMON_RCON_PROTOCOL_CANNOT_BE_ENABLED_OR_DISABLED_WHILE_RUNNING"));
+      if (!this.isStoppedOrBusy())
+        throw new Error(
+          $t("TXT_CODE_COMMON_RCON_PROTOCOL_CANNOT_BE_ENABLED_OR_DISABLED_WHILE_RUNNING")
+        );
       configureEntityParams(this.config, cfg, "enableRcon", Boolean);
       this.forceExec(this.dispatcher ?? new FunctionDispatcher());
     }
@@ -173,7 +176,8 @@ export default class Instance extends EventEmitter {
       cfg?.terminalOption?.pty != null &&
       cfg?.terminalOption?.pty !== this.config.terminalOption.pty
     ) {
-      if (!this.isStoppedOrBusy()) throw new Error($t("TXT_CODE_INSTANCE_CONF_CANT_MODIFY_PTY_MODEL"));
+      if (!this.isStoppedOrBusy())
+        throw new Error($t("TXT_CODE_INSTANCE_CONF_CANT_MODIFY_PTY_MODEL"));
       configureEntityParams(this.config.terminalOption, cfg.terminalOption, "pty", Boolean);
       this.forceExec(this.dispatcher ?? new FunctionDispatcher());
     }
@@ -335,7 +339,11 @@ export default class Instance extends EventEmitter {
 
   setLock(bool: boolean) {
     if (this.lock === true && bool === true) {
-      throw new Error($t("TXT_CODE_COMMON_THE_INSTANCE_HAS_OTHER_TASKS_IN_PROGRESS_AND_THIS_OPERATION_CANNOT_BE_PERFORMED"));
+      throw new Error(
+        $t(
+          "TXT_CODE_COMMON_THE_INSTANCE_HAS_OTHER_TASKS_IN_PROGRESS_AND_THIS_OPERATION_CANNOT_BE_PERFORMED"
+        )
+      );
     }
     this.lock = bool;
   }
@@ -427,30 +435,33 @@ export default class Instance extends EventEmitter {
     this.userRequestedStop = false;
     this.config.eventTask.ignore = false;
 
-    const operation = Promise.resolve().then(async () => {
-      this.stopOutputLoop();
-      this.println("INFO", $t("TXT_CODE_COMMON_THE_INSTANCE_HAS_BEEN_STOPPED"));
-      await this.releaseResources();
-      await this.lifeCycleTaskManager.execLifeCycleTask(0);
-      this.instanceStatus = Instance.STATUS_STOP;
-      this.startTimestamp = 0;
-      this.emit("exit", { code, isCrash });
-      try {
-        StorageSubsystem.store("InstanceConfig", this.instanceUuid, this.config);
-      } catch (error) {
-        logger.error(`Instance ${this.instanceUuid} failed to save its stopped state:`, error);
-      }
-      if (isCrash && stoppedQuickly) this.println("ERROR", $t("TXT_CODE_INSTANCE_PROCESS_START_FAILED"));
+    const operation = Promise.resolve()
+      .then(async () => {
+        this.stopOutputLoop();
+        this.println("INFO", $t("TXT_CODE_COMMON_THE_INSTANCE_HAS_BEEN_STOPPED"));
+        await this.releaseResources();
+        await this.lifeCycleTaskManager.execLifeCycleTask(0);
+        this.instanceStatus = Instance.STATUS_STOP;
+        this.startTimestamp = 0;
+        this.emit("exit", { code, isCrash });
+        try {
+          StorageSubsystem.store("InstanceConfig", this.instanceUuid, this.config);
+        } catch (error) {
+          logger.error(`Instance ${this.instanceUuid} failed to save its stopped state:`, error);
+        }
+        if (isCrash && stoppedQuickly)
+          this.println("ERROR", $t("TXT_CODE_INSTANCE_PROCESS_START_FAILED"));
 
-      // Release this stop before a restarted process can emit its own exit.
-      this.stopping = undefined;
-      if (shouldRestart && !this.shuttingDown) {
-        if (this.reloading) this.restartPending = true;
-        else this.restartAfterCrash();
-      }
-    }).finally(() => {
-      if (this.stopping === operation) this.stopping = undefined;
-    });
+        // Release this stop before a restarted process can emit its own exit.
+        this.stopping = undefined;
+        if (shouldRestart && !this.shuttingDown) {
+          if (this.reloading) this.restartPending = true;
+          else this.restartAfterCrash();
+        }
+      })
+      .finally(() => {
+        if (this.stopping === operation) this.stopping = undefined;
+      });
     this.stopping = operation;
     return operation;
   }
@@ -459,7 +470,10 @@ export default class Instance extends EventEmitter {
     if (this.shuttingDown) return;
     const maxAutoRestartCount = this.config.eventTask.autoRestartMaxTimes;
     if (maxAutoRestartCount !== -1 && this.autoRestartCount >= maxAutoRestartCount) {
-      this.println($t("TXT_CODE_INSTANCE_CONF_ERROR"), $t("TXT_CODE_COMMON_REACHED_THE_MAXIMUM_AUTO_RESTART_LIMIT"));
+      this.println(
+        $t("TXT_CODE_INSTANCE_CONF_ERROR"),
+        $t("TXT_CODE_COMMON_REACHED_THE_MAXIMUM_AUTO_RESTART_LIMIT")
+      );
       return;
     }
     void this.execPreset("start")
@@ -582,8 +596,12 @@ export default class Instance extends EventEmitter {
     this.process = undefined;
     const cleanup = Promise.resolve()
       .then(() => process?.destroy())
-      .catch((error) => logger.error(`Instance ${this.instanceUuid}, Release resources error:`, error))
-      .then(() => { this.resetInstanceRuntimeInfo(); })
+      .catch((error) =>
+        logger.error(`Instance ${this.instanceUuid}, Release resources error:`, error)
+      )
+      .then(() => {
+        this.resetInstanceRuntimeInfo();
+      })
       .finally(() => {
         if (this.resourceCleanup === cleanup) this.resourceCleanup = undefined;
       });

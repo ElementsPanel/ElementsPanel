@@ -64,7 +64,9 @@ export function registerNodeRoutes(ctx: PanelPluginContext) {
       let instancesInfo = [];
       try {
         instancesInfo = await new RemoteRequest(remoteService).request("instance/overview");
-      } catch (err) {}
+      } catch (err) {
+        // Return the node even if instance discovery fails.
+      }
       result.push({ ...describeNode(remoteService), instances: instancesInfo });
     }
     ctx.body = result;

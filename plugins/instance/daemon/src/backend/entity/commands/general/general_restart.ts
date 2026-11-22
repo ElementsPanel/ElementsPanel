@@ -15,6 +15,7 @@ export default class GeneralRestartCommand extends InstanceCommand {
       try {
         await instance.execPreset("stop");
       } catch (error) {
+        // Continue waiting for the instance to stop.
       }
       const startCount = instance.startCount;
       const task = setInterval(async () => {

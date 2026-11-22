@@ -16,14 +16,27 @@ import {
 
 const props = defineProps<{ desktop?: boolean }>();
 const { state, isLogged } = useAppStateStore();
-const { open, tasks, unavailable, loading, error, refresh, reset, connect, disconnect, cancel, clear } =
-  useBackgroundTasks();
+const {
+  open,
+  tasks,
+  unavailable,
+  loading,
+  error,
+  refresh,
+  reset,
+  connect,
+  disconnect,
+  cancel,
+  clear
+} = useBackgroundTasks();
 const containerProps = computed(() =>
   props.desktop
     ? { class: "background-tasks-desktop" }
     : {
         modelValue: open.value,
-        "onUpdate:modelValue": (value: boolean) => { open.value = value; },
+        "onUpdate:modelValue": (value: boolean) => {
+          open.value = value;
+        },
         class: "background-tasks-drawer",
         location: "right",
         width: 480,
@@ -95,6 +108,7 @@ const stop = async (task: BackgroundTask) => {
   try {
     await cancel(task);
   } catch {
+    // Keep the failed task available for retry.
   } finally {
     cancelling.value.delete(task.id);
   }
@@ -104,6 +118,7 @@ const clearFinished = async () => {
   try {
     await clear();
   } catch {
+    // Keep the task list available for retry.
   } finally {
     clearing.value = false;
   }
@@ -112,7 +127,9 @@ const clearFinished = async () => {
 // The persistent overlay owns the task stream, including while desktop windows
 // are closed or minimized. A desktop view must not reset that shared state.
 if (props.desktop) {
-  onMounted(() => { void refresh({ silent: true }); });
+  onMounted(() => {
+    void refresh({ silent: true });
+  });
 } else {
   watch(
     () => [isLogged.value, state.userInfo?.uuid] as const,
@@ -210,7 +227,8 @@ if (props.desktop) {
               prepend-icon="mdi-refresh"
               :loading="loading"
               @click="refresh()"
-            >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn>
+              >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn
+            >
           </template>
         </Empty>
         <Empty
@@ -229,7 +247,9 @@ if (props.desktop) {
         >
           <div class="task-heading">
             <div class="task-name" :title="task.name.split(/[\\/]/).pop()">
-              {{ task.name.split(/[\\/]/).pop() || t(kinds[task.kind] || "TXT_CODE_TASKS_INSTANCE") }}
+              {{
+                task.name.split(/[\\/]/).pop() || t(kinds[task.kind] || "TXT_CODE_TASKS_INSTANCE")
+              }}
             </div>
             <VBtn
               v-if="task.cancellable"

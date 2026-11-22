@@ -5,14 +5,7 @@ import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useUiStore } from "@/stores/useUiStore";
 import { useEventListener } from "@vueuse/core";
-import {
-  VBadge,
-  VBtn,
-  VIcon,
-  VNavigationDrawer,
-  VToolbar,
-  VTooltip
-} from "vuetify/components";
+import { VBadge, VBtn, VIcon, VNavigationDrawer, VToolbar, VTooltip } from "vuetify/components";
 import { computed, watch } from "vue";
 import { ctx } from "@elements-panel/sdk";
 import type { PanelFrontendHeaderAction } from "@elements-panel/sdk";

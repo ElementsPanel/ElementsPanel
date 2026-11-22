@@ -192,7 +192,7 @@ export const formatOperationLogText = (item: OperationLoggerItem) => {
           : t("TXT_CODE_COMMON_FAILED")
         : ""
   };
-  return text.replace(/\<\<\s*([\w_]+)\s*\>\>/g, (_match, name: string) => {
+  return text.replace(/<<\s*([\w_]+)\s*>>/g, (_match, name: string) => {
     return values[name] || "--";
   });
 };

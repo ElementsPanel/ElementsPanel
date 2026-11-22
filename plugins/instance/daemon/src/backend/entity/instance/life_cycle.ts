@@ -10,10 +10,7 @@ export interface ILifeCycleTask {
 
 export class LifeCycleTaskManager {
   public readonly lifeCycleTask: ILifeCycleTask[] = [];
-  private readonly pending = new WeakMap<
-    ILifeCycleTask,
-    { type: 1 | 0; promise: Promise<void> }
-  >();
+  private readonly pending = new WeakMap<ILifeCycleTask, { type: 1 | 0; promise: Promise<void> }>();
   private retired: Promise<void> = Promise.resolve();
 
   constructor(private self: Instance) {}
@@ -23,7 +20,9 @@ export class LifeCycleTaskManager {
   }
 
   execLifeCycleTask(type: 1 | 0): Promise<void> {
-    return Promise.all(this.lifeCycleTask.map((task) => this.transition(task, type))).then(() => {});
+    return Promise.all(this.lifeCycleTask.map((task) => this.transition(task, type))).then(
+      () => {}
+    );
   }
 
   private transition(task: ILifeCycleTask, type: 1 | 0): Promise<void> {

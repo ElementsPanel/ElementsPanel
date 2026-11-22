@@ -2,7 +2,11 @@ import { onMounted, onUnmounted, watch } from "vue";
 import { useDesktopWindowActivity } from "./useDesktopWindowActivity";
 
 /** Run once on mount, then wait between completed requests when an interval is supplied. */
-export function usePolling(refresh: () => Promise<unknown>, interval?: number, { immediate = true }: { immediate?: boolean } = {}) {
+export function usePolling(
+  refresh: () => Promise<unknown>,
+  interval?: number,
+  { immediate = true }: { immediate?: boolean } = {}
+) {
   let disposed = false;
   let mounted = false;
   let running = false;
@@ -28,10 +32,15 @@ export function usePolling(refresh: () => Promise<unknown>, interval?: number, {
     }
   };
 
-  const stop = watch(canPoll, (available) => {
-    clearTimeout(timer);
-    if (available && mounted && !running && interval !== undefined) schedule(Math.min(200, interval));
-  }, { flush: "sync" });
+  const stop = watch(
+    canPoll,
+    (available) => {
+      clearTimeout(timer);
+      if (available && mounted && !running && interval !== undefined)
+        schedule(Math.min(200, interval));
+    },
+    { flush: "sync" }
+  );
   onMounted(() => {
     mounted = true;
     if (immediate) return poll();

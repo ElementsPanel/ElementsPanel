@@ -15,18 +15,26 @@ function claim(ctx: Context, entries: Map<string, boolean>, feature: string) {
 
 export class FeaturesService extends Service implements DaemonFeaturesService {
   private readonly features = new Map<string, boolean>();
-  constructor(ctx: Context) { super(ctx, "features", true); }
+  constructor(ctx: Context) {
+    super(ctx, "features", true);
+  }
   add(feature: string) {
     if (!feature) throw new Error("Invalid daemon feature registration");
     return claim(this.ctx, this.features, feature);
   }
-  has(feature: string) { return this.features.get(feature) === true; }
-  all() { return Object.fromEntries(this.features); }
+  has(feature: string) {
+    return this.features.get(feature) === true;
+  }
+  all() {
+    return Object.fromEntries(this.features);
+  }
 }
 
 export class OverviewService extends Service implements DaemonOverviewService {
   private readonly providers = new Set<DaemonOverviewProvider>();
-  constructor(ctx: Context) { super(ctx, "overview", true); }
+  constructor(ctx: Context) {
+    super(ctx, "overview", true);
+  }
   provide(provider: DaemonOverviewProvider) {
     if (typeof provider !== "function") throw new Error("Invalid daemon overview provider");
     return this.ctx.effect(() => {

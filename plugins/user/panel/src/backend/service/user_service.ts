@@ -10,11 +10,7 @@ import { $t, logger, ROLE, storage } from "../runtime";
 
 export class TwoFactorError extends Error {}
 
-const PASSWORD_GROUPS = [
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-  "abcdefghijklmnopqrstuvwxyz",
-  "0123456789"
-];
+const PASSWORD_GROUPS = ["ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz", "0123456789"];
 const PASSWORD_CHARACTERS = PASSWORD_GROUPS.join("");
 
 function randomCharacter(characters: string): string {
@@ -140,11 +136,15 @@ class UserSubsystem {
     const user = this.getUserByUserName(info.userName || "");
     if (!user || user.permission < ROLE().USER || typeof inputPassword !== "string")
       throw new Error($t("TXT_CODE_COMMON_INCORRECT_ACCOUNT_OR_PASSWORD"));
-    const passwordMatches = user.passWordType === UserPassWordType.bcrypt
-      ? bcrypt.compareSync(inputPassword, user.passWord)
-      : md5(inputPassword) === user.passWord;
+    const passwordMatches =
+      user.passWordType === UserPassWordType.bcrypt
+        ? bcrypt.compareSync(inputPassword, user.passWord)
+        : md5(inputPassword) === user.passWord;
     if (!passwordMatches) throw new Error($t("TXT_CODE_COMMON_INCORRECT_ACCOUNT_OR_PASSWORD"));
-    if (user.open2FA && (!user.secret || !this.check2FA(code2FA || "", user, totpDriftToleranceSteps)))
+    if (
+      user.open2FA &&
+      (!user.secret || !this.check2FA(code2FA || "", user, totpDriftToleranceSteps))
+    )
       throw new TwoFactorError($t("TXT_CODE_COMMON_TWO_FACTOR_AUTHENTICATION_CODE_IS_INCORRECT"));
   }
 
@@ -155,8 +155,13 @@ class UserSubsystem {
   private normalizeInstances(instanceIds: IUserApp[]) {
     if (!Array.isArray(instanceIds)) throw new Error("Invalid user instances");
     instanceIds.forEach((value) => {
-      if (!value || typeof value.daemonId !== "string" || !value.daemonId ||
-          typeof value.instanceUuid !== "string" || !value.instanceUuid)
+      if (
+        !value ||
+        typeof value.daemonId !== "string" ||
+        !value.daemonId ||
+        typeof value.instanceUuid !== "string" ||
+        !value.instanceUuid
+      )
         throw new Error("Type error, The instances of user must be IUserHaveInstance array.");
     });
     return instanceIds.map(({ instanceUuid, daemonId }) => ({ instanceUuid, daemonId }));
@@ -171,9 +176,13 @@ class UserSubsystem {
       const users = allUsers ? Array.from(this.objects.values()) : [this.getInstance(uuid!)];
       for (const user of users) {
         if (!user) continue;
-        const instances = user.instances.filter((value) => !removed.some((instance) =>
-          instance.daemonId === value.daemonId && instance.instanceUuid === value.instanceUuid
-        ));
+        const instances = user.instances.filter(
+          (value) =>
+            !removed.some(
+              (instance) =>
+                instance.daemonId === value.daemonId && instance.instanceUuid === value.instanceUuid
+            )
+        );
         if (instances.length !== user.instances.length) {
           await this.update(user.uuid, { instances });
         }

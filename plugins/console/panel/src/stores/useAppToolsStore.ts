@@ -7,8 +7,8 @@ export const useAppToolsStore = createGlobalState(() => {
     inputDialog: {
       title: "",
       show: false,
-      resolve: (value: any) => {},
-      reject: (value: any) => {}
+      resolve: (_value: any) => {},
+      reject: (_value: any) => {}
     },
     showUserInfoDialog: false
   });

@@ -15,7 +15,9 @@ const Vuetify = frontendRequire("vuetify/dist/vuetify.js");
 const ts = frontendRequire("typescript");
 const loadRuntime = createLoader({ host: "frontend" });
 const windowRuntimeImports = {
-  "@elementspanel/epanel-plugin-console/hooks/useDesktopWindowActivity": loadRuntime("plugins/console/panel/src/hooks/useDesktopWindowActivity.ts"),
+  "@elementspanel/epanel-plugin-console/hooks/useDesktopWindowActivity": loadRuntime(
+    "plugins/console/panel/src/hooks/useDesktopWindowActivity.ts"
+  ),
   "../../windowRendering": loadRuntime("plugins/desktop/panel/src/windowRendering.ts")
 };
 
@@ -25,10 +27,15 @@ const filename = path.join(root, "plugins/desktop/panel/src/widgets/desktop/Desk
 const { descriptor } = parse(fs.readFileSync(filename, "utf8"), { filename });
 const script = compileScript(descriptor, { id: "desktop-window-test", inlineTemplate: true });
 const mod = new Module(filename, module);
-mod.require = (id) => windowRuntimeImports[id] ?? (id === "vuetify/components" ? Vuetify.components : frontendRequire(id));
-mod._compile(ts.transpileModule(script.content, {
-  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
-}).outputText, filename);
+mod.require = (id) =>
+  windowRuntimeImports[id] ??
+  (id === "vuetify/components" ? Vuetify.components : frontendRequire(id));
+mod._compile(
+  ts.transpileModule(script.content, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
+  }).outputText,
+  filename
+);
 const DesktopWindow = mod.exports.default;
 DesktopWindow.__scopeId = "data-v-desktop-window-test";
 function loadSfc(relative, overrides = {}) {
@@ -36,9 +43,12 @@ function loadSfc(relative, overrides = {}) {
   const { descriptor } = parse(fs.readFileSync(filename, "utf8"), { filename });
   const script = compileScript(descriptor, { id: "confirmation-test", inlineTemplate: true });
   const component = new Module(filename, module);
-  const hookOverrides = Object.fromEntries(Object.entries(overrides).map(([id, value]) => [
-    id, value?.default ? { __esModule: true, ...value } : value
-  ]));
+  const hookOverrides = Object.fromEntries(
+    Object.entries(overrides).map(([id, value]) => [
+      id,
+      value?.default ? { __esModule: true, ...value } : value
+    ])
+  );
   component.require = (request) => {
     const id = frontendTestImport(request, overrides);
     const runtime = windowRuntimeImports[request] ?? windowRuntimeImports[id];
@@ -47,14 +57,22 @@ function loadSfc(relative, overrides = {}) {
       const source = path.resolve(path.dirname(filename), id) + ".ts";
       if (fs.existsSync(source)) return loadRuntime(source, hookOverrides);
     }
-    return Object.hasOwn(overrides, id) ? overrides[id]
-    : id === "@/components/DesktopDialog.vue" ? { default: DesktopDialog }
-    : id === "@/components/Empty.vue" ? { default: Empty }
-    : id === "vuetify/components" ? Vuetify.components : frontendRequire(id);
+    return Object.hasOwn(overrides, id)
+      ? overrides[id]
+      : id === "@/components/DesktopDialog.vue"
+      ? { default: DesktopDialog }
+      : id === "@/components/Empty.vue"
+      ? { default: Empty }
+      : id === "vuetify/components"
+      ? Vuetify.components
+      : frontendRequire(id);
   };
-  component._compile(ts.transpileModule(script.content, {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
-  }).outputText, filename);
+  component._compile(
+    ts.transpileModule(script.content, {
+      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
+    }).outputText,
+    filename
+  );
   return component.exports.default;
 }
 
@@ -66,7 +84,8 @@ test("settings pages retain edits and submit all pages together", async (t) => {
   };
   const Form = loadSfc("plugins/config/panel/src/components/SchemaForm.vue", imports);
   const Pages = loadSfc("plugins/config/panel/src/components/SettingsPages.vue", {
-    ...imports, "./SchemaForm.vue": { default: Form }
+    ...imports,
+    "./SchemaForm.vue": { default: Form }
   });
   const instance = { id: "instance", title: "Instance" };
   const backup = { id: "backup", title: "Backup" };
@@ -85,16 +104,28 @@ test("settings pages retain edits and submit all pages together", async (t) => {
   const body = document.createElement("div");
   target.append(navigationTarget, body);
   document.body.appendChild(target);
-  const app = vue.createApp({ render: () => vue.h(Pages, {
-    fields: fields.value, values, savedValues: savedValues.value, page: page.value, navigationTarget,
-    "onUpdate:page": (value) => { page.value = value; },
-    onSave: () => writes.push(JSON.parse(JSON.stringify(values)))
-  }) });
+  const app = vue.createApp({
+    render: () =>
+      vue.h(Pages, {
+        fields: fields.value,
+        values,
+        savedValues: savedValues.value,
+        page: page.value,
+        navigationTarget,
+        "onUpdate:page": (value) => {
+          page.value = value;
+        },
+        onSave: () => writes.push(JSON.parse(JSON.stringify(values)))
+      })
+  });
   app.use(Vuetify.createVuetify());
   app.mount(body);
-  t.after(() => { app.unmount(); target.remove(); });
-  const tab = (title) => [...target.querySelectorAll(".v-tab")]
-    .find(element => element.textContent.includes(title));
+  t.after(() => {
+    app.unmount();
+    target.remove();
+  });
+  const tab = (title) =>
+    [...target.querySelectorAll(".v-tab")].find((element) => element.textContent.includes(title));
   const edit = async (value) => {
     const input = target.querySelector('input[type="text"]');
     input.value = value;
@@ -104,7 +135,11 @@ test("settings pages retain edits and submit all pages together", async (t) => {
   await flush();
   assert.equal(page.value, "instance");
   assert.ok(navigationTarget.querySelector(".settings-pages-tabs"));
-  assert.equal(body.querySelector(".settings-pages-tabs"), null, "tabs stay outside the scrolling form");
+  assert.equal(
+    body.querySelector(".settings-pages-tabs"),
+    null,
+    "tabs stay outside the scrolling form"
+  );
   assert.ok(navigationTarget.querySelector(".v-tab__slider"));
   await edit("edited name");
   tab("Backup").click();
@@ -117,16 +152,21 @@ test("settings pages retain edits and submit all pages together", async (t) => {
   tab("Instance").click();
   await flush();
   assert.equal(target.querySelector('input[type="text"]').value, "edited name");
-  target.querySelector("form").dispatchEvent(new window.Event("submit", {
-    bubbles: true, cancelable: true
-  }));
+  target.querySelector("form").dispatchEvent(
+    new window.Event("submit", {
+      bubbles: true,
+      cancelable: true
+    })
+  );
   await flush();
-  assert.deepEqual(writes, [{ name: "edited name", path: "edited backups", enabled: true, note: "edited note" }]);
+  assert.deepEqual(writes, [
+    { name: "edited name", path: "edited backups", enabled: true, note: "edited note" }
+  ]);
   savedValues.value = JSON.parse(JSON.stringify(values));
   fields.value = [...fields.value];
   await flush();
   assert.equal(page.value, "instance", "saving or refreshing fields keeps the active page");
-  fields.value = fields.value.filter(field => field.page?.id === "backup");
+  fields.value = fields.value.filter((field) => field.page?.id === "backup");
   await flush();
   assert.equal(page.value, "backup", "a removed page falls back to an available page");
   assert.equal(target.querySelector(".settings-pages-tabs"), null);
@@ -153,22 +193,47 @@ test("shared desktop dialogs keep actions outside the scrolling body and fit the
   const events = { closes: 0, updates: 0, leaves: 0 };
   const target = document.createElement("div");
   document.body.appendChild(target);
-  const app = vue.createApp({ render: () => vue.h(DesktopDialog, {
-    id: "shared-form-dialog", title: "Edit node", modelValue: open.value,
-    width: 1200, height: 900, closable: closable.value,
-    "onUpdate:modelValue": (value) => { events.updates++; open.value = value; },
-    onClose: () => { events.closes++; },
-    onAfterLeave: () => { events.leaves++; }
-  }, {
-    default: () => vue.h("input", { value: "node.example" }),
-    footer: () => vue.h("button", "Save")
-  }) });
+  const app = vue.createApp({
+    render: () =>
+      vue.h(
+        DesktopDialog,
+        {
+          id: "shared-form-dialog",
+          title: "Edit node",
+          modelValue: open.value,
+          width: 1200,
+          height: 900,
+          closable: closable.value,
+          "onUpdate:modelValue": (value) => {
+            events.updates++;
+            open.value = value;
+          },
+          onClose: () => {
+            events.closes++;
+          },
+          onAfterLeave: () => {
+            events.leaves++;
+          }
+        },
+        {
+          default: () => vue.h("input", { value: "node.example" }),
+          footer: () => vue.h("button", "Save")
+        }
+      )
+  });
   app.use(Vuetify.createVuetify());
   app.mount(target);
-  t.after(() => { app.unmount(); target.remove(); });
+  t.after(() => {
+    app.unmount();
+    target.remove();
+  });
   await flush();
   const dialog = document.querySelector('.desktop-dialog[role="dialog"]');
-  assert.equal(target.contains(dialog), false, "dialogs must escape their parent window's clipping");
+  assert.equal(
+    target.contains(dialog),
+    false,
+    "dialogs must escape their parent window's clipping"
+  );
   assert.equal(dialog.getAttribute("role"), "dialog");
   assert.equal(dialog.getAttribute("aria-labelledby"), dialog.querySelector(".window__title").id);
   assert.equal(dialog.style.width, "328px");
@@ -195,7 +260,10 @@ test("node plugin configuration buttons open desktop windows for the clicked nod
   const opened = [];
   const service = vue.shallowReactive({
     views: [{ id: "node-plugin-config" }],
-    open: (request) => { opened.push(request); return true; }
+    open: (request) => {
+      opened.push(request);
+      return true;
+    }
   });
   const nodes = [
     { uuid: "one", remarks: "Node One", ip: "one.example", port: 24444, available: false },
@@ -212,7 +280,10 @@ test("node plugin configuration buttons open desktop windows for the clicked nod
     "./DesktopWindow.vue": { default: {} },
     "../api": {
       remoteNodeList: () => ({ ...operation(), execute: async () => ({ value: nodes }) }),
-      addNode: operation, editNode: operation, deleteNode: operation, connectNode: operation
+      addNode: operation,
+      editNode: operation,
+      deleteNode: operation,
+      connectNode: operation
     }
   });
   const target = document.createElement("div");
@@ -220,7 +291,10 @@ test("node plugin configuration buttons open desktop windows for the clicked nod
   const app = vue.createApp(Manager);
   app.use(Vuetify.createVuetify());
   app.mount(target);
-  t.after(() => { app.unmount(); target.remove(); });
+  t.after(() => {
+    app.unmount();
+    target.remove();
+  });
   await flush();
 
   const buttons = [...target.querySelectorAll('button[title="TXT_CODE_PLUGIN_CONFIG"]')];
@@ -229,11 +303,14 @@ test("node plugin configuration buttons open desktop windows for the clicked nod
   buttons[1].click();
   buttons[0].click();
   buttons[1].click();
-  assert.deepEqual(opened.map(({ view, props }) => ({ view, props })), [
-    { view: "node-plugin-config", props: { scope: "node", daemonId: "two" } },
-    { view: "node-plugin-config", props: { scope: "node", daemonId: "one" } },
-    { view: "node-plugin-config", props: { scope: "node", daemonId: "two" } }
-  ]);
+  assert.deepEqual(
+    opened.map(({ view, props }) => ({ view, props })),
+    [
+      { view: "node-plugin-config", props: { scope: "node", daemonId: "two" } },
+      { view: "node-plugin-config", props: { scope: "node", daemonId: "one" } },
+      { view: "node-plugin-config", props: { scope: "node", daemonId: "two" } }
+    ]
+  );
   assert.equal(opened[0].id, opened[2].id);
   assert.notEqual(opened[0].id, opened[1].id);
   service.views = [];
@@ -242,13 +319,21 @@ test("node plugin configuration buttons open desktop windows for the clicked nod
 });
 
 const translations = { t: (key) => key };
-const DesktopConfirmation = loadSfc("plugins/desktop/panel/src/widgets/desktop/DesktopConfirmDialog.vue", {
-  "@/lang/i18n": translations,
-  "./DesktopWindow.vue": { default: DesktopWindow }
+const DesktopConfirmation = loadSfc(
+  "plugins/desktop/panel/src/widgets/desktop/DesktopConfirmDialog.vue",
+  {
+    "@/lang/i18n": translations,
+    "./DesktopWindow.vue": { default: DesktopWindow }
+  }
+);
+const desktopService = vue.shallowReactive({
+  window: DesktopWindow,
+  confirmation: DesktopConfirmation
 });
-const desktopService = vue.shallowReactive({ window: DesktopWindow, confirmation: DesktopConfirmation });
 const { VSelect, VDialog } = Vuetify.components;
-const flush = async () => { for (let i = 0; i < 8; i++) await vue.nextTick(); };
+const flush = async () => {
+  for (let i = 0; i < 8; i++) await vue.nextTick();
+};
 
 function fixture(t) {
   const closed = vue.ref(false);
@@ -263,32 +348,103 @@ function fixture(t) {
   const target = document.createElement("div");
   document.body.appendChild(target);
   const app = vue.createApp({
-    render: () => vue.h(vue.TransitionGroup, {
-      tag: "div", name: "desktop-window",
-      onEnter: (_element, done) => { transitions.enters++; done(); },
-      onLeave: (_element, done) => { transitions.leaves++; done(); }
-    }, () => closed.value ? [] : [vue.h(DesktopWindow, {
-      key: "owner", id: "owner", title: "Owner", icon: "mdi-window-maximize", visible: visible.value, active: true,
-      minimized: minimized.value, maximized: maximized.value, zIndex: zIndex.value,
-      onMinimize: () => { minimized.value = true; },
-      onClose: () => { closed.value = true; }
-    }, { default: () => [
-      vue.h(VSelect, { menu: open.value, items: ["node-a", "node-b"] }),
-      vue.h(DesktopWindow, {
-        id: "child", title: "Child", icon: "mdi-window-maximize", visible: true, active: true,
-        minimized: false, maximized: false, zIndex: 20003
-      }, { default: () => vue.h(VSelect, { menu: childOpen.value, items: ["child-node"] }) }),
-      vue.h(VDialog, { modelValue: dialogOpen.value }, {
-        default: () => vue.h(VSelect, { menu: dialogOpen.value, items: ["dialog-node"] })
-      })
-    ] })])
+    render: () =>
+      vue.h(
+        vue.TransitionGroup,
+        {
+          tag: "div",
+          name: "desktop-window",
+          onEnter: (_element, done) => {
+            transitions.enters++;
+            done();
+          },
+          onLeave: (_element, done) => {
+            transitions.leaves++;
+            done();
+          }
+        },
+        () =>
+          closed.value
+            ? []
+            : [
+                vue.h(
+                  DesktopWindow,
+                  {
+                    key: "owner",
+                    id: "owner",
+                    title: "Owner",
+                    icon: "mdi-window-maximize",
+                    visible: visible.value,
+                    active: true,
+                    minimized: minimized.value,
+                    maximized: maximized.value,
+                    zIndex: zIndex.value,
+                    onMinimize: () => {
+                      minimized.value = true;
+                    },
+                    onClose: () => {
+                      closed.value = true;
+                    }
+                  },
+                  {
+                    default: () => [
+                      vue.h(VSelect, { menu: open.value, items: ["node-a", "node-b"] }),
+                      vue.h(
+                        DesktopWindow,
+                        {
+                          id: "child",
+                          title: "Child",
+                          icon: "mdi-window-maximize",
+                          visible: true,
+                          active: true,
+                          minimized: false,
+                          maximized: false,
+                          zIndex: 20003
+                        },
+                        {
+                          default: () =>
+                            vue.h(VSelect, { menu: childOpen.value, items: ["child-node"] })
+                        }
+                      ),
+                      vue.h(
+                        VDialog,
+                        { modelValue: dialogOpen.value },
+                        {
+                          default: () =>
+                            vue.h(VSelect, { menu: dialogOpen.value, items: ["dialog-node"] })
+                        }
+                      )
+                    ]
+                  }
+                )
+              ]
+      )
   });
-  app.use(Vuetify.createVuetify({ defaults: {
-    VMenu: { transition: false }, VDialog: { transition: false }
-  } }));
+  app.use(
+    Vuetify.createVuetify({
+      defaults: {
+        VMenu: { transition: false },
+        VDialog: { transition: false }
+      }
+    })
+  );
   app.mount(target);
-  t.after(() => { if (target.childElementCount) app.unmount(); target.remove(); });
-  return { visible, minimized, maximized, zIndex, open, dialogOpen, childOpen, target, app, transitions };
+  t.after(() => {
+    if (target.childElementCount) app.unmount();
+    target.remove();
+  });
+  return {
+    visible,
+    minimized,
+    maximized,
+    zIndex,
+    open,
+    dialogOpen,
+    childOpen,
+    target,
+    app,
+    transitions
+  };
 }
 
 function animationFixture(t) {
@@ -311,20 +467,36 @@ function animationFixture(t) {
   owner.getBoundingClientRect = () => sourceRect;
   button.getBoundingClientRect = () => targetRect;
   let scrollCalls = 0;
-  button.scrollIntoView = () => { scrollCalls++; };
+  button.scrollIntoView = () => {
+    scrollCalls++;
+  };
   const animations = [];
   owner.animate = (keyframes, options) => {
     const animation = {
-      keyframes, options, onfinish: null, cancelled: false,
-      cancel() { this.cancelled = true; }
+      keyframes,
+      options,
+      onfinish: null,
+      cancelled: false,
+      cancel() {
+        this.cancelled = true;
+      }
     };
     animations.push(animation);
     return animation;
   };
-  return { ...f, owner, button, sourceRect, targetRect, animations, scrollCalls: () => scrollCalls };
+  return {
+    ...f,
+    owner,
+    button,
+    sourceRect,
+    targetRect,
+    animations,
+    scrollCalls: () => scrollCalls
+  };
 }
 
-const transitionFrame = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+const transitionFrame = () =>
+  new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
 function pointerEvent(type, options = {}) {
   const event = new window.MouseEvent(type, { bubbles: true, cancelable: true, ...options });
@@ -350,8 +522,14 @@ function viewportFixture(t, width, height) {
 
 function boundsFixture(t, initial = {}) {
   const state = vue.reactive({
-    visible: true, minimized: false, maximized: false,
-    initialX: 100, initialY: 60, initialWidth: 800, initialHeight: 500, ...initial
+    visible: true,
+    minimized: false,
+    maximized: false,
+    initialX: 100,
+    initialY: 60,
+    initialWidth: 800,
+    initialHeight: 500,
+    ...initial
   });
   const changes = [];
   const moves = [];
@@ -360,26 +538,55 @@ function boundsFixture(t, initial = {}) {
   const target = document.createElement("div");
   document.body.appendChild(target);
   const app = vue.createApp({
-    render: () => vue.h(DesktopWindow, {
-      id: "bounds", title: "Bounds", active: true, ...state,
-      onMaximize: () => { state.maximized = !state.maximized; },
-      onFocus: () => { focuses++; },
-      onMoved: (_id, x, y) => { moves.push({ x, y }); },
-      onResized: (_id, x, y, width, height) => {
-        changes.push({ x, y, width, height });
-        Object.assign(state, { initialX: x, initialY: y, initialWidth: width, initialHeight: height });
-      }
-    }, { default: () => { renders++; return vue.h("div", "Window content"); } })
+    render: () =>
+      vue.h(
+        DesktopWindow,
+        {
+          id: "bounds",
+          title: "Bounds",
+          active: true,
+          ...state,
+          onMaximize: () => {
+            state.maximized = !state.maximized;
+          },
+          onFocus: () => {
+            focuses++;
+          },
+          onMoved: (_id, x, y) => {
+            moves.push({ x, y });
+          },
+          onResized: (_id, x, y, width, height) => {
+            changes.push({ x, y, width, height });
+            Object.assign(state, {
+              initialX: x,
+              initialY: y,
+              initialWidth: width,
+              initialHeight: height
+            });
+          }
+        },
+        {
+          default: () => {
+            renders++;
+            return vue.h("div", "Window content");
+          }
+        }
+      )
   });
   app.use(Vuetify.createVuetify());
   app.mount(target);
-  t.after(() => { if (target.childElementCount) app.unmount(); target.remove(); });
+  t.after(() => {
+    if (target.childElementCount) app.unmount();
+    target.remove();
+  });
   const element = target.querySelector(".desktop-window");
   // jsdom lacks pointer capture.
   for (const handle of element.querySelectorAll(".window__titlebar, .window__resize-handle"))
     handle.setPointerCapture = () => {};
-  const bounds = () => Object.fromEntries(["left", "top", "width", "height"]
-    .map((key) => [key, Number.parseFloat(element.style[key])]));
+  const bounds = () =>
+    Object.fromEntries(
+      ["left", "top", "width", "height"].map((key) => [key, Number.parseFloat(element.style[key])])
+    );
   const assertInside = () => {
     const box = bounds();
     assert.ok(box.left >= 0 && box.top >= 0, JSON.stringify(box));
@@ -389,13 +596,34 @@ function boundsFixture(t, initial = {}) {
   };
   const dragOutside = () => {
     const box = bounds();
-    element.querySelector(".window__titlebar").dispatchEvent(pointerEvent("pointerdown", {
-      clientX: box.left + 40, clientY: box.top + 20, bubbles: true, button: 0
-    }));
-    document.dispatchEvent(pointerEvent("pointermove", { clientX: window.innerWidth - 24, clientY: window.innerHeight - 24 }));
+    element.querySelector(".window__titlebar").dispatchEvent(
+      pointerEvent("pointerdown", {
+        clientX: box.left + 40,
+        clientY: box.top + 20,
+        bubbles: true,
+        button: 0
+      })
+    );
+    document.dispatchEvent(
+      pointerEvent("pointermove", {
+        clientX: window.innerWidth - 24,
+        clientY: window.innerHeight - 24
+      })
+    );
     document.dispatchEvent(pointerEvent("pointerup"));
   };
-  return { state, element, app, changes, moves, focuses: () => focuses, renders: () => renders, bounds, assertInside, dragOutside };
+  return {
+    state,
+    element,
+    app,
+    changes,
+    moves,
+    focuses: () => focuses,
+    renders: () => renders,
+    bounds,
+    assertInside,
+    dragOutside
+  };
 }
 
 function pointerFrameFixture(t) {
@@ -411,7 +639,7 @@ function pointerFrameFixture(t) {
     flush: () => {
       const callbacks = [...pending.values()];
       pending.clear();
-      callbacks.forEach(callback => callback());
+      callbacks.forEach((callback) => callback());
     }
   };
 }
@@ -431,35 +659,80 @@ function confirmationFixture(t, options = {}) {
   const target = document.createElement("div");
   document.body.appendChild(target);
   const app = vue.createApp({
-    render: () => vue.h(DesktopConfirmation, {
-      title: "Delete user", message: "Delete Alice?", danger: true, ...options,
-      modelValue: open.value, loading: loading.value, disabled: disabled.value,
-      "onUpdate:modelValue": (value) => { open.value = value; },
-      onConfirm: () => { events.confirmations++; },
-      onCancel: () => { events.cancellations++; },
-      onAction: (id) => events.actions.push(id)
-    })
+    render: () =>
+      vue.h(DesktopConfirmation, {
+        title: "Delete user",
+        message: "Delete Alice?",
+        danger: true,
+        ...options,
+        modelValue: open.value,
+        loading: loading.value,
+        disabled: disabled.value,
+        "onUpdate:modelValue": (value) => {
+          open.value = value;
+        },
+        onConfirm: () => {
+          events.confirmations++;
+        },
+        onCancel: () => {
+          events.cancellations++;
+        },
+        onAction: (id) => events.actions.push(id)
+      })
   });
   app.use(Vuetify.createVuetify());
   app.mount(target);
-  t.after(() => { app.unmount(); target.remove(); });
-  const findWindow = () => [...document.body.querySelectorAll(".desktop-confirm")]
-    .find(element => element.querySelector(".window__title").textContent === (options.title || "Delete user"));
+  t.after(() => {
+    app.unmount();
+    target.remove();
+  });
+  const findWindow = () =>
+    [...document.body.querySelectorAll(".desktop-confirm")].find(
+      (element) =>
+        element.querySelector(".window__title").textContent === (options.title || "Delete user")
+    );
   return { open, loading, disabled, events, findWindow };
 }
 
 function fileManagerDialogFixture(t) {
-  const events = { cancelled: 0, deleted: [], downloads: [], uploads: [], overwritePromise: undefined };
+  const events = {
+    cancelled: 0,
+    deleted: [],
+    downloads: [],
+    uploads: [],
+    overwritePromise: undefined
+  };
   const manager = {
-    dialog: vue.ref({ show: false, title: "Operation", info: "File operation", mode: "", value: "", loading: false, unzipmode: "0", code: "utf-8", ok() {}, cancel() {} }),
+    dialog: vue.ref({
+      show: false,
+      title: "Operation",
+      info: "File operation",
+      mode: "",
+      value: "",
+      loading: false,
+      unzipmode: "0",
+      code: "utf-8",
+      ok() {},
+      cancel() {}
+    }),
     spinning: vue.ref(false),
     fileStatus: vue.ref({ platform: "linux", disks: [] }),
-    permission: vue.ref({ loading: false, item: [{ key: "Owner", role: "owner" }], data: { owner: [] }, deep: false }),
+    permission: vue.ref({
+      loading: false,
+      item: [{ key: "Owner", role: "owner" }],
+      data: { owner: [] },
+      deep: false
+    }),
     selectedRowKeys: vue.ref([]),
     operationForm: vue.ref({ name: "", current: 1, pageSize: 100, total: 0 }),
     dataSource: vue.ref([]),
-    breadcrumbs: [], currentPath: vue.ref("/"), clipboard: vue.ref(), currentDisk: vue.ref("/"),
-    isMultiple: vue.ref(false), activeTab: vue.ref("root"), currentTabs: vue.ref([{ key: "root", name: "/", path: "/" }]),
+    breadcrumbs: [],
+    currentPath: vue.ref("/"),
+    clipboard: vue.ref(),
+    currentDisk: vue.ref("/"),
+    isMultiple: vue.ref(false),
+    activeTab: vue.ref("root"),
+    currentTabs: vue.ref([{ key: "root", name: "/", path: "/" }]),
     selectionData: vue.ref([]),
     loadingWindow: vue.ref({ show: false, title: "Progress", text: "Copying files" }),
     archivePreview: vue.ref({ show: false, title: "archive.zip", entries: [], loading: false }),
@@ -467,20 +740,39 @@ function fileManagerDialogFixture(t) {
     getFileList: async () => {},
     getFileStatus: async () => {},
     handleTableChange() {},
-    downloadFromUrl: async (config) => { events.downloads.push(config); },
+    downloadFromUrl: async (config) => {
+      events.downloads.push(config);
+    },
     selectedFiles: async (files, _path, overwriteHandler) => {
       events.uploads.push(files);
       events.overwritePromise = overwriteHandler({ count: 2, fileName: files[0].name });
       await events.overwritePromise;
     },
-    closeArchivePreview: () => { manager.archivePreview.value.show = false; }
+    closeArchivePreview: () => {
+      manager.archivePreview.value.show = false;
+    }
   };
-  manager.dialog.value.cancel = () => { events.cancelled++; manager.dialog.value.show = false; };
-  manager.deleteDialog.value.resolve = (confirmed) => { events.deleted.push(confirmed); manager.deleteDialog.value.show = false; };
+  manager.dialog.value.cancel = () => {
+    events.cancelled++;
+    manager.dialog.value.show = false;
+  };
+  manager.deleteDialog.value.resolve = (confirmed) => {
+    events.deleted.push(confirmed);
+    manager.deleteDialog.value.show = false;
+  };
 
-  const fileManagerFilename = path.join(root, "plugins/file/panel/src/desktop/DesktopFileManager.vue");
-  const { descriptor: fileManagerDescriptor } = parse(fs.readFileSync(fileManagerFilename, "utf8"), { filename: fileManagerFilename });
-  const fileManagerScript = compileScript(fileManagerDescriptor, { id: "file-manager-dialog-test", inlineTemplate: true });
+  const fileManagerFilename = path.join(
+    root,
+    "plugins/file/panel/src/desktop/DesktopFileManager.vue"
+  );
+  const { descriptor: fileManagerDescriptor } = parse(
+    fs.readFileSync(fileManagerFilename, "utf8"),
+    { filename: fileManagerFilename }
+  );
+  const fileManagerScript = compileScript(fileManagerDescriptor, {
+    id: "file-manager-dialog-test",
+    inlineTemplate: true
+  });
   const fileManagerModule = new Module(fileManagerFilename, module);
   const overrides = {
     "@/components/Empty.vue": { default: Empty },
@@ -489,17 +781,29 @@ function fileManagerDialogFixture(t) {
     "@/hooks/usePolling": { usePolling() {} },
     "@/plugin/context": { usePluginService: () => desktopService },
     "@/lang/i18n": { t: (key) => key },
-    "../components/FileManagerTabs.vue": { default: { props: ["activeTab", "tabs"], render: () => vue.h("div") } },
-    "../components/FileManagerPathBar.vue": { default: loadSfc("plugins/file/panel/src/components/FileManagerPathBar.vue") },
-    "../components/ArchivePreview.vue": { default: { props: ["compact", "entries", "loading"], render: () => vue.h("div", { class: "archive-content" }) } },
+    "../components/FileManagerTabs.vue": {
+      default: { props: ["activeTab", "tabs"], render: () => vue.h("div") }
+    },
+    "../components/FileManagerPathBar.vue": {
+      default: loadSfc("plugins/file/panel/src/components/FileManagerPathBar.vue")
+    },
+    "../components/ArchivePreview.vue": {
+      default: {
+        props: ["compact", "entries", "loading"],
+        render: () => vue.h("div", { class: "archive-content" })
+      }
+    },
     "../services/uploadService": { default: { uiData: vue.ref({}) } },
     "../tools/fileManager": {},
     "@/tools/fileSize": {},
     "@/tools/desktopNotice": { notifyDesktopError() {} }
   };
-  const hookOverrides = Object.fromEntries(Object.entries(overrides).map(([id, value]) => [
-    id, value?.default ? { __esModule: true, ...value } : value
-  ]));
+  const hookOverrides = Object.fromEntries(
+    Object.entries(overrides).map(([id, value]) => [
+      id,
+      value?.default ? { __esModule: true, ...value } : value
+    ])
+  );
   fileManagerModule.require = (request) => {
     const id = frontendTestImport(request, overrides);
     if (Object.hasOwn(overrides, id)) return overrides[id];
@@ -509,17 +813,29 @@ function fileManagerDialogFixture(t) {
     }
     return id === "vuetify/components" ? Vuetify.components : frontendRequire(id);
   };
-  fileManagerModule._compile(ts.transpileModule(fileManagerScript.content, {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
-  }).outputText, fileManagerFilename);
+  fileManagerModule._compile(
+    ts.transpileModule(fileManagerScript.content, {
+      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
+    }).outputText,
+    fileManagerFilename
+  );
   const target = document.createElement("div");
   document.body.appendChild(target);
-  const app = vue.createApp(fileManagerModule.exports.default, { instanceId: "instance", daemonId: "node", sessionId: "files-session" });
+  const app = vue.createApp(fileManagerModule.exports.default, {
+    instanceId: "instance",
+    daemonId: "node",
+    sessionId: "files-session"
+  });
   app.use(Vuetify.createVuetify());
   app.mount(target);
-  t.after(() => { app.unmount(); target.remove(); });
-  const findWindow = (title) => [...document.body.querySelectorAll(".desktop-window")]
-    .find(element => element.querySelector(".window__title")?.textContent === title);
+  t.after(() => {
+    app.unmount();
+    target.remove();
+  });
+  const findWindow = (title) =>
+    [...document.body.querySelectorAll(".desktop-window")].find(
+      (element) => element.querySelector(".window__title")?.textContent === title
+    );
   return { manager, events, target, findWindow };
 }
 
@@ -555,10 +871,15 @@ test("nested windows own their menus and Vuetify dialogs retain their own defaul
   f.childOpen.value = false;
   f.dialogOpen.value = true;
   await flush();
-  const dialogMenu = [...document.querySelectorAll(".v-menu")].find(el => el.textContent.includes("dialog-node"));
+  const dialogMenu = [...document.querySelectorAll(".v-menu")].find((el) =>
+    el.textContent.includes("dialog-node")
+  );
   assert.ok(dialogMenu);
-  assert.equal(dialogMenu.closest(".desktop-window"), null,
-    "a teleported Vuetify dialog must not send its menu back into the desktop window");
+  assert.equal(
+    dialogMenu.closest(".desktop-window"),
+    null,
+    "a teleported Vuetify dialog must not send its menu back into the desktop window"
+  );
 });
 
 test("windows shrink into their own taskbar button and restore from its current position", async (t) => {
@@ -566,7 +887,11 @@ test("windows shrink into their own taskbar button and restore from its current 
   f.owner.querySelector(".window__control--minimize").click();
   await flush();
   assert.equal(f.animations.length, 1);
-  assert.notEqual(f.owner.style.display, "none", "keep the window visible until minimization finishes");
+  assert.notEqual(
+    f.owner.style.display,
+    "none",
+    "keep the window visible until minimization finishes"
+  );
   assert.ok(f.owner.classList.contains("desktop-window--animating"));
   const minimize = f.animations[0];
   assert.equal(minimize.keyframes[1].transform, "translate(140px, 660px) scale(0.2, 0.064)");
@@ -609,7 +934,11 @@ test("minimizing and restoring do not trigger the window group's open or close t
   await flush();
   f.animations[0].onfinish();
   await flush();
-  assert.equal(f.transitions.leaves, 0, "the taskbar animation must not be followed by a close transition");
+  assert.equal(
+    f.transitions.leaves,
+    0,
+    "the taskbar animation must not be followed by a close transition"
+  );
   assert.equal(f.owner.style.display, "none");
 
   f.minimized.value = false;
@@ -632,9 +961,11 @@ test("restoring during minimization continues from the current frame and ignores
   const minimize = f.animations[0];
   const staleFinish = minimize.onfinish;
   const originalGetComputedStyle = window.getComputedStyle.bind(window);
-  t.mock.method(window, "getComputedStyle", (element) => element === f.owner
-    ? { transform: "matrix(0.6, 0, 0, 0.6, 70, 330)", opacity: "0.5" }
-    : originalGetComputedStyle(element));
+  t.mock.method(window, "getComputedStyle", (element) =>
+    element === f.owner
+      ? { transform: "matrix(0.6, 0, 0, 0.6, 70, 330)", opacity: "0.5" }
+      : originalGetComputedStyle(element)
+  );
   f.minimized.value = false;
   await flush();
   assert.equal(minimize.cancelled, true);
@@ -695,31 +1026,50 @@ function folderTabsFixture(t) {
   document.body.appendChild(target);
   target.addEventListener("dragover", () => events.uploads++);
   target.addEventListener("drop", () => events.uploads++);
-  const app = vue.createApp({ render: () => vue.h(FileManagerTabs, {
-    tabs: tabs.value,
-    activeTab: active.value,
-    onSelect: (key) => { active.value = key; events.selected.push(key); },
-    onClose: (key) => { events.closed.push(key); },
-    onReorder: (keys) => {
-      events.reordered.push(keys);
-      tabs.value = keys.map((key) => tabs.value.find((tab) => tab.key === key));
-    }
-  }) });
+  const app = vue.createApp({
+    render: () =>
+      vue.h(FileManagerTabs, {
+        tabs: tabs.value,
+        activeTab: active.value,
+        onSelect: (key) => {
+          active.value = key;
+          events.selected.push(key);
+        },
+        onClose: (key) => {
+          events.closed.push(key);
+        },
+        onReorder: (keys) => {
+          events.reordered.push(keys);
+          tabs.value = keys.map((key) => tabs.value.find((tab) => tab.key === key));
+        }
+      })
+  });
   app.use(Vuetify.createVuetify());
   app.mount(target);
-  t.after(() => { app.unmount(); target.remove(); });
+  t.after(() => {
+    app.unmount();
+    target.remove();
+  });
   const tab = (key) => target.querySelector(`[data-tab-key="${key}"]`);
-  const transfer = { types: ["text/plain"], files: [], setData() {}, effectAllowed: "", dropEffect: "" };
+  const transfer = {
+    types: ["text/plain"],
+    files: [],
+    setData() {},
+    effectAllowed: "",
+    dropEffect: ""
+  };
   const drag = (type, key, clientX = 25, dataTransfer = transfer) => {
     tab(key).getBoundingClientRect = () => ({ left: 0, width: 100, right: 100 });
     const event = new window.Event(type, { bubbles: true, cancelable: true });
     Object.defineProperties(event, {
-      dataTransfer: { value: dataTransfer }, clientX: { value: clientX }
+      dataTransfer: { value: dataTransfer },
+      clientX: { value: clientX }
     });
     tab(key).querySelector(".file-tab-label").dispatchEvent(event);
     return event;
   };
-  const displayed = () => [...target.querySelectorAll("[data-tab-key]")].map((tab) => tab.dataset.tabKey);
+  const displayed = () =>
+    [...target.querySelectorAll("[data-tab-key]")].map((tab) => tab.dataset.tabKey);
   const outsideDrag = (type, dataTransfer = transfer) => {
     const event = new window.Event(type, { bubbles: true, cancelable: true });
     Object.defineProperty(event, "dataTransfer", { value: dataTransfer });
@@ -736,11 +1086,17 @@ test("folder tabs make room during drag and save the preview order on drop witho
   assert.equal(f.drag("dragover", "a").defaultPrevented, true);
   await flush();
   assert.deepEqual(f.displayed(), ["c", "a", "b"]);
-  assert.deepEqual(f.tabs.value.map((tab) => tab.key), ["a", "b", "c"]);
+  assert.deepEqual(
+    f.tabs.value.map((tab) => tab.key),
+    ["a", "b", "c"]
+  );
   assert.deepEqual(f.events.reordered, []);
   f.drag("drop", "a");
   await flush();
-  assert.deepEqual(f.tabs.value.map((tab) => tab.key), ["c", "a", "b"]);
+  assert.deepEqual(
+    f.tabs.value.map((tab) => tab.key),
+    ["c", "a", "b"]
+  );
   assert.equal(f.active.value, "b");
   assert.equal(f.tab("b").getAttribute("aria-selected"), "true");
   assert.equal(f.target.querySelector(".file-folder-tab--dragging"), null);
@@ -749,10 +1105,16 @@ test("folder tabs make room during drag and save the preview order on drop witho
   f.drag("dragover", "b", 75);
   await flush();
   assert.deepEqual(f.displayed(), ["a", "b", "c"]);
-  assert.deepEqual(f.tabs.value.map((tab) => tab.key), ["c", "a", "b"]);
+  assert.deepEqual(
+    f.tabs.value.map((tab) => tab.key),
+    ["c", "a", "b"]
+  );
   f.drag("drop", "b", 75);
   await flush();
-  assert.deepEqual(f.tabs.value.map((tab) => tab.key), ["a", "b", "c"]);
+  assert.deepEqual(
+    f.tabs.value.map((tab) => tab.key),
+    ["a", "b", "c"]
+  );
   assert.deepEqual(f.events.selected, []);
   assert.equal(f.events.uploads, 0);
   f.tab("c").querySelector(".file-tab-close").click();
@@ -773,7 +1135,10 @@ test("folder tabs save drops outside the bar, restore cancelled drags and keep f
   assert.equal(container.scrollLeft, 70);
   await flush();
   assert.deepEqual(f.displayed(), ["b", "c", "a"]);
-  assert.deepEqual(f.tabs.value.map((tab) => tab.key), ["a", "b", "c"]);
+  assert.deepEqual(
+    f.tabs.value.map((tab) => tab.key),
+    ["a", "b", "c"]
+  );
   f.drag("dragend", "a");
   await flush();
   assert.equal(f.target.querySelector(".file-folder-tab--dragging"), null);
@@ -789,7 +1154,10 @@ test("folder tabs save drops outside the bar, restore cancelled drags and keep f
   assert.equal(f.outsideDrag("drop").defaultPrevented, true);
   f.drag("dragend", "a");
   await flush();
-  assert.deepEqual(f.tabs.value.map((tab) => tab.key), ["b", "c", "a"]);
+  assert.deepEqual(
+    f.tabs.value.map((tab) => tab.key),
+    ["b", "c", "a"]
+  );
   assert.deepEqual(f.displayed(), ["b", "c", "a"]);
   assert.deepEqual(f.events.reordered, [["b", "c", "a"]]);
   assert.equal(f.active.value, "b");
@@ -814,8 +1182,10 @@ test("file manager operations, archive preview and deletion use desktop subwindo
     assert.equal(operation.querySelector(".window__control--minimize"), null);
     assert.equal(operation.querySelector(".window__control--maximize"), null);
     assert.ok(operation.classList.contains("desktop-window-enter-active"));
-    if (mode === "permission") assert.equal(operation.querySelectorAll('input[type="checkbox"]').length, 4);
-    else if (mode === "unzip") assert.equal(operation.querySelectorAll('input[type="radio"]').length, 5);
+    if (mode === "permission")
+      assert.equal(operation.querySelectorAll('input[type="checkbox"]').length, 4);
+    else if (mode === "unzip")
+      assert.equal(operation.querySelectorAll('input[type="radio"]').length, 5);
     else assert.ok(operation.querySelector('input[type="text"]'));
     operation.querySelector(".window__control--close").click();
     await flush();
@@ -844,7 +1214,9 @@ test("file manager operations, archive preview and deletion use desktop subwindo
   f.manager.deleteDialog.value.show = true;
   await flush();
   const deletion = f.findWindow("TXT_CODE_COMMON_CONFIRM_DELETION");
-  [...deletion.querySelectorAll(".desktop-dialog__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_COMMON_CONFIRM")).click();
+  [...deletion.querySelectorAll(".desktop-dialog__footer .v-btn")]
+    .find((button) => button.textContent.includes("TXT_CODE_COMMON_CONFIRM"))
+    .click();
   await flush();
   assert.deepEqual(f.events.deleted, [false, true]);
   await transitionFrame();
@@ -853,7 +1225,9 @@ test("file manager operations, archive preview and deletion use desktop subwindo
 test("file manager URL downloads and upload overwrite confirmations run in desktop subwindows", async (t) => {
   const f = fileManagerDialogFixture(t);
   await flush();
-  [...f.target.querySelectorAll(".dfm-toolbar .v-btn")].find(button => button.textContent.includes("TXT_CODE_COMMON_REMOTE_DOWNLOAD")).click();
+  [...f.target.querySelectorAll(".dfm-toolbar .v-btn")]
+    .find((button) => button.textContent.includes("TXT_CODE_COMMON_REMOTE_DOWNLOAD"))
+    .click();
   await flush();
   const download = f.findWindow("TXT_CODE_COMMON_REMOTE_DOWNLOAD_RESOURCES");
   const urlInput = download.querySelector("input");
@@ -861,9 +1235,13 @@ test("file manager URL downloads and upload overwrite confirmations run in deskt
   urlInput.dispatchEvent(new window.Event("input", { bubbles: true }));
   await flush();
   assert.equal(download.querySelectorAll("input")[1].value, "server.jar");
-  [...download.querySelectorAll(".desktop-dialog__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_COMMON_CONFIRM")).click();
+  [...download.querySelectorAll(".desktop-dialog__footer .v-btn")]
+    .find((button) => button.textContent.includes("TXT_CODE_COMMON_CONFIRM"))
+    .click();
   await flush();
-  assert.deepEqual(f.events.downloads, [{ url: "https://example.com/files/server.jar", fileName: "server.jar" }]);
+  assert.deepEqual(f.events.downloads, [
+    { url: "https://example.com/files/server.jar", fileName: "server.jar" }
+  ]);
   await transitionFrame();
 
   const uploadInput = f.target.querySelector('input[type="file"]');
@@ -873,14 +1251,20 @@ test("file manager URL downloads and upload overwrite confirmations run in deskt
   await flush();
   const upload = f.findWindow("TXT_CODE_COMMON_CONFIRM_UPLOAD");
   assert.ok(upload.textContent.includes("existing.txt"));
-  [...upload.querySelectorAll(".desktop-dialog__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_COMMON_UPLOAD")).click();
+  [...upload.querySelectorAll(".desktop-dialog__footer .v-btn")]
+    .find((button) => button.textContent.includes("TXT_CODE_COMMON_UPLOAD"))
+    .click();
   await flush();
   assert.equal(f.events.uploads.length, 1);
   const overwrite = f.findWindow("TXT_CODE_COMMON_OVERWRITING_FILE");
   assert.ok(overwrite);
   assert.equal(overwrite.querySelectorAll('input[type="checkbox"]').length, 2);
   overwrite.querySelector(".window__control--close").click();
-  assert.deepEqual(await f.events.overwritePromise, { confirmed: false, all: false, overwrite: false });
+  assert.deepEqual(await f.events.overwritePromise, {
+    confirmed: false,
+    all: false,
+    overwrite: false
+  });
   await transitionFrame();
 });
 
@@ -900,12 +1284,26 @@ test("the shared task action opens its sidebar and keeps task filters and cancel
   const account = { state: vue.reactive({ userInfo: { uuid: "alice" } }), isLogged: vue.ref(true) };
   const cancelled = [];
   const store = {
-    open: vue.ref(false), tasks: vue.ref([]), unavailable: vue.ref(false), loading: vue.ref(false),
-    error: vue.ref(false), refresh: async () => {}, connect() {}, disconnect() {},
-    reset() { store.open.value = false; store.tasks.value = []; },
-    cancel: async (task) => { cancelled.push(task.id); }, clear: async () => {}
+    open: vue.ref(false),
+    tasks: vue.ref([]),
+    unavailable: vue.ref(false),
+    loading: vue.ref(false),
+    error: vue.ref(false),
+    refresh: async () => {},
+    connect() {},
+    disconnect() {},
+    reset() {
+      store.open.value = false;
+      store.tasks.value = [];
+    },
+    cancel: async (task) => {
+      cancelled.push(task.id);
+    },
+    clear: async () => {}
   };
-  store.activeCount = vue.computed(() => store.tasks.value.filter(task => task.state === "running").length);
+  store.activeCount = vue.computed(
+    () => store.tasks.value.filter((task) => task.state === "running").length
+  );
   const overrides = {
     "@/lang/i18n": { t: (key) => key },
     "@/stores/useAppStateStore": { useAppStateStore: () => account },
@@ -926,18 +1324,53 @@ test("the shared task action opens its sidebar and keeps task filters and cancel
         });
     }
   };
-  const Sidebar = loadSfc("plugins/console/panel/src/components/BackgroundTasksSidebar.vue", overrides);
+  const Sidebar = loadSfc(
+    "plugins/console/panel/src/components/BackgroundTasksSidebar.vue",
+    overrides
+  );
   const target = document.createElement("div");
   document.body.appendChild(target);
-  const app = vue.createApp({ render: () => vue.h(Vuetify.components.VLayout, {}, {
-    default: () => [vue.h(Button), vue.h(Sidebar)]
-  }) });
+  const app = vue.createApp({
+    render: () =>
+      vue.h(
+        Vuetify.components.VLayout,
+        {},
+        {
+          default: () => [vue.h(Button), vue.h(Sidebar)]
+        }
+      )
+  });
   app.use(Vuetify.createVuetify());
   app.mount(target);
-  t.after(() => { app.unmount(); target.remove(); });
+  t.after(() => {
+    app.unmount();
+    target.remove();
+  });
   store.tasks.value = [
-    { id: "running", daemonId: "node", nodeName: "Node", name: "example.jar", kind: "modDownload", state: "running", current: 5, total: 10, cancellable: true, startedAt: 100 },
-    { id: "finished", daemonId: "node", nodeName: "Node", name: "archive.zip", kind: "extract", state: "completed", current: 0, total: 0, cancellable: false, startedAt: 50 }
+    {
+      id: "running",
+      daemonId: "node",
+      nodeName: "Node",
+      name: "example.jar",
+      kind: "modDownload",
+      state: "running",
+      current: 5,
+      total: 10,
+      cancellable: true,
+      startedAt: 100
+    },
+    {
+      id: "finished",
+      daemonId: "node",
+      nodeName: "Node",
+      name: "archive.zip",
+      kind: "extract",
+      state: "completed",
+      current: 0,
+      total: 0,
+      cancellable: false,
+      startedAt: 50
+    }
   ];
   await flush();
   const button = target.querySelector('button[aria-controls="background-tasks-sidebar"]');
@@ -969,24 +1402,56 @@ test("the shared task action opens its sidebar and keeps task filters and cancel
   assert.deepEqual(store.tasks.value, []);
 });
 
-function instanceSettingsFixture(t, { admin = true, allowChangeCmd = true, processType = "docker", nickname = "Example" } = {}) {
-  const account = { isAdmin: vue.ref(admin), state: vue.reactive({ settings: { allowChangeCmd } }) };
+function instanceSettingsFixture(
+  t,
+  { admin = true, allowChangeCmd = true, processType = "docker", nickname = "Example" } = {}
+) {
+  const account = {
+    isAdmin: vue.ref(admin),
+    state: vue.reactive({ settings: { allowChangeCmd } })
+  };
   const docker = {
-    image: "java:21", networkMode: "bridge", networkAliases: [], gpuEnabled: false, gpuCount: -1, gpuDeviceIds: [],
-    ports: ["{mcsm_port1}:25565/tcp"], extraVolumes: ["/srv/data|/data"],
-    env: ["TOKEN=a=b"], labels: ["note=keep=this"], capAdd: ["SYS_PTRACE"], capDrop: ["NET_RAW"],
-    devices: ["/dev/a", "/dev/b|/inside/b|rwm"], workingDir: "/data", changeWorkdir: true
+    image: "java:21",
+    networkMode: "bridge",
+    networkAliases: [],
+    gpuEnabled: false,
+    gpuCount: -1,
+    gpuDeviceIds: [],
+    ports: ["{mcsm_port1}:25565/tcp"],
+    extraVolumes: ["/srv/data|/data"],
+    env: ["TOKEN=a=b"],
+    labels: ["note=keep=this"],
+    capAdd: ["SYS_PTRACE"],
+    capDrop: ["NET_RAW"],
+    devices: ["/dev/a", "/dev/b|/inside/b|rwm"],
+    workingDir: "/data",
+    changeWorkdir: true
   };
   const info = vue.ref({
-    instanceUuid: "instance-one", status: 0,
+    instanceUuid: "instance-one",
+    status: 0,
     config: {
-      nickname, type: "minecraft/java", processType, fileCode: "utf-8",
-      startCommand: "java -jar server.jar", stopCommand: "stop", updateCommand: "", cwd: "/srv/server", endTime: 0,
-      docker, eventTask: { autoRestart: true }, unknownSetting: { preserve: true }
+      nickname,
+      type: "minecraft/java",
+      processType,
+      fileCode: "utf-8",
+      startCommand: "java -jar server.jar",
+      stopCommand: "stop",
+      updateCommand: "",
+      cwd: "/srv/server",
+      endTime: 0,
+      docker,
+      eventTask: { autoRestart: true },
+      unknownSetting: { preserve: true }
     }
   });
-  const writes = [], errors = [], notices = [], reads = [], metadata = [];
-  let failSave = false, failLoad = false;
+  const writes = [],
+    errors = [],
+    notices = [],
+    reads = [],
+    metadata = [];
+  let failSave = false,
+    failLoad = false;
   const update = (api) => () => ({
     execute: async (request) => {
       if (failSave) throw new Error("Save failed");
@@ -996,32 +1461,41 @@ function instanceSettingsFixture(t, { admin = true, allowChangeCmd = true, proce
   const commonFilename = path.join(root, "plugins/console/panel/src/tools/common.ts");
   const common = new Module(commonFilename, module);
   common.require = frontendRequire;
-  common._compile(ts.transpileModule(fs.readFileSync(commonFilename, "utf8"), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
-  }).outputText, commonFilename);
+  common._compile(
+    ts.transpileModule(fs.readFileSync(commonFilename, "utf8"), {
+      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
+    }).outputText,
+    commonFilename
+  );
   const Settings = loadSfc("plugins/instance/panel/src/desktop/DesktopInstanceSettings.vue", {
     dayjs: { default: frontendRequire("dayjs") },
     "@/lang/i18n": translations,
     "@/hooks/useInstance": { INSTANCE_TYPE_TRANSLATION: { "minecraft/java": "Minecraft Java" } },
     "@/stores/useAppStateStore": { useAppStateStore: () => account },
     "@/services/apis/instance": {
-      getInstanceInfo: () => ({ execute: async (request) => {
-        reads.push(request);
-        if (failLoad) throw new Error("Load failed");
-        return vue.ref(info.value);
-      } }),
+      getInstanceInfo: () => ({
+        execute: async (request) => {
+          reads.push(request);
+          if (failLoad) throw new Error("Load failed");
+          return vue.ref(info.value);
+        }
+      }),
       updateAnyInstanceConfig: update("admin"),
       updateInstanceConfig: update("limited")
     },
     "@/services/apis/envImage": {
-      getNetworkModeList: () => ({ execute: async (request) => {
-        metadata.push({ kind: "networks", ...request });
-        return vue.ref([{ Name: "bridge" }, { Name: "custom" }]);
-      } }),
-      imageList: () => ({ execute: async (request) => {
-        metadata.push({ kind: "images", ...request });
-        return vue.ref([{ RepoTags: ["java:21", "java:latest"] }]);
-      } })
+      getNetworkModeList: () => ({
+        execute: async (request) => {
+          metadata.push({ kind: "networks", ...request });
+          return vue.ref([{ Name: "bridge" }, { Name: "custom" }]);
+        }
+      }),
+      imageList: () => ({
+        execute: async (request) => {
+          metadata.push({ kind: "images", ...request });
+          return vue.ref([{ RepoTags: ["java:21", "java:latest"] }]);
+        }
+      })
     },
     "@/tools/common": common.exports,
     "@/tools/desktopNotice": {
@@ -1034,17 +1508,45 @@ function instanceSettingsFixture(t, { admin = true, allowChangeCmd = true, proce
   const target = document.createElement("div");
   document.body.appendChild(target);
   const closed = vue.ref(false);
-  const app = vue.createApp({ render: () => closed.value ? null : vue.h(DesktopWindow, {
-    id: "instance-settings-one", title: "Instance settings", visible: true, active: true,
-    minimized: false, maximized: false, onClose: () => { closed.value = true; }
-  }, { default: () => vue.h(Settings, {
-    instanceId: "instance-one", daemonId: "node-one", onClose: () => { closed.value = true; }
-  }) }) });
+  const app = vue.createApp({
+    render: () =>
+      closed.value
+        ? null
+        : vue.h(
+            DesktopWindow,
+            {
+              id: "instance-settings-one",
+              title: "Instance settings",
+              visible: true,
+              active: true,
+              minimized: false,
+              maximized: false,
+              onClose: () => {
+                closed.value = true;
+              }
+            },
+            {
+              default: () =>
+                vue.h(Settings, {
+                  instanceId: "instance-one",
+                  daemonId: "node-one",
+                  onClose: () => {
+                    closed.value = true;
+                  }
+                })
+            }
+          )
+  });
   app.use(Vuetify.createVuetify());
-  t.after(() => { app.unmount(); target.remove(); });
+  t.after(() => {
+    app.unmount();
+    target.remove();
+  });
   app.mount(target);
   const field = (key) => {
-    const label = [...target.querySelectorAll(".dis__body label[for]")].find((entry) => entry.textContent.trim() === key);
+    const label = [...target.querySelectorAll(".dis__body label[for]")].find(
+      (entry) => entry.textContent.trim() === key
+    );
     assert.ok(label, "field label exists: " + key);
     return document.getElementById(label.htmlFor);
   };
@@ -1054,79 +1556,116 @@ function instanceSettingsFixture(t, { admin = true, allowChangeCmd = true, proce
     input.dispatchEvent(new window.Event("input", { bubbles: true }));
   };
   return {
-    target, writes, errors, notices, reads, metadata, closed, account, info, field, setField,
+    target,
+    writes,
+    errors,
+    notices,
+    reads,
+    metadata,
+    closed,
+    account,
+    info,
+    field,
+    setField,
     save: async () => {
       target.querySelector(".dis__header .dis-btn--primary").click();
       await settle();
     },
-    reload: () => [...target.querySelectorAll(".dis__header button")].find((button) => button.textContent.includes("TXT_CODE_COMMON_REFRESH")).click(),
-    setFailSave: (value) => { failSave = value; },
-    setFailLoad: (value) => { failLoad = value; }
+    reload: () =>
+      [...target.querySelectorAll(".dis__header button")]
+        .find((button) => button.textContent.includes("TXT_CODE_COMMON_REFRESH"))
+        .click(),
+    setFailSave: (value) => {
+      failSave = value;
+    },
+    setFailLoad: (value) => {
+      failLoad = value;
+    }
   };
 }
 
-const settingsButton = (root, text) => [...root.querySelectorAll("button")].find((button) => button.textContent.includes(text));
-const settingsListEditor = () => document.querySelector(".dis-list-editor:not(.desktop-window-leave-active)");
+const settingsButton = (root, text) =>
+  [...root.querySelectorAll("button")].find((button) => button.textContent.includes(text));
+const settingsListEditor = () =>
+  document.querySelector(".dis-list-editor:not(.desktop-window-leave-active)");
 
 for (const admin of [true, false]) {
-  test("independent instance settings save through the " + (admin ? "admin" : "limited") + " API without mutating fetched data", async (t) => {
-    const f = instanceSettingsFixture(t, { admin });
-    await flush();
-    const page = f.target.querySelector(".dis");
-    assert.ok(page.closest(".desktop-window"));
-    assert.equal(document.querySelector(".v-overlay--active.v-dialog"), null);
-    assert.equal(f.target.querySelector(".app-dialog"), null);
-    assert.equal(page.querySelector(".dis__body .dis__header"), null);
-    assert.equal(page.querySelectorAll(".dis__tabs button").length, admin ? 4 : 1);
-    assert.deepEqual(f.reads[0].params, { uuid: "instance-one", daemonId: "node-one" });
-    assert.equal(page.querySelector(".v-input--error"), null);
-    f.setField("TXT_CODE_COMMON_STARTUP_COMMAND", "  ");
-    await f.save();
-    assert.equal(f.field("TXT_CODE_COMMON_STARTUP_COMMAND").closest(".v-input--error"), null);
-    assert.equal(f.writes[0].data.startCommand, "  ", "Docker can use the image's default command");
-    f.writes.length = 0;
-    if (admin) {
-      f.field("TXT_CODE_COMMON_ENABLE_DOCKER_CONTAINER").click();
+  test(
+    "independent instance settings save through the " +
+      (admin ? "admin" : "limited") +
+      " API without mutating fetched data",
+    async (t) => {
+      const f = instanceSettingsFixture(t, { admin });
       await flush();
+      const page = f.target.querySelector(".dis");
+      assert.ok(page.closest(".desktop-window"));
+      assert.equal(document.querySelector(".v-overlay--active.v-dialog"), null);
+      assert.equal(f.target.querySelector(".app-dialog"), null);
+      assert.equal(page.querySelector(".dis__body .dis__header"), null);
+      assert.equal(page.querySelectorAll(".dis__tabs button").length, admin ? 4 : 1);
+      assert.deepEqual(f.reads[0].params, { uuid: "instance-one", daemonId: "node-one" });
+      assert.equal(page.querySelector(".v-input--error"), null);
+      f.setField("TXT_CODE_COMMON_STARTUP_COMMAND", "  ");
+      await f.save();
+      assert.equal(f.field("TXT_CODE_COMMON_STARTUP_COMMAND").closest(".v-input--error"), null);
+      assert.equal(
+        f.writes[0].data.startCommand,
+        "  ",
+        "Docker can use the image's default command"
+      );
+      f.writes.length = 0;
+      if (admin) {
+        f.field("TXT_CODE_COMMON_ENABLE_DOCKER_CONTAINER").click();
+        await flush();
+        await f.save();
+        assert.ok(f.field("TXT_CODE_COMMON_STARTUP_COMMAND").closest(".v-input--error"));
+        assert.deepEqual(f.writes, [], "disabling Docker requires a start command");
+        f.field("TXT_CODE_COMMON_ENABLE_DOCKER_CONTAINER").click();
+        await flush();
+      }
+      f.setField("TXT_CODE_COMMON_STARTUP_COMMAND", "java -jar server.jar\necho ready");
       await f.save();
       assert.ok(f.field("TXT_CODE_COMMON_STARTUP_COMMAND").closest(".v-input--error"));
-      assert.deepEqual(f.writes, [], "disabling Docker requires a start command");
-      f.field("TXT_CODE_COMMON_ENABLE_DOCKER_CONTAINER").click();
+      assert.ok(
+        page.textContent.includes(
+          "TXT_CODE_COMMON_YOU_CANNOT_INCLUDE_MULTIPLE_LINES_IN_YOUR_STARTUP_PROGRAM_THIS_HAS_TO_BE_A_ONE_LINER"
+        )
+      );
+      assert.deepEqual(f.errors, [], "missing fields use inline errors instead of a toast");
+      assert.deepEqual(f.writes, []);
+      f.setField("TXT_CODE_COMMON_STARTUP_COMMAND", "java -Xmx2G -jar server.jar");
       await flush();
+      assert.equal(f.field("TXT_CODE_COMMON_STARTUP_COMMAND").closest(".v-input--error"), null);
+      assert.equal(f.info.value.config.startCommand, "java -jar server.jar");
+      f.setFailSave(true);
+      await f.save();
+      await flush();
+      assert.equal(f.closed.value, false);
+      assert.equal(f.writes.length, 0);
+      assert.ok(f.errors.includes("Save failed"));
+      assert.equal(f.field("TXT_CODE_COMMON_STARTUP_COMMAND").value, "java -Xmx2G -jar server.jar");
+      f.setFailSave(false);
+      await f.save();
+      await flush();
+      assert.equal(f.closed.value, false, "saving keeps the desktop editor open");
+      assert.equal(f.writes[0].api, admin ? "admin" : "limited");
+      assert.deepEqual(f.writes[0].params, { uuid: "instance-one", daemonId: "node-one" });
+      assert.equal(f.writes[0].data.startCommand, "java -Xmx2G -jar server.jar");
+      assert.deepEqual(f.writes[0].data.unknownSetting, { preserve: true });
+      assert.deepEqual(f.notices.at(-1), ["TXT_CODE_COMMON_UPDATE_SUCCESSFUL", "success"]);
     }
-    f.setField("TXT_CODE_COMMON_STARTUP_COMMAND", "java -jar server.jar\necho ready");
-    await f.save();
-    assert.ok(f.field("TXT_CODE_COMMON_STARTUP_COMMAND").closest(".v-input--error"));
-    assert.ok(page.textContent.includes("TXT_CODE_COMMON_YOU_CANNOT_INCLUDE_MULTIPLE_LINES_IN_YOUR_STARTUP_PROGRAM_THIS_HAS_TO_BE_A_ONE_LINER"));
-    assert.deepEqual(f.errors, [], "missing fields use inline errors instead of a toast");
-    assert.deepEqual(f.writes, []);
-    f.setField("TXT_CODE_COMMON_STARTUP_COMMAND", "java -Xmx2G -jar server.jar");
-    await flush();
-    assert.equal(f.field("TXT_CODE_COMMON_STARTUP_COMMAND").closest(".v-input--error"), null);
-    assert.equal(f.info.value.config.startCommand, "java -jar server.jar");
-    f.setFailSave(true);
-    await f.save();
-    await flush();
-    assert.equal(f.closed.value, false);
-    assert.equal(f.writes.length, 0);
-    assert.ok(f.errors.includes("Save failed"));
-    assert.equal(f.field("TXT_CODE_COMMON_STARTUP_COMMAND").value, "java -Xmx2G -jar server.jar");
-    f.setFailSave(false);
-    await f.save();
-    await flush();
-    assert.equal(f.closed.value, false, "saving keeps the desktop editor open");
-    assert.equal(f.writes[0].api, admin ? "admin" : "limited");
-    assert.deepEqual(f.writes[0].params, { uuid: "instance-one", daemonId: "node-one" });
-    assert.equal(f.writes[0].data.startCommand, "java -Xmx2G -jar server.jar");
-    assert.deepEqual(f.writes[0].data.unknownSetting, { preserve: true });
-    assert.deepEqual(f.notices.at(-1), ["TXT_CODE_COMMON_UPDATE_SUCCESSFUL", "success"]);
-  });
+  );
 }
 
 test("independent instance settings mark missing fields across unvisited tabs and select the first invalid tab", async (t) => {
   const f = instanceSettingsFixture(t);
   await flush();
-  const missing = ["TXT_CODE_COMMON_INSTANCE_NAME", "TXT_CODE_COMMON_CURRENT_IMAGE_IN_USE", "TXT_CODE_COMMON_NETWORK_MODE", "TXT_CODE_COMMON_WORKING_DIRECTORY"];
+  const missing = [
+    "TXT_CODE_COMMON_INSTANCE_NAME",
+    "TXT_CODE_COMMON_CURRENT_IMAGE_IN_USE",
+    "TXT_CODE_COMMON_NETWORK_MODE",
+    "TXT_CODE_COMMON_WORKING_DIRECTORY"
+  ];
   for (const key of missing) f.setField(key, "");
   await flush();
   await f.save();
@@ -1216,9 +1755,12 @@ test("independent Docker desktop editors round-trip lists and cancel without cha
   await flush();
   const before = JSON.parse(JSON.stringify(f.info.value.config.docker));
   const kinds = [
-    ["TXT_CODE_COMMON_OPEN_PORTS", "ports"], ["TXT_CODE_COMMON_MOUNT_ADDITIONAL_DIRECTORIES", "extraVolumes"],
-    ["TXT_CODE_COMMON_ENVIRONMENT_VARIABLES", "env"], ["TXT_CODE_DOCKER_CONTAINER_LABELS", "labels"],
-    ["TXT_CODE_COMMON_CAPABILITIES", "capAdd"], ["TXT_CODE_COMMON_DEVICES", "devices"]
+    ["TXT_CODE_COMMON_OPEN_PORTS", "ports"],
+    ["TXT_CODE_COMMON_MOUNT_ADDITIONAL_DIRECTORIES", "extraVolumes"],
+    ["TXT_CODE_COMMON_ENVIRONMENT_VARIABLES", "env"],
+    ["TXT_CODE_DOCKER_CONTAINER_LABELS", "labels"],
+    ["TXT_CODE_COMMON_CAPABILITIES", "capAdd"],
+    ["TXT_CODE_COMMON_DEVICES", "devices"]
   ];
   for (const [title] of kinds) {
     settingsButton(f.target.querySelector(".dis__list-buttons"), title).click();
@@ -1227,10 +1769,16 @@ test("independent Docker desktop editors round-trip lists and cancel without cha
     assert.ok(editor, title + " opens a desktop child window");
     assert.equal(document.querySelector(".v-overlay--active.v-dialog"), null);
     assert.equal(f.target.querySelector(".dis__header .dis-btn--primary").disabled, true);
-    settingsButton(editor.querySelector(".desktop-dialog__footer"), "TXT_CODE_COMMON_CONFIRM").click();
+    settingsButton(
+      editor.querySelector(".desktop-dialog__footer"),
+      "TXT_CODE_COMMON_CONFIRM"
+    ).click();
     await flush();
   }
-  settingsButton(f.target.querySelector(".dis__list-buttons"), "TXT_CODE_COMMON_ENVIRONMENT_VARIABLES").click();
+  settingsButton(
+    f.target.querySelector(".dis__list-buttons"),
+    "TXT_CODE_COMMON_ENVIRONMENT_VARIABLES"
+  ).click();
   await flush();
   let editor = settingsListEditor();
   const value = editor.querySelector("textarea");
@@ -1239,7 +1787,10 @@ test("independent Docker desktop editors round-trip lists and cancel without cha
   value.dispatchEvent(new window.Event("input", { bubbles: true }));
   settingsButton(editor.querySelector(".desktop-dialog__footer"), "TXT_CODE_COMMON_CANCEL").click();
   await flush();
-  settingsButton(f.target.querySelector(".dis__list-buttons"), "TXT_CODE_COMMON_ENVIRONMENT_VARIABLES").click();
+  settingsButton(
+    f.target.querySelector(".dis__list-buttons"),
+    "TXT_CODE_COMMON_ENVIRONMENT_VARIABLES"
+  ).click();
   await flush();
   editor = settingsListEditor();
   assert.equal(editor.querySelector("textarea").value, "a=b");
@@ -1256,10 +1807,16 @@ test("independent Docker port allocation pairs tokens and confirming an empty en
   await flush();
   settingsButton(f.target.querySelector(".dis__tabs"), "TXT_CODE_COMMON_CONTAINERIZATION").click();
   await flush();
-  settingsButton(f.target.querySelector(".dis__list-buttons"), "TXT_CODE_COMMON_OPEN_PORTS").click();
+  settingsButton(
+    f.target.querySelector(".dis__list-buttons"),
+    "TXT_CODE_COMMON_OPEN_PORTS"
+  ).click();
   await flush();
   let editor = settingsListEditor();
-  settingsButton(editor.querySelector(".dis-list-editor__toolbar"), "TXT_CODE_COMMON_ADD_CONFIGURATION").click();
+  settingsButton(
+    editor.querySelector(".dis-list-editor__toolbar"),
+    "TXT_CODE_COMMON_ADD_CONFIGURATION"
+  ).click();
   await flush();
   const newRow = [...editor.querySelectorAll(".dis-list-editor__row")].at(-1);
   const automatic = newRow.querySelectorAll('input[type="checkbox"]');
@@ -1267,21 +1824,35 @@ test("independent Docker port allocation pairs tokens and confirming an empty en
   await flush();
   automatic[1].click();
   await flush();
-  assert.deepEqual([...newRow.querySelectorAll('input[type="text"]')].slice(0, 2).map((input) => input.value),
-    ["{mcsm_port2}", "{mcsm_port2}"]);
-  settingsButton(editor.querySelector(".desktop-dialog__footer"), "TXT_CODE_COMMON_CONFIRM").click();
+  assert.deepEqual(
+    [...newRow.querySelectorAll('input[type="text"]')].slice(0, 2).map((input) => input.value),
+    ["{mcsm_port2}", "{mcsm_port2}"]
+  );
+  settingsButton(
+    editor.querySelector(".desktop-dialog__footer"),
+    "TXT_CODE_COMMON_CONFIRM"
+  ).click();
   await flush();
-  settingsButton(f.target.querySelector(".dis__list-buttons"), "TXT_CODE_COMMON_ENVIRONMENT_VARIABLES").click();
+  settingsButton(
+    f.target.querySelector(".dis__list-buttons"),
+    "TXT_CODE_COMMON_ENVIRONMENT_VARIABLES"
+  ).click();
   await flush();
   editor = settingsListEditor();
   editor.querySelector('button[aria-label="TXT_CODE_COMMON_ACTIONS"]').click();
   await flush();
-  settingsButton(editor.querySelector(".desktop-dialog__footer"), "TXT_CODE_COMMON_CONFIRM").click();
+  settingsButton(
+    editor.querySelector(".desktop-dialog__footer"),
+    "TXT_CODE_COMMON_CONFIRM"
+  ).click();
   await flush();
   await f.save();
   await flush();
   assert.deepEqual(f.writes[0].data.docker.env, []);
-  assert.deepEqual(f.writes[0].data.docker.ports, ["{mcsm_port1}:25565/tcp", "{mcsm_port2}:{mcsm_port2}/tcp"]);
+  assert.deepEqual(f.writes[0].data.docker.ports, [
+    "{mcsm_port1}:25565/tcp",
+    "{mcsm_port2}:{mcsm_port2}/tcp"
+  ]);
   assert.deepEqual(f.info.value.config.docker.env, ["TOKEN=a=b"]);
 });
 
@@ -1303,24 +1874,45 @@ test("independent instance settings recover from reload failure and scope image/
   await flush();
   f.field("TXT_CODE_COMMON_NETWORK_MODE").focus();
   await flush();
-  assert.deepEqual(f.metadata.map((request) => [request.kind, request.params.daemonId]),
-    [["images", "node-one"], ["networks", "node-one"]]);
+  assert.deepEqual(
+    f.metadata.map((request) => [request.kind, request.params.daemonId]),
+    [
+      ["images", "node-one"],
+      ["networks", "node-one"]
+    ]
+  );
   assert.equal(f.metadata[0].method, "GET");
 });
 
 test("the shell supplies layout to the native task drawer and closing it preserves its task stream", async (t) => {
   const lifecycle = { connects: 0, disconnects: 0 };
   const store = {
-    open: vue.ref(false), tasks: vue.ref([]), unavailable: vue.ref(false), loading: vue.ref(false),
-    error: vue.ref(false), refresh: async () => {},
-    connect() { lifecycle.connects++; }, disconnect() { lifecycle.disconnects++; },
-    reset() { store.open.value = false; store.tasks.value = []; },
-    cancel: async () => {}, clear: async () => {}
+    open: vue.ref(false),
+    tasks: vue.ref([]),
+    unavailable: vue.ref(false),
+    loading: vue.ref(false),
+    error: vue.ref(false),
+    refresh: async () => {},
+    connect() {
+      lifecycle.connects++;
+    },
+    disconnect() {
+      lifecycle.disconnects++;
+    },
+    reset() {
+      store.open.value = false;
+      store.tasks.value = [];
+    },
+    cancel: async () => {},
+    clear: async () => {}
   };
   const Sidebar = loadSfc("plugins/console/panel/src/components/BackgroundTasksSidebar.vue", {
     "@/lang/i18n": translations,
     "@/stores/useAppStateStore": {
-      useAppStateStore: () => ({ state: vue.reactive({ userInfo: { uuid: "alice" } }), isLogged: vue.ref(true) })
+      useAppStateStore: () => ({
+        state: vue.reactive({ userInfo: { uuid: "alice" } }),
+        isLogged: vue.ref(true)
+      })
     },
     "@/stores/useBackgroundTasks": { useBackgroundTasks: () => store }
   });
@@ -1330,17 +1922,33 @@ test("the shell supplies layout to the native task drawer and closing it preserv
     "@/stores/useAppStateStore": { useAppStateStore: () => ({ isAdmin: vue.ref(true) }) },
     "@/stores/useAppConfigStore": {
       useAppConfigStore: () => ({
-        hasBgImage: vue.ref(false), isDarkTheme: vue.ref(false), isSidebarOpen: vue.ref(false),
-        useSidebarLayout: vue.ref(false), initAppTheme: async () => {}
+        hasBgImage: vue.ref(false),
+        isDarkTheme: vue.ref(false),
+        isSidebarOpen: vue.ref(false),
+        useSidebarLayout: vue.ref(false),
+        initAppTheme: async () => {}
       })
     },
-    "@/plugin/context": { ctx: { slots: { entries: () => [{ id: "tasks", component: Sidebar }] } } },
+    "@/plugin/context": {
+      ctx: { slots: { entries: () => [{ id: "tasks", component: Sidebar }] } }
+    },
     "@/tools/dom": { closeAppLoading() {}, setLoadingTitle() {} },
     "vue-router": { RouterView: empty, useRoute: () => route.value },
     "./vuetify": { setVuetifyTheme() {} },
-    "./components/AppConfigProvider.vue": { default: { inheritAttrs: false, render() { return this.$slots.default?.(); } } },
-    ...Object.fromEntries(["AppHeader", "AppSidebarMenu", "Breadcrumbs", "InputDialogProvider"]
-      .map(name => [`./components/${name}.vue`, { default: empty }]))
+    "./components/AppConfigProvider.vue": {
+      default: {
+        inheritAttrs: false,
+        render() {
+          return this.$slots.default?.();
+        }
+      }
+    },
+    ...Object.fromEntries(
+      ["AppHeader", "AppSidebarMenu", "Breadcrumbs", "InputDialogProvider"].map((name) => [
+        `./components/${name}.vue`,
+        { default: empty }
+      ])
+    )
   });
   const target = document.createElement("div");
   document.body.appendChild(target);
@@ -1356,10 +1964,19 @@ test("the shell supplies layout to the native task drawer and closing it preserv
   app.mount(target);
   await flush();
   store.open.value = true;
-  store.tasks.value = [{
-    id: "running", daemonId: "node", name: "example.jar", kind: "download", state: "running",
-    current: 5, total: 10, cancellable: false, startedAt: 100
-  }];
+  store.tasks.value = [
+    {
+      id: "running",
+      daemonId: "node",
+      name: "example.jar",
+      kind: "download",
+      state: "running",
+      current: 5,
+      total: 10,
+      cancellable: false,
+      startedAt: 100
+    }
+  ];
   await flush();
   const drawer = target.querySelector("aside.background-tasks-drawer");
   assert.ok(drawer.classList.contains("v-navigation-drawer--active"));
@@ -1391,17 +2008,38 @@ test("the shell supplies layout to the native task drawer and closing it preserv
 test("closing a background task desktop window preserves the shared task stream and badge", async (t) => {
   const lifecycle = { connects: 0, disconnects: 0, resets: 0, refreshes: 0 };
   const store = {
-    open: vue.ref(false), tasks: vue.ref([]), unavailable: vue.ref(false), loading: vue.ref(false),
-    error: vue.ref(false), refresh: async () => { lifecycle.refreshes++; },
-    connect() { lifecycle.connects++; }, disconnect() { lifecycle.disconnects++; },
-    reset() { lifecycle.resets++; store.open.value = false; store.tasks.value = []; },
-    cancel: async () => {}, clear: async () => {}
+    open: vue.ref(false),
+    tasks: vue.ref([]),
+    unavailable: vue.ref(false),
+    loading: vue.ref(false),
+    error: vue.ref(false),
+    refresh: async () => {
+      lifecycle.refreshes++;
+    },
+    connect() {
+      lifecycle.connects++;
+    },
+    disconnect() {
+      lifecycle.disconnects++;
+    },
+    reset() {
+      lifecycle.resets++;
+      store.open.value = false;
+      store.tasks.value = [];
+    },
+    cancel: async () => {},
+    clear: async () => {}
   };
-  const activeCount = vue.computed(() => store.tasks.value.filter(task => task.state === "running").length);
+  const activeCount = vue.computed(
+    () => store.tasks.value.filter((task) => task.state === "running").length
+  );
   const Sidebar = loadSfc("plugins/console/panel/src/components/BackgroundTasksSidebar.vue", {
     "@/lang/i18n": translations,
     "@/stores/useAppStateStore": {
-      useAppStateStore: () => ({ state: vue.reactive({ userInfo: { uuid: "alice" } }), isLogged: vue.ref(true) })
+      useAppStateStore: () => ({
+        state: vue.reactive({ userInfo: { uuid: "alice" } }),
+        isLogged: vue.ref(true)
+      })
     },
     "@/stores/useBackgroundTasks": { useBackgroundTasks: () => store }
   });
@@ -1411,20 +2049,54 @@ test("closing a background task desktop window preserves the shared task stream 
   const closed = vue.ref(false);
   const target = document.createElement("div");
   document.body.appendChild(target);
-  const app = vue.createApp({ render: () => vue.h(Vuetify.components.VLayout, {}, { default: () => [
-    vue.h(Sidebar),
-    closed.value ? null : vue.h(DesktopWindow, {
-      id: "tasks", title: "Tasks", visible: true, active: true, minimized: false, maximized: false,
-      onClose: () => { closed.value = true; }
-    }, { default: () => vue.h(DesktopTasks) })
-  ] }) });
+  const app = vue.createApp({
+    render: () =>
+      vue.h(
+        Vuetify.components.VLayout,
+        {},
+        {
+          default: () => [
+            vue.h(Sidebar),
+            closed.value
+              ? null
+              : vue.h(
+                  DesktopWindow,
+                  {
+                    id: "tasks",
+                    title: "Tasks",
+                    visible: true,
+                    active: true,
+                    minimized: false,
+                    maximized: false,
+                    onClose: () => {
+                      closed.value = true;
+                    }
+                  },
+                  { default: () => vue.h(DesktopTasks) }
+                )
+          ]
+        }
+      )
+  });
   app.use(Vuetify.createVuetify());
   app.mount(target);
-  t.after(() => { app.unmount(); target.remove(); });
-  store.tasks.value = [{
-    id: "running", daemonId: "node", name: "example.jar", kind: "download", state: "running",
-    current: 5, total: 10, cancellable: false, startedAt: 100
-  }];
+  t.after(() => {
+    app.unmount();
+    target.remove();
+  });
+  store.tasks.value = [
+    {
+      id: "running",
+      daemonId: "node",
+      name: "example.jar",
+      kind: "download",
+      state: "running",
+      current: 5,
+      total: 10,
+      cancellable: false,
+      startedAt: 100
+    }
+  ];
   await flush();
   const content = target.querySelector("#background-tasks-desktop");
   assert.ok(content.textContent.includes("example.jar"));
@@ -1446,7 +2118,8 @@ test("desktop confirmations cancel once through each dismissal action", async (t
     const dialog = f.findWindow();
     if (dismiss === "button") dialog.querySelector(".desktop-confirm__cancel").click();
     else if (dismiss === "titlebar") dialog.querySelector(".window__control--close").click();
-    else dialog.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    else
+      dialog.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
     await flush();
     assert.equal(f.open.value, false);
     assert.equal(f.events.cancellations, 1);
@@ -1484,14 +2157,20 @@ test("pending confirmations and required acknowledgements prevent duplicate or p
 test("desktop confirmations preserve multiple choices and stack independently across application roots", async (t) => {
   const first = confirmationFixture(t, { title: "First" });
   await flush();
-  const second = confirmationFixture(t, { title: "Choose action", actions: [
-    { id: "immediate", text: "Try immediately", danger: true },
-    { id: "queue", text: "Add to queue", highlighted: true }
-  ] });
+  const second = confirmationFixture(t, {
+    title: "Choose action",
+    actions: [
+      { id: "immediate", text: "Try immediately", danger: true },
+      { id: "queue", text: "Add to queue", highlighted: true }
+    ]
+  });
   await flush();
   const firstWindow = first.findWindow();
   const secondWindow = second.findWindow();
-  assert.notEqual(firstWindow.querySelector('.window__title').id, secondWindow.querySelector('.window__title').id);
+  assert.notEqual(
+    firstWindow.querySelector(".window__title").id,
+    secondWindow.querySelector(".window__title").id
+  );
   assert.ok(Number(secondWindow.style.zIndex) > Number(firstWindow.style.zIndex));
   const highlighted = secondWindow.querySelector(".desktop-confirm__button--highlighted");
   assert.ok(highlighted.textContent.includes("Add to queue"));
@@ -1505,7 +2184,9 @@ test("desktop confirmations preserve multiple choices and stack independently ac
 
 test("dragging with many open windows only tracks the active pointer and does not render window content", async (t) => {
   viewportFixture(t, 1280, 900);
-  const listeners = new Map(["pointermove", "pointerup", "pointercancel"].map(type => [type, new Set()]));
+  const listeners = new Map(
+    ["pointermove", "pointerup", "pointercancel"].map((type) => [type, new Set()])
+  );
   const add = document.addEventListener.bind(document);
   const remove = document.removeEventListener.bind(document);
   t.mock.method(document, "addEventListener", (type, listener, options) => {
@@ -1516,32 +2197,55 @@ test("dragging with many open windows only tracks the active pointer and does no
     listeners.get(type)?.delete(listener);
     remove(type, listener, options);
   });
-  const windows = Array.from({ length: 20 }, () => boundsFixture(t, {
-    showMinimize: false, showMaximize: false, showClose: false
-  }));
+  const windows = Array.from({ length: 20 }, () =>
+    boundsFixture(t, {
+      showMinimize: false,
+      showMaximize: false,
+      showClose: false
+    })
+  );
   await flush();
-  assert.deepEqual([...listeners.values()].map(set => set.size), [0, 0, 0]);
+  assert.deepEqual(
+    [...listeners.values()].map((set) => set.size),
+    [0, 0, 0]
+  );
   const frames = pointerFrameFixture(t);
   const active = windows[0];
   active.element.style.transform = "scale(0.95)";
-  active.element.querySelector(".window__titlebar").dispatchEvent(pointerEvent("pointerdown", {
-    clientX: 140, clientY: 80
-  }));
+  active.element.querySelector(".window__titlebar").dispatchEvent(
+    pointerEvent("pointerdown", {
+      clientX: 140,
+      clientY: 80
+    })
+  );
   await flush();
   assert.equal(active.focuses(), 1, "titlebar pointerdown must not focus again through bubbling");
-  assert.deepEqual([...listeners.values()].map(set => set.size), [1, 1, 1]);
-  const renders = windows.map(f => f.renders());
+  assert.deepEqual(
+    [...listeners.values()].map((set) => set.size),
+    [1, 1, 1]
+  );
+  const renders = windows.map((f) => f.renders());
   for (let frame = 0; frame < 3; frame++) {
     for (let move = 1; move <= 100; move++)
-      document.dispatchEvent(pointerEvent("pointermove", { clientX: 140 + frame * 100 + move, clientY: 100 }));
+      document.dispatchEvent(
+        pointerEvent("pointermove", { clientX: 140 + frame * 100 + move, clientY: 100 })
+      );
     assert.equal(frames.count(), 1, "coalesce pointer events into one browser frame");
     assert.equal(active.element.style.translate, frame ? `${frame * 100}px 20px` : "");
     frames.flush();
     await flush();
     assert.equal(active.element.style.translate, `${(frame + 1) * 100}px 20px`);
-    assert.equal(active.element.style.transform, "scale(0.95)", "drag offsets preserve visibility transforms");
+    assert.equal(
+      active.element.style.transform,
+      "scale(0.95)",
+      "drag offsets preserve visibility transforms"
+    );
     assert.deepEqual(active.bounds(), { left: 100, top: 60, width: 800, height: 500 });
-    assert.deepEqual(windows.map(f => f.renders()), renders, "pointer frames must not render any window content");
+    assert.deepEqual(
+      windows.map((f) => f.renders()),
+      renders,
+      "pointer frames must not render any window content"
+    );
     assert.equal(active.moves.length, 0, "persist coordinates after the interaction");
   }
   document.dispatchEvent(pointerEvent("pointermove", { clientX: 450, clientY: 110 }));
@@ -1551,9 +2255,19 @@ test("dragging with many open windows only tracks the active pointer and does no
   assert.equal(frames.count(), 0);
   assert.equal(active.element.style.translate, "");
   assert.deepEqual(active.bounds(), { left: 410, top: 90, width: 800, height: 500 });
-  assert.deepEqual(active.moves, [{ x: 410, y: 90 }], "release includes the last unpainted pointer event");
-  assert.deepEqual([...listeners.values()].map(set => set.size), [0, 0, 0]);
-  assert.deepEqual(windows.slice(1).map(f => f.renders()), renders.slice(1));
+  assert.deepEqual(
+    active.moves,
+    [{ x: 410, y: 90 }],
+    "release includes the last unpainted pointer event"
+  );
+  assert.deepEqual(
+    [...listeners.values()].map((set) => set.size),
+    [0, 0, 0]
+  );
+  assert.deepEqual(
+    windows.slice(1).map((f) => f.renders()),
+    renders.slice(1)
+  );
 });
 
 for (const end of ["pointercancel", "lostpointercapture", "blur", "unmount"]) {
@@ -1587,9 +2301,12 @@ test("maximized titlebar dragging restores after its threshold and continues wit
   f.state.maximized = true;
   await flush();
   const frames = pointerFrameFixture(t);
-  f.element.querySelector(".window__titlebar").dispatchEvent(pointerEvent("pointerdown", {
-    clientX: 500, clientY: 20
-  }));
+  f.element.querySelector(".window__titlebar").dispatchEvent(
+    pointerEvent("pointerdown", {
+      clientX: 500,
+      clientY: 20
+    })
+  );
   document.dispatchEvent(pointerEvent("pointermove", { clientX: 510, clientY: 21 }));
   frames.flush();
   await flush();
@@ -1617,11 +2334,16 @@ test("resizing coalesces pointer moves and commits the final unpainted size", as
   const f = boundsFixture(t);
   await flush();
   const frames = pointerFrameFixture(t);
-  f.element.querySelector(".window__resize-handle--nw").dispatchEvent(pointerEvent("pointerdown", {
-    clientX: 100, clientY: 60
-  }));
+  f.element.querySelector(".window__resize-handle--nw").dispatchEvent(
+    pointerEvent("pointerdown", {
+      clientX: 100,
+      clientY: 60
+    })
+  );
   for (let move = 1; move <= 100; move++)
-    document.dispatchEvent(pointerEvent("pointermove", { clientX: 100 + move, clientY: 60 + move }));
+    document.dispatchEvent(
+      pointerEvent("pointermove", { clientX: 100 + move, clientY: 60 + move })
+    );
   assert.equal(frames.count(), 1);
   frames.flush();
   await flush();
@@ -1642,7 +2364,9 @@ for (const end of ["pointerup", "pointercancel", "lostpointercapture", "browser-
     const style = document.createElement("style");
     style.textContent = compileStyle({
       source: sass.compileString(descriptor.styles[0].content).css,
-      filename, id: DesktopWindow.__scopeId, scoped: true
+      filename,
+      id: DesktopWindow.__scopeId,
+      scoped: true
     }).code;
     document.head.appendChild(style);
     t.after(() => style.remove());
@@ -1651,18 +2375,30 @@ for (const end of ["pointerup", "pointercancel", "lostpointercapture", "browser-
     const frames = pointerFrameFixture(t);
     const titlebar = f.element.querySelector(".window__titlebar");
     titlebar.dispatchEvent(pointerEvent("pointerdown", { clientX: 140, clientY: 80 }));
-    const point = end === "browser-edge" ? { clientX: 1270, clientY: 870 } : { clientX: 740, clientY: 360 };
+    const point =
+      end === "browser-edge" ? { clientX: 1270, clientY: 870 } : { clientX: 740, clientY: 360 };
     document.dispatchEvent(pointerEvent("pointermove", point));
-    if (end === "browser-edge") document.dispatchEvent(pointerEvent("pointermove", { clientX: 1300, clientY: 920 }));
+    if (end === "browser-edge")
+      document.dispatchEvent(pointerEvent("pointermove", { clientX: 1300, clientY: 920 }));
     else (end === "lostpointercapture" ? titlebar : document).dispatchEvent(pointerEvent(end));
     await flush();
     const expected = { left: point.clientX - 40, top: point.clientY - 20, width: 400, height: 300 };
     assert.deepEqual(f.bounds(), expected);
     assert.equal(f.element.style.translate, "");
-    assert.equal(getComputedStyle(f.element).transition, "none", "the coordinate handoff must not interpolate from the old left/top");
-    frames.flush(); await flush();
-    assert.equal(getComputedStyle(f.element).transition, "none", "commit one paint with transitions disabled");
-    frames.flush(); await flush();
+    assert.equal(
+      getComputedStyle(f.element).transition,
+      "none",
+      "the coordinate handoff must not interpolate from the old left/top"
+    );
+    frames.flush();
+    await flush();
+    assert.equal(
+      getComputedStyle(f.element).transition,
+      "none",
+      "commit one paint with transitions disabled"
+    );
+    frames.flush();
+    await flush();
     assert.match(getComputedStyle(f.element).transition, /left 0\.2s/);
     assert.deepEqual(f.bounds(), expected);
     assert.deepEqual(f.moves, [{ x: expected.left, y: expected.top }]);
@@ -1690,7 +2426,10 @@ test("a new drag cancels the prior release callbacks and unmount clears the rema
   document.dispatchEvent(pointerEvent("pointermove", { clientX: 340, clientY: 180 }));
   document.dispatchEvent(pointerEvent("pointerup"));
   await flush();
-  assert.deepEqual(f.moves, [{ x: 200, y: 110 }, { x: 300, y: 160 }]);
+  assert.deepEqual(f.moves, [
+    { x: 200, y: 110 },
+    { x: 300, y: 160 }
+  ]);
   f.app.unmount();
   assert.equal(frames.count(), 0);
 });
@@ -1701,7 +2440,9 @@ test("restoring a maximized window and releasing in the same frame preserves the
   f.state.maximized = true;
   await flush();
   const frames = pointerFrameFixture(t);
-  f.element.querySelector(".window__titlebar").dispatchEvent(pointerEvent("pointerdown", { clientX: 500, clientY: 20 }));
+  f.element
+    .querySelector(".window__titlebar")
+    .dispatchEvent(pointerEvent("pointerdown", { clientX: 500, clientY: 20 }));
   document.dispatchEvent(pointerEvent("pointermove", { clientX: 540, clientY: 70 }));
   document.dispatchEvent(pointerEvent("pointerup"));
   await flush();
@@ -1714,25 +2455,64 @@ test("restoring a maximized window and releasing in the same frame preserves the
 });
 
 for (const scenario of [
-  { name: "negative centered coordinates", viewport: [1024, 768], initial: { initialX: -200, initialY: -90, initialWidth: 440, initialHeight: 420 }, expected: { left: 0, top: 0, width: 440, height: 420 } },
-  { name: "saved coordinates beyond the bottom right", viewport: [1024, 768], initial: { initialX: 900, initialY: 650, initialWidth: 500, initialHeight: 400 }, expected: { left: 524, top: 16, width: 500, height: 400 } },
-  { name: "an oversized application", viewport: [1024, 768], initial: { initialX: 150, initialY: 110, initialWidth: 1600, initialHeight: 900 }, expected: { left: 0, top: 16, width: 1024, height: 704 } },
-  { name: "a subwindow on a small screen", viewport: [320, 240], initial: { initialX: -60, initialY: -90, initialWidth: 440, initialHeight: 420, resizable: false }, expected: { left: 0, top: 16, width: 320, height: 176 } }
+  {
+    name: "negative centered coordinates",
+    viewport: [1024, 768],
+    initial: { initialX: -200, initialY: -90, initialWidth: 440, initialHeight: 420 },
+    expected: { left: 0, top: 0, width: 440, height: 420 }
+  },
+  {
+    name: "saved coordinates beyond the bottom right",
+    viewport: [1024, 768],
+    initial: { initialX: 900, initialY: 650, initialWidth: 500, initialHeight: 400 },
+    expected: { left: 524, top: 16, width: 500, height: 400 }
+  },
+  {
+    name: "an oversized application",
+    viewport: [1024, 768],
+    initial: { initialX: 150, initialY: 110, initialWidth: 1600, initialHeight: 900 },
+    expected: { left: 0, top: 16, width: 1024, height: 704 }
+  },
+  {
+    name: "a subwindow on a small screen",
+    viewport: [320, 240],
+    initial: {
+      initialX: -60,
+      initialY: -90,
+      initialWidth: 440,
+      initialHeight: 420,
+      resizable: false
+    },
+    expected: { left: 0, top: 16, width: 320, height: 176 }
+  }
 ]) {
   test(`windows fit before the first frame with ${scenario.name}`, async (t) => {
     viewportFixture(t, ...scenario.viewport);
     const f = boundsFixture(t, scenario.initial);
-    assert.deepEqual(f.bounds(), scenario.expected, "the first rendered style must already be within the work area");
+    assert.deepEqual(
+      f.bounds(),
+      scenario.expected,
+      "the first rendered style must already be within the work area"
+    );
     f.assertInside();
     await flush();
     const { left: x, top: y, width, height } = scenario.expected;
-    assert.deepEqual(f.changes, [{ x, y, width, height }], "publish corrected geometry for layout persistence");
+    assert.deepEqual(
+      f.changes,
+      [{ x, y, width, height }],
+      "publish corrected geometry for layout persistence"
+    );
   });
 }
 
 test("viewport changes fit existing windows, preserve the taskbar and stop observing after unmount", async (t) => {
   const resize = viewportFixture(t, 1280, 900);
-  const f = boundsFixture(t, { initialX: 200, initialY: 150, initialWidth: 900, initialHeight: 650 });
+  const f = boundsFixture(t, {
+    initialX: 200,
+    initialY: 150,
+    initialWidth: 900,
+    initialHeight: 650
+  });
   await flush();
   assert.equal(f.changes.length, 0);
   resize(640, 480);
@@ -1770,9 +2550,14 @@ test("context-menu maximization restores the latest user size and remains bounde
   const resize = viewportFixture(t, 1280, 900);
   const f = boundsFixture(t);
   await flush();
-  f.element.querySelector(".window__resize-handle--se").dispatchEvent(pointerEvent("pointerdown", {
-    clientX: 900, clientY: 560, bubbles: true, button: 0
-  }));
+  f.element.querySelector(".window__resize-handle--se").dispatchEvent(
+    pointerEvent("pointerdown", {
+      clientX: 900,
+      clientY: 560,
+      bubbles: true,
+      button: 0
+    })
+  );
   document.dispatchEvent(pointerEvent("pointermove", { clientX: 1000, clientY: 710 }));
   document.dispatchEvent(pointerEvent("pointerup"));
   await flush();

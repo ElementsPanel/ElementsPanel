@@ -172,6 +172,7 @@ export function registerFileEvents() {
         data.target.length > 1024 ||
         typeof data.text !== "string" ||
         Buffer.byteLength(data.text, "utf8") > 64 * 1024 ||
+        // eslint-disable-next-line no-control-regex -- Reject control characters in edited text.
         /[\x00-\x08\x0b\x0c\x0e-\x1f\ufffd]/.test(data.text)
       )
         throw new Error("Invalid text file request");
@@ -221,9 +222,15 @@ export function registerFileEvents() {
       const fileName = data.fileName;
 
       if (!checkSafeUrl(url) || (data.fallbackUrl && !checkSafeUrl(data.fallbackUrl))) {
-        protocol().responseError(ctx, $t("TXT_CODE_COMMON_THIS_URL_IS_INSECURE_PLEASE_ENTER_A_URL_WITH_A_DOMAIN_NAME_THAT_IS_EXPOSED_ON"), {
-          disablePrint: true
-        });
+        protocol().responseError(
+          ctx,
+          $t(
+            "TXT_CODE_COMMON_THIS_URL_IS_INSECURE_PLEASE_ENTER_A_URL_WITH_A_DOMAIN_NAME_THAT_IS_EXPOSED_ON"
+          ),
+          {
+            disablePrint: true
+          }
+        );
         return;
       }
 
@@ -353,19 +360,19 @@ export function registerFileEvents() {
         );
       }
 
-      function fileTaskStart() {
+      const fileTaskStart = () => {
         if (instance) {
           instance.info.fileLock++;
           fileTasks.count++;
         }
-      }
+      };
 
-      function fileTaskEnd() {
+      const fileTaskEnd = () => {
         if (instance) {
           instance.info.fileLock--;
           fileTasks.count--;
         }
-      }
+      };
 
       fileTaskStart();
       try {
@@ -375,8 +382,6 @@ export function registerFileEvents() {
           await fileManager.unzip(source, targets, code);
         }
         protocol().response(ctx, true);
-      } catch (error: any) {
-        throw error;
       } finally {
         fileTaskEnd();
       }

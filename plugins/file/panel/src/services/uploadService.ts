@@ -1,8 +1,5 @@
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import {
-  uploadFile as uploadFileApi,
-  uploadFilePiece as uploadFilePieceApi
-} from "../api";
+import { uploadFile as uploadFileApi, uploadFilePiece as uploadFilePieceApi } from "../api";
 import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { ref, type Ref } from "vue";
@@ -395,7 +392,9 @@ class UploadService {
         }
         this.files.delete(this.current);
         if (removeFile) {
-          message.error(t("TXT_CODE_COMMON_UPLOAD_TASK_DOES_NOT_EXIST") + ": " + currentFile.file.name);
+          message.error(
+            t("TXT_CODE_COMMON_UPLOAD_TASK_DOES_NOT_EXIST") + ": " + currentFile.file.name
+          );
         } else {
           message.success(currentFile.file.name + " " + t("TXT_CODE_COMMON_UPLOAD_SUCCESSFUL"));
         }
@@ -477,10 +476,12 @@ class UploadService {
       };
       return;
     }
-    const progress = currentFile.uploadedSize + this.task.reduce(
-      (total, task) => total + (task?.status === "uploading" ? task.progress : 0),
-      0
-    );
+    const progress =
+      currentFile.uploadedSize +
+      this.task.reduce(
+        (total, task) => total + (task?.status === "uploading" ? task.progress : 0),
+        0
+      );
 
     this.uiData.value = {
       current: [progress, currentFile.file.size],

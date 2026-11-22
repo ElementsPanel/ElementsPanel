@@ -92,8 +92,9 @@ function discoverDaemonPlugins(options: DiscoverPluginsOptions, overrides = true
     ...options,
     includeDisabled: true
   });
-  return (overrides ? applyPluginOverrides(plugins) : plugins)
-    .filter((plugin) => options.includeDisabled || plugin.manifest.enabled !== false);
+  return (overrides ? applyPluginOverrides(plugins) : plugins).filter(
+    (plugin) => options.includeDisabled || plugin.manifest.enabled !== false
+  );
 }
 
 /** Exposes the loader's own registry without pulling it into a plugin bundle. */
@@ -199,7 +200,11 @@ async function installPlugin(plugin: DiscoveredPlugin): Promise<DaemonPluginEntr
       plugin.manifest.id
     );
     if (!exported) throw new Error(`Plugin "${plugin.manifest.id}" must export apply().`);
-    const module = withBackendPluginDependencies(exported, plugin.manifest.id, plugin.manifest.backendInject);
+    const module = withBackendPluginDependencies(
+      exported,
+      plugin.manifest.id,
+      plugin.manifest.backendInject
+    );
     // Apply plugins in priority order and await asynchronous setup.
     // Capture synchronous errors before Cordis disposes the scope so failed plugins are reported correctly.
     let applied: unknown;
@@ -492,7 +497,11 @@ export function getDaemonPluginInventory(): DaemonPluginRecord[] {
       hasEntry: ENTRY_FIELDS.some((field) => typeof plugin.manifest[field] === "string"),
       running: pluginState(plugin, running) === "active",
       state: pluginState(plugin, running),
-      missingDependencies: missingBackendPluginDependencies(ctx, plugin.manifest.backendInject, running?.fork?.runtime.inject),
+      missingDependencies: missingBackendPluginDependencies(
+        ctx,
+        plugin.manifest.backendInject,
+        running?.fork?.runtime.inject
+      ),
       error:
         running?.error?.message ||
         running?.fork?.runtime.error?.message ||
@@ -551,11 +560,14 @@ export function removeDaemonPlugin(id: string): Promise<void> {
 }
 
 function findPlugin(id: string, overrides = true) {
-  const plugin = discoverDaemonPlugins({
-    entryFields: ENTRY_FIELDS,
-    entryCandidates: ENTRY_CANDIDATES,
-    includeDisabled: true
-  }, overrides).find((item) => item.manifest.id === id);
+  const plugin = discoverDaemonPlugins(
+    {
+      entryFields: ENTRY_FIELDS,
+      entryCandidates: ENTRY_CANDIDATES,
+      includeDisabled: true
+    },
+    overrides
+  ).find((item) => item.manifest.id === id);
   if (!plugin) throw new Error(`Plugin not found: ${id}`);
   return plugin;
 }
@@ -617,7 +629,8 @@ export function configureDaemonPlugin(
   return change(async () => {
     const plugin = findPlugin(id);
     const resetting = config === null;
-    if (resetting) config = (findPlugin(id, false).manifest.config || {}) as Record<string, unknown>;
+    if (resetting)
+      config = (findPlugin(id, false).manifest.config || {}) as Record<string, unknown>;
     if (!config || typeof config !== "object" || Array.isArray(config))
       throw new Error("Plugin config must be an object.");
     validatePluginCompatibility(plugin.manifest.elements);

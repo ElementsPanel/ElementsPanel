@@ -27,10 +27,7 @@ export interface UserPluginApi {
   loginPageInfo: () => ApiCall<any, { loginInfo: string; isFirstStartup: boolean }>;
   logoutUser: () => ApiCall<any, any>;
   userInfoApi: () => ApiCall<any, LoginUserInfo>;
-  userInfoApiAdvanced: () => ApiCall<
-    { params: { uuid: string; advanced: boolean } },
-    BaseUserInfo
-  >;
+  userInfoApiAdvanced: () => ApiCall<{ params: { uuid: string; advanced: boolean } }, BaseUserInfo>;
   getUserInfo: () => ApiCall<
     { params: { userName: string; page: number; page_size: number; role: string } },
     { total: number; pageSize: number; page: number; maxPage: number; data: BaseUserInfo[] }

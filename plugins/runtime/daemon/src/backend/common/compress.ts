@@ -84,7 +84,11 @@ export async function decompress(
   if (!checkFileName(zipPath) || !checkFileName(dest))
     throw new Error(getCompressErrorMsg().invalidName);
   if (!isSupportedArchiveFile(zipPath)) {
-    throw new Error($t("TXT_CODE_COMMON_MISSING_7ZIP_DEPENDENCY_SUPPORT_UNABLE_TO_DECOMPRESS_FORMAT_FILES", { fileExt: getFileExtension(zipPath) }));
+    throw new Error(
+      $t("TXT_CODE_COMMON_MISSING_7ZIP_DEPENDENCY_SUPPORT_UNABLE_TO_DECOMPRESS_FORMAT_FILES", {
+        fileExt: getFileExtension(zipPath)
+      })
+    );
   }
 
   const tryUnzip = async () => {
@@ -120,7 +124,11 @@ export async function listArchiveEntries(
 ): Promise<ArchiveEntryInfo[]> {
   if (!checkFileName(archivePath)) throw new Error(getCompressErrorMsg().invalidName);
   if (!isSupportedArchiveFile(archivePath)) {
-    throw new Error($t("TXT_CODE_COMMON_MISSING_7ZIP_DEPENDENCY_SUPPORT_UNABLE_TO_DECOMPRESS_FORMAT_FILES", { fileExt: getFileExtension(archivePath) }));
+    throw new Error(
+      $t("TXT_CODE_COMMON_MISSING_7ZIP_DEPENDENCY_SUPPORT_UNABLE_TO_DECOMPRESS_FORMAT_FILES", {
+        fileExt: getFileExtension(archivePath)
+      })
+    );
   }
 
   const lowerPath = archivePath.toLowerCase();
@@ -191,7 +199,9 @@ export async function listArchiveEntries(
   }
 
   throw new Error(
-    $t("TXT_CODE_COMMON_MISSING_7ZIP_DEPENDENCY_SUPPORT_UNABLE_TO_DECOMPRESS_FORMAT_FILES", { fileExt: path.extname(archivePath).slice(1) || "unknown" })
+    $t("TXT_CODE_COMMON_MISSING_7ZIP_DEPENDENCY_SUPPORT_UNABLE_TO_DECOMPRESS_FORMAT_FILES", {
+      fileExt: path.extname(archivePath).slice(1) || "unknown"
+    })
   );
 }
 
@@ -199,7 +209,7 @@ export async function decompressWithProgress(
   archivePath: string,
   dest: string,
   onProgress?: (percent: number) => void,
-  fileCode?: string
+  _fileCode?: string
 ): Promise<boolean> {
   if (!checkFileName(archivePath) || !checkFileName(dest))
     throw new Error(getCompressErrorMsg().invalidName);
@@ -248,7 +258,11 @@ export async function decompressWithProgress(
   }
 
   if (!lowerArchivePath.endsWith(".zip")) {
-    throw new Error($t("TXT_CODE_COMMON_MISSING_7ZIP_DEPENDENCY_SUPPORT_UNABLE_TO_DECOMPRESS_FORMAT_FILES", { fileExt: getFileExtension(archivePath) }));
+    throw new Error(
+      $t("TXT_CODE_COMMON_MISSING_7ZIP_DEPENDENCY_SUPPORT_UNABLE_TO_DECOMPRESS_FORMAT_FILES", {
+        fileExt: getFileExtension(archivePath)
+      })
+    );
   }
 
   const zip = new StreamZip.async({ file: archivePath });
@@ -449,7 +463,9 @@ async function use7zip(
       }
 
       logger.error($t("TXT_CODE_COMMON_7ZIP_DECOMPRESSION_ERROR", { message: cleanErrorMsg }));
-      throw new Error($t("TXT_CODE_ARCHIVE_DECOMPRESSION_ERROR_DETAIL", { message: cleanErrorMsg }));
+      throw new Error(
+        $t("TXT_CODE_ARCHIVE_DECOMPRESSION_ERROR_DETAIL", { message: cleanErrorMsg })
+      );
     }
 
     onProgress?.(100);
@@ -465,7 +481,9 @@ async function use7zip(
         .split("\n")
         .filter((line) => line.trim())
         .slice(-3);
-      logger.info($t("TXT_CODE_COMMON_7ZIP_DECOMPRESSION_COMPLETED", { result: resultLines.join("; ") }));
+      logger.info(
+        $t("TXT_CODE_COMMON_7ZIP_DECOMPRESSION_COMPLETED", { result: resultLines.join("; ") })
+      );
     }
     return true;
   } catch (error: any) {
@@ -520,7 +538,8 @@ async function useZip(
   code = "utf-8",
   cwd?: string
 ): Promise<boolean> {
-  if (!files || files.length == 0) throw new Error($t("TXT_CODE_COMMON_PLEASE_SELECT_AT_LEAST_ONE_FILE"));
+  if (!files || files.length == 0)
+    throw new Error($t("TXT_CODE_COMMON_PLEASE_SELECT_AT_LEAST_ONE_FILE"));
   const workingDir = cwd || path.dirname(distZip);
   const params = ["--mode=1", `--code=${code}`, `--zipPath=${path.resolve(distZip)}`];
   files.forEach((v) => {

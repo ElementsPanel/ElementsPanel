@@ -5,10 +5,16 @@ import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToo
 import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import { router } from "@elementspanel/epanel-plugin-console/config/router";
 import { verifyEULA } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
-import { useInstanceTagSearch, useInstanceTagTips } from "@elementspanel/epanel-plugin-console/hooks/useInstanceTag";
+import {
+  useInstanceTagSearch,
+  useInstanceTagTips
+} from "@elementspanel/epanel-plugin-console/hooks/useInstanceTag";
 import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { remoteInstances, remoteNodeList } from "@elementspanel/epanel-plugin-console/services/apis";
+import {
+  remoteInstances,
+  remoteNodeList
+} from "@elementspanel/epanel-plugin-console/services/apis";
 import {
   batchDelete,
   batchKill,
@@ -26,7 +32,10 @@ import { computeNodeName } from "@elementspanel/epanel-plugin-console/tools/node
 import { parseTimestamp } from "@elementspanel/epanel-plugin-console/tools/time";
 import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import type { InstanceDetail, NodeStatus } from "@elementspanel/epanel-plugin-console/types";
-import { INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@elementspanel/epanel-plugin-console/types/const";
+import {
+  INSTANCE_STATUS,
+  INSTANCE_STATUS_CODE
+} from "@elementspanel/epanel-plugin-console/types/const";
 import { notification } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
 import { throttle } from "lodash";
@@ -83,7 +92,12 @@ const instancesMoreInfo = computed(() =>
 const initNodes = async () => {
   await getNodes();
   nodes.value?.sort((a, b) => (a.available === b.available ? 0 : a.available ? -1 : 1));
-  if (!nodes.value?.length) throw new Error(t("TXT_CODE_COMMON_THE_PANEL_COULD_NOT_CONNECT_TO_ANY_REMOTE_DAEMONS_PLEASE_GO_TO_THE_DAEMONS_FIRST_TO"));
+  if (!nodes.value?.length)
+    throw new Error(
+      t(
+        "TXT_CODE_COMMON_THE_PANEL_COULD_NOT_CONNECT_TO_ANY_REMOTE_DAEMONS_PLEASE_GO_TO_THE_DAEMONS_FIRST_TO"
+      )
+    );
   const saved = localStorage.getItem("pageSelectedRemote");
   if (saved) {
     try {
@@ -160,7 +174,8 @@ const operationApis = {
   kill: batchKill
 };
 const batchOperation = async (action: keyof typeof operationApis) => {
-  if (!selectedInstance.value.length) return reportErrorMsg(t("TXT_CODE_COMMON_CANNOT_EXECUTE_PLEASE_SELECT_AT_LEAST_ONE_INSTANCE"));
+  if (!selectedInstance.value.length)
+    return reportErrorMsg(t("TXT_CODE_COMMON_CANNOT_EXECUTE_PLEASE_SELECT_AT_LEAST_ONE_INSTANCE"));
   try {
     const { execute, state } = operationApis[action]();
     await execute({
@@ -180,12 +195,15 @@ const batchOperation = async (action: keyof typeof operationApis) => {
 };
 
 const batchDeleteInstances = (deleteFile: boolean) => {
-  if (!selectedInstance.value.length) return reportErrorMsg(t("TXT_CODE_COMMON_CANNOT_EXECUTE_PLEASE_SELECT_AT_LEAST_ONE_INSTANCE"));
+  if (!selectedInstance.value.length)
+    return reportErrorMsg(t("TXT_CODE_COMMON_CANNOT_EXECUTE_PLEASE_SELECT_AT_LEAST_ONE_INSTANCE"));
   const uuids = selectedInstance.value.map((item) => item.instanceUuid);
   const paths = selectedInstance.value.map((item) => item.config?.cwd).filter(Boolean);
   const dialog = Modal.confirm({
     title: t("TXT_CODE_COMMON_FINAL_CONFIRMATION"),
-    content: deleteFile ? t("TXT_CODE_INSTANCE_DELETE_DIRECTORY_WARNING") : t("TXT_CODE_COMMON_REMOVES_INSTANCE_RECORDS_AND_KEEPS_THE_FILES"),
+    content: deleteFile
+      ? t("TXT_CODE_INSTANCE_DELETE_DIRECTORY_WARNING")
+      : t("TXT_CODE_COMMON_REMOVES_INSTANCE_RECORDS_AND_KEEPS_THE_FILES"),
     okText: t("TXT_CODE_COMMON_CONFIRM"),
     async onOk() {
       const { execute, state } = batchDelete();
@@ -327,10 +345,16 @@ onMounted(async () => {
       <PageToolbar :title="t('TXT_CODE_INSTANCE_LIST_TITLE')" icon="mdi-view-grid-outline">
         <template #search>
           <div class="instance-search-row">
-            <VSelect v-model="operationForm.status" :items="[
-              { title: t('TXT_CODE_COMMON_ALL'), value: '' },
-              ...Object.entries(INSTANCE_STATUS).map(([value, title]) => ({ title, value }))
-            ]" hide-details density="comfortable" @update:model-value="handleQueryInstance">
+            <VSelect
+              v-model="operationForm.status"
+              :items="[
+                { title: t('TXT_CODE_COMMON_ALL'), value: '' },
+                ...Object.entries(INSTANCE_STATUS).map(([value, title]) => ({ title, value }))
+              ]"
+              hide-details
+              density="comfortable"
+              @update:model-value="handleQueryInstance"
+            >
               <template #no-data><Empty :icon="false" compact /></template>
             </VSelect>
             <VTextField
@@ -341,14 +365,22 @@ onMounted(async () => {
               clearable
               density="comfortable"
               @keyup.enter="handleQueryInstance"
-              @update:model-value="operationForm.instanceName = $event ?? ''; handleQueryInstance()"
+              @update:model-value="
+                operationForm.instanceName = $event ?? '';
+                handleQueryInstance();
+              "
             />
           </div>
         </template>
         <template #actions>
           <VMenu location="bottom end">
             <template #activator="{ props: menuProps }">
-              <VBtn v-bind="menuProps" variant="tonal" prepend-icon="mdi-server-outline" :disabled="!currentRemoteNode">
+              <VBtn
+                v-bind="menuProps"
+                variant="tonal"
+                prepend-icon="mdi-server-outline"
+                :disabled="!currentRemoteNode"
+              >
                 <span class="node-name">{{
                   computeNodeName(
                     currentRemoteNode?.ip || "",
@@ -360,16 +392,29 @@ onMounted(async () => {
               </VBtn>
             </template>
             <VList density="comfortable">
-              <VListItem v-for="node in nodes || []" :key="node.uuid" :disabled="!node.available"
+              <VListItem
+                v-for="node in nodes || []"
+                :key="node.uuid"
+                :disabled="!node.available"
                 :title="computeNodeName(node.ip, node.available, node.remarks)"
                 :prepend-icon="node.available ? 'mdi-database-outline' : 'mdi-server-off-outline'"
-                @click="changeNode(node)" />
+                @click="changeNode(node)"
+              />
               <VDivider />
-              <VListItem :title="t('TXT_CODE_COMMON_MANAGE_REMOTE_DAEMON')" prepend-icon="mdi-pencil-outline" @click="toNodes" />
+              <VListItem
+                :title="t('TXT_CODE_COMMON_MANAGE_REMOTE_DAEMON')"
+                prepend-icon="mdi-pencil-outline"
+                @click="toNodes"
+              />
             </VList>
           </VMenu>
-          <VBtn color="primary" prepend-icon="mdi-plus" :disabled="!currentRemoteNode?.available" @click="toCreate">{{
-            t("TXT_CODE_COMMON_CREATE") }}</VBtn>
+          <VBtn
+            color="primary"
+            prepend-icon="mdi-plus"
+            :disabled="!currentRemoteNode?.available"
+            @click="toCreate"
+            >{{ t("TXT_CODE_COMMON_CREATE") }}</VBtn
+          >
         </template>
       </PageToolbar>
 
@@ -378,7 +423,7 @@ onMounted(async () => {
           <div v-if="multipleMode" class="batch-actions">
             <VBtn variant="text" prepend-icon="mdi-close" @click="exitMultiple">{{
               t("TXT_CODE_COMMON_EXIT_BATCH_OPERATION")
-              }}</VBtn>
+            }}</VBtn>
             <VBtn variant="text" @click="selectAll">{{
               selectedInstance.length === instancesMoreInfo.length
                 ? t("TXT_CODE_COMMON_DESELECT_ALL")
@@ -388,139 +433,281 @@ onMounted(async () => {
               <template #activator="{ props: menuProps }">
                 <VBtn v-bind="menuProps" color="primary" append-icon="mdi-chevron-down">{{
                   t("TXT_CODE_COMMON_SELECTED_ITEMS")
-                  }}</VBtn>
+                }}</VBtn>
               </template>
               <VList>
-                <VListItem :title="t('TXT_CODE_COMMON_START')" prepend-icon="mdi-play" @click="batchOperation('start')" />
-                <VListItem :title="t('TXT_CODE_COMMON_STOP')" prepend-icon="mdi-stop" @click="batchOperation('stop')" />
-                <VListItem :title="t('TXT_CODE_COMMON_RESTART')" prepend-icon="mdi-restart"
-                  @click="batchOperation('restart')" />
-                <VListItem :title="t('TXT_CODE_COMMON_TERMINATE')" prepend-icon="mdi-close-circle-outline"
-                  @click="batchOperation('kill')" />
-                <VListItem :title="t('TXT_CODE_COMMON_DELETE')" prepend-icon="mdi-delete-outline"
-                  @click="batchDeleteInstances(false)" />
-                <VListItem :title="t('TXT_CODE_COMMON_PERMANENTLY_DELETE')" prepend-icon="mdi-delete-forever-outline"
-                  @click="batchDeleteInstances(true)" />
+                <VListItem
+                  :title="t('TXT_CODE_COMMON_START')"
+                  prepend-icon="mdi-play"
+                  @click="batchOperation('start')"
+                />
+                <VListItem
+                  :title="t('TXT_CODE_COMMON_STOP')"
+                  prepend-icon="mdi-stop"
+                  @click="batchOperation('stop')"
+                />
+                <VListItem
+                  :title="t('TXT_CODE_COMMON_RESTART')"
+                  prepend-icon="mdi-restart"
+                  @click="batchOperation('restart')"
+                />
+                <VListItem
+                  :title="t('TXT_CODE_COMMON_TERMINATE')"
+                  prepend-icon="mdi-close-circle-outline"
+                  @click="batchOperation('kill')"
+                />
+                <VListItem
+                  :title="t('TXT_CODE_COMMON_DELETE')"
+                  prepend-icon="mdi-delete-outline"
+                  @click="batchDeleteInstances(false)"
+                />
+                <VListItem
+                  :title="t('TXT_CODE_COMMON_PERMANENTLY_DELETE')"
+                  prepend-icon="mdi-delete-forever-outline"
+                  @click="batchDeleteInstances(true)"
+                />
               </VList>
             </VMenu>
-            <span class="selected-count">{{ t("TXT_CODE_INSTANCE_SELECTED_COUNT_LABEL") }}{{ selectedInstance.length }}
-              {{ t("TXT_CODE_COMMON_ITEMS") }}</span>
+            <span class="selected-count"
+              >{{ t("TXT_CODE_INSTANCE_SELECTED_COUNT_LABEL") }}{{ selectedInstance.length }}
+              {{ t("TXT_CODE_COMMON_ITEMS") }}</span
+            >
           </div>
           <div v-else class="batch-actions">
-            <VBtn variant="text" prepend-icon="mdi-checkbox-multiple-outline" @click="multipleMode = true">{{
-              t("TXT_CODE_COMMON_BATCH_OPERATION") }}</VBtn>
-            <VBtn variant="text" prepend-icon="mdi-refresh" :loading="isLoading" @click="initInstancesData">{{
-              t("TXT_CODE_COMMON_REFRESH") }}</VBtn>
+            <VBtn
+              variant="text"
+              prepend-icon="mdi-checkbox-multiple-outline"
+              @click="multipleMode = true"
+              >{{ t("TXT_CODE_COMMON_BATCH_OPERATION") }}</VBtn
+            >
+            <VBtn
+              variant="text"
+              prepend-icon="mdi-refresh"
+              :loading="isLoading"
+              @click="initInstancesData"
+              >{{ t("TXT_CODE_COMMON_REFRESH") }}</VBtn
+            >
           </div>
         </VCol>
         <VCol cols="12" md="5" class="pagination-wrap">
-          <VPagination v-model="operationForm.currentPage" :length="instances?.maxPage || 1"
-            :total-visible="isPhone ? 1 : 5" :disabled="isLoading" density="compact" @update:model-value="() => initInstancesData()" />
-          <VSelect v-model="operationForm.pageSize" :items="[10, 20, 50, 100]" :disabled="isLoading" hide-details
-            class="page-size-select" @update:model-value="() => initInstancesData(true)">
+          <VPagination
+            v-model="operationForm.currentPage"
+            :length="instances?.maxPage || 1"
+            :total-visible="isPhone ? 1 : 5"
+            :disabled="isLoading"
+            density="compact"
+            @update:model-value="() => initInstancesData()"
+          />
+          <VSelect
+            v-model="operationForm.pageSize"
+            :items="[10, 20, 50, 100]"
+            :disabled="isLoading"
+            hide-details
+            class="page-size-select"
+            @update:model-value="() => initInstancesData(true)"
+          >
             <template #no-data><Empty :icon="false" compact /></template>
           </VSelect>
         </VCol>
       </VRow>
 
       <div v-if="tagTips?.length" class="tag-row">
-        <VChip v-if="selectedTags.length" color="error" variant="tonal" data-app-surface="control" prepend-icon="mdi-filter-remove"
-          @click="clearTags">{{
-            t("TXT_CODE_COMMON_CLEAR") }}</VChip>
-        <VChip v-for="tag in tagTips" :key="tag" :color="isTagSelected(tag) ? 'primary' : undefined"
+        <VChip
+          v-if="selectedTags.length"
+          color="error"
+          variant="tonal"
+          data-app-surface="control"
+          prepend-icon="mdi-filter-remove"
+          @click="clearTags"
+          >{{ t("TXT_CODE_COMMON_CLEAR") }}</VChip
+        >
+        <VChip
+          v-for="tag in tagTips"
+          :key="tag"
+          :color="isTagSelected(tag) ? 'primary' : undefined"
           data-app-surface="control"
           :variant="isTagSelected(tag) ? 'tonal' : 'flat'"
-          @click="isTagSelected(tag) ? removeTag(tag) : selectTag(tag)">
-          {{ tag }}</VChip>
+          @click="isTagSelected(tag) ? removeTag(tag) : selectTag(tag)"
+        >
+          {{ tag }}</VChip
+        >
       </div>
 
       <div v-if="isLoading" class="state-container">
         <VProgressCircular indeterminate />
       </div>
       <VRow v-else-if="instancesMoreInfo.length" class="instance-grid" density="comfortable">
-        <VCol v-for="item in instancesMoreInfo" :key="item.instanceUuid" cols="12" sm="6" lg="4" xl="3">
-          <VCard class="instance-card" :class="{ selected: multipleMode && findSelected(item) }" rounded="xl" flat
-            @click="selectInstance(item)">
+        <VCol
+          v-for="item in instancesMoreInfo"
+          :key="item.instanceUuid"
+          cols="12"
+          sm="6"
+          lg="4"
+          xl="3"
+        >
+          <VCard
+            class="instance-card"
+            :class="{ selected: multipleMode && findSelected(item) }"
+            rounded="xl"
+            flat
+            @click="selectInstance(item)"
+          >
             <VCardTitle class="instance-card-title">
               <div class="instance-card-heading">
                 <span class="instance-name">{{ item.config.nickname }}</span>
               </div>
               <div class="instance-card-meta">
                 <div v-if="item.config.tag?.length" class="instance-card-tags">
-                  <VChip v-for="tag in item.config.tag" :key="tag" size="x-small" color="primary" variant="flat">{{ tag }}</VChip>
+                  <VChip
+                    v-for="tag in item.config.tag"
+                    :key="tag"
+                    size="x-small"
+                    color="primary"
+                    variant="flat"
+                    >{{ tag }}</VChip
+                  >
                 </div>
-                <VDivider v-if="item.config.tag?.length" vertical class="instance-card-status-divider" />
-                <VChip size="small" :color="statusColor(item)" variant="tonal" :prepend-icon="item.status === INSTANCE_STATUS_CODE.RUNNING
-                  ? 'mdi-check-circle-outline'
-                  : 'mdi-alert-circle-outline'
-                  ">{{ statusText(item) }}</VChip>
+                <VDivider
+                  v-if="item.config.tag?.length"
+                  vertical
+                  class="instance-card-status-divider"
+                />
+                <VChip
+                  size="small"
+                  :color="statusColor(item)"
+                  variant="tonal"
+                  :prepend-icon="
+                    item.status === INSTANCE_STATUS_CODE.RUNNING
+                      ? 'mdi-check-circle-outline'
+                      : 'mdi-alert-circle-outline'
+                  "
+                  >{{ statusText(item) }}</VChip
+                >
               </div>
             </VCardTitle>
             <VCardText class="instance-card-content">
               <div class="instance-detail">
-                <span>{{ t("TXT_CODE_COMMON_INSTANCE_TYPE") }}</span><strong>{{ item.moreInfo?.instanceTypeText || "--" }}</strong>
+                <span>{{ t("TXT_CODE_COMMON_INSTANCE_TYPE") }}</span
+                ><strong>{{ item.moreInfo?.instanceTypeText || "--" }}</strong>
               </div>
               <div class="instance-detail">
-                <span>{{ t("TXT_CODE_COMMON_STARTUP") }}</span><strong>{{ parseTimestamp(item.config.lastDatetime) }}</strong>
+                <span>{{ t("TXT_CODE_COMMON_STARTUP") }}</span
+                ><strong>{{ parseTimestamp(item.config.lastDatetime) }}</strong>
               </div>
               <div v-if="item.info?.memoryUsage != null" class="instance-detail">
-                <span>{{ t("TXT_CODE_COMMON_MEMORY") }}</span><strong>{{ memoryText(item) }}</strong>
+                <span>{{ t("TXT_CODE_COMMON_MEMORY") }}</span
+                ><strong>{{ memoryText(item) }}</strong>
               </div>
               <div v-if="item.info?.cpuUsage != null" class="instance-detail">
-                <span>{{ t("TXT_CODE_COMMON_CPU_USAGE") }}</span><strong>{{ Number(item.info.cpuUsage).toFixed(0) }}%</strong>
+                <span>{{ t("TXT_CODE_COMMON_CPU_USAGE") }}</span
+                ><strong>{{ Number(item.info.cpuUsage).toFixed(0) }}%</strong>
               </div>
               <div v-if="item.info?.storageUsage != null" class="instance-detail">
-                <span>{{ t("TXT_CODE_DISK_USAGE") }}</span><strong>{{ bytesText(item.info.storageUsage) }}</strong>
+                <span>{{ t("TXT_CODE_DISK_USAGE") }}</span
+                ><strong>{{ bytesText(item.info.storageUsage) }}</strong>
               </div>
             </VCardText>
             <VCardActions class="instance-card-actions" @click.stop>
-              <VTooltip location="top"><template #activator="{ props: tooltipProps }">
-                  <VBtn v-if="item.status === INSTANCE_STATUS_CODE.STOPPED" v-bind="tooltipProps" icon="mdi-play"
-                    size="small" color="success" variant="text" @click="runCardAction(item, 'start')" />
-                </template><span>{{ t("TXT_CODE_COMMON_START") }}</span>
+              <VTooltip location="top"
+                ><template #activator="{ props: tooltipProps }">
+                  <VBtn
+                    v-if="item.status === INSTANCE_STATUS_CODE.STOPPED"
+                    v-bind="tooltipProps"
+                    icon="mdi-play"
+                    size="small"
+                    color="success"
+                    variant="text"
+                    @click="runCardAction(item, 'start')"
+                  /> </template
+                ><span>{{ t("TXT_CODE_COMMON_START") }}</span>
               </VTooltip>
-              <VTooltip location="top"><template #activator="{ props: tooltipProps }">
-                  <VBtn v-if="item.status === INSTANCE_STATUS_CODE.RUNNING" v-bind="tooltipProps" icon="mdi-stop"
-                    size="small" color="warning" variant="text" @click="confirmCardAction(item, 'stop')" />
-                </template><span>{{ t("TXT_CODE_COMMON_STOP") }}</span>
+              <VTooltip location="top"
+                ><template #activator="{ props: tooltipProps }">
+                  <VBtn
+                    v-if="item.status === INSTANCE_STATUS_CODE.RUNNING"
+                    v-bind="tooltipProps"
+                    icon="mdi-stop"
+                    size="small"
+                    color="warning"
+                    variant="text"
+                    @click="confirmCardAction(item, 'stop')"
+                  /> </template
+                ><span>{{ t("TXT_CODE_COMMON_STOP") }}</span>
               </VTooltip>
               <VTooltip location="top">
                 <template #activator="{ props: tooltipProps }">
-                  <VBtn v-if="item.status === INSTANCE_STATUS_CODE.RUNNING" v-bind="tooltipProps" icon="mdi-restart"
-                    size="small" variant="text" @click="confirmCardAction(item, 'restart')" />
+                  <VBtn
+                    v-if="item.status === INSTANCE_STATUS_CODE.RUNNING"
+                    v-bind="tooltipProps"
+                    icon="mdi-restart"
+                    size="small"
+                    variant="text"
+                    @click="confirmCardAction(item, 'restart')"
+                  />
                 </template>
                 <span>{{ t("TXT_CODE_COMMON_RESTART") }}</span>
               </VTooltip>
               <VTooltip location="top">
                 <template #activator="{ props: tooltipProps }">
-                  <VBtn v-if="canUpdate(item)" v-bind="tooltipProps" icon="mdi-cloud-download-outline" size="small"
-                    variant="text" @click="runCardAction(item, 'update')" />
+                  <VBtn
+                    v-if="canUpdate(item)"
+                    v-bind="tooltipProps"
+                    icon="mdi-cloud-download-outline"
+                    size="small"
+                    variant="text"
+                    @click="runCardAction(item, 'update')"
+                  />
                 </template>
                 <span>{{ t("TXT_CODE_COMMON_UPDATE") }}</span>
               </VTooltip>
               <VTooltip location="top">
                 <template #activator="{ props: tooltipProps }">
-                  <VBtn v-if="item.status !== INSTANCE_STATUS_CODE.STOPPED" v-bind="tooltipProps"
-                    icon="mdi-close-circle-outline" size="small" color="error" variant="text"
-                    @click="confirmCardAction(item, 'kill')" />
+                  <VBtn
+                    v-if="item.status !== INSTANCE_STATUS_CODE.STOPPED"
+                    v-bind="tooltipProps"
+                    icon="mdi-close-circle-outline"
+                    size="small"
+                    color="error"
+                    variant="text"
+                    @click="confirmCardAction(item, 'kill')"
+                  />
                 </template>
                 <span>{{ t("TXT_CODE_COMMON_TERMINATE") }}</span>
               </VTooltip>
               <VTooltip location="top">
                 <template #activator="{ props: tooltipProps }">
-                  <VBtn v-bind="tooltipProps" icon="mdi-tag-multiple-outline" size="small" variant="text"
-                    @click="editCardTags(item)" />
+                  <VBtn
+                    v-bind="tooltipProps"
+                    icon="mdi-tag-multiple-outline"
+                    size="small"
+                    variant="text"
+                    @click="editCardTags(item)"
+                  />
                 </template>
                 <span>{{ t("TXT_CODE_COMMON_TAG_GROUPING") }}</span>
               </VTooltip>
-              <VTooltip location="top"><template #activator="{ props: tooltipProps }">
-                  <VBtn v-bind="tooltipProps" icon="mdi-console-line" size="small" variant="text"
-                    @click="toTerminal(item)" />
-                </template><span>{{ t("TXT_CODE_COMMON_TERMINAL") }}</span></VTooltip>
-              <VTooltip location="top"><template #activator="{ props: tooltipProps }">
-                  <VBtn v-bind="tooltipProps" icon="mdi-delete-outline" size="small" color="error" variant="text"
-                    @click.stop="openDeleteDialog(item)" />
-                </template><span>{{ t("TXT_CODE_COMMON_DELETE_INSTANCE") }}</span>
+              <VTooltip location="top"
+                ><template #activator="{ props: tooltipProps }">
+                  <VBtn
+                    v-bind="tooltipProps"
+                    icon="mdi-console-line"
+                    size="small"
+                    variant="text"
+                    @click="toTerminal(item)"
+                  /> </template
+                ><span>{{ t("TXT_CODE_COMMON_TERMINAL") }}</span></VTooltip
+              >
+              <VTooltip location="top"
+                ><template #activator="{ props: tooltipProps }">
+                  <VBtn
+                    v-bind="tooltipProps"
+                    icon="mdi-delete-outline"
+                    size="small"
+                    color="error"
+                    variant="text"
+                    @click.stop="openDeleteDialog(item)"
+                  /> </template
+                ><span>{{ t("TXT_CODE_COMMON_DELETE_INSTANCE") }}</span>
               </VTooltip>
             </VCardActions>
           </VCard>
@@ -536,15 +723,29 @@ onMounted(async () => {
     <VDialog v-model="deleteDialogOpen" class="app-dialog" max-width="480px">
       <VCard rounded="xl" :title="t('TXT_CODE_COMMON_FINAL_CONFIRMATION')">
         <VCardText>
-          <p>{{ t("TXT_CODE_COMMON_IF_YOU_CHOOSE_TO_DELETE_THE_INSTANCE_RELATED_FILES_AT_THE_SAME_TIME_THE_ENTIRE_DIRECTORY") }}</p>
-          <VCheckbox v-model="deleteDialogFiles" :label="t('TXT_CODE_COMMON_DELETE_INSTANCE_RELATED_FILES_SIMULTANEOUSLY')" hide-details />
+          <p>
+            {{
+              t(
+                "TXT_CODE_COMMON_IF_YOU_CHOOSE_TO_DELETE_THE_INSTANCE_RELATED_FILES_AT_THE_SAME_TIME_THE_ENTIRE_DIRECTORY"
+              )
+            }}
+          </p>
+          <VCheckbox
+            v-model="deleteDialogFiles"
+            :label="t('TXT_CODE_COMMON_DELETE_INSTANCE_RELATED_FILES_SIMULTANEOUSLY')"
+            hide-details
+          />
         </VCardText>
         <VCardActions>
           <VBtn variant="text" :disabled="deleteDialogLoading" @click="closeDeleteDialog">
             {{ t("TXT_CODE_COMMON_CANCEL") }}
           </VBtn>
           <VBtn color="error" :loading="deleteDialogLoading" @click="deleteCardInstance">
-            {{ deleteDialogFiles ? t("TXT_CODE_COMMON_DELETE_INSTANCE_AND_RELATED_FILES") : t("TXT_CODE_COMMON_DELETE_INSTANCE") }}
+            {{
+              deleteDialogFiles
+                ? t("TXT_CODE_COMMON_DELETE_INSTANCE_AND_RELATED_FILES")
+                : t("TXT_CODE_COMMON_DELETE_INSTANCE")
+            }}
           </VBtn>
         </VCardActions>
       </VCard>
@@ -636,7 +837,7 @@ onMounted(async () => {
   justify-content: center;
 }
 
-.instance-grid>.v-col {
+.instance-grid > .v-col {
   display: flex;
 }
 

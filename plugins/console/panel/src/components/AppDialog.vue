@@ -1,13 +1,7 @@
 <script setup lang="ts">
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { computed, getCurrentInstance, ref, useAttrs, useSlots, watch } from "vue";
-import {
-  VBtn,
-  VCard,
-  VCardActions,
-  VCardText,
-  VDialog
-} from "vuetify/components";
+import { computed, getCurrentInstance, ref, useAttrs, useSlots, watch, type VNodeChild } from "vue";
+import { VBtn, VCard, VCardActions, VCardText, VDialog } from "vuetify/components";
 
 defineOptions({ inheritAttrs: false });
 
@@ -18,7 +12,7 @@ interface Props {
   title?: string | null;
   width?: string | number;
   maxWidth?: string | number;
-  footer?: unknown;
+  footer?: VNodeChild;
   closable?: boolean;
   maskClosable?: boolean;
   keyboard?: boolean;
@@ -40,6 +34,17 @@ const props = withDefaults(defineProps<Props>(), {
   modelValue: undefined,
   open: undefined,
   visible: undefined,
+  title: undefined,
+  width: undefined,
+  maxWidth: undefined,
+  footer: undefined,
+  okText: undefined,
+  cancelText: undefined,
+  okColor: undefined,
+  okType: undefined,
+  okButtonProps: undefined,
+  wrapClassName: undefined,
+  style: undefined,
   closable: true,
   maskClosable: true,
   keyboard: true,
@@ -132,9 +137,16 @@ const afterLeave = () => {
 </script>
 
 <template>
-  <VDialog v-model="isOpen" class="app-dialog" :class="[attrs.class, props.wrapClassName]" :style="dialogStyle"
-    :max-width="dialogMaxWidth" :persistent="props.maskClosable === false"
-    :close-on-back="props.keyboard !== false" @after-leave="afterLeave">
+  <VDialog
+    v-model="isOpen"
+    class="app-dialog"
+    :class="[attrs.class, props.wrapClassName]"
+    :style="dialogStyle"
+    :max-width="dialogMaxWidth"
+    :persistent="props.maskClosable === false"
+    :close-on-back="props.keyboard !== false"
+    @after-leave="afterLeave"
+  >
     <VCard v-if="renderCard" :title="props.title || undefined" class="app-dialog-card" rounded="xl">
       <template v-if="slots.title" #title>
         <slot name="title" />

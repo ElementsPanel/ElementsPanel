@@ -99,9 +99,17 @@ const handleOpenDetailDialog = async () => {
         <VCol cols="12">
           <div class="desc">
             <div class="desc-text">
-              {{ t("TXT_CODE_COMMON_THE_BROWSER_NEEDS_A_CONNECTION_TO_THE_NODE_FOR_THE_CONSOLE_AND_FILE_TRANSFERS") }}
+              {{
+                t(
+                  "TXT_CODE_COMMON_THE_BROWSER_NEEDS_A_CONNECTION_TO_THE_NODE_FOR_THE_CONSOLE_AND_FILE_TRANSFERS"
+                )
+              }}
               <br />
-              {{ t("TXT_CODE_COMMON_IF_THE_BROWSER_CANNOT_REACH_THIS_ADDRESS_CONFIGURE_A_NODE_DIRECT_CONNECTION_MAPPING") }}
+              {{
+                t(
+                  "TXT_CODE_COMMON_IF_THE_BROWSER_CANNOT_REACH_THIS_ADDRESS_CONFIGURE_A_NODE_DIRECT_CONNECTION_MAPPING"
+                )
+              }}
             </div>
             <div class="pagination">
               <VPagination

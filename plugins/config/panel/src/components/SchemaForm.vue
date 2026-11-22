@@ -46,8 +46,10 @@ const visible = (field: SettingField, values = props.values) => {
 
 const fieldModified = (field: SettingField) =>
   Boolean(
-    props.savedValues && field.key && field.type !== "link" &&
-    JSON.stringify(props.values[field.key]) !== JSON.stringify(props.savedValues[field.key])
+    props.savedValues &&
+      field.key &&
+      field.type !== "link" &&
+      JSON.stringify(props.values[field.key]) !== JSON.stringify(props.savedValues[field.key])
   );
 
 const savedItem = (field: SettingField, index: number): Record<string, unknown> | undefined => {
@@ -312,7 +314,7 @@ const open = (field: SettingField) => {
               :title="String(values[field.key!] ?? '')"
               variant="flat"
             >
-              {{ String(values[field.key!] ?? '').toUpperCase() }}
+              {{ String(values[field.key!] ?? "").toUpperCase() }}
             </VBtn>
           </template>
           <VColorPicker

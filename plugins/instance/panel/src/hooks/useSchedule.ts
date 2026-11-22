@@ -1,5 +1,9 @@
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { scheduleCreate, scheduleDelete, scheduleList } from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import {
+  scheduleCreate,
+  scheduleDelete,
+  scheduleList
+} from "@elementspanel/epanel-plugin-console/services/apis/instance";
 import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import type { ScheduleTaskForm } from "@elementspanel/epanel-plugin-console/types";
 import { message, notification } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";

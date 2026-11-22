@@ -126,9 +126,12 @@ export async function bind2FA(ctx: Koa.ParameterizedContext) {
   if (!ctx.session) throw new Error("Session is Null!");
   const user = getUserFromCtx(ctx);
   if (!user) throw new Error("User is Null!");
-  if (user.open2FA) throw new Error($t("TXT_CODE_COMMON_TWO_FACTOR_AUTHENTICATION_CODE_IS_INCORRECT"));
+  if (user.open2FA)
+    throw new Error($t("TXT_CODE_COMMON_TWO_FACTOR_AUTHENTICATION_CODE_IS_INCORRECT"));
   const secret = authenticator.generateSecret();
-  const qrCode = await QRCode.toDataURL(authenticator.keyuri(user.userName, "ElementsPanel", secret));
+  const qrCode = await QRCode.toDataURL(
+    authenticator.keyuri(user.userName, "ElementsPanel", secret)
+  );
   await userSystem.edit(user.uuid, { secret, open2FA: false });
   return qrCode;
 }
@@ -241,10 +244,13 @@ export function checkBanIp(ctx: Koa.ParameterizedContext) {
   if (ipMap[ip] > 10 && authSettings().loginCheckIp === true) {
     if (ipMap[ip] != 999) {
       GlobalVariable.set(keys.BAN_IP_COUNT, GlobalVariable.get(keys.BAN_IP_COUNT, 0) + 1);
-      setTimeout(() => {
-        delete ipMap[ip];
-        GlobalVariable.set(keys.BAN_IP_COUNT, GlobalVariable.get(keys.BAN_IP_COUNT, 1) - 1);
-      }, 1000 * 60 * 10);
+      setTimeout(
+        () => {
+          delete ipMap[ip];
+          GlobalVariable.set(keys.BAN_IP_COUNT, GlobalVariable.get(keys.BAN_IP_COUNT, 1) - 1);
+        },
+        1000 * 60 * 10
+      );
     }
     ipMap[ip] = 999;
     return false;

@@ -1,8 +1,6 @@
 import { promisify } from "util";
 import { exec } from "child_process";
 import Instance from "../entity/instance/instance";
-import { chown } from "fs/promises";
-import { $t } from "../i18n";
 
 const execAsync = promisify(exec);
 

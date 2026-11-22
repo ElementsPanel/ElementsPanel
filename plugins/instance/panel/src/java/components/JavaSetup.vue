@@ -63,7 +63,8 @@ onUnmounted(() => {
 
 function prepare(): Promise<PreparedJava> {
   if (pending) return pending;
-  if (!valid.value || disposed) return Promise.reject(new Error(t("TXT_CODE_JAVA_MSL_SELECT_JAVA")));
+  if (!valid.value || disposed)
+    return Promise.reject(new Error(t("TXT_CODE_JAVA_MSL_SELECT_JAVA")));
   if (mode.value === "system")
     return Promise.resolve({ id: "", path: customPath.value.trim() || "java" });
   const selectedMode = mode.value;
@@ -169,9 +170,7 @@ defineExpose({ prepare });
           <Empty :icon="false" :title="t('TXT_CODE_JAVA_MSL_NO_INSTALLED')" compact />
         </template>
       </VSelect>
-      <VAlert v-if="error" type="error" variant="tonal" class="mt-1">{{
-        error
-      }}</VAlert>
+      <VAlert v-if="error" type="error" variant="tonal" class="mt-1">{{ error }}</VAlert>
       <VBtn
         variant="text"
         :disabled="disabled || preparing || loading"

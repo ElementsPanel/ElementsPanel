@@ -40,7 +40,10 @@ export function registerInstanceEvents() {
       return;
     }
     const buf = (buffer.get(instanceUuid) ?? "") + text;
-    buffer.set(instanceUuid, logTail(Buffer.from(buf, "utf8"), Math.min(maxBytes, 1024 * 1024)).toString("utf8"));
+    buffer.set(
+      instanceUuid,
+      logTail(Buffer.from(buf, "utf8"), Math.min(maxBytes, 1024 * 1024)).toString("utf8")
+    );
   };
 
   // Buffer instance output to limit disk-write frequency.

@@ -116,7 +116,9 @@ class InstanceControlSubsystem {
         ? undefined
         : registeredTasks.find((entry) => entry.config.name === replaceName);
     if (replaceName != null && !previous) {
-      throw new Error($t("TXT_CODE_SYSTEM_INSTANCE_CONTROL_CREATE_TASK_ERROR", { name: replaceName }));
+      throw new Error(
+        $t("TXT_CODE_SYSTEM_INSTANCE_CONTROL_CREATE_TASK_ERROR", { name: replaceName })
+      );
     }
     const maxTasks = instanceSetting("instanceScheduleMaxTasks");
     if (needStore && !previous && registeredTasks.length >= maxTasks)
@@ -156,7 +158,9 @@ class InstanceControlSubsystem {
               Number(action.payload) > 2147483647))
       )
     )
-      throw new Error($t("TXT_CODE_SYSTEM_INSTANCE_CONTROL_CREATE_TASK_ERROR", { name: task.name }));
+      throw new Error(
+        $t("TXT_CODE_SYSTEM_INSTANCE_CONTROL_CREATE_TASK_ERROR", { name: task.name })
+      );
     if (needStore)
       logger.info(
         $t("TXT_CODE_SYSTEM_INSTANCE_CONTROL_CREATE_TASK", {
@@ -187,7 +191,11 @@ class InstanceControlSubsystem {
     if (task.type === ScheduleTypeEnum.Interval) {
       const internalTime = Number(task.time);
       if (!Number.isFinite(internalTime) || internalTime < 3 || internalTime * 1000 > 2147483647) {
-        throw new Error($t("TXT_CODE_COMMON_THE_INTERVAL_FOR_INTERVAL_TYPE_SCHEDULED_TASKS_CANNOT_BE_LESS_THAN_3_SECONDS"));
+        throw new Error(
+          $t(
+            "TXT_CODE_COMMON_THE_INTERVAL_FOR_INTERVAL_TYPE_SCHEDULED_TASKS_CANNOT_BE_LESS_THAN_3_SECONDS"
+          )
+        );
       }
 
       newTask.job = new IntervalJob(() => void run(), internalTime);
@@ -199,11 +207,15 @@ class InstanceControlSubsystem {
 
       // The editor always emits a six-field expression with a fixed second.
       if (timeArray.length !== 6 || !/^\d+$/.test(timeArray[0]) || Number(timeArray[0]) > 59) {
-        throw new Error($t("TXT_CODE_SYSTEM_INSTANCE_CONTROL_CREATE_TASK_ERROR", { name: task.name }));
+        throw new Error(
+          $t("TXT_CODE_SYSTEM_INSTANCE_CONTROL_CREATE_TASK_ERROR", { name: task.name })
+        );
       }
       const job = schedule.scheduleJob(task.time, () => void run());
       if (!job)
-        throw new Error($t("TXT_CODE_SYSTEM_INSTANCE_CONTROL_CREATE_TASK_ERROR", { name: task.name }));
+        throw new Error(
+          $t("TXT_CODE_SYSTEM_INSTANCE_CONTROL_CREATE_TASK_ERROR", { name: task.name })
+        );
       newTask.job = job;
     }
     let stored = false;

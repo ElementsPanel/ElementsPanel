@@ -30,7 +30,7 @@ async function fillMissingKeys(languagesDir) {
       // Iterate through all keys in the base file
       for (const key in baseJson) {
         // If the target file is missing this key, fill it with English value
-        if (!fileJson.hasOwnProperty(key)) {
+        if (!Object.hasOwn(fileJson, key)) {
           fileJson[key] = baseJson[key];
           hasChanges = true;
         }

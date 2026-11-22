@@ -3,13 +3,28 @@ import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import CardPanel from "@elementspanel/epanel-plugin-console/components/CardPanel";
 import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToolbar";
 import { useAppRouters } from "@elementspanel/epanel-plugin-console/hooks/useAppRouters";
-import { getInstanceConfigByType, type InstanceConfigs } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
+import {
+  getInstanceConfigByType,
+  type InstanceConfigs
+} from "@elementspanel/epanel-plugin-console/hooks/useInstance";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import { getConfigFileList } from "@elementspanel/epanel-plugin-console/services/apis/instance";
 import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
-import { VBtn, VChip, VCol, VContainer, VIcon, VList, VListItem, VListItemSubtitle, VListItemTitle, VProgressLinear, VRow } from "vuetify/components";
+import {
+  VBtn,
+  VChip,
+  VCol,
+  VContainer,
+  VIcon,
+  VList,
+  VListItem,
+  VListItemSubtitle,
+  VListItemTitle,
+  VProgressLinear,
+  VRow
+} from "vuetify/components";
 
 const route = useRoute();
 const instanceId = String(route.query.instanceId ?? "");
@@ -45,7 +60,8 @@ const render = async () => {
         files: files
       }
     });
-    if (!realFiles.value) return reportErrorMsg(t("TXT_CODE_COMMON_FAILED_TO_RETRIEVE_CONFIGURATION_FILE_LIST"));
+    if (!realFiles.value)
+      return reportErrorMsg(t("TXT_CODE_COMMON_FAILED_TO_RETRIEVE_CONFIGURATION_FILE_LIST"));
     realFiles.value.forEach((v) => {
       configFiles.forEach((z) => {
         if (z.path === v.file) {
@@ -97,40 +113,47 @@ onMounted(async () => {
       <VRow density="compact" class="server-config-row">
         <VCol cols="12">
           <CardPanel>
-          <template #body>
-            <VProgressLinear v-if="isLoading" indeterminate color="primary" class="mb-1" />
-            <VList v-if="realFiles && realFiles.length > 0" lines="three" class="app-responsive-list">
-              <VListItem v-for="item in InstanceConfigsList.filter((entry) => entry.check)" :key="item.path">
-                <template #prepend><VIcon icon="mdi-file-document-outline" /></template>
-                <VListItemTitle>
-                      <VChip v-if="item.conflict" color="warning" size="small" variant="tonal">
-                        {{ t("TXT_CODE_COMMON_DUPLICATE_FILE_CLEAN_UP_DUPLICATES_FIRST") }}
-                      </VChip>
-                      <span class="ml-1">{{ item.fileName }}</span>
-                </VListItemTitle>
-                <VListItemSubtitle>
-                      {{ item.info }}
-                      <br />
-                      <span v-if="item.conflict" class="text-error">
-                        {{ t("TXT_CODE_GAME_CONFIG_COMPATIBILITY_UNKNOWN_HINT") }}
-                      </span>
-                </VListItemSubtitle>
-                <template #append>
+            <template #body>
+              <VProgressLinear v-if="isLoading" indeterminate color="primary" class="mb-1" />
+              <VList
+                v-if="realFiles && realFiles.length > 0"
+                lines="three"
+                class="app-responsive-list"
+              >
+                <VListItem
+                  v-for="item in InstanceConfigsList.filter((entry) => entry.check)"
+                  :key="item.path"
+                >
+                  <template #prepend><VIcon icon="mdi-file-document-outline" /></template>
+                  <VListItemTitle>
+                    <VChip v-if="item.conflict" color="warning" size="small" variant="tonal">
+                      {{ t("TXT_CODE_COMMON_DUPLICATE_FILE_CLEAN_UP_DUPLICATES_FIRST") }}
+                    </VChip>
+                    <span class="ml-1">{{ item.fileName }}</span>
+                  </VListItemTitle>
+                  <VListItemSubtitle>
+                    {{ item.info }}
+                    <br />
+                    <span v-if="item.conflict" class="text-error">
+                      {{ t("TXT_CODE_GAME_CONFIG_COMPATIBILITY_UNKNOWN_HINT") }}
+                    </span>
+                  </VListItemSubtitle>
+                  <template #append>
                     <VBtn variant="tonal" @click="toEdit(item.redirect, item.path, item.type)">
                       {{ t("TXT_CODE_COMMON_EDIT") }}
                     </VBtn>
-                </template>
-              </VListItem>
-            </VList>
-            <Empty
-              v-else
-              icon="mdi-file-alert-outline"
-              :title="t('TXT_CODE_COMMON_NO_AVAILABLE_CONFIGURATION_FILE_FOUND')"
-              :description="t('TXT_CODE_GAME_CONFIG_GENERATION_HINT')"
-            />
-          </template>
-        </CardPanel>
-      </VCol>
+                  </template>
+                </VListItem>
+              </VList>
+              <Empty
+                v-else
+                icon="mdi-file-alert-outline"
+                :title="t('TXT_CODE_COMMON_NO_AVAILABLE_CONFIGURATION_FILE_FOUND')"
+                :description="t('TXT_CODE_GAME_CONFIG_GENERATION_HINT')"
+              />
+            </template>
+          </CardPanel>
+        </VCol>
       </VRow>
     </VContainer>
   </main>

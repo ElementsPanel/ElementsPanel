@@ -24,7 +24,15 @@ defineExpose({
 </script>
 
 <template>
-  <AppDialog v-model:visible="open" width="600px" :title="props.title" :mask-closable="false" :closable="false" :footer="null" @cancel="cancel">
+  <AppDialog
+    v-model:visible="open"
+    width="600px"
+    :title="props.title"
+    :mask-closable="false"
+    :closable="false"
+    :footer="null"
+    @cancel="cancel"
+  >
     <div class="task-loading-content overflow-x-hidden">
       <div class="d-flex align-center justify-center">
         <div>

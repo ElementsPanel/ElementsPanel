@@ -8,14 +8,7 @@ import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast
 import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { TERMINAL_CODE } from "@elementspanel/epanel-plugin-console/types/const";
 import AppDialog from "@elementspanel/epanel-plugin-console/components/AppDialog";
-import {
-  VCol,
-  VForm,
-  VRow,
-  VSelect,
-  VSwitch,
-  VTextField
-} from "vuetify/components";
+import { VCol, VForm, VRow, VSelect, VSwitch, VTextField } from "vuetify/components";
 
 const props = defineProps<{
   instanceInfo?: InstanceDetail;
@@ -79,7 +72,11 @@ defineExpose({
           <div class="term-config-section">
             <div class="term-config-title">{{ t("TXT_CODE_COMMON_EMULATED_TERMINAL") }}</div>
             <div class="term-config-description">
-              {{ t("TXT_CODE_COMMON_SUPPORTS_TAB_AND_CTRL_SHORTCUTS_DISABLE_IF_COMPATIBILITY_ISSUES_OCCUR") }}
+              {{
+                t(
+                  "TXT_CODE_COMMON_SUPPORTS_TAB_AND_CTRL_SHORTCUTS_DISABLE_IF_COMPATIBILITY_ISSUES_OCCUR"
+                )
+              }}
             </div>
             <VSwitch v-model="options.config.terminalOption.pty" color="primary" hide-details />
           </div>
@@ -87,9 +84,17 @@ defineExpose({
           <div class="term-config-section">
             <div class="term-config-title">{{ t("TXT_CODE_COMMON_COLOR_RENDERING") }}</div>
             <div class="term-config-description">
-              {{ t("TXT_CODE_COMMON_AUTOMATICALLY_COLORS_OUTPUT_DISABLE_IF_IT_CONFLICTS_WITH_THE_APPLICATION_S_COLORS") }}
+              {{
+                t(
+                  "TXT_CODE_COMMON_AUTOMATICALLY_COLORS_OUTPUT_DISABLE_IF_IT_CONFLICTS_WITH_THE_APPLICATION_S_COLORS"
+                )
+              }}
             </div>
-            <VSwitch v-model="options.config.terminalOption.haveColor" color="primary" hide-details />
+            <VSwitch
+              v-model="options.config.terminalOption.haveColor"
+              color="primary"
+              hide-details
+            />
           </div>
 
           <div class="term-config-section">
@@ -114,8 +119,12 @@ defineExpose({
 
         <VCol cols="12" md="6">
           <div class="term-config-section">
-            <div class="term-config-title">{{ t("TXT_CODE_COMMON_INSTANCE_SHUTDOWN_COMMAND") }}</div>
-            <div class="term-config-description">{{ t("TXT_CODE_COMMON_RUNS_WHEN_STOPPING_THE_INSTANCE_C_SENDS_CTRL_C") }}</div>
+            <div class="term-config-title">
+              {{ t("TXT_CODE_COMMON_INSTANCE_SHUTDOWN_COMMAND") }}
+            </div>
+            <div class="term-config-description">
+              {{ t("TXT_CODE_COMMON_RUNS_WHEN_STOPPING_THE_INSTANCE_C_SENDS_CTRL_C") }}
+            </div>
             <VTextField
               v-model="options.config.stopCommand"
               class="term-config-control"
@@ -124,8 +133,12 @@ defineExpose({
           </div>
 
           <div class="term-config-section">
-            <div class="term-config-title">{{ t("TXT_CODE_COMMON_INPUT_AND_OUTPUT_ENCODING") }}</div>
-            <div class="term-config-description">{{ t("TXT_CODE_COMMON_CHANGE_THE_ENCODING_IF_TERMINAL_OUTPUT_IS_GARBLED") }}</div>
+            <div class="term-config-title">
+              {{ t("TXT_CODE_COMMON_INPUT_AND_OUTPUT_ENCODING") }}
+            </div>
+            <div class="term-config-description">
+              {{ t("TXT_CODE_COMMON_CHANGE_THE_ENCODING_IF_TERMINAL_OUTPUT_IS_GARBLED") }}
+            </div>
             <div class="term-config-encoding">
               <VSelect
                 v-model="options.config.ie"

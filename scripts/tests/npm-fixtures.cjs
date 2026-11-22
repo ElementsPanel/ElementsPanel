@@ -82,7 +82,9 @@ function mockNpmView(t, versions = { panel: "1.2.3", daemon: "2.3.4" }, pluginVe
   const registryFile = path.join(root, "registry.json");
   write(registryFile, {});
   const previousNpmCLI = process.env.npm_execpath;
-  write(npmCLI, `
+  write(
+    npmCLI,
+    `
 const fs = require("node:fs");
 const args = process.argv.slice(2);
 fs.appendFileSync(${JSON.stringify(log)}, JSON.stringify(args) + "\\n");

@@ -217,7 +217,10 @@ test("task routes consume their provider's remote service without Cordis injecti
   const work = deferred();
   fixture.tasks.runRequest("file/download_from_url", input(), () => {
     fixture.tasks.follow(work.promise);
-    fixture.tasks.progress(() => ({ current: 1, total: 10 }), () => work.resolve());
+    fixture.tasks.progress(
+      () => ({ current: 1, total: 10 }),
+      () => work.resolve()
+    );
   });
   const request = fixture.request();
   await fixture.handlers.get("get /")(request);
@@ -312,7 +315,10 @@ test("pushed snapshots replace one daemon and reset clears the stream", async ()
     unavailable: true,
     tasks: [{ id: "other", state: "completed", startedAt: 1 }]
   });
-  assert.deepEqual(store.tasks.value.map((task) => task.id), ["pushed", "other"]);
+  assert.deepEqual(
+    store.tasks.value.map((task) => task.id),
+    ["pushed", "other"]
+  );
   assert.equal(store.tasks.value[0].daemonId, "node");
   assert.equal(store.tasks.value[1].nodeName, "Second");
   assert.equal(store.unavailable.value, true);
@@ -324,7 +330,10 @@ test("pushed snapshots replace one daemon and reset clears the stream", async ()
     unavailable: false,
     tasks: []
   });
-  assert.deepEqual(store.tasks.value.map((task) => task.id), ["other"]);
+  assert.deepEqual(
+    store.tasks.value.map((task) => task.id),
+    ["other"]
+  );
   assert.equal(store.rippleKey.value, 2);
 
   store.reset();

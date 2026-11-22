@@ -116,7 +116,10 @@ export function packagePanelPlugins({
       fs.existsSync(builtEntry) &&
       fs.statSync(builtEntry).isFile();
     if (validBuiltEntry) {
-      copyDirectory(path.join(builtPluginDirectory, "frontend"), path.join(outputDirectory, "frontend"));
+      copyDirectory(
+        path.join(builtPluginDirectory, "frontend"),
+        path.join(outputDirectory, "frontend")
+      );
       packagedMetadata.frontend = packagedEntry;
       delete packagedMetadata.ui;
       packageMetadata.elementspanel.styles = packageFrontendStyles(
@@ -134,8 +137,10 @@ export function packagePanelPlugins({
           throw new Error(`Invalid public frontend module owner: ${specifier}`);
         const relative = toPosix(filename);
         const resolved = path.resolve(buildRoot, relative);
-        if (!resolved.startsWith(`${path.resolve(builtPluginDirectory, "frontend")}${path.sep}`) ||
-            !fs.statSync(resolved).isFile())
+        if (
+          !resolved.startsWith(`${path.resolve(builtPluginDirectory, "frontend")}${path.sep}`) ||
+          !fs.statSync(resolved).isFile()
+        )
           throw new Error(`Invalid public frontend module file: ${filename}`);
         const key = specifier === packageMetadata.name ? "." : specifier.slice(prefix.length);
         exports[key] = relative.slice(`${pluginName}/`.length);

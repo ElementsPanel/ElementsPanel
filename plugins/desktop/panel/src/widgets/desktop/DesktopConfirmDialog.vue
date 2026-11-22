@@ -5,7 +5,7 @@ let confirmationZIndex = 20000;
 
 <script setup lang="ts">
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { computed, nextTick, ref, useSlots, watch } from "vue";
+import { computed, nextTick, ref, useSlots, watch, type VNodeChild } from "vue";
 import { VBtn, VIcon } from "vuetify/components";
 import DesktopDialog from "@elementspanel/epanel-plugin-console/components/DesktopDialog";
 
@@ -20,32 +20,44 @@ interface ConfirmAction {
   disabled?: boolean;
 }
 
-const props = withDefaults(defineProps<{
-  modelValue: boolean;
-  title?: string | null;
-  message?: string;
-  id?: string;
-  width?: string | number;
-  height?: number;
-  zIndex?: number;
-  danger?: boolean;
-  loading?: boolean;
-  disabled?: boolean;
-  okText?: string;
-  cancelText?: string;
-  okButtonProps?: Record<string, unknown>;
-  actions?: ConfirmAction[];
-  showCancel?: boolean;
-  closable?: boolean;
-  keyboard?: boolean;
-  footer?: unknown;
-}>(), {
-  height: 200,
-  zIndex: 20000,
-  showCancel: true,
-  closable: true,
-  keyboard: true
-});
+const props = withDefaults(
+  defineProps<{
+    modelValue: boolean;
+    title?: string | null;
+    message?: string;
+    id?: string;
+    width?: string | number;
+    height?: number;
+    zIndex?: number;
+    danger?: boolean;
+    loading?: boolean;
+    disabled?: boolean;
+    okText?: string;
+    cancelText?: string;
+    okButtonProps?: Record<string, unknown>;
+    actions?: ConfirmAction[];
+    showCancel?: boolean;
+    closable?: boolean;
+    keyboard?: boolean;
+    footer?: VNodeChild;
+  }>(),
+  {
+    title: undefined,
+    message: undefined,
+    id: undefined,
+    width: undefined,
+    okText: undefined,
+    cancelText: undefined,
+    okButtonProps: undefined,
+    actions: undefined,
+    footer: undefined,
+    height: 200,
+    zIndex: 20000,
+    showCancel: true,
+    closable: true,
+    keyboard: true
+  }
+);
 
 const emit = defineEmits<{
   "update:modelValue": [value: boolean];
@@ -70,15 +82,23 @@ let previousFocus: HTMLElement | null = null;
 
 const focusDialog = () => {
   const element = dialogElement.value?.getElement();
-  (element?.querySelector<HTMLElement>("[autofocus], .desktop-confirm__cancel, .desktop-confirm__button") || element)?.focus();
+  (
+    element?.querySelector<HTMLElement>(
+      "[autofocus], .desktop-confirm__cancel, .desktop-confirm__button"
+    ) || element
+  )?.focus();
 };
-watch(() => props.modelValue, async (open) => {
-  if (!open) return;
-  focusWindow();
-  previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-  await nextTick();
-  if (props.modelValue) focusDialog();
-}, { immediate: true });
+watch(
+  () => props.modelValue,
+  async (open) => {
+    if (!open) return;
+    focusWindow();
+    previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    await nextTick();
+    if (props.modelValue) focusDialog();
+  },
+  { immediate: true }
+);
 
 const cancel = () => {
   if (!props.modelValue || busy.value) return;
@@ -89,45 +109,86 @@ const confirm = () => {
   if (!busy.value && !props.disabled && !props.okButtonProps?.disabled) emit("confirm");
 };
 const afterLeave = () => {
-  if (previousFocus?.isConnected && (document.activeElement === document.body ||
-      dialogElement.value?.getElement()?.contains(document.activeElement))) previousFocus.focus();
+  if (
+    previousFocus?.isConnected &&
+    (document.activeElement === document.body ||
+      dialogElement.value?.getElement()?.contains(document.activeElement))
+  )
+    previousFocus.focus();
   emit("after-leave");
 };
 </script>
 
 <template>
-  <DesktopDialog :model-value="modelValue" :id="windowId" ref="dialogElement"
-    :title="title || t('TXT_CODE_COMMON_CONFIRM_ACTION')" icon="mdi-alert-circle-outline"
-    :width="width || 400" :height="height" :z-index="currentZIndex"
-    :closable="closable && !busy" :keyboard="keyboard" :padded="false" :scrollable="false"
-    class="desktop-confirm" @focus="focusWindow" @close="cancel" @after-leave="afterLeave">
+  <DesktopDialog
+    :id="windowId"
+    ref="dialogElement"
+    :model-value="modelValue"
+    :title="title || t('TXT_CODE_COMMON_CONFIRM_ACTION')"
+    icon="mdi-alert-circle-outline"
+    :width="width || 400"
+    :height="height"
+    :z-index="currentZIndex"
+    :closable="closable && !busy"
+    :keyboard="keyboard"
+    :padded="false"
+    :scrollable="false"
+    class="desktop-confirm"
+    @focus="focusWindow"
+    @close="cancel"
+    @after-leave="afterLeave"
+  >
     <template v-if="slots.title" #title><slot name="title" /></template>
     <div class="desktop-confirm__body">
       <VIcon icon="mdi-alert-circle-outline" class="desktop-confirm__icon" />
-      <div class="desktop-confirm__message"><slot>{{ message }}</slot></div>
+      <div class="desktop-confirm__message">
+        <slot>{{ message }}</slot>
+      </div>
     </div>
     <template v-if="showFooter" #footer>
       <slot name="footer">
-        <VBtn v-if="showCancel" class="desktop-confirm__button desktop-confirm__cancel" variant="text"
-          :disabled="busy" @click="cancel">{{ cancelText ?? t("TXT_CODE_COMMON_CANCEL") }}</VBtn>
+        <VBtn
+          v-if="showCancel"
+          class="desktop-confirm__button desktop-confirm__cancel"
+          variant="text"
+          :disabled="busy"
+          @click="cancel"
+          >{{ cancelText ?? t("TXT_CODE_COMMON_CANCEL") }}</VBtn
+        >
         <template v-if="actions">
-          <VBtn v-for="action in actions" :key="action.id" class="desktop-confirm__button"
-            :class="{ 'desktop-confirm__button--primary': !action.danger, 'desktop-confirm__button--danger': action.danger,
-              'desktop-confirm__button--highlighted': action.highlighted }"
-            variant="text" :prepend-icon="action.icon" :disabled="busy || action.disabled"
-            @click="emit('action', action.id)">{{ action.text }}</VBtn>
+          <VBtn
+            v-for="action in actions"
+            :key="action.id"
+            class="desktop-confirm__button"
+            :class="{
+              'desktop-confirm__button--primary': !action.danger,
+              'desktop-confirm__button--danger': action.danger,
+              'desktop-confirm__button--highlighted': action.highlighted
+            }"
+            variant="text"
+            :prepend-icon="action.icon"
+            :disabled="busy || action.disabled"
+            @click="emit('action', action.id)"
+            >{{ action.text }}</VBtn
+          >
         </template>
-        <VBtn v-else v-bind="okButtonProps" class="desktop-confirm__button"
+        <VBtn
+          v-else
+          v-bind="okButtonProps"
+          class="desktop-confirm__button"
           :class="danger ? 'desktop-confirm__button--danger' : 'desktop-confirm__button--primary'"
-          variant="text" :loading="busy" :disabled="disabled || !!okButtonProps?.disabled"
-          @click="confirm">{{ okText ?? t("TXT_CODE_COMMON_CONFIRM") }}</VBtn>
+          variant="text"
+          :loading="busy"
+          :disabled="disabled || !!okButtonProps?.disabled"
+          @click="confirm"
+          >{{ okText ?? t("TXT_CODE_COMMON_CONFIRM") }}</VBtn
+        >
       </slot>
     </template>
   </DesktopDialog>
 </template>
 
 <style lang="scss" scoped>
-
 .desktop-confirm__body {
   flex: 1;
   min-height: 0;
@@ -151,7 +212,9 @@ const afterLeave = () => {
   text-align: center;
   line-height: 1.6;
   overflow-wrap: anywhere;
-  :deep(p) { margin: 0; }
+  :deep(p) {
+    margin: 0;
+  }
 }
 
 .desktop-confirm__button {
@@ -160,8 +223,17 @@ const afterLeave = () => {
   font-size: 13px;
   color: var(--desktop-window-text);
   background: var(--desktop-window-titlebar-bg);
-  &--primary { background: var(--color-blue-5, #1677ff); color: #fff; }
-  &--danger { background: var(--color-red-5, #ff4d4f); color: #fff; }
-  &--highlighted { outline: 2px solid var(--desktop-window-text); outline-offset: 2px; }
+  &--primary {
+    background: var(--color-blue-5, #1677ff);
+    color: #fff;
+  }
+  &--danger {
+    background: var(--color-red-5, #ff4d4f);
+    color: #fff;
+  }
+  &--highlighted {
+    outline: 2px solid var(--desktop-window-text);
+    outline-offset: 2px;
+  }
 }
 </style>

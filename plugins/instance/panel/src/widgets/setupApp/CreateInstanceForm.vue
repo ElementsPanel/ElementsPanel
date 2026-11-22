@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
-import { INSTANCE_TYPE_TRANSLATION, TYPE_MINECRAFT_BUNGEECORD } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
+import {
+  INSTANCE_TYPE_TRANSLATION,
+  TYPE_MINECRAFT_BUNGEECORD
+} from "@elementspanel/epanel-plugin-console/hooks/useInstance";
 import { QUICKSTART_METHOD } from "@elementspanel/epanel-plugin-console/hooks/widgets/quickStartFlow";
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { createInstance as createInstanceApi, uploadAddress } from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import {
+  createInstance as createInstanceApi,
+  uploadAddress
+} from "@elementspanel/epanel-plugin-console/services/apis/instance";
 import type { FrontendFileManagerService, FrontendJavaService } from "@elements-panel/sdk";
 import { usePluginService } from "@elements-panel/sdk";
 import { parseForwardAddress } from "@elementspanel/epanel-plugin-console/tools/protocol";
@@ -56,7 +62,8 @@ const instanceTypeOptions = computed(() =>
   }))
 );
 const requiredRule = (value: unknown) =>
-  (typeof value === "string" ? !!value.trim() : !!value) || t("TXT_CODE_COMMON_PLEASE_COMPLETE_THE_PARAMETERS");
+  (typeof value === "string" ? !!value.trim() : !!value) ||
+  t("TXT_CODE_COMMON_PLEASE_COMPLETE_THE_PARAMETERS");
 const javaPathRule = (value: string) =>
   !/["\r\n\0]/.test(value) || t("TXT_CODE_MINECRAFT_INVALID_SELECTION");
 const formRef = ref<InstanceType<typeof VForm>>();
@@ -89,7 +96,8 @@ const needsJava = computed(
       ? !!downloadSelection.value && downloadSelection.value.server !== "bedrock-server"
       : formData.type.startsWith("minecraft/java") ||
         (formData.type === "minecraft/bedrock" &&
-          (uFile.value?.name.toLowerCase().endsWith(".jar") || isJavaCommand(formData.startCommand))))
+          (uFile.value?.name.toLowerCase().endsWith(".jar") ||
+            isJavaCommand(formData.startCommand))))
 );
 
 function changeInstanceType(type: string) {
@@ -147,7 +155,8 @@ const percentComplete = computed(() => {
 });
 const percentText = computed(() => {
   if (!uploadFileInstance.value) return t("TXT_CODE_COMMON_SELECT_ZIP_FILE");
-  if (uploadStarted.value) return t("TXT_CODE_COMMON_UPLOADING") + percentComplete.value.toFixed(0) + "%";
+  if (uploadStarted.value)
+    return t("TXT_CODE_COMMON_UPLOADING") + percentComplete.value.toFixed(0) + "%";
   return t("TXT_CODE_COMMON_WAITING_TO_UPLOAD_IN_QUEUE_REMAINING", {
     n: fileManager?.uploadService.getFileNth(uploadFileInstance.value.id || "")
   });
@@ -158,7 +167,9 @@ const startCommandHint = computed(() =>
     : isImportMode.value
     ? t("TXT_CODE_COMMON_UNABLE_FIND_THE_SERVER_CORE_PLEASE_PROVIDE_THE_STARTUP_COMMAND_MANUALLY")
     : props.createMethod === QUICKSTART_METHOD.DOCKER
-    ? t("TXT_CODE_COMMON_YOU_CAN_ENTER_A_STARTUP_COMMAND_SUCH_AS_JAVA_JAR_DEMO_JAR_IF_NO_STARTUP_COMMAND")
+    ? t(
+        "TXT_CODE_COMMON_YOU_CAN_ENTER_A_STARTUP_COMMAND_SUCH_AS_JAVA_JAR_DEMO_JAR_IF_NO_STARTUP_COMMAND"
+      )
     : t("TXT_CODE_COMMON_PLEASE_PROVIDE_THE_STARTUP_COMMAND")
 );
 
@@ -217,7 +228,9 @@ async function showConfirmation() {
     content: isDownloadMode.value
       ? t("TXT_CODE_MINECRAFT_CONFIRM_DOWNLOAD")
       : needUpload.value
-      ? t("TXT_CODE_COMMON_THE_INSTANCE_WILL_BE_CREATED_AS_YOU_UPLOAD_THE_FILES_THIS_IS_AN_IRREVERSIBLE_PROCESS_DO")
+      ? t(
+          "TXT_CODE_COMMON_THE_INSTANCE_WILL_BE_CREATED_AS_YOU_UPLOAD_THE_FILES_THIS_IS_AN_IRREVERSIBLE_PROCESS_DO"
+        )
       : t("TXT_CODE_COMMON_INSTANCE_WILL_BE_CREATED_PROCEED"),
     okText: t("TXT_CODE_COMMON_CONFIRM"),
     async onOk() {
@@ -277,8 +290,7 @@ async function selectedFile() {
     config.type.startsWith("minecraft/")
   ) {
     const nogui =
-      config.type.startsWith("minecraft/java") &&
-      config.type !== TYPE_MINECRAFT_BUNGEECORD;
+      config.type.startsWith("minecraft/java") && config.type !== TYPE_MINECRAFT_BUNGEECORD;
     config.startCommand = `${javaExecutableCommand(
       javaPath.value.trim() || "java"
     )} -jar "${uFile.value.name.replace(/"/g, "{quotes}")}"${nogui ? " nogui" : ""}`;
@@ -319,11 +331,13 @@ async function createInstance() {
       params: { daemonId: props.daemonId },
       data: { config, selection: { ...downloadSelection.value, javaPath: javaPath.value.trim() } }
     });
-    if (!result.value?.instanceUuid) throw new Error(t("TXT_CODE_COMMON_FAILED_TO_GET_UPLOAD_ADDRESS"));
+    if (!result.value?.instanceUuid)
+      throw new Error(t("TXT_CODE_COMMON_FAILED_TO_GET_UPLOAD_ADDRESS"));
     createdInstanceUuid.value = result.value.instanceUuid;
   } else {
     await executeCreateInstance({ params: { daemonId: props.daemonId }, data: config });
-    if (!newInstanceInfo.value?.instanceUuid) throw new Error(t("TXT_CODE_COMMON_FAILED_TO_GET_UPLOAD_ADDRESS"));
+    if (!newInstanceInfo.value?.instanceUuid)
+      throw new Error(t("TXT_CODE_COMMON_FAILED_TO_GET_UPLOAD_ADDRESS"));
     createdInstanceUuid.value = newInstanceInfo.value.instanceUuid;
   }
   message.success(t("TXT_CODE_COMMON_CREATE_SUCCESS"));
@@ -339,7 +353,8 @@ async function createInstance() {
     @submit.prevent="finalConfirm"
   >
     <p v-if="createMethod === QUICKSTART_METHOD.DOCKER" class="desktop-create-hint">
-      <VIcon icon="mdi-information-outline" /> {{ t("TXT_CODE_INSTANCE_DOCKER_INSTALLATION_REQUIRED_HINT") }}
+      <VIcon icon="mdi-information-outline" />
+      {{ t("TXT_CODE_INSTANCE_DOCKER_INSTALLATION_REQUIRED_HINT") }}
     </p>
     <VRow density="compact">
       <VCol cols="12" :md="instanceType ? 12 : 6">
@@ -359,7 +374,9 @@ async function createInstance() {
           v-model="formData.type"
           :items="instanceTypeOptions"
           :label="t('TXT_CODE_COMMON_INSTANCE_TYPE')"
-          :hint="t('TXT_CODE_COMMON_DIFFERENT_TYPES_MAY_HAVE_SLIGHTLY_DIFFERENCES_IN_SOME_FUNCTIONS')"
+          :hint="
+            t('TXT_CODE_COMMON_DIFFERENT_TYPES_MAY_HAVE_SLIGHTLY_DIFFERENCES_IN_SOME_FUNCTIONS')
+          "
           persistent-hint
           density="compact"
           hide-details="auto"
@@ -371,10 +388,10 @@ async function createInstance() {
     </VRow>
     <MinecraftServerDownload
       v-if="isDownloadMode"
-      @update:model-value="downloadSelection = $event"
       :instance-type="formData.type"
       :disabled="busy"
       class="mt-1"
+      @update:model-value="downloadSelection = $event"
     />
     <component
       :is="javaService.setupComponent"
@@ -412,7 +429,11 @@ async function createInstance() {
         ><VTextField
           v-model="formData.cwd"
           :label="t('TXT_CODE_COMMON_HOST_WORKING_DIRECTORY')"
-          :hint="t('TXT_CODE_COMMON_OPTIONAL_MANAGED_BY_PANEL_BY_DEFAULT_IF_PROVIDED_REQUIRE_ABSOLUTE_PATH_E_G_C_SERVERS_MY')"
+          :hint="
+            t(
+              'TXT_CODE_COMMON_OPTIONAL_MANAGED_BY_PANEL_BY_DEFAULT_IF_PROVIDED_REQUIRE_ABSOLUTE_PATH_E_G_C_SERVERS_MY'
+            )
+          "
           persistent-hint
           density="compact"
           hide-details="auto"
@@ -421,7 +442,9 @@ async function createInstance() {
         ><VTextField
           v-model="formData.docker.workingDir"
           :label="t('TXT_CODE_COMMON_WORKING_DIRECTORY_IN_CONTAINER')"
-          :hint="t('TXT_CODE_COMMON_MOUNT_HOST_INSTANCE_DIRECTORY_TO_CONTAINER_FOR_DATA_PERSISTENCE')"
+          :hint="
+            t('TXT_CODE_COMMON_MOUNT_HOST_INSTANCE_DIRECTORY_TO_CONTAINER_FOR_DATA_PERSISTENCE')
+          "
           persistent-hint
           density="compact"
           hide-details="auto"
@@ -431,7 +454,11 @@ async function createInstance() {
       v-if="createMethod === QUICKSTART_METHOD.EXIST"
       v-model="formData.cwd"
       :label="t('TXT_CODE_COMMON_HOST_WORKING_DIRECTORY')"
-      :hint="t('TXT_CODE_COMMON_OPTIONAL_MANAGED_BY_PANEL_BY_DEFAULT_IF_PROVIDED_REQUIRE_ABSOLUTE_PATH_E_G_C_SERVERS_MY')"
+      :hint="
+        t(
+          'TXT_CODE_COMMON_OPTIONAL_MANAGED_BY_PANEL_BY_DEFAULT_IF_PROVIDED_REQUIRE_ABSOLUTE_PATH_E_G_C_SERVERS_MY'
+        )
+      "
       persistent-hint
       density="compact"
       hide-details="auto"
@@ -470,7 +497,9 @@ async function createInstance() {
     <VFileInput
       v-if="needUpload"
       :model-value="uFile"
-      :label="isImportMode ? t('TXT_CODE_MINECRAFT_UPLOAD') : t('TXT_CODE_COMMON_UPLOAD_A_SERVER_CORE')"
+      :label="
+        isImportMode ? t('TXT_CODE_MINECRAFT_UPLOAD') : t('TXT_CODE_COMMON_UPLOAD_A_SERVER_CORE')
+      "
       :accept="isImportMode ? '.zip,.jar' : '.jar'"
       prepend-icon="mdi-upload-outline"
       density="compact"
@@ -479,7 +508,11 @@ async function createInstance() {
       @update:model-value="onFileChange"
     />
     <div v-else-if="!isDownloadMode" class="desktop-create-hint mt-1">
-      {{ t("TXT_CODE_COMMON_COMPLETE_THE_REQUIRED_FIELDS_TO_CREATE_OTHER_OPTIONS_CAN_BE_CHANGED_IN_INSTANCE_SETTINGS") }}
+      {{
+        t(
+          "TXT_CODE_COMMON_COMPLETE_THE_REQUIRED_FIELDS_TO_CREATE_OTHER_OPTIONS_CAN_BE_CHANGED_IN_INSTANCE_SETTINGS"
+        )
+      }}
     </div>
     <div :class="{ 'create-form-actions': $slots['back-action'] }">
       <slot name="back-action" />
@@ -503,7 +536,9 @@ async function createInstance() {
         rounded="xl"
         :class="$slots['back-action'] ? '' : 'mt-1 align-self-start'"
         :disabled="
-          busy || (isDownloadMode && !downloadSelection) || (needsJava && !!javaService && !javaValid)
+          busy ||
+          (isDownloadMode && !downloadSelection) ||
+          (needsJava && !!javaService && !javaValid)
         "
         :loading="submitting"
         @click="finalConfirm"

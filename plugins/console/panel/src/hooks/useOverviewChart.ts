@@ -12,7 +12,15 @@ import {
 import { onBeforeUnmount, onMounted, shallowRef, watch, type Ref } from "vue";
 import { useDesktopWindowActivity } from "./useDesktopWindowActivity";
 
-Chart.register(CategoryScale, LinearScale, LineController, LineElement, PointElement, Filler, Tooltip);
+Chart.register(
+  CategoryScale,
+  LinearScale,
+  LineController,
+  LineElement,
+  PointElement,
+  Filler,
+  Tooltip
+);
 
 export interface LineChartData {
   labels: string[];
@@ -44,7 +52,7 @@ export function useLineChart(
   };
   const snapshot = (data: LineChartData) => ({
     labels: [...data.labels],
-    values: data.values.map((value) => Number.isFinite(value) ? value : null),
+    values: data.values.map((value) => (Number.isFinite(value) ? value : null)),
     max: Number.isFinite(data.max) && data.max > 0 ? data.max : 1
   });
 
@@ -59,35 +67,43 @@ export function useLineChart(
       type: "line",
       data: {
         labels: data.labels,
-        datasets: [{
-          data: data.values,
-          borderColor: "rgba(67, 145, 250, 0.95)",
-          borderWidth: 1.5,
-          pointRadius: 0,
-          pointHoverRadius: 3,
-          pointHitRadius: 8,
-          cubicInterpolationMode: "monotone",
-          fill: true,
-          backgroundColor: ({ chart }) => {
-            const { ctx, chartArea } = chart;
-            if (!chartArea) return "rgba(67, 145, 250, 0.15)";
-            if (!gradient || gradientTop !== chartArea.top || gradientBottom !== chartArea.bottom) {
-              gradientTop = chartArea.top;
-              gradientBottom = chartArea.bottom;
-              gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-              gradient.addColorStop(0, "rgba(67, 145, 250, 0.55)");
-              gradient.addColorStop(0.6, "rgba(40, 100, 210, 0.15)");
-              gradient.addColorStop(1, "rgba(17, 60, 150, 0)");
+        datasets: [
+          {
+            data: data.values,
+            borderColor: "rgba(67, 145, 250, 0.95)",
+            borderWidth: 1.5,
+            pointRadius: 0,
+            pointHoverRadius: 3,
+            pointHitRadius: 8,
+            cubicInterpolationMode: "monotone",
+            fill: true,
+            backgroundColor: ({ chart }) => {
+              const { ctx, chartArea } = chart;
+              if (!chartArea) return "rgba(67, 145, 250, 0.15)";
+              if (
+                !gradient ||
+                gradientTop !== chartArea.top ||
+                gradientBottom !== chartArea.bottom
+              ) {
+                gradientTop = chartArea.top;
+                gradientBottom = chartArea.bottom;
+                gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                gradient.addColorStop(0, "rgba(67, 145, 250, 0.55)");
+                gradient.addColorStop(0.6, "rgba(40, 100, 210, 0.15)");
+                gradient.addColorStop(1, "rgba(17, 60, 150, 0)");
+              }
+              return gradient;
             }
-            return gradient;
           }
-        }]
+        ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         interaction: { mode: "index", intersect: false },
-        layout: { padding: { top: compact ? 6 : 8, bottom: compact ? 4 : 0, right: compact ? 6 : 8 } },
+        layout: {
+          padding: { top: compact ? 6 : 8, bottom: compact ? 4 : 0, right: compact ? 6 : 8 }
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -136,14 +152,18 @@ export function useLineChart(
               color: tickColor,
               font: { size: 10 },
               padding: 4,
-              callback: (value) => percentage ? `${value}%` : value
+              callback: (value) => (percentage ? `${value}%` : value)
             }
           }
         }
       }
     };
     instance.value = new Chart(canvas.value, config);
-    if (typeof MutationObserver !== "undefined" && typeof document !== "undefined" && document.body) {
+    if (
+      typeof MutationObserver !== "undefined" &&
+      typeof document !== "undefined" &&
+      document.body
+    ) {
       themeObserver = new MutationObserver(() => {
         const chart = instance.value;
         if (!chart || !canRender()) return;
@@ -155,7 +175,10 @@ export function useLineChart(
         if (y?.ticks) y.ticks.color = color;
         chart.update("none");
       });
-      themeObserver.observe(document.body, { attributes: true, attributeFilter: ["class", "style"] });
+      themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ["class", "style"]
+      });
     }
   });
 
@@ -170,18 +193,22 @@ export function useLineChart(
     chart.update(animate ? undefined : "none");
   };
   watch(readData, (value) => updateChart(value), { deep: true, flush: "post" });
-  watch(canRender, (available) => {
-    if (!available) return instance.value?.stop?.();
-    const chart = instance.value;
-    if (chart) {
-      const color = getTickColor();
-      const x = chart.options.scales?.x;
-      const y = chart.options.scales?.y;
-      if (x?.ticks) x.ticks.color = color;
-      if (y?.ticks) y.ticks.color = color;
-    }
-    updateChart(readData(), false);
-  }, { flush: "post" });
+  watch(
+    canRender,
+    (available) => {
+      if (!available) return instance.value?.stop?.();
+      const chart = instance.value;
+      if (chart) {
+        const color = getTickColor();
+        const x = chart.options.scales?.x;
+        const y = chart.options.scales?.y;
+        if (x?.ticks) x.ticks.color = color;
+        if (y?.ticks) y.ticks.color = color;
+      }
+      updateChart(readData(), false);
+    },
+    { flush: "post" }
+  );
 
   onBeforeUnmount(() => {
     themeObserver?.disconnect();
@@ -196,8 +223,12 @@ export function useSimpleChart(
   canvas: Ref<HTMLCanvasElement | undefined>,
   readValues: () => readonly number[]
 ) {
-  return useLineChart(canvas, () => {
-    const values = readValues();
-    return { labels: values.map((_, index) => String(index)), values, max: 100 };
-  }, { compact: true, percentage: true });
+  return useLineChart(
+    canvas,
+    () => {
+      const values = readValues();
+      return { labels: values.map((_, index) => String(index)), values, max: 100 };
+    },
+    { compact: true, percentage: true }
+  );
 }

@@ -3,33 +3,59 @@ import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import DesktopDialog from "@elementspanel/epanel-plugin-console/components/DesktopDialog";
 import { usePluginService, type FrontendDesktopService } from "@elements-panel/sdk";
 import { getInstanceDeleteError } from "../tools/deletion";
-import { useInstanceTagSearch, useInstanceTagTips } from "@elementspanel/epanel-plugin-console/hooks/useInstanceTag";
+import {
+  useInstanceTagSearch,
+  useInstanceTagTips
+} from "@elementspanel/epanel-plugin-console/hooks/useInstanceTag";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import { INSTANCE_TYPE_TRANSLATION } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
-import { remoteInstances, remoteNodeList } from "@elementspanel/epanel-plugin-console/services/apis";
 import {
-    batchDelete,
-    batchKill,
-    batchRestart,
-    batchStart,
-    batchStop,
-    killInstance,
-    openInstance,
-    restartInstance,
-    stopInstance,
-    updateInstanceConfig
+  remoteInstances,
+  remoteNodeList
+} from "@elementspanel/epanel-plugin-console/services/apis";
+import {
+  batchDelete,
+  batchKill,
+  batchRestart,
+  batchStart,
+  batchStop,
+  killInstance,
+  openInstance,
+  restartInstance,
+  stopInstance,
+  updateInstanceConfig
 } from "@elementspanel/epanel-plugin-console/services/apis/instance";
-import { notifyDesktop, notifyDesktopError } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
+import {
+  notifyDesktop,
+  notifyDesktopError
+} from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import type { InstanceDetail, NodeStatus } from "@elementspanel/epanel-plugin-console/types";
 import { INSTANCE_STATUS_CODE } from "@elementspanel/epanel-plugin-console/types/const";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
-import { VBtn, VChip, VIcon, VList, VListItem, VMenu, VProgressCircular, VSelect, VTextField } from "vuetify/components";
+import {
+  VBtn,
+  VChip,
+  VIcon,
+  VList,
+  VListItem,
+  VMenu,
+  VProgressCircular,
+  VSelect,
+  VTextField
+} from "vuetify/components";
 import { useInstanceShortcutDrag } from "./instanceShortcut";
 import { usePolling } from "@elementspanel/epanel-plugin-console/hooks/usePolling";
 
-const { prepareInstanceShortcutDrag, suppressInstanceShortcutClick, isInstanceShortcutDragging, cancelInstanceShortcutDrag } = useInstanceShortcutDrag();
+const {
+  prepareInstanceShortcutDrag,
+  suppressInstanceShortcutClick,
+  isInstanceShortcutDragging,
+  cancelInstanceShortcutDrag
+} = useInstanceShortcutDrag();
 
-const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
+const ConfirmDialog = computed(
+  () => usePluginService<FrontendDesktopService>("desktop")?.confirmation
+);
 
 const ClockCircleOutlined = "mdi-clock-outline";
 const MinusCircleOutlined = "mdi-minus-circle-outline";
@@ -53,16 +79,20 @@ const totalPages = ref(1);
 const pageSize = 20;
 const operatingIds = ref<Set<string>>(new Set());
 
-const nodeSelectItems = computed(() => nodes.value.map((node) => ({
-    title: `${node.remarks || node.ip}:${node.port}${node.available ? "" : ` (${t("TXT_CODE_COMMON_OFFLINE")})`}`,
+const nodeSelectItems = computed(() =>
+  nodes.value.map((node) => ({
+    title: `${node.remarks || node.ip}:${node.port}${
+      node.available ? "" : ` (${t("TXT_CODE_COMMON_OFFLINE")})`
+    }`,
     value: node.uuid
-})));
+  }))
+);
 const statusSelectItems = computed(() => [
-    { title: t("TXT_CODE_DESKTOP_IM_ALL_STATUS"), value: "all" },
-    { title: t("TXT_CODE_COMMON_RUNNING"), value: String(INSTANCE_STATUS_CODE.RUNNING) },
-    { title: t("TXT_CODE_COMMON_STOPPED"), value: String(INSTANCE_STATUS_CODE.STOPPED) },
-    { title: t("TXT_CODE_COMMON_STARTING"), value: String(INSTANCE_STATUS_CODE.STARTING) },
-    { title: t("TXT_CODE_COMMON_STOPPING"), value: String(INSTANCE_STATUS_CODE.STOPPING) }
+  { title: t("TXT_CODE_DESKTOP_IM_ALL_STATUS"), value: "all" },
+  { title: t("TXT_CODE_COMMON_RUNNING"), value: String(INSTANCE_STATUS_CODE.RUNNING) },
+  { title: t("TXT_CODE_COMMON_STOPPED"), value: String(INSTANCE_STATUS_CODE.STOPPED) },
+  { title: t("TXT_CODE_COMMON_STARTING"), value: String(INSTANCE_STATUS_CODE.STARTING) },
+  { title: t("TXT_CODE_COMMON_STOPPING"), value: String(INSTANCE_STATUS_CODE.STOPPING) }
 ]);
 
 const multipleMode = ref(false);
@@ -70,118 +100,117 @@ const selectedInstance = ref<InstanceDetail[]>([]);
 
 const { updateTagTips, tagTips } = useInstanceTagTips();
 const {
-    tags: selectedTags,
-    setRefreshFn,
-    selectTag,
-    removeTag,
-    isTagSelected,
-    clearTags
+  tags: selectedTags,
+  setRefreshFn,
+  selectTag,
+  removeTag,
+  isTagSelected,
+  clearTags
 } = useInstanceTagSearch();
 
-
 const deleteDialog = ref<{
-    show: boolean;
-    deleteFile: boolean;
-    loading: boolean;
-    uuids: string[];
-    paths: string[];
+  show: boolean;
+  deleteFile: boolean;
+  loading: boolean;
+  uuids: string[];
+  paths: string[];
 }>({
-    show: false,
-    deleteFile: false,
-    loading: false,
-    uuids: [],
-    paths: []
+  show: false,
+  deleteFile: false,
+  loading: false,
+  uuids: [],
+  paths: []
 });
 
 const tagDialog = ref<{
-    show: boolean;
-    instanceId: string;
-    daemonId: string;
-    tags: string[];
-    newTagVisible: boolean;
-    newTagValue: string;
-    saving: boolean;
+  show: boolean;
+  instanceId: string;
+  daemonId: string;
+  tags: string[];
+  newTagVisible: boolean;
+  newTagValue: string;
+  saving: boolean;
 }>({
-    show: false,
-    instanceId: "",
-    daemonId: "",
-    tags: [],
-    newTagVisible: false,
-    newTagValue: "",
-    saving: false
+  show: false,
+  instanceId: "",
+  daemonId: "",
+  tags: [],
+  newTagVisible: false,
+  newTagValue: "",
+  saving: false
 });
 
 const tagInputRef = ref<HTMLInputElement | null>(null);
 
 const tagSuggestions = computed(() =>
-    tagTips.value.filter((tag) => !tagDialog.value.tags.includes(tag))
+  tagTips.value.filter((tag) => !tagDialog.value.tags.includes(tag))
 );
 
 const openTagDialog = (instance: InstanceDetail) => {
-    tagDialog.value = {
-        show: true,
-        instanceId: instance.instanceUuid,
-        daemonId: selectedNodeId.value,
-        tags: [...(instance.config?.tag || [])],
-        newTagVisible: false,
-        newTagValue: "",
-        saving: false
-    };
+  tagDialog.value = {
+    show: true,
+    instanceId: instance.instanceUuid,
+    daemonId: selectedNodeId.value,
+    tags: [...(instance.config?.tag || [])],
+    newTagVisible: false,
+    newTagValue: "",
+    saving: false
+  };
 };
 
 const closeTagDialog = () => {
-    tagDialog.value.show = false;
+  tagDialog.value.show = false;
 };
 
 const removeInstanceTag = (tag: string) => {
-    tagDialog.value.tags = tagDialog.value.tags.filter((v) => v !== tag);
+  tagDialog.value.tags = tagDialog.value.tags.filter((v) => v !== tag);
 };
 
 const showNewTagInput = () => {
-    tagDialog.value.newTagVisible = true;
-    nextTick(() => {
-        tagInputRef.value?.focus();
-    });
+  tagDialog.value.newTagVisible = true;
+  nextTick(() => {
+    tagInputRef.value?.focus();
+  });
 };
 
 const confirmNewTag = () => {
-    const value = tagDialog.value.newTagValue.trim();
-    if (value && !tagDialog.value.tags.includes(value)) {
-        tagDialog.value.tags = [...tagDialog.value.tags, value].sort();
-    }
-    tagDialog.value.newTagVisible = false;
-    tagDialog.value.newTagValue = "";
+  const value = tagDialog.value.newTagValue.trim();
+  if (value && !tagDialog.value.tags.includes(value)) {
+    tagDialog.value.tags = [...tagDialog.value.tags, value].sort();
+  }
+  tagDialog.value.newTagVisible = false;
+  tagDialog.value.newTagValue = "";
 };
 
 const addSuggestionTag = (tag: string) => {
-    if (!tagDialog.value.tags.includes(tag)) {
-        tagDialog.value.tags = [...tagDialog.value.tags, tag].sort();
-    }
+  if (!tagDialog.value.tags.includes(tag)) {
+    tagDialog.value.tags = [...tagDialog.value.tags, tag].sort();
+  }
 };
 
 const saveInstanceTags = async () => {
-    if (!tagDialog.value.instanceId) return;
-    tagDialog.value.saving = true;
-    try {
-        const { execute } = updateInstanceConfig();
-        await execute({
-            params: {
-                uuid: tagDialog.value.instanceId,
-                daemonId: tagDialog.value.daemonId
-            },
-            data: {
-                tag: tagDialog.value.tags
-            }
-        });
-        tagDialog.value.show = false;
-        notifyDesktop(t("TXT_CODE_COMMON_SAVED"), "success");
-        await fetchInstances(true);
-    } catch (err: any) {
-        console.error(err);
-        notifyDesktopError(err);
-    } finally {
-        tagDialog.value.saving = false;
-    }
+  if (!tagDialog.value.instanceId) return;
+  tagDialog.value.saving = true;
+  try {
+    const { execute } = updateInstanceConfig();
+    await execute({
+      params: {
+        uuid: tagDialog.value.instanceId,
+        daemonId: tagDialog.value.daemonId
+      },
+      data: {
+        tag: tagDialog.value.tags
+      }
+    });
+    tagDialog.value.show = false;
+    notifyDesktop(t("TXT_CODE_COMMON_SAVED"), "success");
+    await fetchInstances(true);
+  } catch (err: any) {
+    console.error(err);
+    notifyDesktopError(err);
+  } finally {
+    tagDialog.value.saving = false;
+  }
 };
 
 const { execute: executeNodeList } = remoteNodeList();
@@ -192,1127 +221,1289 @@ const { execute: executeKill } = killInstance();
 const { execute: executeRestart } = restartInstance();
 
 const filteredInstances = computed(() => {
-    let list = instances.value;
-    if (searchText.value.trim()) {
-        const keyword = searchText.value.trim().toLowerCase();
-        list = list.filter(
-            (i) =>
-                i.config.nickname.toLowerCase().includes(keyword) ||
-                i.instanceUuid.toLowerCase().includes(keyword)
-        );
-    }
-    if (statusFilter.value !== "all") {
-        const code = Number(statusFilter.value) as INSTANCE_STATUS_CODE;
-        list = list.filter((i) => i.status === code);
-    }
-    return list;
+  let list = instances.value;
+  if (searchText.value.trim()) {
+    const keyword = searchText.value.trim().toLowerCase();
+    list = list.filter(
+      (i) =>
+        i.config.nickname.toLowerCase().includes(keyword) ||
+        i.instanceUuid.toLowerCase().includes(keyword)
+    );
+  }
+  if (statusFilter.value !== "all") {
+    const code = Number(statusFilter.value) as INSTANCE_STATUS_CODE;
+    list = list.filter((i) => i.status === code);
+  }
+  return list;
 });
 
 const instanceCounts = computed(() => {
-    const running = instances.value.filter((i) => i.status === INSTANCE_STATUS_CODE.RUNNING).length;
-    const stopped = instances.value.filter((i) => i.status === INSTANCE_STATUS_CODE.STOPPED).length;
-    const total = instances.value.length;
-    return { running, stopped, total };
+  const running = instances.value.filter((i) => i.status === INSTANCE_STATUS_CODE.RUNNING).length;
+  const stopped = instances.value.filter((i) => i.status === INSTANCE_STATUS_CODE.STOPPED).length;
+  const total = instances.value.length;
+  return { running, stopped, total };
 });
 
 const getStatusText = (status: INSTANCE_STATUS_CODE): string => {
-    const map: Record<INSTANCE_STATUS_CODE, string> = {
-        [INSTANCE_STATUS_CODE.BUSY]: t("TXT_CODE_COMMON_UNDER_MAINTENANCE"),
-        [INSTANCE_STATUS_CODE.STOPPED]: t("TXT_CODE_COMMON_STOPPED"),
-        [INSTANCE_STATUS_CODE.STOPPING]: t("TXT_CODE_COMMON_STOPPING"),
-        [INSTANCE_STATUS_CODE.STARTING]: t("TXT_CODE_COMMON_STARTING"),
-        [INSTANCE_STATUS_CODE.RUNNING]: t("TXT_CODE_COMMON_RUNNING")
-    };
-    return map[status] || t("TXT_CODE_DESKTOP_IM_UNKNOWN");
+  const map: Record<INSTANCE_STATUS_CODE, string> = {
+    [INSTANCE_STATUS_CODE.BUSY]: t("TXT_CODE_COMMON_UNDER_MAINTENANCE"),
+    [INSTANCE_STATUS_CODE.STOPPED]: t("TXT_CODE_COMMON_STOPPED"),
+    [INSTANCE_STATUS_CODE.STOPPING]: t("TXT_CODE_COMMON_STOPPING"),
+    [INSTANCE_STATUS_CODE.STARTING]: t("TXT_CODE_COMMON_STARTING"),
+    [INSTANCE_STATUS_CODE.RUNNING]: t("TXT_CODE_COMMON_RUNNING")
+  };
+  return map[status] || t("TXT_CODE_DESKTOP_IM_UNKNOWN");
 };
 
 const getStatusClass = (status: INSTANCE_STATUS_CODE): string => {
-    const map: Record<INSTANCE_STATUS_CODE, string> = {
-        [INSTANCE_STATUS_CODE.BUSY]: "status--busy",
-        [INSTANCE_STATUS_CODE.STOPPED]: "status--stopped",
-        [INSTANCE_STATUS_CODE.STOPPING]: "status--stopping",
-        [INSTANCE_STATUS_CODE.STARTING]: "status--starting",
-        [INSTANCE_STATUS_CODE.RUNNING]: "status--running"
-    };
-    return map[status] || "";
+  const map: Record<INSTANCE_STATUS_CODE, string> = {
+    [INSTANCE_STATUS_CODE.BUSY]: "status--busy",
+    [INSTANCE_STATUS_CODE.STOPPED]: "status--stopped",
+    [INSTANCE_STATUS_CODE.STOPPING]: "status--stopping",
+    [INSTANCE_STATUS_CODE.STARTING]: "status--starting",
+    [INSTANCE_STATUS_CODE.RUNNING]: "status--running"
+  };
+  return map[status] || "";
 };
 
 const statusIconMap: Record<number, string> = {
-    [INSTANCE_STATUS_CODE.BUSY]: ClockCircleOutlined,
-    [INSTANCE_STATUS_CODE.STOPPED]: MinusCircleOutlined,
-    [INSTANCE_STATUS_CODE.STOPPING]: PauseCircleOutlined,
-    [INSTANCE_STATUS_CODE.STARTING]: ClockCircleOutlined,
-    [INSTANCE_STATUS_CODE.RUNNING]: PlayCircleOutlined
+  [INSTANCE_STATUS_CODE.BUSY]: ClockCircleOutlined,
+  [INSTANCE_STATUS_CODE.STOPPED]: MinusCircleOutlined,
+  [INSTANCE_STATUS_CODE.STOPPING]: PauseCircleOutlined,
+  [INSTANCE_STATUS_CODE.STARTING]: ClockCircleOutlined,
+  [INSTANCE_STATUS_CODE.RUNNING]: PlayCircleOutlined
 };
 
 const getStatusIcon = (status: INSTANCE_STATUS_CODE): string => {
-    return statusIconMap[status] || QuestionCircleOutlined;
+  return statusIconMap[status] || QuestionCircleOutlined;
 };
 
 const fetchNodes = async () => {
-    try {
-        const res = await executeNodeList();
-        if (res.value) {
-            nodes.value = res.value;
-            if (nodes.value.length > 0 && !selectedNodeId.value) {
-                let savedNodeId: string | undefined;
-                try {
-                    const saved = JSON.parse(localStorage.getItem("pageSelectedRemote") || "null");
-                    if (typeof saved?.uuid === "string") savedNodeId = saved.uuid;
-                } catch {
-                    // Invalid storage must not block selecting a node.
-                }
-                selectedNodeId.value =
-                    nodes.value.find((node) => node.uuid === savedNodeId)?.uuid || nodes.value[0].uuid;
-            }
+  try {
+    const res = await executeNodeList();
+    if (res.value) {
+      nodes.value = res.value;
+      if (nodes.value.length > 0 && !selectedNodeId.value) {
+        let savedNodeId: string | undefined;
+        try {
+          const saved = JSON.parse(localStorage.getItem("pageSelectedRemote") || "null");
+          if (typeof saved?.uuid === "string") savedNodeId = saved.uuid;
+        } catch {
+          // Invalid storage must not block selecting a node.
         }
-    } catch (err) {
-        console.error("Failed to fetch nodes:", err);
+        selectedNodeId.value =
+          nodes.value.find((node) => node.uuid === savedNodeId)?.uuid || nodes.value[0].uuid;
+      }
     }
+  } catch (err) {
+    console.error("Failed to fetch nodes:", err);
+  }
 };
 
 const fetchInstances = async (silent = false) => {
-    if (!selectedNodeId.value) return;
-    if (!silent) loading.value = true;
-    try {
-        const res = await executeRemoteInstances({
-            params: {
-                daemonId: selectedNodeId.value,
-                page: currentPage.value,
-                page_size: pageSize,
-                instance_name: searchText.value.trim() || undefined,
-                status: statusFilter.value !== "all" ? statusFilter.value : undefined,
-                tag: JSON.stringify(selectedTags.value)
-            }
-        });
-        if (res.value) {
-            instances.value = res.value.data || [];
-            totalPages.value = res.value.maxPage || 1;
-            updateTagTips(res.value.allTags || []);
-        }
-    } catch (err) {
-        console.error("Failed to fetch instances:", err);
-    } finally {
-        if (!silent) loading.value = false;
+  if (!selectedNodeId.value) return;
+  if (!silent) loading.value = true;
+  try {
+    const res = await executeRemoteInstances({
+      params: {
+        daemonId: selectedNodeId.value,
+        page: currentPage.value,
+        page_size: pageSize,
+        instance_name: searchText.value.trim() || undefined,
+        status: statusFilter.value !== "all" ? statusFilter.value : undefined,
+        tag: JSON.stringify(selectedTags.value)
+      }
+    });
+    if (res.value) {
+      instances.value = res.value.data || [];
+      totalPages.value = res.value.maxPage || 1;
+      updateTagTips(res.value.allTags || []);
     }
+  } catch (err) {
+    console.error("Failed to fetch instances:", err);
+  } finally {
+    if (!silent) loading.value = false;
+  }
 };
 
 const handleStart = async (uuid: string) => {
-    operatingIds.value.add(uuid);
-    try {
-        await executeOpen({
-            params: { uuid, daemonId: selectedNodeId.value }
-        });
-        setTimeout(() => fetchInstances(true), 1000);
-    } catch (err) {
-        console.error("Failed to start instance:", err);
-    } finally {
-        operatingIds.value.delete(uuid);
-    }
+  operatingIds.value.add(uuid);
+  try {
+    await executeOpen({
+      params: { uuid, daemonId: selectedNodeId.value }
+    });
+    setTimeout(() => fetchInstances(true), 1000);
+  } catch (err) {
+    console.error("Failed to start instance:", err);
+  } finally {
+    operatingIds.value.delete(uuid);
+  }
 };
 
 const handleStop = async (uuid: string) => {
-    operatingIds.value.add(uuid);
-    try {
-        await executeStop({
-            params: { uuid, daemonId: selectedNodeId.value }
-        });
-        setTimeout(() => fetchInstances(true), 1000);
-    } catch (err) {
-        console.error("Failed to stop instance:", err);
-    } finally {
-        operatingIds.value.delete(uuid);
-    }
+  operatingIds.value.add(uuid);
+  try {
+    await executeStop({
+      params: { uuid, daemonId: selectedNodeId.value }
+    });
+    setTimeout(() => fetchInstances(true), 1000);
+  } catch (err) {
+    console.error("Failed to stop instance:", err);
+  } finally {
+    operatingIds.value.delete(uuid);
+  }
 };
 
 const handleRestart = async (uuid: string) => {
-    operatingIds.value.add(uuid);
-    try {
-        await executeRestart({
-            params: { uuid, daemonId: selectedNodeId.value }
-        });
-        setTimeout(() => fetchInstances(true), 1000);
-    } catch (err) {
-        console.error("Failed to restart instance:", err);
-    } finally {
-        operatingIds.value.delete(uuid);
-    }
+  operatingIds.value.add(uuid);
+  try {
+    await executeRestart({
+      params: { uuid, daemonId: selectedNodeId.value }
+    });
+    setTimeout(() => fetchInstances(true), 1000);
+  } catch (err) {
+    console.error("Failed to restart instance:", err);
+  } finally {
+    operatingIds.value.delete(uuid);
+  }
 };
 
 const handleKill = async (uuid: string) => {
-    operatingIds.value.add(uuid);
-    try {
-        await executeKill({
-            params: { uuid, daemonId: selectedNodeId.value }
-        });
-        setTimeout(() => fetchInstances(true), 1000);
-    } catch (err) {
-        console.error("Failed to kill instance:", err);
-    } finally {
-        operatingIds.value.delete(uuid);
-    }
+  operatingIds.value.add(uuid);
+  try {
+    await executeKill({
+      params: { uuid, daemonId: selectedNodeId.value }
+    });
+    setTimeout(() => fetchInstances(true), 1000);
+  } catch (err) {
+    console.error("Failed to kill instance:", err);
+  } finally {
+    operatingIds.value.delete(uuid);
+  }
 };
 
 const isOperating = (uuid: string) => operatingIds.value.has(uuid);
 
 const emit = defineEmits<{
-    (e: "open-console", instance: InstanceDetail, daemonId: string): void;
-    (e: "open-new-instance"): void;
+  (e: "open-console", instance: InstanceDetail, daemonId: string): void;
+  (e: "open-new-instance"): void;
 }>();
 
 const findInstance = (item: InstanceDetail) => {
-    return selectedInstance.value.find((i) => i.instanceUuid === item.instanceUuid);
+  return selectedInstance.value.find((i) => i.instanceUuid === item.instanceUuid);
 };
 
 const selectInstance = (item: InstanceDetail) => {
-    const index = selectedInstance.value.findIndex((i) => i.instanceUuid === item.instanceUuid);
-    if (index !== -1) {
-        selectedInstance.value.splice(index, 1);
-    } else {
-        selectedInstance.value.push(item);
-    }
+  const index = selectedInstance.value.findIndex((i) => i.instanceUuid === item.instanceUuid);
+  if (index !== -1) {
+    selectedInstance.value.splice(index, 1);
+  } else {
+    selectedInstance.value.push(item);
+  }
 };
 
 const handleInstanceClick = (e: MouseEvent, instance: InstanceDetail) => {
-    if (suppressInstanceShortcutClick(e)) return;
-    if (multipleMode.value) {
-        e.preventDefault();
-        selectInstance(instance);
-        return;
-    }
-    if (selectedNodeId.value) {
-        emit("open-console", instance, selectedNodeId.value);
-    }
+  if (suppressInstanceShortcutClick(e)) return;
+  if (multipleMode.value) {
+    e.preventDefault();
+    selectInstance(instance);
+    return;
+  }
+  if (selectedNodeId.value) {
+    emit("open-console", instance, selectedNodeId.value);
+  }
 };
 
 const selectAllInstances = () => {
-    if (filteredInstances.value.length === selectedInstance.value.length) {
-        selectedInstance.value = [];
-    } else {
-        for (const item of filteredInstances.value) {
-            if (findInstance(item)) continue;
-            selectedInstance.value.push(item);
-        }
+  if (filteredInstances.value.length === selectedInstance.value.length) {
+    selectedInstance.value = [];
+  } else {
+    for (const item of filteredInstances.value) {
+      if (findInstance(item)) continue;
+      selectedInstance.value.push(item);
     }
+  }
 };
 
 const exitMultipleMode = () => {
-    multipleMode.value = false;
-    selectedInstance.value = [];
+  multipleMode.value = false;
+  selectedInstance.value = [];
 };
 
 const instanceOperations = [
-    {
-        title: t("TXT_CODE_COMMON_START"),
-        icon: PlayCircleOutlined,
-        click: () => batchOperation("start")
-    },
-    {
-        title: t("TXT_CODE_COMMON_STOP"),
-        icon: PauseCircleOutlined,
-        click: () => batchOperation("stop")
-    },
-    {
-        title: t("TXT_CODE_COMMON_RESTART"),
-        icon: RedoOutlined,
-        click: () => batchOperation("restart")
-    },
-    {
-        title: t("TXT_CODE_COMMON_TERMINATE"),
-        icon: CloseOutlined,
-        click: () => {
-            batchOperation("kill");
-        }
-    },
-    {
-        title: t("TXT_CODE_COMMON_DELETE"),
-        icon: DeleteOutlined,
-        click: () => batchDeleteInstance(false)
-    },
-    {
-        title: t("TXT_CODE_COMMON_PERMANENTLY_DELETE"),
-        icon: WarningOutlined,
-        click: () => batchDeleteInstance(true)
+  {
+    title: t("TXT_CODE_COMMON_START"),
+    icon: PlayCircleOutlined,
+    click: () => batchOperation("start")
+  },
+  {
+    title: t("TXT_CODE_COMMON_STOP"),
+    icon: PauseCircleOutlined,
+    click: () => batchOperation("stop")
+  },
+  {
+    title: t("TXT_CODE_COMMON_RESTART"),
+    icon: RedoOutlined,
+    click: () => batchOperation("restart")
+  },
+  {
+    title: t("TXT_CODE_COMMON_TERMINATE"),
+    icon: CloseOutlined,
+    click: () => {
+      batchOperation("kill");
     }
+  },
+  {
+    title: t("TXT_CODE_COMMON_DELETE"),
+    icon: DeleteOutlined,
+    click: () => batchDeleteInstance(false)
+  },
+  {
+    title: t("TXT_CODE_COMMON_PERMANENTLY_DELETE"),
+    icon: WarningOutlined,
+    click: () => batchDeleteInstance(true)
+  }
 ];
 
 const batchOperation = async (actName: "start" | "stop" | "kill" | "restart") => {
-    if (selectedInstance.value.length === 0) return notifyDesktopError(t("TXT_CODE_COMMON_CANNOT_EXECUTE_PLEASE_SELECT_AT_LEAST_ONE_INSTANCE"));
-    const operationMap = {
-        start: async () => exec(batchStart().execute, t("TXT_CODE_COMMON_SENT_START_COMMAND")),
-        stop: async () => exec(batchStop().execute, t("TXT_CODE_COMMON_SENT_STOP_COMMAND")),
-        kill: async () => exec(batchKill().execute, t("TXT_CODE_COMMON_SENT_TERMINATE_COMMAND")),
-        restart: async () => exec(batchRestart().execute, t("TXT_CODE_COMMON_SENT_TERMINATE_COMMAND"))
-    };
+  if (selectedInstance.value.length === 0)
+    return notifyDesktopError(
+      t("TXT_CODE_COMMON_CANNOT_EXECUTE_PLEASE_SELECT_AT_LEAST_ONE_INSTANCE")
+    );
+  const operationMap = {
+    start: async () => exec(batchStart().execute, t("TXT_CODE_COMMON_SENT_START_COMMAND")),
+    stop: async () => exec(batchStop().execute, t("TXT_CODE_COMMON_SENT_STOP_COMMAND")),
+    kill: async () => exec(batchKill().execute, t("TXT_CODE_COMMON_SENT_TERMINATE_COMMAND")),
+    restart: async () => exec(batchRestart().execute, t("TXT_CODE_COMMON_SENT_TERMINATE_COMMAND"))
+  };
 
-    const exec = async (fn: Function, msg: string) => {
-        try {
-            const state = await fn({
-                data: selectedInstance.value.map((item) => ({
-                    instanceUuid: item.instanceUuid,
-                    daemonId: selectedNodeId.value
-                }))
-            });
-            if (state.value) {
-                notifyDesktop({ message: msg, description: t("TXT_CODE_INSTANCE_COMMANDS_SENT_HINT") }, "success");
-                exitMultipleMode();
-                await fetchInstances(true);
-            }
-        } catch (err: any) {
-            console.error(err);
-            notifyDesktopError(err);
-        }
-    };
+  const exec = async (fn: Function, msg: string) => {
+    try {
+      const state = await fn({
+        data: selectedInstance.value.map((item) => ({
+          instanceUuid: item.instanceUuid,
+          daemonId: selectedNodeId.value
+        }))
+      });
+      if (state.value) {
+        notifyDesktop(
+          { message: msg, description: t("TXT_CODE_INSTANCE_COMMANDS_SENT_HINT") },
+          "success"
+        );
+        exitMultipleMode();
+        await fetchInstances(true);
+      }
+    } catch (err: any) {
+      console.error(err);
+      notifyDesktopError(err);
+    }
+  };
 
-    operationMap[actName]();
+  operationMap[actName]();
 };
 
 const batchDeleteInstance = async (deleteFile: boolean) => {
-    if (selectedInstance.value.length === 0) return notifyDesktopError(t("TXT_CODE_COMMON_CANNOT_EXECUTE_PLEASE_SELECT_AT_LEAST_ONE_INSTANCE"));
-    const uuids: string[] = [];
-    const paths: string[] = [];
-    for (const i of selectedInstance.value) {
-        uuids.push(i.instanceUuid);
-        if (i.config?.cwd) {
-            paths.push(i.config.cwd);
-        }
+  if (selectedInstance.value.length === 0)
+    return notifyDesktopError(
+      t("TXT_CODE_COMMON_CANNOT_EXECUTE_PLEASE_SELECT_AT_LEAST_ONE_INSTANCE")
+    );
+  const uuids: string[] = [];
+  const paths: string[] = [];
+  for (const i of selectedInstance.value) {
+    uuids.push(i.instanceUuid);
+    if (i.config?.cwd) {
+      paths.push(i.config.cwd);
     }
-    deleteDialog.value = {
-        show: true,
-        deleteFile,
-        loading: false,
-        uuids,
-        paths
-    };
+  }
+  deleteDialog.value = {
+    show: true,
+    deleteFile,
+    loading: false,
+    uuids,
+    paths
+  };
 };
 
 const handleDeleteConfirm = async () => {
-    const { execute, state } = batchDelete();
-    deleteDialog.value.loading = true;
-    try {
-        await execute({
-            params: {
-                daemonId: selectedNodeId.value
-            },
-            data: {
-                uuids: deleteDialog.value.uuids,
-                deleteFile: deleteDialog.value.deleteFile
-            }
-        });
-        if (state.value) {
-            deleteDialog.value.show = false;
-            exitMultipleMode();
-            const error = getInstanceDeleteError(state.value);
-            if (error) notifyDesktopError(error);
-            else notifyDesktop({ message: t("TXT_CODE_COMMON_BULK_DELETION_SUCCESSFUL"), description: t("TXT_CODE_COMMON_THIS_MAY_TAKE_A_WHILE_AS_FILE_DELETION_TAKES_TIME") }, "success");
-            await fetchInstances(true);
-        }
-    } catch (err: any) {
-        console.error(err);
-        notifyDesktopError(err);
-    } finally {
-        deleteDialog.value.loading = false;
+  const { execute, state } = batchDelete();
+  deleteDialog.value.loading = true;
+  try {
+    await execute({
+      params: {
+        daemonId: selectedNodeId.value
+      },
+      data: {
+        uuids: deleteDialog.value.uuids,
+        deleteFile: deleteDialog.value.deleteFile
+      }
+    });
+    if (state.value) {
+      deleteDialog.value.show = false;
+      exitMultipleMode();
+      const error = getInstanceDeleteError(state.value);
+      if (error) notifyDesktopError(error);
+      else
+        notifyDesktop(
+          {
+            message: t("TXT_CODE_COMMON_BULK_DELETION_SUCCESSFUL"),
+            description: t("TXT_CODE_COMMON_THIS_MAY_TAKE_A_WHILE_AS_FILE_DELETION_TAKES_TIME")
+          },
+          "success"
+        );
+      await fetchInstances(true);
     }
+  } catch (err: any) {
+    console.error(err);
+    notifyDesktopError(err);
+  } finally {
+    deleteDialog.value.loading = false;
+  }
 };
 
 const handleDeleteCancel = () => {
-    deleteDialog.value.show = false;
-};
-
-const handleInstanceDblClick = (instance: InstanceDetail) => {
-    if (selectedNodeId.value && !multipleMode.value) {
-        emit("open-console", instance, selectedNodeId.value);
-    }
+  deleteDialog.value.show = false;
 };
 
 watch(selectedNodeId, (nodeId) => {
-    cancelInstanceShortcutDrag();
-    const node = nodes.value.find((item) => item.uuid === nodeId);
-    if (node) {
-        try {
-            localStorage.setItem("pageSelectedRemote", JSON.stringify(node));
-        } catch {
-            // Switching nodes still works when local storage is unavailable.
-        }
+  cancelInstanceShortcutDrag();
+  const node = nodes.value.find((item) => item.uuid === nodeId);
+  if (node) {
+    try {
+      localStorage.setItem("pageSelectedRemote", JSON.stringify(node));
+    } catch {
+      // Switching nodes still works when local storage is unavailable.
     }
-    currentPage.value = 1;
-    fetchInstances();
+  }
+  currentPage.value = 1;
+  fetchInstances();
 });
 
 watch([searchText, statusFilter], () => {
-    currentPage.value = 1;
-    fetchInstances();
+  currentPage.value = 1;
+  fetchInstances();
 });
 
 onMounted(async () => {
-
-    await fetchNodes();
-    await fetchInstances();
-    setRefreshFn(fetchInstances);
+  await fetchNodes();
+  await fetchInstances();
+  setRefreshFn(fetchInstances);
 });
 
 usePolling(() => fetchInstances(true), 10000, { immediate: false });
 </script>
 
 <template>
-    <div class="dim">
-        <div class="dim-toolbar">
-            <div class="dim-toolbar__left">
-                <div class="dim-select">
-                    <VSelect v-model="selectedNodeId" :label="t('TXT_CODE_COMMON_DAEMONS')" :items="nodeSelectItems"
-                        density="comfortable" hide-details class="dim-select__input"
-                        :disabled="nodeSelectItems.length === 0">
-                      <template #no-data><Empty :icon="false" compact /></template>
-                    </VSelect>
-                </div>
-
-                <div class="dim-select">
-                    <VSelect v-model="statusFilter" :items="statusSelectItems" density="comfortable"
-                        hide-details class="dim-select__input">
-                      <template #no-data><Empty :icon="false" compact /></template>
-                    </VSelect>
-                </div>
-            </div>
-
-            <div class="dim-toolbar__right">
-                <div v-if="multipleMode" class="dim-batch-actions">
-                    <VBtn class="dim-btn" variant="text" @click="exitMultipleMode">
-                        {{ t("TXT_CODE_COMMON_EXIT_BATCH_OPERATION") }}
-                    </VBtn>
-                    <VBtn class="dim-btn" variant="text" @click="selectAllInstances">
-                        {{ filteredInstances.length === selectedInstance.length ? t("TXT_CODE_COMMON_DESELECT_ALL") :
-                            t("TXT_CODE_COMMON_SELECT_ALL") }}
-                    </VBtn>
-                    <VMenu location="bottom end">
-                        <template #activator="{ props: menuProps }">
-                            <VBtn v-bind="menuProps" class="dim-btn dim-btn--primary" variant="text">
-                            {{ t("TXT_CODE_COMMON_SELECTED_ITEMS") }}
-                            <VIcon icon="mdi-chevron-down"  />
-                            </VBtn>
-                        </template>
-                        <VList>
-                            <VListItem v-for="item in instanceOperations" :key="item.title" :title="item.title"
-                                @click="item.click">
-                                <template #prepend>
-                                    <VIcon :icon="item.icon" size="small" />
-                                </template>
-                            </VListItem>
-                        </VList>
-                    </VMenu>
-                </div>
-                <div v-else class="dim-batch-actions">
-                    <VBtn class="dim-btn" variant="text" @click="multipleMode = true">
-                        {{ t("TXT_CODE_COMMON_BATCH_OPERATION") }}
-                    </VBtn>
-                </div>
-
-                <VTextField v-model="searchText" class="dim-search__input" density="comfortable"
-                    hide-details clearable :label="t('TXT_CODE_DESKTOP_IM_SEARCH')"
-                    prepend-inner-icon="mdi-magnify" @update:model-value="searchText = $event ?? ''" />
-
-                <VBtn class="dim-btn dim-btn--icon" icon variant="text" :loading="loading"
-                    :aria-label="t('TXT_CODE_COMMON_REFRESH')" @click="fetchInstances()">
-                    <VIcon icon="mdi-refresh" />
-                </VBtn>
-
-                <VBtn class="dim-btn dim-btn--primary" variant="text" @click="emit('open-new-instance')">
-                    <VIcon icon="mdi-plus"  /> {{ t("TXT_CODE_DESKTOP_IM_NEW_INSTANCE") }}
-                </VBtn>
-            </div>
+  <div class="dim">
+    <div class="dim-toolbar">
+      <div class="dim-toolbar__left">
+        <div class="dim-select">
+          <VSelect
+            v-model="selectedNodeId"
+            :label="t('TXT_CODE_COMMON_DAEMONS')"
+            :items="nodeSelectItems"
+            density="comfortable"
+            hide-details
+            class="dim-select__input"
+            :disabled="nodeSelectItems.length === 0"
+          >
+            <template #no-data><Empty :icon="false" compact /></template>
+          </VSelect>
         </div>
 
-        <div class="dim-stats">
-            <div class="dim-stats__item">
-                <span class="dim-stats__dot dim-stats__dot--total"></span>
-                <span>{{ t("TXT_CODE_DESKTOP_IM_TOTAL") }}: {{ instanceCounts.total }}</span>
-            </div>
-            <div class="dim-stats__item">
-                <span class="dim-stats__dot dim-stats__dot--running"></span>
-                <span>{{ t("TXT_CODE_COMMON_RUNNING") }}: {{ instanceCounts.running }}</span>
-            </div>
-            <div class="dim-stats__item">
-                <span class="dim-stats__dot dim-stats__dot--stopped"></span>
-                <span>{{ t("TXT_CODE_COMMON_STOPPED") }}: {{ instanceCounts.stopped }}</span>
-            </div>
+        <div class="dim-select">
+          <VSelect
+            v-model="statusFilter"
+            :items="statusSelectItems"
+            density="comfortable"
+            hide-details
+            class="dim-select__input"
+          >
+            <template #no-data><Empty :icon="false" compact /></template>
+          </VSelect>
         </div>
+      </div>
 
-        <div v-if="tagTips && tagTips.length > 0" class="dim-tags">
-            <VChip v-if="selectedTags.length > 0" color="error" size="small" class="dim-tag" @click="clearTags">
-                {{ t("TXT_CODE_COMMON_CLEAR") }}
-            </VChip>
-            <VChip v-for="item in tagTips" :key="item" size="small" class="dim-tag"
-                :class="{ 'dim-tag--active': isTagSelected(item) }"
-                @click="isTagSelected(item) ? removeTag(item) : selectTag(item)">
-                {{ item }}
-            </VChip>
-        </div>
-
-        <div class="dim-list" :class="{ 'dim-list--loading': loading }">
-            <div v-if="loading && instances.length === 0" class="dim-loading">
-                <VProgressCircular indeterminate class="mb-1" />
-                <p>{{ t("TXT_CODE_DESKTOP_IM_LOADING") }}</p>
-            </div>
-
-            <Empty
-              v-else-if="filteredInstances.length === 0"
-              icon="mdi-view-grid-outline"
-              :title="t('TXT_CODE_DESKTOP_IM_NO_INSTANCES')"
-              :description="t('TXT_CODE_NO_DATA')"
-            />
-
-            <div v-for="instance in filteredInstances" :key="instance.instanceUuid" class="dim-instance"
-                :class="{ 'dim-instance--operating': isOperating(instance.instanceUuid), 'dim-instance--selected': findInstance(instance), 'dim-instance--dragging': isInstanceShortcutDragging(instance.instanceUuid, selectedNodeId) }"
-                draggable="false"
-                @pointerdown="prepareInstanceShortcutDrag($event, instance, selectedNodeId)"
-                @dragstart.prevent
-                @click="handleInstanceClick($event, instance)">
-                <div class="dim-instance__info">
-                    <div class="dim-instance__header">
-                        <span class="dim-instance__status" :class="getStatusClass(instance.status)">
-                            <VIcon :icon="getStatusIcon(instance.status)" size="small" />
-                        </span>
-                        <span class="dim-instance__name">{{
-                            instance.config.nickname || t("TXT_CODE_DESKTOP_IM_UNNAMED")
-                        }}</span><span class="dim-instance__badge" :class="getStatusClass(instance.status)">
-                            {{ getStatusText(instance.status) }}
-                        </span>
-                    </div>
-                    <div class="dim-instance__meta">
-                        <span class="dim-instance__expire"
-                            :title="instance.config.endTime ? new Date(instance.config.endTime).toLocaleString() : t('TXT_CODE_INSTANCE_EXPIRY_INDEFINITE')">
-                            {{ instance.config.endTime ? new Date(instance.config.endTime).toLocaleString() :
-                                t('TXT_CODE_INSTANCE_EXPIRY_INDEFINITE') }}
-                        </span>
-                        <span v-if="instance.config.type" class="dim-instance__type">
-                            {{ INSTANCE_TYPE_TRANSLATION[instance.config.type] }}
-                        </span> <span v-if="
-                            instance.info?.currentPlayers !== undefined &&
-                            instance.info?.maxPlayers !== undefined &&
-                            instance.info.maxPlayers > 0 &&
-                            instance.status === INSTANCE_STATUS_CODE.RUNNING
-                        " class="dim-instance__players">
-                            <VIcon icon="mdi-account-group-outline"  /> {{ instance.info.currentPlayers }}/{{ instance.info.maxPlayers }}
-                        </span>
-                        <span v-for="tag in instance.config?.tag || []" :key="tag" class="dim-instance__tag">{{ tag
-                        }}</span>
-                    </div>
-                </div>
-
-                <div class="dim-instance__actions">
-                    <VBtn icon variant="text" class="dim-action dim-action--tag" :title="t('TXT_CODE_COMMON_TAG_GROUPING')"
-                        @click.stop="openTagDialog(instance)">
-                        <VIcon icon="mdi-tag-multiple-outline"  />
-                    </VBtn>
-                    <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.STOPPED" icon variant="text" class="dim-action dim-action--start"
-                        :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_COMMON_START')"
-                        @click.stop="handleStart(instance.instanceUuid)">
-                        <VIcon icon="mdi-play"  />
-                    </VBtn>
-                    <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING"
-                        icon variant="text"
-                        class="dim-action dim-action--restart" :disabled="isOperating(instance.instanceUuid)"
-                        :title="t('TXT_CODE_COMMON_RESTART')" @click.stop="handleRestart(instance.instanceUuid)">
-                        <VIcon icon="mdi-refresh"  />
-                    </VBtn>
-                    <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING" icon variant="text" class="dim-action dim-action--stop"
-                        :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_COMMON_STOP')"
-                        @click.stop="handleStop(instance.instanceUuid)">
-                        <VIcon icon="mdi-stop"  />
-                    </VBtn>
-                    <VBtn v-if="
-                        instance.status === INSTANCE_STATUS_CODE.RUNNING ||
-                        instance.status === INSTANCE_STATUS_CODE.STOPPING
-                    " icon variant="text" class="dim-action dim-action--kill" :disabled="isOperating(instance.instanceUuid)"
-                        :title="t('TXT_CODE_COMMON_TERMINATE')" @click.stop="handleKill(instance.instanceUuid)">
-                        <VIcon icon="mdi-close-circle-outline"  />
-                    </VBtn>
-                </div>
-            </div>
-        </div>
-
-        <div v-if="totalPages > 1" class="dim-pagination">
-            <VBtn class="dim-btn dim-btn--sm" variant="text" :disabled="currentPage <= 1" @click="currentPage--; fetchInstances()">
-                <VIcon icon="mdi-chevron-left"  /> {{ t("TXT_CODE_DESKTOP_IM_PREV") }}
-            </VBtn>
-            <span class="dim-pagination__info">{{ currentPage }} / {{ totalPages }}</span>
-            <VBtn class="dim-btn dim-btn--sm" variant="text" :disabled="currentPage >= totalPages"
-                @click="currentPage++; fetchInstances()">
-                {{ t("TXT_CODE_COMMON_NEXT") }}
-                <VIcon icon="mdi-chevron-right"  />
-            </VBtn>
-        </div>
-
-        <DesktopDialog
-          id="instance-manager-tag-dialog"
-          :title="t('TXT_CODE_COMMON_INSTANCE_TAG')"
-          :icon="TagsOutlined"
-          :model-value="tagDialog.show"
-          :width="440"
-          :height="420"
-          :z-index="10007"
-          @close="closeTagDialog"
-        >
-          <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--muted">
-              {{ t("TXT_CODE_COMMON_TAG_LIST_OF_THIS_INSTANCE") }}
-          </p>
-          <div class="dim-tag-editor">
-              <span v-for="tag in tagDialog.tags" :key="tag" class="dim-tag-editor__tag">
-                  {{ tag }}
-                  <VIcon icon="mdi-close" class="dim-tag-editor__remove" @click="removeInstanceTag(tag)"  />
-              </span>
-              <VTextField v-if="tagDialog.newTagVisible" ref="tagInputRef" v-model="tagDialog.newTagValue"
-                  density="compact" hide-details class="dim-tag-editor__input"
-                  @blur="confirmNewTag" @keyup.enter="confirmNewTag" />
-              <VBtn v-else class="dim-tag-editor__add" variant="text" @click="showNewTagInput">
-                  <VIcon icon="mdi-plus"  /> {{ t("TXT_CODE_COMMON_NEW_TAG") }}
+      <div class="dim-toolbar__right">
+        <div v-if="multipleMode" class="dim-batch-actions">
+          <VBtn class="dim-btn" variant="text" @click="exitMultipleMode">
+            {{ t("TXT_CODE_COMMON_EXIT_BATCH_OPERATION") }}
+          </VBtn>
+          <VBtn class="dim-btn" variant="text" @click="selectAllInstances">
+            {{
+              filteredInstances.length === selectedInstance.length
+                ? t("TXT_CODE_COMMON_DESELECT_ALL")
+                : t("TXT_CODE_COMMON_SELECT_ALL")
+            }}
+          </VBtn>
+          <VMenu location="bottom end">
+            <template #activator="{ props: menuProps }">
+              <VBtn v-bind="menuProps" class="dim-btn dim-btn--primary" variant="text">
+                {{ t("TXT_CODE_COMMON_SELECTED_ITEMS") }}
+                <VIcon icon="mdi-chevron-down" />
               </VBtn>
-          </div>
-          <template v-if="tagSuggestions.length > 0">
-              <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--strong">
-                  {{ t("TXT_CODE_COMMON_SOME_OPTIONAL_TAGS") }}
-              </p>
-              <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--muted">
-                  {{ t("TXT_CODE_COMMON_SUGGESTIONS_COME_FROM_THE_CURRENT_INSTANCE_LIST_UP_TO_30_ARE_SHOWN") }}
-              </p>
-              <div class="dim-tag-editor">
-                  <span v-for="tag in tagSuggestions" :key="tag"
-                      class="dim-tag-editor__tag dim-tag-editor__tag--option"
-                      @click="addSuggestionTag(tag)">
-                      {{ tag }}
-                  </span>
-              </div>
-          </template>
-          <template #footer>
-            <VBtn class="dim-btn dim-btn--default" variant="text" :disabled="tagDialog.saving"
-                @click="closeTagDialog">
-                {{ t("TXT_CODE_COMMON_CANCEL") }}
-            </VBtn>
-            <VBtn class="dim-btn dim-btn--primary" variant="text" :disabled="tagDialog.saving"
-                @click="saveInstanceTags">
-                <VIcon icon="mdi-loading" v-if="tagDialog.saving"  />
-                {{ t("TXT_CODE_COMMON_CONFIRM") }}
-            </VBtn>
-          </template>
-        </DesktopDialog>
+            </template>
+            <VList>
+              <VListItem
+                v-for="item in instanceOperations"
+                :key="item.title"
+                :title="item.title"
+                @click="item.click"
+              >
+                <template #prepend>
+                  <VIcon :icon="item.icon" size="small" />
+                </template>
+              </VListItem>
+            </VList>
+          </VMenu>
+        </div>
+        <div v-else class="dim-batch-actions">
+          <VBtn class="dim-btn" variant="text" @click="multipleMode = true">
+            {{ t("TXT_CODE_COMMON_BATCH_OPERATION") }}
+          </VBtn>
+        </div>
 
-        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="deleteDialog.show" id="instance-manager-delete-dialog" :height="300"
-            :title="deleteDialog.deleteFile ? t('TXT_CODE_COMMON_PERMANENTLY_DELETE') : t('TXT_CODE_COMMON_DELETE')"
-            danger :loading="deleteDialog.loading" @cancel="handleDeleteCancel" @confirm="handleDeleteConfirm">
-            <p>{{ deleteDialog.deleteFile ? t("TXT_CODE_INSTANCE_DELETE_DIRECTORY_WARNING") : t("TXT_CODE_COMMON_REMOVES_INSTANCE_RECORDS_AND_KEEPS_THE_FILES") }}</p>
-            <p v-if="deleteDialog.paths.length === 1" class="dim-dialog__path">
-                {{ t("TXT_CODE_COMMON_INSTANCE_DIRECTORY") }}<br />{{ deleteDialog.paths.join() }}
-            </p>
-        </component>
+        <VTextField
+          v-model="searchText"
+          class="dim-search__input"
+          density="comfortable"
+          hide-details
+          clearable
+          :label="t('TXT_CODE_DESKTOP_IM_SEARCH')"
+          prepend-inner-icon="mdi-magnify"
+          @update:model-value="searchText = $event ?? ''"
+        />
+
+        <VBtn
+          class="dim-btn dim-btn--icon"
+          icon
+          variant="text"
+          :loading="loading"
+          :aria-label="t('TXT_CODE_COMMON_REFRESH')"
+          @click="fetchInstances()"
+        >
+          <VIcon icon="mdi-refresh" />
+        </VBtn>
+
+        <VBtn class="dim-btn dim-btn--primary" variant="text" @click="emit('open-new-instance')">
+          <VIcon icon="mdi-plus" /> {{ t("TXT_CODE_DESKTOP_IM_NEW_INSTANCE") }}
+        </VBtn>
+      </div>
     </div>
+
+    <div class="dim-stats">
+      <div class="dim-stats__item">
+        <span class="dim-stats__dot dim-stats__dot--total"></span>
+        <span>{{ t("TXT_CODE_DESKTOP_IM_TOTAL") }}: {{ instanceCounts.total }}</span>
+      </div>
+      <div class="dim-stats__item">
+        <span class="dim-stats__dot dim-stats__dot--running"></span>
+        <span>{{ t("TXT_CODE_COMMON_RUNNING") }}: {{ instanceCounts.running }}</span>
+      </div>
+      <div class="dim-stats__item">
+        <span class="dim-stats__dot dim-stats__dot--stopped"></span>
+        <span>{{ t("TXT_CODE_COMMON_STOPPED") }}: {{ instanceCounts.stopped }}</span>
+      </div>
+    </div>
+
+    <div v-if="tagTips && tagTips.length > 0" class="dim-tags">
+      <VChip
+        v-if="selectedTags.length > 0"
+        color="error"
+        size="small"
+        class="dim-tag"
+        @click="clearTags"
+      >
+        {{ t("TXT_CODE_COMMON_CLEAR") }}
+      </VChip>
+      <VChip
+        v-for="item in tagTips"
+        :key="item"
+        size="small"
+        class="dim-tag"
+        :class="{ 'dim-tag--active': isTagSelected(item) }"
+        @click="isTagSelected(item) ? removeTag(item) : selectTag(item)"
+      >
+        {{ item }}
+      </VChip>
+    </div>
+
+    <div class="dim-list" :class="{ 'dim-list--loading': loading }">
+      <div v-if="loading && instances.length === 0" class="dim-loading">
+        <VProgressCircular indeterminate class="mb-1" />
+        <p>{{ t("TXT_CODE_DESKTOP_IM_LOADING") }}</p>
+      </div>
+
+      <Empty
+        v-else-if="filteredInstances.length === 0"
+        icon="mdi-view-grid-outline"
+        :title="t('TXT_CODE_DESKTOP_IM_NO_INSTANCES')"
+        :description="t('TXT_CODE_NO_DATA')"
+      />
+
+      <div
+        v-for="instance in filteredInstances"
+        :key="instance.instanceUuid"
+        class="dim-instance"
+        :class="{
+          'dim-instance--operating': isOperating(instance.instanceUuid),
+          'dim-instance--selected': findInstance(instance),
+          'dim-instance--dragging': isInstanceShortcutDragging(
+            instance.instanceUuid,
+            selectedNodeId
+          )
+        }"
+        draggable="false"
+        @pointerdown="prepareInstanceShortcutDrag($event, instance, selectedNodeId)"
+        @dragstart.prevent
+        @click="handleInstanceClick($event, instance)"
+      >
+        <div class="dim-instance__info">
+          <div class="dim-instance__header">
+            <span class="dim-instance__status" :class="getStatusClass(instance.status)">
+              <VIcon :icon="getStatusIcon(instance.status)" size="small" />
+            </span>
+            <span class="dim-instance__name">{{
+              instance.config.nickname || t("TXT_CODE_DESKTOP_IM_UNNAMED")
+            }}</span
+            ><span class="dim-instance__badge" :class="getStatusClass(instance.status)">
+              {{ getStatusText(instance.status) }}
+            </span>
+          </div>
+          <div class="dim-instance__meta">
+            <span
+              class="dim-instance__expire"
+              :title="
+                instance.config.endTime
+                  ? new Date(instance.config.endTime).toLocaleString()
+                  : t('TXT_CODE_INSTANCE_EXPIRY_INDEFINITE')
+              "
+            >
+              {{
+                instance.config.endTime
+                  ? new Date(instance.config.endTime).toLocaleString()
+                  : t("TXT_CODE_INSTANCE_EXPIRY_INDEFINITE")
+              }}
+            </span>
+            <span v-if="instance.config.type" class="dim-instance__type">
+              {{ INSTANCE_TYPE_TRANSLATION[instance.config.type] }}
+            </span>
+            <span
+              v-if="
+                instance.info?.currentPlayers !== undefined &&
+                instance.info?.maxPlayers !== undefined &&
+                instance.info.maxPlayers > 0 &&
+                instance.status === INSTANCE_STATUS_CODE.RUNNING
+              "
+              class="dim-instance__players"
+            >
+              <VIcon icon="mdi-account-group-outline" /> {{ instance.info.currentPlayers }}/{{
+                instance.info.maxPlayers
+              }}
+            </span>
+            <span v-for="tag in instance.config?.tag || []" :key="tag" class="dim-instance__tag">{{
+              tag
+            }}</span>
+          </div>
+        </div>
+
+        <div class="dim-instance__actions">
+          <VBtn
+            icon
+            variant="text"
+            class="dim-action dim-action--tag"
+            :title="t('TXT_CODE_COMMON_TAG_GROUPING')"
+            @click.stop="openTagDialog(instance)"
+          >
+            <VIcon icon="mdi-tag-multiple-outline" />
+          </VBtn>
+          <VBtn
+            v-if="instance.status === INSTANCE_STATUS_CODE.STOPPED"
+            icon
+            variant="text"
+            class="dim-action dim-action--start"
+            :disabled="isOperating(instance.instanceUuid)"
+            :title="t('TXT_CODE_COMMON_START')"
+            @click.stop="handleStart(instance.instanceUuid)"
+          >
+            <VIcon icon="mdi-play" />
+          </VBtn>
+          <VBtn
+            v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING"
+            icon
+            variant="text"
+            class="dim-action dim-action--restart"
+            :disabled="isOperating(instance.instanceUuid)"
+            :title="t('TXT_CODE_COMMON_RESTART')"
+            @click.stop="handleRestart(instance.instanceUuid)"
+          >
+            <VIcon icon="mdi-refresh" />
+          </VBtn>
+          <VBtn
+            v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING"
+            icon
+            variant="text"
+            class="dim-action dim-action--stop"
+            :disabled="isOperating(instance.instanceUuid)"
+            :title="t('TXT_CODE_COMMON_STOP')"
+            @click.stop="handleStop(instance.instanceUuid)"
+          >
+            <VIcon icon="mdi-stop" />
+          </VBtn>
+          <VBtn
+            v-if="
+              instance.status === INSTANCE_STATUS_CODE.RUNNING ||
+              instance.status === INSTANCE_STATUS_CODE.STOPPING
+            "
+            icon
+            variant="text"
+            class="dim-action dim-action--kill"
+            :disabled="isOperating(instance.instanceUuid)"
+            :title="t('TXT_CODE_COMMON_TERMINATE')"
+            @click.stop="handleKill(instance.instanceUuid)"
+          >
+            <VIcon icon="mdi-close-circle-outline" />
+          </VBtn>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="totalPages > 1" class="dim-pagination">
+      <VBtn
+        class="dim-btn dim-btn--sm"
+        variant="text"
+        :disabled="currentPage <= 1"
+        @click="
+          currentPage--;
+          fetchInstances();
+        "
+      >
+        <VIcon icon="mdi-chevron-left" /> {{ t("TXT_CODE_DESKTOP_IM_PREV") }}
+      </VBtn>
+      <span class="dim-pagination__info">{{ currentPage }} / {{ totalPages }}</span>
+      <VBtn
+        class="dim-btn dim-btn--sm"
+        variant="text"
+        :disabled="currentPage >= totalPages"
+        @click="
+          currentPage++;
+          fetchInstances();
+        "
+      >
+        {{ t("TXT_CODE_COMMON_NEXT") }}
+        <VIcon icon="mdi-chevron-right" />
+      </VBtn>
+    </div>
+
+    <DesktopDialog
+      id="instance-manager-tag-dialog"
+      :title="t('TXT_CODE_COMMON_INSTANCE_TAG')"
+      :icon="TagsOutlined"
+      :model-value="tagDialog.show"
+      :width="440"
+      :height="420"
+      :z-index="10007"
+      @close="closeTagDialog"
+    >
+      <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--muted">
+        {{ t("TXT_CODE_COMMON_TAG_LIST_OF_THIS_INSTANCE") }}
+      </p>
+      <div class="dim-tag-editor">
+        <span v-for="tag in tagDialog.tags" :key="tag" class="dim-tag-editor__tag">
+          {{ tag }}
+          <VIcon icon="mdi-close" class="dim-tag-editor__remove" @click="removeInstanceTag(tag)" />
+        </span>
+        <VTextField
+          v-if="tagDialog.newTagVisible"
+          ref="tagInputRef"
+          v-model="tagDialog.newTagValue"
+          density="compact"
+          hide-details
+          class="dim-tag-editor__input"
+          @blur="confirmNewTag"
+          @keyup.enter="confirmNewTag"
+        />
+        <VBtn v-else class="dim-tag-editor__add" variant="text" @click="showNewTagInput">
+          <VIcon icon="mdi-plus" /> {{ t("TXT_CODE_COMMON_NEW_TAG") }}
+        </VBtn>
+      </div>
+      <template v-if="tagSuggestions.length > 0">
+        <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--strong">
+          {{ t("TXT_CODE_COMMON_SOME_OPTIONAL_TAGS") }}
+        </p>
+        <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--muted">
+          {{
+            t("TXT_CODE_COMMON_SUGGESTIONS_COME_FROM_THE_CURRENT_INSTANCE_LIST_UP_TO_30_ARE_SHOWN")
+          }}
+        </p>
+        <div class="dim-tag-editor">
+          <span
+            v-for="tag in tagSuggestions"
+            :key="tag"
+            class="dim-tag-editor__tag dim-tag-editor__tag--option"
+            @click="addSuggestionTag(tag)"
+          >
+            {{ tag }}
+          </span>
+        </div>
+      </template>
+      <template #footer>
+        <VBtn
+          class="dim-btn dim-btn--default"
+          variant="text"
+          :disabled="tagDialog.saving"
+          @click="closeTagDialog"
+        >
+          {{ t("TXT_CODE_COMMON_CANCEL") }}
+        </VBtn>
+        <VBtn
+          class="dim-btn dim-btn--primary"
+          variant="text"
+          :disabled="tagDialog.saving"
+          @click="saveInstanceTags"
+        >
+          <VIcon v-if="tagDialog.saving" icon="mdi-loading" />
+          {{ t("TXT_CODE_COMMON_CONFIRM") }}
+        </VBtn>
+      </template>
+    </DesktopDialog>
+
+    <component
+      :is="ConfirmDialog"
+      v-if="ConfirmDialog"
+      id="instance-manager-delete-dialog"
+      v-model="deleteDialog.show"
+      :height="300"
+      :title="
+        deleteDialog.deleteFile
+          ? t('TXT_CODE_COMMON_PERMANENTLY_DELETE')
+          : t('TXT_CODE_COMMON_DELETE')
+      "
+      danger
+      :loading="deleteDialog.loading"
+      @cancel="handleDeleteCancel"
+      @confirm="handleDeleteConfirm"
+    >
+      <p>
+        {{
+          deleteDialog.deleteFile
+            ? t("TXT_CODE_INSTANCE_DELETE_DIRECTORY_WARNING")
+            : t("TXT_CODE_COMMON_REMOVES_INSTANCE_RECORDS_AND_KEEPS_THE_FILES")
+        }}
+      </p>
+      <p v-if="deleteDialog.paths.length === 1" class="dim-dialog__path">
+        {{ t("TXT_CODE_COMMON_INSTANCE_DIRECTORY") }}<br />{{ deleteDialog.paths.join() }}
+      </p>
+    </component>
+  </div>
 </template>
 
 <style lang="scss" scoped>
 .dim {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    color: var(--desktop-window-text);
-    font-size: 13px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  color: var(--desktop-window-text);
+  font-size: 13px;
 }
 
 .dim-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--desktop-window-border);
-    flex-wrap: wrap;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--desktop-window-border);
+  flex-wrap: wrap;
 
-    &__left,
-    &__right {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-}
-
-.dim-select {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-
-    &__input {
-        max-width: 200px;
-    }
-}
-
-.dim-search__input {
-    width: 180px;
-    min-width: 0;
-}
-
-.dim-btn {
-    background: var(--desktop-window-titlebar-bg);
-    border: 1px solid var(--desktop-window-border);
-    border-radius: 6px;
-    color: var(--desktop-window-text);
-    padding: 6px 12px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-
-    &:hover:not(:disabled) {
-        background: var(--desktop-window-control-hover);
-    }
-
-    &:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    }
-
-    &--icon {
-        padding: 6px 8px;
-        font-size: 14px;
-        line-height: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    &--sm {
-        padding: 4px 10px;
-        font-size: 11px;
-    }
-
-    &--primary {
-        background: #1677ff;
-        border-color: #1677ff;
-        color: #fff;
-
-        &:hover:not(:disabled) {
-            background: #4096ff;
-            border-color: #4096ff;
-        }
-    }
-
-    &--default {
-        background: var(--desktop-window-titlebar-bg);
-        border: 1px solid var(--desktop-window-border);
-
-        &:hover:not(:disabled) {
-            background: var(--desktop-window-control-hover);
-        }
-    }
-
-    &--danger {
-        background: var(--color-red-5, #ff4d4f);
-        border-color: var(--color-red-5, #ff4d4f);
-        color: #fff;
-
-        &:hover:not(:disabled) {
-            background: var(--color-red-6, #ff7875);
-            border-color: var(--color-red-6, #ff7875);
-        }
-    }
-}
-
-.dim-batch-actions {
+  &__left,
+  &__right {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-right: 8px;
+  }
+}
+
+.dim-select {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &__input {
+    max-width: 200px;
+  }
+}
+
+.dim-search__input {
+  width: 180px;
+  min-width: 0;
+}
+
+.dim-btn {
+  background: var(--desktop-window-titlebar-bg);
+  border: 1px solid var(--desktop-window-border);
+  border-radius: 6px;
+  color: var(--desktop-window-text);
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  &:hover:not(:disabled) {
+    background: var(--desktop-window-control-hover);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &--icon {
+    padding: 6px 8px;
+    font-size: 14px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &--sm {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+
+  &--primary {
+    background: #1677ff;
+    border-color: #1677ff;
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      background: #4096ff;
+      border-color: #4096ff;
+    }
+  }
+
+  &--default {
+    background: var(--desktop-window-titlebar-bg);
+    border: 1px solid var(--desktop-window-border);
+
+    &:hover:not(:disabled) {
+      background: var(--desktop-window-control-hover);
+    }
+  }
+
+  &--danger {
+    background: var(--color-red-5, #ff4d4f);
+    border-color: var(--color-red-5, #ff4d4f);
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      background: var(--color-red-6, #ff7875);
+      border-color: var(--color-red-6, #ff7875);
+    }
+  }
+}
+
+.dim-batch-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 8px;
 }
 
 .dim-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--desktop-window-border);
+  font-size: 12px;
+  color: var(--desktop-window-text-secondary);
+  flex-wrap: wrap;
+
+  &__item {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 8px 16px;
-    border-bottom: 1px solid var(--desktop-window-border);
-    font-size: 12px;
-    color: var(--desktop-window-text-secondary);
-    flex-wrap: wrap;
+    gap: 4px;
+  }
 
-    &__item {
-        display: flex;
-        align-items: center;
-        gap: 4px;
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+
+    &--total {
+      background: #1677ff;
     }
 
-    &__dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-
-        &--total {
-            background: #1677ff;
-        }
-
-        &--running {
-            background: #52c41a;
-        }
-
-        &--stopped {
-            background: #8c8c8c;
-        }
+    &--running {
+      background: #52c41a;
     }
+
+    &--stopped {
+      background: #8c8c8c;
+    }
+  }
 }
 
 .dim-tags {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 4px;
-    padding: 8px 16px;
-    border-bottom: 1px solid var(--desktop-window-border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--desktop-window-border);
 
-    .dim-tag {
-        background: var(--desktop-window-titlebar-bg);
-        border: 1px solid var(--desktop-window-border);
-        color: var(--desktop-window-text-secondary);
-        margin: 0;
-        padding: 2px 10px;
-        border-radius: 10px;
-        font-size: 11px;
-        line-height: 18px;
-        cursor: pointer;
-        transition: all 0.2s;
+  .dim-tag {
+    background: var(--desktop-window-titlebar-bg);
+    border: 1px solid var(--desktop-window-border);
+    color: var(--desktop-window-text-secondary);
+    margin: 0;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    line-height: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
 
-        &:hover {
-            border-color: rgba(22, 119, 255, 0.5);
-            color: var(--desktop-window-text);
-        }
-
-        &--active {
-            background: rgba(22, 119, 255, 0.15);
-            border-color: rgba(22, 119, 255, 0.6);
-            color: #1677ff;
-        }
+    &:hover {
+      border-color: rgba(22, 119, 255, 0.5);
+      color: var(--desktop-window-text);
     }
+
+    &--active {
+      background: rgba(22, 119, 255, 0.15);
+      border-color: rgba(22, 119, 255, 0.6);
+      color: #1677ff;
+    }
+  }
 }
 
 .dim-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 8px;
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
 
-    &--loading {
-        opacity: 0.7;
-    }
+  &--loading {
+    opacity: 0.7;
+  }
 }
 
 .dim-loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 48px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
 
-    p {
-        color: var(--desktop-window-text-muted);
-        margin: 8px 0 0;
-        font-size: 13px;
-    }
+  p {
+    color: var(--desktop-window-text-muted);
+    margin: 8px 0 0;
+    font-size: 13px;
+  }
 }
 
 .dim-instance {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  margin-bottom: 4px;
+  border-radius: 8px;
+  background: var(--desktop-window-titlebar-bg);
+  border: 1px solid var(--desktop-window-border);
+  transition: all 0.2s;
+  cursor: grab;
+  user-select: none;
+
+  &--dragging {
+    cursor: grabbing;
+  }
+
+  &:hover {
+    background: var(--desktop-window-control-hover);
+    border-color: var(--desktop-window-border);
+  }
+
+  &--operating {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  &--selected {
+    background: rgba(22, 119, 255, 0.15);
+    border-color: rgba(22, 119, 255, 0.3);
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 10px 14px;
+    gap: 8px;
     margin-bottom: 4px;
-    border-radius: 8px;
+  }
+
+  &__tag {
     background: var(--desktop-window-titlebar-bg);
     border: 1px solid var(--desktop-window-border);
-    transition: all 0.2s;
-    cursor: grab;
+    border-radius: 8px;
+    color: var(--desktop-window-text-secondary);
+    font-size: 10px;
+    padding: 1px 8px;
+    line-height: 16px;
+    white-space: nowrap;
     user-select: none;
+  }
 
-    &--dragging {
-        cursor: grabbing;
+  &__tag + &__tag {
+    margin-left: -8px;
+  }
+
+  &__status {
+    font-size: 12px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  &__name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--desktop-window-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 300px;
+  }
+
+  &__badge {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+
+    &.status--running {
+      background: rgba(82, 196, 26, 0.15);
+      color: #52c41a;
     }
 
-    &:hover {
-        background: var(--desktop-window-control-hover);
-        border-color: var(--desktop-window-border);
+    &.status--stopped {
+      background: rgba(140, 140, 140, 0.15);
+      color: #8c8c8c;
     }
 
-    &--operating {
-        opacity: 0.6;
-        pointer-events: none;
+    &.status--starting,
+    &.status--stopping {
+      background: rgba(250, 173, 20, 0.15);
+      color: #faad14;
     }
 
-    &--selected {
-        background: rgba(22, 119, 255, 0.15);
-        border-color: rgba(22, 119, 255, 0.3);
+    &.status--busy {
+      background: rgba(255, 77, 79, 0.15);
+      color: #ff4d4f;
     }
+  }
 
-    &__info {
-        flex: 1;
-        min-width: 0;
-    }
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--desktop-window-text-secondary);
+    flex-wrap: wrap;
+  }
 
-    &__header {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 4px;
-    }
+  &__expire {
+    font-size: 11px;
+    color: var(--desktop-window-text-secondary);
+  }
 
-    &__tag {
-        background: var(--desktop-window-titlebar-bg);
-        border: 1px solid var(--desktop-window-border);
-        border-radius: 8px;
-        color: var(--desktop-window-text-secondary);
-        font-size: 10px;
-        padding: 1px 8px;
-        line-height: 16px;
-        white-space: nowrap;
-        user-select: none;
-    }
+  &__type {
+    background: var(--desktop-window-titlebar-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+  }
 
-    &__tag+&__tag {
-        margin-left: -8px;
-    }
+  &__players {
+    font-size: 11px;
+    color: var(--desktop-window-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
 
-    &__status {
-        font-size: 12px;
-        line-height: 1;
-        display: flex;
-        align-items: center;
-    }
-
-    &__name {
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--desktop-window-text);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 300px;
-    }
-
-    &__badge {
-        font-size: 10px;
-        padding: 2px 8px;
-        border-radius: 10px;
-        font-weight: 500;
-        white-space: nowrap;
-
-        &.status--running {
-            background: rgba(82, 196, 26, 0.15);
-            color: #52c41a;
-        }
-
-        &.status--stopped {
-            background: rgba(140, 140, 140, 0.15);
-            color: #8c8c8c;
-        }
-
-        &.status--starting,
-        &.status--stopping {
-            background: rgba(250, 173, 20, 0.15);
-            color: #faad14;
-        }
-
-        &.status--busy {
-            background: rgba(255, 77, 79, 0.15);
-            color: #ff4d4f;
-        }
-    }
-
-    &__meta {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 11px;
-        color: var(--desktop-window-text-secondary);
-        flex-wrap: wrap;
-    }
-
-    &__expire {
-        font-size: 11px;
-        color: var(--desktop-window-text-secondary);
-    }
-
-    &__type {
-        background: var(--desktop-window-titlebar-bg);
-        padding: 1px 6px;
-        border-radius: 4px;
-        font-size: 10px;
-    }
-
-    &__players {
-        font-size: 11px;
-        color: var(--desktop-window-text-secondary);
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    &__actions {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        flex-shrink: 0;
-        margin-left: 12px;
-    }
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    margin-left: 12px;
+  }
 }
 
 .dim-action {
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    cursor: pointer;
-    background: transparent;
-    line-height: 1;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  background: transparent;
+  line-height: 1;
 
-    &:disabled {
-        opacity: 0.3;
-        cursor: not-allowed;
-    }
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
 
-    &--start {
-        color: #52c41a;
-    }
+  &--start {
+    color: #52c41a;
+  }
 
-    &--stop {
-        color: #faad14;
-    }
+  &--stop {
+    color: #faad14;
+  }
 
-    &--restart {
-        color: #1677ff;
-    }
+  &--restart {
+    color: #1677ff;
+  }
 
-    &--kill {
-        color: #ff4d4f;
-    }
+  &--kill {
+    color: #ff4d4f;
+  }
 
-    &--tag {
-        color: #722ed1;
-    }
+  &--tag {
+    color: #722ed1;
+  }
 }
 
 .dim-tag-editor {
-    display: flex;
-    flex-wrap: wrap;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0;
+
+  &__tag {
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
-    margin: 12px 0;
+    gap: 4px;
+    background: var(--desktop-window-titlebar-bg);
+    border: 1px solid rgba(22, 119, 255, 0.4);
+    border-radius: 10px;
+    color: var(--desktop-window-text);
+    font-size: 12px;
+    padding: 2px 10px;
+    line-height: 18px;
+    user-select: none;
 
-    &__tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        background: var(--desktop-window-titlebar-bg);
-        border: 1px solid rgba(22, 119, 255, 0.4);
-        border-radius: 10px;
+    &--option {
+      cursor: pointer;
+      border-color: var(--desktop-window-border);
+      color: var(--desktop-window-text-secondary);
+
+      &:hover {
+        border-color: rgba(22, 119, 255, 0.6);
         color: var(--desktop-window-text);
-        font-size: 12px;
-        padding: 2px 10px;
-        line-height: 18px;
-        user-select: none;
-
-        &--option {
-            cursor: pointer;
-            border-color: var(--desktop-window-border);
-            color: var(--desktop-window-text-secondary);
-
-            &:hover {
-                border-color: rgba(22, 119, 255, 0.6);
-                color: var(--desktop-window-text);
-            }
-        }
+      }
     }
+  }
 
-    &__remove {
-        font-size: 10px;
-        cursor: pointer;
-        opacity: 0.6;
+  &__remove {
+    font-size: 10px;
+    cursor: pointer;
+    opacity: 0.6;
 
-        &:hover {
-            opacity: 1;
-            color: #ff4d4f;
-        }
+    &:hover {
+      opacity: 1;
+      color: #ff4d4f;
     }
+  }
 
-    &__add {
-        background: var(--desktop-window-titlebar-bg);
-        border: 1px dashed var(--desktop-window-border);
-        border-radius: 10px;
-        color: var(--desktop-window-text-secondary);
-        font-size: 12px;
-        padding: 2px 10px;
-        line-height: 18px;
-        cursor: pointer;
-        transition: all 0.2s;
+  &__add {
+    background: var(--desktop-window-titlebar-bg);
+    border: 1px dashed var(--desktop-window-border);
+    border-radius: 10px;
+    color: var(--desktop-window-text-secondary);
+    font-size: 12px;
+    padding: 2px 10px;
+    line-height: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
 
-        &:hover {
-            border-color: rgba(22, 119, 255, 0.6);
-            color: var(--desktop-window-text);
-        }
+    &:hover {
+      border-color: rgba(22, 119, 255, 0.6);
+      color: var(--desktop-window-text);
     }
+  }
 
-    &__input {
-        background: var(--desktop-window-titlebar-bg);
-        border: 1px solid rgba(22, 119, 255, 0.6);
-        border-radius: 10px;
-        color: var(--desktop-window-text);
-        font-size: 12px;
-        padding: 2px 10px;
-        line-height: 18px;
-        width: 110px;
-        outline: none;
-    }
+  &__input {
+    background: var(--desktop-window-titlebar-bg);
+    border: 1px solid rgba(22, 119, 255, 0.6);
+    border-radius: 10px;
+    color: var(--desktop-window-text);
+    font-size: 12px;
+    padding: 2px 10px;
+    line-height: 18px;
+    width: 110px;
+    outline: none;
+  }
 }
 
 .dim-pagination {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    padding: 10px 16px;
-    border-top: 1px solid var(--desktop-window-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--desktop-window-border);
 
-    &__info {
-        font-size: 12px;
-        color: var(--desktop-window-text-secondary);
-    }
+  &__info {
+    font-size: 12px;
+    color: var(--desktop-window-text-secondary);
+  }
 }
 
 .dim-dialog__desc {
-    margin: 0;
-    color: var(--desktop-window-text);
-    font-size: 14px;
-    text-align: center;
-    line-height: 1.6;
+  margin: 0;
+  color: var(--desktop-window-text);
+  font-size: 14px;
+  text-align: center;
+  line-height: 1.6;
 
-    &--left {
-        text-align: left;
-    }
+  &--left {
+    text-align: left;
+  }
 
-    &--muted {
-        color: var(--desktop-window-text-secondary);
-        font-size: 12px;
-    }
+  &--muted {
+    color: var(--desktop-window-text-secondary);
+    font-size: 12px;
+  }
 
-    &--strong {
-        margin-top: 12px;
-        font-size: 13px;
-        font-weight: 500;
-    }
+  &--strong {
+    margin-top: 12px;
+    font-size: 13px;
+    font-weight: 500;
+  }
 }
 
 .dim-dialog__path {
-    margin: 0;
-    color: var(--desktop-window-text-secondary);
-    font-size: 12px;
-    text-align: center;
-    line-height: 1.6;
-    word-break: break-all;
+  margin: 0;
+  color: var(--desktop-window-text-secondary);
+  font-size: 12px;
+  text-align: center;
+  line-height: 1.6;
+  word-break: break-all;
 }
 </style>

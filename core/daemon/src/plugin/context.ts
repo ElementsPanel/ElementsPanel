@@ -22,7 +22,7 @@ import type { missionPassport } from "../../../../plugins/runtime/daemon/src/bac
 import type { sendFile } from "../../../../plugins/runtime/daemon/src/backend/utils/speed_limit";
 import type { globalConfiguration } from "../../../../plugins/runtime/daemon/src/backend/entity/config";
 type Instance = any;
-type InstanceConfig = any;
+
 type ILifeCycleTask = any;
 type InstanceCommand = any;
 type commandStringToArray = (text: string) => string[];

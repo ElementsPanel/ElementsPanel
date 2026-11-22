@@ -1,21 +1,31 @@
 <script setup lang="ts">
 import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import InstanceConfigEditor from "../components/InstanceConfigEditor.vue";
-import { getInstanceConfigByType, type InstanceConfigs } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
+import {
+  getInstanceConfigByType,
+  type InstanceConfigs
+} from "@elementspanel/epanel-plugin-console/hooks/useInstance";
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { getConfigFile, getConfigFileList, updateConfigFile } from "@elementspanel/epanel-plugin-console/services/apis/instance";
-import { notifyDesktop, notifyDesktopError } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
+import {
+  getConfigFile,
+  getConfigFileList,
+  updateConfigFile
+} from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import {
+  notifyDesktop,
+  notifyDesktopError
+} from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import { onMounted, ref } from "vue";
 import { VBtn, VIcon } from "vuetify/components";
 
 const props = defineProps<{
-    instanceId: string;
-    daemonId: string;
-    type: string;
+  instanceId: string;
+  daemonId: string;
+  type: string;
 }>();
 
-const emit = defineEmits<{
-    (e: "close"): void;
+defineEmits<{
+  (e: "close"): void;
 }>();
 
 const configFiles = ref<InstanceConfigs[]>([]);
@@ -27,317 +37,358 @@ const isEditing = ref(false);
 const { execute: requestConfigFileList, state: configFileListState } = getConfigFileList();
 
 const loadConfigFiles = async () => {
-    isLoading.value = true;
-    try {
-        const files: InstanceConfigs[] = getInstanceConfigByType(props.type ?? "");
-        const paths: string[] = files.map((v) => v.path);
+  isLoading.value = true;
+  try {
+    const files: InstanceConfigs[] = getInstanceConfigByType(props.type ?? "");
+    const paths: string[] = files.map((v) => v.path);
 
-        await requestConfigFileList({
-            params: {
-                uuid: props.instanceId ?? "",
-                daemonId: props.daemonId ?? ""
-            },
-            data: { files: paths }
-        });
+    await requestConfigFileList({
+      params: {
+        uuid: props.instanceId ?? "",
+        daemonId: props.daemonId ?? ""
+      },
+      data: { files: paths }
+    });
 
-        const realFiles = configFileListState.value;
-        files.forEach((file) => {
-            file.check = false;
-            file.conflict = false;
-        });
-        if (realFiles) {
-            realFiles.forEach((v: { check: boolean; file: string }) => {
-                files.forEach((z) => {
-                    if (z.path === v.file) {
-                        files.forEach((p) => {
-                            if (p.path === z.path && p.check) z.conflict = true;
-                        });
-                        z.check = true;
-                    }
-                });
+    const realFiles = configFileListState.value;
+    files.forEach((file) => {
+      file.check = false;
+      file.conflict = false;
+    });
+    if (realFiles) {
+      realFiles.forEach((v: { check: boolean; file: string }) => {
+        files.forEach((z) => {
+          if (z.path === v.file) {
+            files.forEach((p) => {
+              if (p.path === z.path && p.check) z.conflict = true;
             });
-        }
-
-        configFiles.value = files.filter((f) => f.check);
-    } catch (err: any) {
-        console.error(err);
-        notifyDesktopError(err);
-    } finally {
-        isLoading.value = false;
+            z.check = true;
+          }
+        });
+      });
     }
+
+    configFiles.value = files.filter((f) => f.check);
+  } catch (err: any) {
+    console.error(err);
+    notifyDesktopError(err);
+  } finally {
+    isLoading.value = false;
+  }
 };
 
-const { execute: requestConfigFile, state: configFileState, isLoading: isFileLoading } = getConfigFile();
+const {
+  execute: requestConfigFile,
+  state: configFileState,
+  isLoading: isFileLoading
+} = getConfigFile();
 
 const selectFile = async (file: InstanceConfigs) => {
-    selectedFile.value = file;
-    isEditing.value = false;
-    try {
-        await requestConfigFile({
-            params: {
-                uuid: props.instanceId ?? "",
-                daemonId: props.daemonId ?? "",
-                fileName: file.path ?? "",
-                type: file.type ?? ""
-            }
-        });
-    } catch (err: any) {
-        notifyDesktopError(err);
-    }
+  selectedFile.value = file;
+  isEditing.value = false;
+  try {
+    await requestConfigFile({
+      params: {
+        uuid: props.instanceId ?? "",
+        daemonId: props.daemonId ?? "",
+        fileName: file.path ?? "",
+        type: file.type ?? ""
+      }
+    });
+  } catch (err: any) {
+    notifyDesktopError(err);
+  }
 };
 
 const goBack = () => {
-    selectedFile.value = null;
-    isEditing.value = false;
+  selectedFile.value = null;
+  isEditing.value = false;
 };
 
 const { execute: execUpdateConfigFile } = updateConfigFile();
 
 const saveFile = async () => {
-    if (!selectedFile.value || !configFileState.value) return;
-    isSaving.value = true;
-    try {
-        const config = { ...configFileState.value };
+  if (!selectedFile.value || !configFileState.value) return;
+  isSaving.value = true;
+  try {
+    const config = { ...configFileState.value };
 
-        await execUpdateConfigFile({
-            params: {
-                uuid: props.instanceId ?? "",
-                daemonId: props.daemonId ?? "",
-                fileName: selectedFile.value.path ?? "",
-                type: selectedFile.value.type ?? ""
-            },
-            data: config
-        });
-        notifyDesktop(t("TXT_CODE_COMMON_SAVED"), "success");
-    } catch (err: any) {
-        notifyDesktopError(err);
-    } finally {
-        isSaving.value = false;
-    }
+    await execUpdateConfigFile({
+      params: {
+        uuid: props.instanceId ?? "",
+        daemonId: props.daemonId ?? "",
+        fileName: selectedFile.value.path ?? "",
+        type: selectedFile.value.type ?? ""
+      },
+      data: config
+    });
+    notifyDesktop(t("TXT_CODE_COMMON_SAVED"), "success");
+  } catch (err: any) {
+    notifyDesktopError(err);
+  } finally {
+    isSaving.value = false;
+  }
 };
 
 onMounted(async () => {
-    await loadConfigFiles();
+  await loadConfigFiles();
 });
 </script>
 
 <template>
-    <div class="dsc">
-        <div class="dsc__header">
-            <VBtn v-if="selectedFile" icon variant="text" class="dsc-btn dsc-btn--icon" @click="goBack" :title="t('TXT_CODE_COMMON_GO_BACK')">
-                <VIcon icon="mdi-arrow-left"  />
-            </VBtn>
-            <span class="dsc__title">
-                {{ selectedFile ? selectedFile.fileName : t("TXT_CODE_COMMON_CONFIGURATION_FILES") }}
-            </span>
-            <div class="dsc__actions">
-                <VBtn v-if="!selectedFile" class="dsc-btn dsc-btn--sm" variant="text" @click="loadConfigFiles" :disabled="isLoading">
-                    <VIcon icon="mdi-refresh"  /> {{ t("TXT_CODE_COMMON_REFRESH") }}
-                </VBtn>
-                <template v-if="selectedFile">
-                    <VBtn class="dsc-btn dsc-btn--sm dsc-btn--primary" variant="text" @click="saveFile" :disabled="isSaving">
-                        <VIcon icon="mdi-content-save-outline"  /> {{ t("TXT_CODE_COMMON_SAVE") }}
-                    </VBtn>
-                    <VBtn class="dsc-btn dsc-btn--sm" variant="text"
-                        @click="async () => { if (selectedFile) { await selectFile(selectedFile); notifyDesktop(t('TXT_CODE_SERVER_CONFIG_REFRESHED'), 'success'); } }"
-                        :disabled="isFileLoading">
-                        <VIcon icon="mdi-refresh"  /> {{ t("TXT_CODE_COMMON_REFRESH") }}
-                    </VBtn>
-                </template>
-            </div>
-        </div>
-
-        <div class="dsc__body">
-            <div v-if="!selectedFile" class="dsc-list">
-                <Empty
-                  v-if="configFiles.length === 0 && !isLoading"
-                  icon="mdi-file-alert-outline"
-                  :title="t('TXT_CODE_COMMON_NO_AVAILABLE_CONFIGURATION_FILE_FOUND')"
-                  :description="t('TXT_CODE_GAME_CONFIG_GENERATION_HINT')"
-                />
-                <div v-else class="dsc-list__items">
-                    <div v-for="file in configFiles" :key="file.path" class="dsc-file-item" @click="selectFile(file)">
-                        <div class="dsc-file-item__info">
-                            <span class="dsc-file-item__name">{{ file.fileName }}</span>
-                            <span class="dsc-file-item__desc">{{ file.info }}</span>
-                        </div>
-                        <div class="dsc-file-item__action">
-                            <VIcon icon="mdi-pencil-outline"  />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div v-else class="dsc-editor">
-                <div v-if="configFileState" class="dsc-editor__content">
-                    <InstanceConfigEditor :key="selectedFile.path + Date.now()" :config="configFileState"
-                        :config-name="selectedFile.redirect" is-desktop />
-                </div>
-                <div v-else class="dsc-loading">
-                    <p>{{ t("TXT_CODE_COMMON_LOADING_DATA") }}</p>
-                </div>
-            </div>
-        </div>
+  <div class="dsc">
+    <div class="dsc__header">
+      <VBtn
+        v-if="selectedFile"
+        icon
+        variant="text"
+        class="dsc-btn dsc-btn--icon"
+        :title="t('TXT_CODE_COMMON_GO_BACK')"
+        @click="goBack"
+      >
+        <VIcon icon="mdi-arrow-left" />
+      </VBtn>
+      <span class="dsc__title">
+        {{ selectedFile ? selectedFile.fileName : t("TXT_CODE_COMMON_CONFIGURATION_FILES") }}
+      </span>
+      <div class="dsc__actions">
+        <VBtn
+          v-if="!selectedFile"
+          class="dsc-btn dsc-btn--sm"
+          variant="text"
+          :disabled="isLoading"
+          @click="loadConfigFiles"
+        >
+          <VIcon icon="mdi-refresh" /> {{ t("TXT_CODE_COMMON_REFRESH") }}
+        </VBtn>
+        <template v-if="selectedFile">
+          <VBtn
+            class="dsc-btn dsc-btn--sm dsc-btn--primary"
+            variant="text"
+            :disabled="isSaving"
+            @click="saveFile"
+          >
+            <VIcon icon="mdi-content-save-outline" /> {{ t("TXT_CODE_COMMON_SAVE") }}
+          </VBtn>
+          <VBtn
+            class="dsc-btn dsc-btn--sm"
+            variant="text"
+            :disabled="isFileLoading"
+            @click="
+              async () => {
+                if (selectedFile) {
+                  await selectFile(selectedFile);
+                  notifyDesktop(t('TXT_CODE_SERVER_CONFIG_REFRESHED'), 'success');
+                }
+              }
+            "
+          >
+            <VIcon icon="mdi-refresh" /> {{ t("TXT_CODE_COMMON_REFRESH") }}
+          </VBtn>
+        </template>
+      </div>
     </div>
+
+    <div class="dsc__body">
+      <div v-if="!selectedFile" class="dsc-list">
+        <Empty
+          v-if="configFiles.length === 0 && !isLoading"
+          icon="mdi-file-alert-outline"
+          :title="t('TXT_CODE_COMMON_NO_AVAILABLE_CONFIGURATION_FILE_FOUND')"
+          :description="t('TXT_CODE_GAME_CONFIG_GENERATION_HINT')"
+        />
+        <div v-else class="dsc-list__items">
+          <div
+            v-for="file in configFiles"
+            :key="file.path"
+            class="dsc-file-item"
+            @click="selectFile(file)"
+          >
+            <div class="dsc-file-item__info">
+              <span class="dsc-file-item__name">{{ file.fileName }}</span>
+              <span class="dsc-file-item__desc">{{ file.info }}</span>
+            </div>
+            <div class="dsc-file-item__action">
+              <VIcon icon="mdi-pencil-outline" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-else class="dsc-editor">
+        <div v-if="configFileState" class="dsc-editor__content">
+          <InstanceConfigEditor
+            :key="selectedFile.path + Date.now()"
+            :config="configFileState"
+            :config-name="selectedFile.redirect"
+            is-desktop
+          />
+        </div>
+        <div v-else class="dsc-loading">
+          <p>{{ t("TXT_CODE_COMMON_LOADING_DATA") }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style lang="scss" scoped>
 .dsc {
-    height: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  color: var(--desktop-window-text);
+  font-size: 13px;
+
+  &__header {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--desktop-window-border);
+    flex-shrink: 0;
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 500;
     color: var(--desktop-window-text);
-    font-size: 13px;
+    flex: 1;
+  }
 
-    &__header {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 16px;
-        border-bottom: 1px solid var(--desktop-window-border);
-        flex-shrink: 0;
-    }
+  &__actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
 
-    &__title {
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--desktop-window-text);
-        flex: 1;
-    }
-
-    &__actions {
-        display: flex;
-        gap: 6px;
-        flex-shrink: 0;
-    }
-
-    &__body {
-        flex: 1;
-        overflow: auto;
-        padding: 12px;
-    }
+  &__body {
+    flex: 1;
+    overflow: auto;
+    padding: 12px;
+  }
 }
 
 .dsc-btn {
-    background: var(--desktop-window-titlebar-bg);
-    border: 1px solid var(--desktop-window-border);
-    border-radius: 6px;
-    color: var(--desktop-window-text);
-    padding: 6px 12px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
+  background: var(--desktop-window-titlebar-bg);
+  border: 1px solid var(--desktop-window-border);
+  border-radius: 6px;
+  color: var(--desktop-window-text);
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  &:hover:not(:disabled) {
+    background: var(--desktop-window-control-hover);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &--sm {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+
+  &--icon {
+    padding: 4px 8px;
+    font-size: 14px;
+  }
+
+  &--primary {
+    color: #1677ff;
+    border-color: rgba(22, 119, 255, 0.3);
+    background: rgba(22, 119, 255, 0.1);
 
     &:hover:not(:disabled) {
-        background: var(--desktop-window-control-hover);
+      background: rgba(22, 119, 255, 0.2);
     }
-
-    &:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    }
-
-    &--sm {
-        padding: 4px 10px;
-        font-size: 11px;
-    }
-
-    &--icon {
-        padding: 4px 8px;
-        font-size: 14px;
-    }
-
-    &--primary {
-        color: #1677ff;
-        border-color: rgba(22, 119, 255, 0.3);
-        background: rgba(22, 119, 255, 0.1);
-
-        &:hover:not(:disabled) {
-            background: rgba(22, 119, 255, 0.2);
-        }
-    }
+  }
 }
 
 .dsc-list {
-    height: 100%;
+  height: 100%;
 
-    &__items {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
+  &__items {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
 }
 
 .dsc-file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--desktop-window-titlebar-bg);
+  border: 1px solid var(--desktop-window-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: var(--desktop-window-control-hover);
+    border-color: var(--desktop-window-border);
+  }
+
+  &__info {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    background: var(--desktop-window-titlebar-bg);
-    border: 1px solid var(--desktop-window-border);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+  }
 
-    &:hover {
-        background: var(--desktop-window-control-hover);
-        border-color: var(--desktop-window-border);
-    }
+  &__name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--desktop-window-text);
+  }
 
-    &__info {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        flex: 1;
-        min-width: 0;
-    }
+  &__desc {
+    font-size: 11px;
+    color: var(--desktop-window-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-    &__name {
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--desktop-window-text);
-    }
-
-    &__desc {
-        font-size: 11px;
-        color: var(--desktop-window-text-muted);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    &__action {
-        color: var(--desktop-window-text-muted);
-        font-size: 14px;
-        flex-shrink: 0;
-        margin-left: 12px;
-    }
+  &__action {
+    color: var(--desktop-window-text-muted);
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-left: 12px;
+  }
 }
 
 .dsc-editor {
-    height: 100%;
+  height: 100%;
 
-    &__content {
-        height: 100%;
-    }
+  &__content {
+    height: 100%;
+  }
 }
 
 .dsc-loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    gap: 12px;
-    color: var(--desktop-window-text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 12px;
+  color: var(--desktop-window-text-muted);
 
-    p {
-        font-size: 16px;
-        font-weight: 500;
-        margin: 0;
-    }
+  p {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+  }
 }
 </style>

@@ -24,7 +24,11 @@ export const toCopy = async (sth: string | number) => {
     console.error(err);
     Modal.warning({
       title: t("TXT_CODE_COMMON_YOUR_BROWSER_DOES_NOT_SUPPORT_CLIPBOARD_API"),
-      content: [h("span", t("TXT_CODE_COMMON_PLEASE_MANUALLY_COPY_THE_FOLLOWING_CONTENT")), h("br"), h("span", sth)]
+      content: [
+        h("span", t("TXT_CODE_COMMON_PLEASE_MANUALLY_COPY_THE_FOLLOWING_CONTENT")),
+        h("br"),
+        h("span", sth)
+      ]
     });
   }
 };

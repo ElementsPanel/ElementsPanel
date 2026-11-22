@@ -268,6 +268,7 @@ export function panelDependencyVersions(detail: {
           result[name] = metadata.version;
           break;
         } catch {
+          // Try the remaining installed package locations.
         }
       }
       if (result[name]) break;

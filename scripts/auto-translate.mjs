@@ -31,7 +31,7 @@ export class AiChatSession {
     this.apiKey = apiKey;
   }
 
-  async sendMessage(userInput = "", onStream = (text = "") => {}) {
+  async sendMessage(userInput = "", onStream = (_text = "") => {}) {
     try {
       const openai = new OpenAI({
         baseURL: "https://api.deepseek.com",
@@ -92,7 +92,7 @@ async function getApiKey() {
  * @param {string} targetLanguage - Target language (e.g., "zh-CN", "en-US")
  * @returns {Promise<{key:string, text:string}[]>} - Translated text array
  */
-async function translateText(chatAiSession, textList = [], targetLanguage = "") {
+async function translateText(chatAiSession, textList = [], _targetLanguage = "") {
   const result = await chatAiSession.sendMessage(JSON.stringify(textList), (text) => {
     process.stdout.write(text || "");
   });
@@ -136,7 +136,7 @@ async function checkAndFillMissingKeys() {
       const json = JSON.parse(content);
 
       // Find missing keys
-      const missingKeys = standardKeys.filter((key) => !json.hasOwnProperty(key));
+      const missingKeys = standardKeys.filter((key) => !Object.hasOwn(json, key));
 
       if (missingKeys.length === 0) {
         console.log(`✅ ${file} has no missing key-value pairs`);

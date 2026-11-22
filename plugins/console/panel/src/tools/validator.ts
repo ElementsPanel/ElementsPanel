@@ -2,7 +2,8 @@ import { t } from "@elementspanel/epanel-plugin-i18n";
 import { message } from "@/tools/vuetifyToast";
 
 export async function emptyValueValidator(value: string | number | null | undefined) {
-  if (value == null || String(value).trim() === "") throw new Error(t("TXT_CODE_COMMON_FIELD_CANNOT_BE_EMPTY"));
+  if (value == null || String(value).trim() === "")
+    throw new Error(t("TXT_CODE_COMMON_FIELD_CANNOT_BE_EMPTY"));
 }
 
 export function isNumberValidator(value: any) {
@@ -31,7 +32,7 @@ export function reportErrorMsg(error: any = {}) {
   message.error(getValidatorErrorMsg(error, t("TXT_CODE_COMMON_OPERATION_FAILED")));
 }
 
-export const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[\x00-\x7F]{9,36}$/;
+export const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^\u0080-\uFFFF]{9,36}$/;
 
 export function isLocalNetworkIP(ip: string): boolean {
   if (!ip || typeof ip !== "string") {

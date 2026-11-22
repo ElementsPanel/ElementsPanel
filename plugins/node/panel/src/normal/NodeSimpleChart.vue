@@ -26,7 +26,11 @@ useSimpleChart(chartMemCanvas, () => props.memData);
           <span class="usage-info">{{ cpuUsage }}</span>
         </div>
         <div class="node-chart-container">
-          <canvas ref="chartCpuCanvas" role="img" :aria-label="`${t('TXT_CODE_COMMON_CPU_USAGE_10MIN')}: ${cpuUsage}`" />
+          <canvas
+            ref="chartCpuCanvas"
+            role="img"
+            :aria-label="`${t('TXT_CODE_COMMON_CPU_USAGE_10MIN')}: ${cpuUsage}`"
+          />
         </div>
       </VCol>
       <VCol cols="12" sm="6">
@@ -35,7 +39,11 @@ useSimpleChart(chartMemCanvas, () => props.memData);
           <span class="usage-info">{{ memUsage }}</span>
         </div>
         <div class="node-chart-container">
-          <canvas ref="chartMemCanvas" role="img" :aria-label="`${t('TXT_CODE_COMMON_MEMORY_USAGE_10MIN')}: ${memUsage}`" />
+          <canvas
+            ref="chartMemCanvas"
+            role="img"
+            :aria-label="`${t('TXT_CODE_COMMON_MEMORY_USAGE_10MIN')}: ${memUsage}`"
+          />
         </div>
       </VCol>
     </VRow>

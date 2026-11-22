@@ -126,12 +126,18 @@ function installPublicModules(discovered: readonly PluginSource[]) {
   publicModules = moduleMap(discovered);
   const initial = window.ElementsPanelBootstrap?.imports;
   if (Object.entries(publicModules).some(([name, url]) => initial?.[name] !== url))
-    throw new Error("The page bootstrap did not map the installed frontend modules. Reload the page.");
+    throw new Error(
+      "The page bootstrap did not map the installed frontend modules. Reload the page."
+    );
 }
 
 function publicModulesChanged(discovered: readonly PluginSource[]) {
-  if (import.meta.env.DEV || publicModules === undefined ||
-      JSON.stringify(publicModules) === JSON.stringify(moduleMap(discovered))) return false;
+  if (
+    import.meta.env.DEV ||
+    publicModules === undefined ||
+    JSON.stringify(publicModules) === JSON.stringify(moduleMap(discovered))
+  )
+    return false;
   // Import maps cannot replace an already evaluated module. Reload the document
   // instead of mixing old router/store instances with new plugin entry points.
   for (const plugin of plugins) plugin.reloadRequired = true;
@@ -337,7 +343,10 @@ function validateFrontendModules(source: PluginSource, visited = new Set<string>
     const match = specifier.match(/^@elementspanel\/epanel-plugin-([a-z0-9_-]+)(?:\/|$)/);
     if (!match) continue;
     const provider = sources.get(match[1]);
-    if (!provider?.exports?.[specifier] || provider.metadata.frontendApi !== source.metadata.frontendApi)
+    if (
+      !provider?.exports?.[specifier] ||
+      provider.metadata.frontendApi !== source.metadata.frontendApi
+    )
       throw new Error(`Missing public frontend module in ${source.metadata.id}: ${specifier}`);
     validateFrontendModules(provider, visited);
   }

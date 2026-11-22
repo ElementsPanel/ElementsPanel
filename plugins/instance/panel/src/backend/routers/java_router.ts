@@ -17,7 +17,11 @@ export function registerJavaManagerRoutes(ctx: PanelPluginContext) {
       !instanceId ||
       !ctx.identity.canAccessInstance(requestCtx, daemonId, instanceId)
     ) {
-      throw new Error(ctx.i18n.$t("TXT_CODE_COMMON_CANNOT_PERFORM_OPERATIONS_ON_INSTANCES_THAT_DO_NOT_BELONG_TO_YOU"));
+      throw new Error(
+        ctx.i18n.$t(
+          "TXT_CODE_COMMON_CANNOT_PERFORM_OPERATIONS_ON_INSTANCES_THAT_DO_NOT_BELONG_TO_YOU"
+        )
+      );
     }
     await next();
   };

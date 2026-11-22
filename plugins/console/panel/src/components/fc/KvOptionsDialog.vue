@@ -4,7 +4,19 @@ import { t } from "@elementspanel/epanel-plugin-i18n";
 import type { MountComponent } from "../../types";
 import _ from "lodash";
 import { computed, ref } from "vue";
-import { VBtn, VCard, VCardActions, VCardText, VDataTable, VDialog, VForm, VIcon, VSpacer, VTextarea, VTextField } from "vuetify/components";
+import {
+  VBtn,
+  VCard,
+  VCardActions,
+  VCardText,
+  VDataTable,
+  VDialog,
+  VForm,
+  VIcon,
+  VSpacer,
+  VTextarea,
+  VTextField
+} from "vuetify/components";
 import { emptyValueValidator, reportValidatorError } from "../../tools/validator";
 
 interface KvColumn {
@@ -112,48 +124,75 @@ const operation = (type: "add" | "del", index = 0) => {
   <VDialog v-model="open" class="app-dialog" max-width="1300" persistent>
     <VCard :title="props.title">
       <VCardText class="kv-options-content overflow-x-hidden">
-      <div v-if="props.subTitle" class="text-body-medium text-medium-emphasis mb-1">
-        <!-- eslint-disable-next-line vue/no-v-html -->
-        <span v-html="props.subTitle"></span>
-      </div>
-      <div class="d-flex justify-end mb-1">
-        <VBtn variant="tonal" @click="operation('add')">
-          <VIcon start icon="mdi-plus-circle-outline" />
-          {{ t("TXT_CODE_COMMON_ADD_CONFIGURATION") }}
-        </VBtn>
-      </div>
-      <VForm ref="formInstance">
-        <VDataTable :headers="tableHeaders" :items="dataSource" :items-per-page="-1" hide-default-footer density="comfortable">
-          <template #no-data><Empty icon="mdi-format-list-bulleted" compact /></template>
-          <template #item="{ item, index }">
-            <tr>
-              <td v-for="column in columns" :key="getColumnKey(column)" :class="`text-${column.align || 'center'}`">
-                <VBtn v-if="getColumnKey(column) === 'operation'" icon variant="text" color="error" size="small" @click="operation('del', index)">
-                  <VIcon icon="mdi-minus-circle-outline" />
-                </VBtn>
-                <VTextarea
-                  v-else-if="props.textarea"
-                  :model-value="getRecord(item)[getColumnKey(column)]"
-                  :placeholder="column.placeholder"
-                  rows="2"
-                  auto-grow
-                  hide-details="auto"
-                  :rules="[(value) => emptyValueValidator(value).then(() => true).catch((error) => error.message)]"
-                  @update:model-value="(value) => (getRecord(item)[getColumnKey(column)] = value)"
-                />
-                <VTextField
-                  v-else
-                  :model-value="getRecord(item)[getColumnKey(column)]"
-                  :placeholder="column.placeholder"
-                  hide-details="auto"
-                  :rules="[(value) => emptyValueValidator(value).then(() => true).catch((error) => error.message)]"
-                  @update:model-value="(value) => (getRecord(item)[getColumnKey(column)] = value)"
-                />
-              </td>
-            </tr>
-          </template>
-        </VDataTable>
-      </VForm>
+        <div v-if="props.subTitle" class="text-body-medium text-medium-emphasis mb-1">
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <span v-html="props.subTitle"></span>
+        </div>
+        <div class="d-flex justify-end mb-1">
+          <VBtn variant="tonal" @click="operation('add')">
+            <VIcon start icon="mdi-plus-circle-outline" />
+            {{ t("TXT_CODE_COMMON_ADD_CONFIGURATION") }}
+          </VBtn>
+        </div>
+        <VForm ref="formInstance">
+          <VDataTable
+            :headers="tableHeaders"
+            :items="dataSource"
+            :items-per-page="-1"
+            hide-default-footer
+            density="comfortable"
+          >
+            <template #no-data><Empty icon="mdi-format-list-bulleted" compact /></template>
+            <template #item="{ item, index }">
+              <tr>
+                <td
+                  v-for="column in columns"
+                  :key="getColumnKey(column)"
+                  :class="`text-${column.align || 'center'}`"
+                >
+                  <VBtn
+                    v-if="getColumnKey(column) === 'operation'"
+                    icon
+                    variant="text"
+                    color="error"
+                    size="small"
+                    @click="operation('del', index)"
+                  >
+                    <VIcon icon="mdi-minus-circle-outline" />
+                  </VBtn>
+                  <VTextarea
+                    v-else-if="props.textarea"
+                    :model-value="getRecord(item)[getColumnKey(column)]"
+                    :placeholder="column.placeholder"
+                    rows="2"
+                    auto-grow
+                    hide-details="auto"
+                    :rules="[
+                      (value) =>
+                        emptyValueValidator(value)
+                          .then(() => true)
+                          .catch((error) => error.message)
+                    ]"
+                    @update:model-value="(value) => (getRecord(item)[getColumnKey(column)] = value)"
+                  />
+                  <VTextField
+                    v-else
+                    :model-value="getRecord(item)[getColumnKey(column)]"
+                    :placeholder="column.placeholder"
+                    hide-details="auto"
+                    :rules="[
+                      (value) =>
+                        emptyValueValidator(value)
+                          .then(() => true)
+                          .catch((error) => error.message)
+                    ]"
+                    @update:model-value="(value) => (getRecord(item)[getColumnKey(column)] = value)"
+                  />
+                </td>
+              </tr>
+            </template>
+          </VDataTable>
+        </VForm>
       </VCardText>
       <VCardActions>
         <VSpacer />

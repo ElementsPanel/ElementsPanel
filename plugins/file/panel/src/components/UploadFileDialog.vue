@@ -88,7 +88,13 @@ const cancel = () => {
           hide-details="auto"
           @update:model-value="uploadSelectedFile"
         />
-        <VProgressLinear v-if="percentComplete > 0" :model-value="percentComplete" color="primary" rounded="xl" height="6" />
+        <VProgressLinear
+          v-if="percentComplete > 0"
+          :model-value="percentComplete"
+          color="primary"
+          rounded="xl"
+          height="6"
+        />
       </VCardText>
       <VCardActions>
         <VSpacer />

@@ -7,7 +7,6 @@ import crypto from "crypto";
 const corePrefix = () => core().settings.config?.prefix || "";
 const corePort = () => core().settings.config?.httpPort || 23333;
 
-
 let cachedConfig: oidc.Configuration | null = null;
 let cachedIssuer = "";
 
@@ -23,7 +22,11 @@ export async function getOIDCConfig(): Promise<oidc.Configuration> {
 
   try {
     const issuerUrl = new URL(authSettings().ssoIssuer);
-    cachedConfig = await oidc.discovery(issuerUrl, authSettings().ssoClientId, authSettings().ssoClientSecret);
+    cachedConfig = await oidc.discovery(
+      issuerUrl,
+      authSettings().ssoClientId,
+      authSettings().ssoClientSecret
+    );
     cachedIssuer = authSettings().ssoIssuer;
     logger().info("[SSO] OIDC discovery completed for: " + authSettings().ssoIssuer);
     return cachedConfig;
@@ -40,16 +43,21 @@ export function clearOIDCCache() {
   cachedIssuer = "";
 }
 
-export async function verifyIssuer(issuer: string, clientId: string, clientSecret: string): Promise<void> {
+export async function verifyIssuer(
+  issuer: string,
+  clientId: string,
+  clientSecret: string
+): Promise<void> {
   try {
     const issuerUrl = new URL(issuer);
     await oidc.discovery(issuerUrl, clientId, clientSecret);
   } catch (err: any) {
     logger().error("[SSO] Issuer verification failed: " + err.message);
-    throw new Error(`SSO Issuer verification failed: unable to reach ${issuer}/.well-known/openid-configuration`);
+    throw new Error(
+      `SSO Issuer verification failed: unable to reach ${issuer}/.well-known/openid-configuration`
+    );
   }
 }
-
 
 export function generateState(): string {
   return crypto.randomBytes(32).toString("hex");
@@ -67,7 +75,6 @@ export function generateCodeChallenge(verifier: string): string {
   return crypto.createHash("sha256").update(verifier).digest("base64url");
 }
 
-
 export async function buildAuthorizationUrl(
   state: string,
   nonce: string,
@@ -78,7 +85,8 @@ export async function buildAuthorizationUrl(
   const codeChallenge = generateCodeChallenge(codeVerifier);
 
   if (authSettings().ssoType === "oauth2") {
-    if (!authSettings().ssoAuthorizeUrl) throw new Error("OAuth 2.0 Authorize URL is not configured");
+    if (!authSettings().ssoAuthorizeUrl)
+      throw new Error("OAuth 2.0 Authorize URL is not configured");
     const url = new URL(authSettings().ssoAuthorizeUrl);
     url.searchParams.set("client_id", authSettings().ssoClientId);
     url.searchParams.set("redirect_uri", callbackUrl);
@@ -103,7 +111,6 @@ export async function buildAuthorizationUrl(
   });
   return url.href;
 }
-
 
 export async function handleOIDCCallback(
   callbackUrl: URL,
@@ -130,7 +137,6 @@ export async function handleOIDCCallback(
     claims: claims as Record<string, unknown>
   };
 }
-
 
 async function oauth2TokenExchange(
   code: string,
@@ -198,7 +204,6 @@ export async function handleOAuth2Callback(
   codeVerifier: string,
   ctx?: Koa.ParameterizedContext
 ): Promise<{ sub: string; claims: Record<string, unknown> }> {
-
   const redirectUri = getCallbackUrl(ctx);
   const accessToken = await oauth2TokenExchange(code, codeVerifier, redirectUri);
   const userinfo = await oauth2Userinfo(accessToken);
@@ -214,7 +219,6 @@ export async function handleOAuth2Callback(
 
   return { sub, claims: userinfo };
 }
-
 
 export function getCallbackUrl(ctx?: Koa.ParameterizedContext): string {
   if (authSettings().ssoCallbackUrl) return authSettings().ssoCallbackUrl;

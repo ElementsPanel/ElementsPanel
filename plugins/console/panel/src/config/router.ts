@@ -14,11 +14,12 @@ export interface RouterMetaInfo {
   mainMenu?: boolean;
   permission?: number;
   redirect?:
-  | string
-  | ((userInfo: LoginUserInfo | undefined,
-    to: RouteLocationNormalized,
-    from: RouteLocationNormalized
-  ) => string);
+    | string
+    | ((
+        userInfo: LoginUserInfo | undefined,
+        to: RouteLocationNormalized,
+        from: RouteLocationNormalized
+      ) => string);
   customClass?: string[];
   condition?: () => boolean;
   public?: boolean;
@@ -38,12 +39,12 @@ export interface RouterConfig {
   children?: RouterConfig[];
   meta: RouterMetaInfo;
   redirect?:
-  | string
-  | ((
-    userInfo: LoginUserInfo,
-    to: RouteLocationNormalized,
-    from: RouteLocationNormalized
-  ) => string);
+    | string
+    | ((
+        userInfo: LoginUserInfo,
+        to: RouteLocationNormalized,
+        from: RouteLocationNormalized
+      ) => string);
 }
 
 export enum ROLE {
@@ -63,7 +64,9 @@ const router = createRouter({
   routes: originRouterConfig as RouteRecordRaw[],
   scrollBehavior() {
     // Page scrolling belongs to the shell viewports rather than the window.
-    for (const element of document.querySelectorAll<HTMLElement>("#app-mount-point, .main-content")) {
+    for (const element of document.querySelectorAll<HTMLElement>(
+      "#app-mount-point, .main-content"
+    )) {
       element.scrollTo({ left: 0, top: 0, behavior: "instant" });
     }
     return false;

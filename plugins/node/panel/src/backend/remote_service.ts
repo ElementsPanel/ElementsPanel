@@ -62,12 +62,14 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
     const next = Object.assign(new RemoteServiceConfig(), instance.config);
     if (config.remarks != null) next.remarks = String(config.remarks);
     if (config.ip != null) {
-      if (typeof config.ip !== "string" || !config.ip.trim()) throw new Error("Invalid daemon address");
+      if (typeof config.ip !== "string" || !config.ip.trim())
+        throw new Error("Invalid daemon address");
       next.ip = config.ip.trim();
     }
     if (config.port != null) {
       const port = Number(config.port);
-      if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("Invalid daemon port");
+      if (!Number.isInteger(port) || port < 1 || port > 65535)
+        throw new Error("Invalid daemon port");
       next.port = port;
     }
     if (config.prefix != null) next.prefix = String(config.prefix);
@@ -84,7 +86,8 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
   async initConnectLocalhost(key?: string) {
     const ip = "localhost";
     const localKeyFilePath = path.normalize(
-      process.env.EPANEL_LOCAL_DAEMON_CONFIG || path.join(process.cwd(), "../daemon/data/Config/global.json")
+      process.env.EPANEL_LOCAL_DAEMON_CONFIG ||
+        path.join(process.cwd(), "../daemon/data/Config/global.json")
     );
     logger().info($t("TXT_CODE_SYSTEM_REMOTE_SERVICE_LOAD_DAEMON_TITLE", { localKeyFilePath }));
     if (fs.existsSync(localKeyFilePath)) {
@@ -94,7 +97,12 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
       );
       const localKey = localDaemonConfig.key;
       const localPort = localDaemonConfig.port;
-      return await this.registerRemoteService({ apiKey: localKey, port: localPort, ip, prefix: localDaemonConfig.prefix || "" });
+      return await this.registerRemoteService({
+        apiKey: localKey,
+        port: localPort,
+        ip,
+        prefix: localDaemonConfig.prefix || ""
+      });
     } else if (key) {
       const port = 24444;
       return await this.registerRemoteService({ apiKey: key, port, ip });

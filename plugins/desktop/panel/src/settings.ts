@@ -27,8 +27,11 @@ export function normalizeDesktopSettings(value: unknown): DesktopSettings {
   if (typeof values.startButtonIconPerTheme === "boolean")
     settings.startButtonIconPerTheme = values.startButtonIconPerTheme;
   for (const key of [
-    "wallpaperImageLight", "wallpaperImageDark",
-    "startButtonIcon", "startButtonIconLight", "startButtonIconDark"
+    "wallpaperImageLight",
+    "wallpaperImageDark",
+    "startButtonIcon",
+    "startButtonIconLight",
+    "startButtonIconDark"
   ] as const) {
     const image = values[key];
     if (typeof image === "string" && image.length <= 8192) settings[key] = image;

@@ -136,17 +136,17 @@ export function findIconGroupCell(
   grid: IconGrid
 ): IconCell | undefined {
   if (!offsets.length) return undefined;
-  const minCol = -Math.min(...offsets.map(offset => offset.col));
-  const maxCol = grid.columns - 1 - Math.max(...offsets.map(offset => offset.col));
-  const minRow = -Math.min(...offsets.map(offset => offset.row));
-  const maxRow = grid.rows - 1 - Math.max(...offsets.map(offset => offset.row));
+  const minCol = -Math.min(...offsets.map((offset) => offset.col));
+  const maxCol = grid.columns - 1 - Math.max(...offsets.map((offset) => offset.col));
+  const minRow = -Math.min(...offsets.map((offset) => offset.row));
+  const maxRow = grid.rows - 1 - Math.max(...offsets.map((offset) => offset.row));
   if (minCol > maxCol || minRow > maxRow) return undefined;
   const target = {
     col: Math.max(minCol, Math.min(maxCol, cell.col)),
     row: Math.max(minRow, Math.min(maxRow, cell.row))
   };
   const isAvailable = (col: number, row: number) =>
-    offsets.every(offset => !occupied.has(`${col + offset.col},${row + offset.row}`));
+    offsets.every((offset) => !occupied.has(`${col + offset.col},${row + offset.row}`));
   if (isAvailable(target.col, target.row)) return target;
   let closest: IconCell | undefined;
   let distance = Infinity;

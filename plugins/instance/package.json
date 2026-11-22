@@ -7,7 +7,9 @@
     "dual": true,
     "panel": {
       "priority": 40,
-      "backendInject": ["node"],
+      "backendInject": [
+        "node"
+      ],
       "frontendInject": [
         "console",
         "i18n",
@@ -23,7 +25,9 @@
     },
     "daemon": {
       "priority": 40,
-      "backendInject": ["node"],
+      "backendInject": [
+        "node"
+      ],
       "directory": "daemon",
       "folder": "instance",
       "description": "Instance processes, terminals, backups, system monitoring, runtimes, installation, scheduling and mod management."

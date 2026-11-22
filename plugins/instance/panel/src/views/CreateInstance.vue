@@ -2,7 +2,10 @@
 import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import { router } from "@elementspanel/epanel-plugin-console/config/router";
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { useOverviewInfo, type ComputedNodeInfo } from "@elementspanel/epanel-plugin-console/hooks/useOverviewInfo";
+import {
+  useOverviewInfo,
+  type ComputedNodeInfo
+} from "@elementspanel/epanel-plugin-console/hooks/useOverviewInfo";
 import { QUICKSTART_METHOD } from "@elementspanel/epanel-plugin-console/hooks/widgets/quickStartFlow";
 import { INSTANCE_TYPE_TRANSLATION } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
 import CreateInstanceForm from "../widgets/setupApp/CreateInstanceForm.vue";
@@ -47,7 +50,9 @@ const scrollCurrentStep = () => {
   const currentBounds = current.getBoundingClientRect();
   header.scrollTo({
     left:
-      header.scrollLeft + currentBounds.left - headerBounds.left -
+      header.scrollLeft +
+      currentBounds.left -
+      headerBounds.left -
       (header.clientWidth - currentBounds.width) / 2,
     behavior: "smooth"
   });
@@ -87,8 +92,12 @@ watchEffect(() => {
 const methodOptions = computed(() => [
   {
     value: QUICKSTART_METHOD.IMPORT,
-    title: isMinecraft.value ? t("TXT_CODE_MINECRAFT_UPLOAD") : t("TXT_CODE_COMMON_IMPORT_COMPRESSED_PACKAGE"),
-    description: isMinecraft.value ? t("TXT_CODE_MINECRAFT_UPLOAD_HINT") : t("TXT_CODE_INSTANCE_UPLOAD_ARCHIVE_SETUP_HINT"),
+    title: isMinecraft.value
+      ? t("TXT_CODE_MINECRAFT_UPLOAD")
+      : t("TXT_CODE_COMMON_IMPORT_COMPRESSED_PACKAGE"),
+    description: isMinecraft.value
+      ? t("TXT_CODE_MINECRAFT_UPLOAD_HINT")
+      : t("TXT_CODE_INSTANCE_UPLOAD_ARCHIVE_SETUP_HINT"),
     icon: "mdi-folder-zip-outline"
   },
   ...(isMinecraft.value
@@ -104,7 +113,9 @@ const methodOptions = computed(() => [
   {
     value: QUICKSTART_METHOD.DOCKER,
     title: t("TXT_CODE_COMMON_CREATE_WITH_DOCKER_IMAGE"),
-    description: t("TXT_CODE_COMMON_DOCKER_NEEDS_TO_BE_INSTALLED_IN_ADVANCE_THEN_USE_ANY_IMAGE_YOU_FOUND_ON_DOCKER_HUB"),
+    description: t(
+      "TXT_CODE_COMMON_DOCKER_NEEDS_TO_BE_INSTALLED_IN_ADVANCE_THEN_USE_ANY_IMAGE_YOU_FOUND_ON_DOCKER_HUB"
+    ),
     icon: "mdi-docker"
   },
   {
@@ -169,7 +180,11 @@ const handleCreated = (instanceUuid: string) => {
         <VCardText class="pa-0">
           <VStepper v-model="step" class="create-instance-stepper" flat>
             <VStepperHeader ref="stepperHeader">
-              <VStepperItem :value="1" :title="t('TXT_CODE_COMMON_INSTANCE_TYPE')" icon="mdi-shape-outline" />
+              <VStepperItem
+                :value="1"
+                :title="t('TXT_CODE_COMMON_INSTANCE_TYPE')"
+                icon="mdi-shape-outline"
+              />
               <VDivider />
               <VStepperItem
                 :value="2"
@@ -198,7 +213,13 @@ const handleCreated = (instanceUuid: string) => {
                 <div class="step-content step-content--form">
                   <div class="step-heading">
                     <h2>{{ t("TXT_CODE_COMMON_INSTANCE_TYPE") }}</h2>
-                    <p>{{ t("TXT_CODE_COMMON_DIFFERENT_TYPES_MAY_HAVE_SLIGHTLY_DIFFERENCES_IN_SOME_FUNCTIONS") }}</p>
+                    <p>
+                      {{
+                        t(
+                          "TXT_CODE_COMMON_DIFFERENT_TYPES_MAY_HAVE_SLIGHTLY_DIFFERENCES_IN_SOME_FUNCTIONS"
+                        )
+                      }}
+                    </p>
                   </div>
                   <VAutocomplete
                     v-model="instanceType"
@@ -222,7 +243,13 @@ const handleCreated = (instanceUuid: string) => {
                 <div class="step-content">
                   <div class="step-heading">
                     <h2>{{ t("TXT_CODE_COMMON_CREATE_INSTANCE") }}</h2>
-                    <p>{{ t("TXT_CODE_COMMON_A_MORE_FLEXIBLE_WAY_TO_CREATE_INSTANCES_WITHOUT_INSTALLING_THROUGH_THE_APP_MARKETPLACE") }}</p>
+                    <p>
+                      {{
+                        t(
+                          "TXT_CODE_COMMON_A_MORE_FLEXIBLE_WAY_TO_CREATE_INSTANCES_WITHOUT_INSTALLING_THROUGH_THE_APP_MARKETPLACE"
+                        )
+                      }}
+                    </p>
                   </div>
                   <VRow>
                     <VCol

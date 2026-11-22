@@ -60,13 +60,17 @@ export async function check7zipStatus(): Promise<boolean> {
     try {
       ensureExecutable(SEVEN_ZIP_PATH);
     } catch (chmodError: any) {
-      logger.warn($t("TXT_CODE_COMMON_FAILED_TO_SET_7ZIP_FILE_PERMISSIONS", { message: chmodError.message }));
+      logger.warn(
+        $t("TXT_CODE_COMMON_FAILED_TO_SET_7ZIP_FILE_PERMISSIONS", { message: chmodError.message })
+      );
     }
     const { stdout } = await execPromise(`"${SEVEN_ZIP_PATH}" i`, {
       timeout: 5 * 1000
     });
     if (stdout.includes("7-Zip") && stdout.includes("Copyright")) {
-      logger.info($t("TXT_CODE_COMMON_7ZIP_SUCCESSFULLY_LOADED", { info: stdout.split("\n")[1].trim() }));
+      logger.info(
+        $t("TXT_CODE_COMMON_7ZIP_SUCCESSFULLY_LOADED", { info: stdout.split("\n")[1].trim() })
+      );
       isChecked7zip = true;
       return true;
     }

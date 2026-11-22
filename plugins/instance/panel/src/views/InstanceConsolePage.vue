@@ -28,7 +28,11 @@ import { toCopy } from "@elementspanel/epanel-plugin-console/tools/copy";
 import { parseTimestamp } from "@elementspanel/epanel-plugin-console/tools/time";
 import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
-import { INSTANCE_CRASH_TIMEOUT, INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@elementspanel/epanel-plugin-console/types/const";
+import {
+  INSTANCE_CRASH_TIMEOUT,
+  INSTANCE_STATUS,
+  INSTANCE_STATUS_CODE
+} from "@elementspanel/epanel-plugin-console/types/const";
 import { useElementSize } from "@vueuse/core";
 import { computed, onUnmounted, ref, watch, type ComponentPublicInstance } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -120,8 +124,8 @@ const pluginActions = computed(() => {
 
 const { isAdmin, state: appState } = useAppStateStore();
 const { state: overviewState } = useOverviewInfo();
-const nodeInfo = computed(() =>
-  overviewState.value?.remote?.find((node: any) => node.uuid === daemonId.value)
+const nodeInfo = computed(
+  () => overviewState.value?.remote?.find((node: any) => node.uuid === daemonId.value)
 );
 const displayInfo = computed(() => {
   if (instanceInfo.value?.config?.processType === "docker") return instanceInfo.value.info;
@@ -192,7 +196,8 @@ const instanceFunctionItems = computed(() => {
     {
       title: t("TXT_CODE_COMMON_STEAM_RCON_PROTOCOL"),
       icon: "mdi-hammer-wrench",
-      condition: () => String(instanceInfo.value?.config.type || "").includes(TYPE_STEAM_SERVER_UNIVERSAL),
+      condition: () =>
+        String(instanceInfo.value?.config.type || "").includes(TYPE_STEAM_SERVER_UNIVERSAL),
       click: () => rconSettingsDialog.value?.openDialog()
     },
     {
@@ -245,7 +250,12 @@ const open = async () => {
     await requestOpenInstance({ params: { uuid: instanceId.value, daemonId: daemonId.value } });
     crashTimer.value = setTimeout(() => {
       if (terminalHook.isStopped.value) {
-        Modal.error({ title: t("TXT_CODE_COMMON_ERROR"), content: t("TXT_CODE_COMMON_PROCESS_STARTUP_FAILED_PLEASE_CHECK_THE_INSTANCE_LOG_FOR_MORE_INFORMATION") });
+        Modal.error({
+          title: t("TXT_CODE_COMMON_ERROR"),
+          content: t(
+            "TXT_CODE_COMMON_PROCESS_STARTUP_FAILED_PLEASE_CHECK_THE_INSTANCE_LOG_FOR_MORE_INFORMATION"
+          )
+        });
       }
     }, INSTANCE_CRASH_TIMEOUT);
   } catch (error: any) {
@@ -455,7 +465,13 @@ onUnmounted(() => {
                   md="4"
                   lg="3"
                 >
-                  <VCard class="console-function-item" data-app-surface="control" rounded="xl" flat @click="item.click()">
+                  <VCard
+                    class="console-function-item"
+                    data-app-surface="control"
+                    rounded="xl"
+                    flat
+                    @click="item.click()"
+                  >
                     <VCardText>
                       <VIcon :icon="item.icon" size="28" color="info" />
                       <span>{{ item.title }}</span>
@@ -517,10 +533,17 @@ onUnmounted(() => {
                   >{{ t("TXT_CODE_COMMON_CHECK") }}</VBtn
                 >
               </div>
-              <div v-if="Number(instanceInfo.info?.allocatedPorts?.length) > 0" class="info-list-block">
+              <div
+                v-if="Number(instanceInfo.info?.allocatedPorts?.length) > 0"
+                class="info-list-block"
+              >
                 <span>{{ t("TXT_CODE_INSTANCE_AVAILABLE_PORTS_LABEL") }}</span>
                 <div class="port-list">
-                  <div v-for="(item, index) in instanceInfo.info.allocatedPorts" :key="index" class="port-item">
+                  <div
+                    v-for="(item, index) in instanceInfo.info.allocatedPorts"
+                    :key="index"
+                    class="port-item"
+                  >
                     <VChip size="x-small" color="success" variant="tonal">
                       {{ item.protocol.toUpperCase() }}
                     </VChip>
@@ -533,7 +556,9 @@ onUnmounted(() => {
               </div>
               <div>
                 <span>{{ t("TXT_CODE_COMMON_EXPIRATION_TIME") }}</span>
-                <strong>{{ parseTimestamp(instanceInfo.config.endTime) || t("TXT_CODE_COMMON_UNLIMITED") }}</strong>
+                <strong>{{
+                  parseTimestamp(instanceInfo.config.endTime) || t("TXT_CODE_COMMON_UNLIMITED")
+                }}</strong>
               </div>
               <div v-if="!instanceGameServerInfo">
                 <span>{{ t("TXT_CODE_COMMON_CREATION_TIME") }}</span>
@@ -567,12 +592,7 @@ onUnmounted(() => {
                   <VIcon icon="mdi-content-copy" size="14" />
                 </VBtn>
                 <span>{{ t("TXT_CODE_COMMON_NODE_ID") }}</span>
-                <VBtn
-                  class="identifier-copy"
-                  variant="text"
-                  size="small"
-                  @click="toCopy(daemonId)"
-                >
+                <VBtn class="identifier-copy" variant="text" size="small" @click="toCopy(daemonId)">
                   <span class="mono">{{ daemonId }}</span>
                   <VIcon icon="mdi-content-copy" size="14" />
                 </VBtn>
@@ -580,13 +600,13 @@ onUnmounted(() => {
               <div v-if="instanceInfo.config.tag?.length" class="info-list-block">
                 <span>{{ t("TXT_CODE_COMMON_TAG") }}</span>
                 <div class="tag-list">
-                <VChip
-                  v-for="tag in instanceInfo.config.tag || []"
-                  :key="tag"
-                  size="small"
-                  variant="tonal"
-                  >{{ tag }}</VChip
-                >
+                  <VChip
+                    v-for="tag in instanceInfo.config.tag || []"
+                    :key="tag"
+                    size="small"
+                    variant="tonal"
+                    >{{ tag }}</VChip
+                  >
                 </div>
               </div>
             </VCardText>
@@ -597,8 +617,8 @@ onUnmounted(() => {
 
     <template v-if="instanceId && daemonId">
       <component
-        v-for="action in normalInstanceActions"
         :is="action.normalComponent"
+        v-for="action in normalInstanceActions"
         :key="action.id"
         :ref="(component: unknown) => setInstanceActionRef(action.id, component)"
         :instance-uuid="instanceId"

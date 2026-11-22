@@ -2,7 +2,10 @@
 import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { remoteInstances, remoteNodeList } from "@elementspanel/epanel-plugin-console/services/apis";
+import {
+  remoteInstances,
+  remoteNodeList
+} from "@elementspanel/epanel-plugin-console/services/apis";
 import { computeNodeName } from "@elementspanel/epanel-plugin-console/tools/nodes";
 import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import type { InstanceDetail, NodeStatus } from "@elementspanel/epanel-plugin-console/types";
@@ -106,10 +109,15 @@ const initNodes = async () => {
   } catch {
     // A damaged or unavailable storage entry must not block selecting a node.
   }
-  currentRemoteNode.value = nodes.value.find((node) => node.uuid === storedUuid && node.available)
-    ?? nodes.value.find((node) => node.available);
+  currentRemoteNode.value =
+    nodes.value.find((node) => node.uuid === storedUuid && node.available) ??
+    nodes.value.find((node) => node.available);
   if (currentRemoteNode.value) return true;
-  reportErrorMsg(t("TXT_CODE_COMMON_THE_PANEL_COULD_NOT_CONNECT_TO_ANY_REMOTE_DAEMONS_PLEASE_GO_TO_THE_DAEMONS_FIRST_TO"));
+  reportErrorMsg(
+    t(
+      "TXT_CODE_COMMON_THE_PANEL_COULD_NOT_CONNECT_TO_ANY_REMOTE_DAEMONS_PLEASE_GO_TO_THE_DAEMONS_FIRST_TO"
+    )
+  );
   return false;
 };
 
@@ -123,7 +131,9 @@ const initInstancesData = async () => {
   isLoading.value = true;
   try {
     if (!currentRemoteNode.value) {
-      nodesRequest ??= initNodes().finally(() => { nodesRequest = undefined; });
+      nodesRequest ??= initNodes().finally(() => {
+        nodesRequest = undefined;
+      });
       if (!(await nodesRequest)) return;
     }
     if (closed || request !== latestRequest) return;
@@ -141,7 +151,8 @@ const initInstancesData = async () => {
     });
     if (!closed && request === latestRequest) instances.value = response.value;
   } catch {
-    if (!closed && request === latestRequest) reportErrorMsg(t("TXT_CODE_COMMON_ABNORMAL_ACCESS_TO_REMOTE_NODE"));
+    if (!closed && request === latestRequest)
+      reportErrorMsg(t("TXT_CODE_COMMON_ABNORMAL_ACCESS_TO_REMOTE_NODE"));
   } finally {
     if (request === latestRequest) isLoading.value = false;
   }
@@ -158,7 +169,8 @@ const findItem = (item: UserInstance) =>
 
 const removeItem = (item: UserInstance) => {
   selectedItems.value = selectedItems.value.filter(
-    (selected) => !(selected.instanceUuid === item.instanceUuid && selected.daemonId === item.daemonId)
+    (selected) =>
+      !(selected.instanceUuid === item.instanceUuid && selected.daemonId === item.daemonId)
   );
 };
 
@@ -217,17 +229,43 @@ onUnmounted(disposeRequests);
 </script>
 
 <template>
-  <VDialog v-model="open" class="app-dialog select-instances-dialog" max-width="980" scrollable persistent>
+  <VDialog
+    v-model="open"
+    class="app-dialog select-instances-dialog"
+    max-width="980"
+    scrollable
+    persistent
+  >
     <VCard :title="t('TXT_CODE_COMMON_SELECT_INSTANCE')" rounded="xl">
       <VCardText class="select-instances-content">
-        <p class="text-medium-emphasis select-instances-help">{{ t("TXT_CODE_COMMON_SELECT_A_NODE_THEN_SEARCH_FOR_INSTANCES_TO_ASSIGN_TO_THIS_USER") }}</p>
+        <p class="text-medium-emphasis select-instances-help">
+          {{ t("TXT_CODE_COMMON_SELECT_A_NODE_THEN_SEARCH_FOR_INSTANCES_TO_ASSIGN_TO_THIS_USER") }}
+        </p>
 
         <div class="select-instances-toolbar">
           <VMenu location="bottom start">
             <template #activator="{ props: menuProps }">
-              <VBtn v-bind="menuProps" variant="tonal" append-icon="mdi-chevron-down" :block="isPhone">
-                <VIcon start :icon="currentRemoteNode?.available ? 'mdi-database-outline' : 'mdi-alert-circle-outline'" />
-                {{ computeNodeName(currentRemoteNode?.ip || "", currentRemoteNode?.available ?? true, currentRemoteNode?.remarks) }}
+              <VBtn
+                v-bind="menuProps"
+                variant="tonal"
+                append-icon="mdi-chevron-down"
+                :block="isPhone"
+              >
+                <VIcon
+                  start
+                  :icon="
+                    currentRemoteNode?.available
+                      ? 'mdi-database-outline'
+                      : 'mdi-alert-circle-outline'
+                  "
+                />
+                {{
+                  computeNodeName(
+                    currentRemoteNode?.ip || "",
+                    currentRemoteNode?.available ?? true,
+                    currentRemoteNode?.remarks
+                  )
+                }}
               </VBtn>
             </template>
             <VList density="compact">
@@ -239,7 +277,10 @@ onUnmounted(disposeRequests);
                 :title="computeNodeName(item.ip, item.available, item.remarks)"
                 @click="handleChangeNode(item)"
               />
-              <VListItem prepend-icon="mdi-server-network-outline" :title="t('TXT_CODE_COMMON_MANAGE_REMOTE_DAEMON')" />
+              <VListItem
+                prepend-icon="mdi-server-network-outline"
+                :title="t('TXT_CODE_COMMON_MANAGE_REMOTE_DAEMON')"
+              />
             </VList>
           </VMenu>
 
@@ -268,7 +309,10 @@ onUnmounted(disposeRequests);
         </div>
 
         <div class="select-instances-summary">
-          <span>{{ t("TXT_CODE_COMMON_SELECTED") }} {{ selectedItems.length }} {{ t("TXT_CODE_COMMON_ITEMS") }}</span>
+          <span
+            >{{ t("TXT_CODE_COMMON_SELECTED") }} {{ selectedItems.length }}
+            {{ t("TXT_CODE_COMMON_ITEMS") }}</span
+          >
           <div class="select-instances-pagination">
             <VSelect
               :model-value="operationForm.pageSize"
@@ -301,13 +345,26 @@ onUnmounted(disposeRequests);
         >
           <template #no-data><Empty icon="mdi-view-grid-outline" compact /></template>
           <template #item.safe="{ item }">
-            <VChip v-if="rowItem(item)?.config?.processType === 'docker'" size="small" color="success" variant="tonal">
+            <VChip
+              v-if="rowItem(item)?.config?.processType === 'docker'"
+              size="small"
+              color="success"
+              variant="tonal"
+            >
               {{ t("TXT_CODE_COMMON_CONTAINER_PROTECTION") }}
             </VChip>
-            <VChip v-else size="small" color="error" variant="tonal">{{ t("TXT_CODE_COMMON_NO_PROTECTION") }}</VChip>
+            <VChip v-else size="small" color="error" variant="tonal">{{
+              t("TXT_CODE_COMMON_NO_PROTECTION")
+            }}</VChip>
           </template>
           <template #item.operation="{ item }">
-            <VBtn v-if="findItem(rowItem(item))" color="error" variant="tonal" size="small" @click.stop="removeItem(rowItem(item))">
+            <VBtn
+              v-if="findItem(rowItem(item))"
+              color="error"
+              variant="tonal"
+              size="small"
+              @click.stop="removeItem(rowItem(item))"
+            >
               {{ t("TXT_CODE_INSTANCE_SELECTION_REMOVE") }}
             </VBtn>
             <VBtn v-else variant="tonal" size="small" @click.stop="selectItem(rowItem(item))">
@@ -317,7 +374,9 @@ onUnmounted(disposeRequests);
         </VDataTable>
       </VCardText>
       <VCardActions>
-        <VBtn v-if="selectedItems.length > 0" variant="text" @click="clearAll">{{ t("TXT_CODE_COMMON_CLEAR_ALL_SELECTED") }}</VBtn>
+        <VBtn v-if="selectedItems.length > 0" variant="text" @click="clearAll">{{
+          t("TXT_CODE_COMMON_CLEAR_ALL_SELECTED")
+        }}</VBtn>
         <VSpacer />
         <VBtn variant="text" @click="cancel">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn>
         <VBtn color="primary" @click="submit">{{ t("TXT_CODE_COMMON_SAVE") }}</VBtn>

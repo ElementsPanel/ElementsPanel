@@ -4,6 +4,5 @@ export default class NullCommand extends InstanceCommand {
   constructor() {
     super("NullCommand");
   }
-  async exec() {
-  }
+  async exec() {}
 }

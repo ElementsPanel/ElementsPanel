@@ -9,7 +9,21 @@ import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 import type { FrontendFileManagerService } from "@elements-panel/sdk";
 import { usePluginService } from "@elements-panel/sdk";
-import { VAlert, VBadge, VBtn, VCol, VIcon, VProgressCircular, VRow, VSelect, VTab, VTabs, VTextField, VWindow, VWindowItem } from "vuetify/components";
+import {
+  VAlert,
+  VBadge,
+  VBtn,
+  VCol,
+  VIcon,
+  VProgressCircular,
+  VRow,
+  VSelect,
+  VTab,
+  VTabs,
+  VTextField,
+  VWindow,
+  VWindowItem
+} from "vuetify/components";
 import LocalModTable from "./mod-manager/LocalModTable.vue";
 import ModConfigModal from "./mod-manager/ModConfigModal.vue";
 import ModVersionModal from "./mod-manager/ModVersionModal.vue";
@@ -55,7 +69,6 @@ const isRunning = computed(() => {
   const s = instanceInfo.value?.status;
   return s === 2 || s === 3;
 });
-
 
 const checkAndConfirm = async (
   type: string,
@@ -163,7 +176,6 @@ const loadMods = async (folder?: string) => {
 const {
   searchFilters,
   searchLoading,
-  searched,
   searchResults,
   searchTotal,
   searchPage,
@@ -178,12 +190,11 @@ const {
   showVersionModal,
   selectedMod,
   versions,
-  versionsLoading,
-  formatDate
+  versionsLoading
 } = useModSearch(instanceId!, daemonId!, () => mods.value, loadMods, folders);
 
 const openExternal = (mod: any) => {
-  const { source, id, slug, name } = mod;
+  const { source, id, slug } = mod;
   const baseUrlMap: Record<string, string> = {
     Modrinth: `https://modrinth.com/project/${slug || id}`,
     CurseForge: `https://www.curseforge.com/projects/${id}`,
@@ -192,7 +203,9 @@ const openExternal = (mod: any) => {
   };
   const url = baseUrlMap[source];
   if (!url) {
-    message.error(t("TXT_CODE_COMMON_THIS_MODULE_OR_PLUGIN_DOES_NOT_CURRENTLY_SUPPORT_EXPANDING_DETAILS"));
+    message.error(
+      t("TXT_CODE_COMMON_THIS_MODULE_OR_PLUGIN_DOES_NOT_CURRENTLY_SUPPORT_EXPANDING_DETAILS")
+    );
   } else {
     window.open(url, "_blank");
   }
@@ -221,7 +234,6 @@ const FileEditorDialog = ref();
 const fileEditorComponent = computed(
   () => usePluginService<FrontendFileManagerService>("file")?.FileEditor
 );
-
 
 const { showConfigModal, currentMod, configFiles, configLoading, openConfig, editFile } =
   useModConfig(instanceId!, daemonId!, FileEditorDialog);
@@ -402,11 +414,20 @@ onMounted(async () => {
         />
       </template>
       <template #actions>
-        <VBtn v-if="activeKey === TAB_KEY_MODS || activeKey === TAB_KEY_PLUGINS" variant="tonal" @click="onUploadClick">
+        <VBtn
+          v-if="activeKey === TAB_KEY_MODS || activeKey === TAB_KEY_PLUGINS"
+          variant="tonal"
+          @click="onUploadClick"
+        >
           <VIcon start icon="mdi-upload" />
           {{ t("TXT_CODE_COMMON_UPLOAD") }}
         </VBtn>
-        <VBtn v-if="activeKey !== TAB_KEY_DOWNLOAD" color="primary" :loading="loading" @click="() => loadMods()">
+        <VBtn
+          v-if="activeKey !== TAB_KEY_DOWNLOAD"
+          color="primary"
+          :loading="loading"
+          @click="() => loadMods()"
+        >
           <VIcon start icon="mdi-refresh" />
           {{ t("TXT_CODE_REFRESH") }}
         </VBtn>
@@ -417,8 +438,12 @@ onMounted(async () => {
       <VCol cols="12">
         <CardPanel class="containerWrapper" :padding="false" :full-height="false">
           <template #body>
-            <div class="mod-manager-content" @dragover.prevent="handleDragover"
-              @dragleave.prevent="handleDragleave" @drop.prevent="handleDrop">
+            <div
+              class="mod-manager-content"
+              @dragover.prevent="handleDragover"
+              @dragleave.prevent="handleDragleave"
+              @drop.prevent="handleDrop"
+            >
               <div v-if="opacity" class="drag-upload-mask">
                 <div class="text-center">
                   <VIcon icon="mdi-upload" size="48" color="primary" />
@@ -428,7 +453,12 @@ onMounted(async () => {
                 </div>
               </div>
 
-              <VAlert v-if="isWindows && isRunning" type="warning" variant="tonal" class="mod-manager-alert">
+              <VAlert
+                v-if="isWindows && isRunning"
+                type="warning"
+                variant="tonal"
+                class="mod-manager-alert"
+              >
                 <template #text>
                   <div class="text-left">
                     <div class="font-bold">{{ t("TXT_CODE_MOD_WIN_FILE_LOCK_TITLE") }}</div>
@@ -439,33 +469,76 @@ onMounted(async () => {
                 </template>
               </VAlert>
 
-              <VTabs v-model="activeKey" class="mod-manager-tabs" @update:model-value="handleTabChange">
+              <VTabs
+                v-model="activeKey"
+                class="mod-manager-tabs"
+                @update:model-value="handleTabChange"
+              >
                 <VTab v-if="hasModsFolder" :value="TAB_KEY_MODS">
                   {{ t("TXT_CODE_MOD_LIST") }}
                   <VBadge v-if="!loading" inline :content="filteredMods.length" color="secondary" />
-                  <VProgressCircular v-if="loading || loadingExtra" indeterminate size="14" width="2" class="ms-2" />
+                  <VProgressCircular
+                    v-if="loading || loadingExtra"
+                    indeterminate
+                    size="14"
+                    width="2"
+                    class="ms-2"
+                  />
                 </VTab>
                 <VTab v-if="hasPluginsFolder" :value="TAB_KEY_PLUGINS">
                   {{ t("TXT_CODE_PLUGIN_LIST") }}
-                  <VBadge v-if="!loading" inline :content="filteredPlugins.length" color="secondary" />
-                  <VProgressCircular v-if="loading || loadingExtra" indeterminate size="14" width="2" class="ms-2" />
+                  <VBadge
+                    v-if="!loading"
+                    inline
+                    :content="filteredPlugins.length"
+                    color="secondary"
+                  />
+                  <VProgressCircular
+                    v-if="loading || loadingExtra"
+                    indeterminate
+                    size="14"
+                    width="2"
+                    class="ms-2"
+                  />
                 </VTab>
-                <VTab :value="TAB_KEY_DOWNLOAD">{{ t("TXT_CODE_COMMON_DOWNLOAD_MODULES_PLUGINS") }}</VTab>
+                <VTab :value="TAB_KEY_DOWNLOAD">{{
+                  t("TXT_CODE_COMMON_DOWNLOAD_MODULES_PLUGINS")
+                }}</VTab>
               </VTabs>
               <VWindow v-model="activeKey" :touch="false">
                 <VWindowItem v-if="hasModsFolder" :value="TAB_KEY_MODS">
                   <div class="mod-manager-panel">
-                    <LocalModTable :key="TAB_KEY_MODS" :loading="loading" :data-source="filteredMods" :columns="columns"
-                      :pagination="tablePagination" @change="handleTableChange" @toggle="onToggle" @delete="onDelete"
-                      @config="openConfig" @open-external="openExternal" @refresh="loadMods" />
+                    <LocalModTable
+                      :key="TAB_KEY_MODS"
+                      :loading="loading"
+                      :data-source="filteredMods"
+                      :columns="columns"
+                      :pagination="tablePagination"
+                      @change="handleTableChange"
+                      @toggle="onToggle"
+                      @delete="onDelete"
+                      @config="openConfig"
+                      @open-external="openExternal"
+                      @refresh="loadMods"
+                    />
                   </div>
                 </VWindowItem>
 
                 <VWindowItem v-if="hasPluginsFolder" :value="TAB_KEY_PLUGINS">
                   <div class="mod-manager-panel">
-                    <LocalModTable :key="TAB_KEY_PLUGINS" :loading="loading" :data-source="filteredPlugins"
-                      :columns="columns" :pagination="tablePagination" @change="handleTableChange" @toggle="onToggle"
-                      @delete="onDelete" @config="openConfig" @open-external="openExternal" @refresh="loadMods" />
+                    <LocalModTable
+                      :key="TAB_KEY_PLUGINS"
+                      :loading="loading"
+                      :data-source="filteredPlugins"
+                      :columns="columns"
+                      :pagination="tablePagination"
+                      @change="handleTableChange"
+                      @toggle="onToggle"
+                      @delete="onDelete"
+                      @config="openConfig"
+                      @open-external="openExternal"
+                      @refresh="loadMods"
+                    />
                   </div>
                 </VWindowItem>
 
@@ -473,57 +546,153 @@ onMounted(async () => {
                   <div class="mod-manager-panel">
                     <div class="mod-manager-search">
                       <VRow density="compact" class="search-form">
-                        <VCol cols="12" :md="4"><VTextField v-model="searchFilters.query" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')" prepend-inner-icon="mdi-magnify" density="compact" hide-details @keyup.enter="onSearch" /></VCol>
-                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.source" :items="[{ title: t('TXT_CODE_COMMON_ALL_PLATFORMS'), value: 'all' }, { title: 'Modrinth', value: 'modrinth' }, { title: 'CurseForge', value: 'curseforge' }, { title: 'SpigotMC', value: 'spigotmc' }]" density="compact" hide-details>
-                          <template #no-data><Empty :icon="false" compact /></template>
-                        </VSelect></VCol>
-                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.version" :items="[{ title: t('TXT_CODE_COMMON_ALL_VERSIONS'), value: '' }, ...mcVersions.map((v) => ({ title: v, value: v }))]" :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT_CONTENT')" clearable density="compact" hide-details>
-                          <template #no-data><Empty :icon="false" compact /></template>
-                        </VSelect></VCol>
-                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.type" :items="[{ title: t('TXT_CODE_MOD_ALL_TYPES'), value: 'all' }, { title: t('TXT_CODE_MOD'), value: 'mod' }, { title: t('TXT_CODE_PLUGIN'), value: 'plugin' }]" density="compact" hide-details>
-                          <template #no-data><Empty :icon="false" compact /></template>
-                        </VSelect></VCol>
-                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.environment" :items="[{ title: t('TXT_CODE_COMMON_CLIENT_SERVER'), value: 'all' }, { title: t('TXT_CODE_SERVER'), value: 'server' }, { title: t('TXT_CODE_CLIENT'), value: 'client' }]" density="compact" hide-details>
-                          <template #no-data><Empty :icon="false" compact /></template>
-                        </VSelect></VCol>
-                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.loader" :items="loaderOptions.flatMap((group) => group.options)" item-title="label" item-value="value" :placeholder="t('TXT_CODE_SELECT_LOADER')" clearable density="compact" hide-details>
-                          <template #no-data><Empty :icon="false" compact /></template>
-                        </VSelect></VCol>
+                        <VCol cols="12" :md="4"
+                          ><VTextField
+                            v-model="searchFilters.query"
+                            :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')"
+                            prepend-inner-icon="mdi-magnify"
+                            density="compact"
+                            hide-details
+                            @keyup.enter="onSearch"
+                        /></VCol>
+                        <VCol cols="6" :md="2"
+                          ><VSelect
+                            v-model="searchFilters.source"
+                            :items="[
+                              { title: t('TXT_CODE_COMMON_ALL_PLATFORMS'), value: 'all' },
+                              { title: 'Modrinth', value: 'modrinth' },
+                              { title: 'CurseForge', value: 'curseforge' },
+                              { title: 'SpigotMC', value: 'spigotmc' }
+                            ]"
+                            density="compact"
+                            hide-details
+                          >
+                            <template #no-data><Empty :icon="false" compact /></template> </VSelect
+                        ></VCol>
+                        <VCol cols="6" :md="2"
+                          ><VSelect
+                            v-model="searchFilters.version"
+                            :items="[
+                              { title: t('TXT_CODE_COMMON_ALL_VERSIONS'), value: '' },
+                              ...mcVersions.map((v) => ({ title: v, value: v }))
+                            ]"
+                            :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT_CONTENT')"
+                            clearable
+                            density="compact"
+                            hide-details
+                          >
+                            <template #no-data><Empty :icon="false" compact /></template> </VSelect
+                        ></VCol>
+                        <VCol cols="6" :md="2"
+                          ><VSelect
+                            v-model="searchFilters.type"
+                            :items="[
+                              { title: t('TXT_CODE_MOD_ALL_TYPES'), value: 'all' },
+                              { title: t('TXT_CODE_MOD'), value: 'mod' },
+                              { title: t('TXT_CODE_PLUGIN'), value: 'plugin' }
+                            ]"
+                            density="compact"
+                            hide-details
+                          >
+                            <template #no-data><Empty :icon="false" compact /></template> </VSelect
+                        ></VCol>
+                        <VCol cols="6" :md="2"
+                          ><VSelect
+                            v-model="searchFilters.environment"
+                            :items="[
+                              { title: t('TXT_CODE_COMMON_CLIENT_SERVER'), value: 'all' },
+                              { title: t('TXT_CODE_SERVER'), value: 'server' },
+                              { title: t('TXT_CODE_CLIENT'), value: 'client' }
+                            ]"
+                            density="compact"
+                            hide-details
+                          >
+                            <template #no-data><Empty :icon="false" compact /></template> </VSelect
+                        ></VCol>
+                        <VCol cols="6" :md="2"
+                          ><VSelect
+                            v-model="searchFilters.loader"
+                            :items="loaderOptions.flatMap((group) => group.options)"
+                            item-title="label"
+                            item-value="value"
+                            :placeholder="t('TXT_CODE_SELECT_LOADER')"
+                            clearable
+                            density="compact"
+                            hide-details
+                          >
+                            <template #no-data><Empty :icon="false" compact /></template> </VSelect
+                        ></VCol>
                       </VRow>
                       <div class="d-flex flex-wrap ga-2 justify-end">
-                        <VBtn color="primary" :loading="searchLoading" @click="onSearch"><VIcon start icon="mdi-magnify" />{{ t("TXT_CODE_SEARCH") }}</VBtn>
-                        <VBtn variant="tonal" @click="resetSearch">{{ t("TXT_CODE_COMMON_RESET_FILTER_CONDITIONS") }}</VBtn>
+                        <VBtn color="primary" :loading="searchLoading" @click="onSearch"
+                          ><VIcon start icon="mdi-magnify" />{{ t("TXT_CODE_SEARCH") }}</VBtn
+                        >
+                        <VBtn variant="tonal" @click="resetSearch">{{
+                          t("TXT_CODE_COMMON_RESET_FILTER_CONDITIONS")
+                        }}</VBtn>
                       </div>
                     </div>
-                    <SearchModTable :loading="searchLoading" :data-source="searchResults" :columns="searchColumns"
-                      :mods="mods" :pagination="{
+                    <SearchModTable
+                      :loading="searchLoading"
+                      :data-source="searchResults"
+                      :columns="searchColumns"
+                      :mods="mods"
+                      :pagination="{
                         current: searchPage,
                         pageSize: searchLimit,
                         total: searchTotal,
                         showSizeChanger: true,
                         pageSizeOptions: ['10', '20', '50'],
                         showTotal: (total: number) => t('TXT_CODE_TOTAL_ITEMS', { total })
-                      }" @change="(p: any) => onSearch(p.current, p.pageSize)" @show-versions="showVersions"
-                      @open-external="openExternal" @download="handleDownload" />
+                      }"
+                      @change="(p: any) => onSearch(p.current, p.pageSize)"
+                      @show-versions="showVersions"
+                      @open-external="openExternal"
+                      @download="handleDownload"
+                    />
                   </div>
                 </VWindowItem>
               </VWindow>
 
-              <ModVersionModal v-model:visible="showVersionModal" :selected-mod="selectedMod" :versions="versions"
-                :versions-loading="versionsLoading" :search-filters="searchFilters" :mods="mods"
-                @download="handleDownload" />
+              <ModVersionModal
+                v-model:visible="showVersionModal"
+                :selected-mod="selectedMod"
+                :versions="versions"
+                :versions-loading="versionsLoading"
+                :search-filters="searchFilters"
+                :mods="mods"
+                @download="handleDownload"
+              />
 
-              <ModConfigModal v-model:visible="showConfigModal" :current-mod="currentMod" :config-files="configFiles"
-                :config-loading="configLoading" @edit="editFile" />
+              <ModConfigModal
+                v-model:visible="showConfigModal"
+                :current-mod="currentMod"
+                :config-files="configFiles"
+                :config-loading="configLoading"
+                @edit="editFile"
+              />
 
-              <component :is="fileEditorComponent" v-if="fileEditorComponent" ref="FileEditorDialog" :daemon-id="daemonId!" :instance-id="instanceId!" />
+              <component
+                :is="fileEditorComponent"
+                v-if="fileEditorComponent"
+                ref="FileEditorDialog"
+                :daemon-id="daemonId!"
+                :instance-id="instanceId!"
+              />
             </div>
           </template>
         </CardPanel>
       </VCol>
     </VRow>
 
-    <input ref="fileInput" type="file" multiple style="display: none" accept=".jar,.zip" @change="onFileChange" />
+    <input
+      ref="fileInput"
+      type="file"
+      multiple
+      style="display: none"
+      accept=".jar,.zip"
+      @change="onFileChange"
+    />
   </div>
 </template>
 

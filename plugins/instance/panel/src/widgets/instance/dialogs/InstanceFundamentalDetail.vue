@@ -13,11 +13,20 @@ import _ from "lodash";
 import { computed, nextTick, ref, unref } from "vue";
 import { VBtn, VCol, VForm, VRow, VSelect, VTextField, VTextarea } from "vuetify/components";
 import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
-import { dayjsToTimestamp, timestampToDayjs } from "@elementspanel/epanel-plugin-console/tools/time";
+import {
+  dayjsToTimestamp,
+  timestampToDayjs
+} from "@elementspanel/epanel-plugin-console/tools/time";
 import { useDockerEnvEditDialog } from "@elementspanel/epanel-plugin-console/components/fc";
 
-interface FormDetail extends InstanceDetail { dayjsEndTime?: Dayjs; }
-const props = defineProps<{ instanceInfo?: InstanceDetail; instanceId?: string; daemonId?: string }>();
+interface FormDetail extends InstanceDetail {
+  dayjsEndTime?: Dayjs;
+}
+const props = defineProps<{
+  instanceInfo?: InstanceDetail;
+  instanceId?: string;
+  daemonId?: string;
+}>();
 const emit = defineEmits(["update"]);
 const options = ref<FormDetail>();
 const screen = useScreen();
@@ -25,12 +34,26 @@ const isPhone = computed(() => screen.isPhone.value);
 const open = ref(false);
 const formRef = ref<InstanceType<typeof VForm>>();
 const commandRules = [
-  (value: unknown) => !String(value ?? "").includes("\n") || t("TXT_CODE_COMMON_YOU_CANNOT_INCLUDE_MULTIPLE_LINES_IN_YOUR_STARTUP_PROGRAM_THIS_HAS_TO_BE_A_ONE_LINER")
+  (value: unknown) =>
+    !String(value ?? "").includes("\n") ||
+    t(
+      "TXT_CODE_COMMON_YOU_CANNOT_INCLUDE_MULTIPLE_LINES_IN_YOUR_STARTUP_PROGRAM_THIS_HAS_TO_BE_A_ONE_LINER"
+    )
 ];
 const { execute, isLoading } = updateInstanceConfig();
-const updateCommandDesc = t("TXT_CODE_COMMON_PROVIDE_THE_FOLLOWING_VARIABLE_STRINGS_INSTANCE_ID_INSTANCE_INSTALLATION_DIRECTORY");
-const UPDATE_CMD_TEMPLATE = t("TXT_CODE_COMMON_FOR_EXAMPLE") + `"C:/SteamCMD/steamcmd.exe" +login anonymous +force_install_dir "{mcsm_workspace}" "+app_update 380870 validate" +quit`;
-const initFormDetail = () => { if (props.instanceInfo) options.value = { ...props.instanceInfo, dayjsEndTime: timestampToDayjs(props.instanceInfo.config?.endTime) }; };
+const updateCommandDesc = t(
+  "TXT_CODE_COMMON_PROVIDE_THE_FOLLOWING_VARIABLE_STRINGS_INSTANCE_ID_INSTANCE_INSTALLATION_DIRECTORY"
+);
+const UPDATE_CMD_TEMPLATE =
+  t("TXT_CODE_COMMON_FOR_EXAMPLE") +
+  `"C:/SteamCMD/steamcmd.exe" +login anonymous +force_install_dir "{mcsm_workspace}" "+app_update 380870 validate" +quit`;
+const initFormDetail = () => {
+  if (props.instanceInfo)
+    options.value = {
+      ...props.instanceInfo,
+      dayjsEndTime: timestampToDayjs(props.instanceInfo.config?.endTime)
+    };
+};
 const isDockerMode = computed(() => options.value?.config.processType === "docker");
 const openDialog = async () => {
   open.value = true;
@@ -38,14 +61,30 @@ const openDialog = async () => {
   await nextTick();
   formRef.value?.resetValidation();
 };
-const encodeFormData = () => { const postData = _.cloneDeep(unref(options)); if (postData) { postData.config.endTime = dayjsToTimestamp(postData.dayjsEndTime); return postData; } throw new Error("Ref Options is null"); };
+const encodeFormData = () => {
+  const postData = _.cloneDeep(unref(options));
+  if (postData) {
+    postData.config.endTime = dayjsToTimestamp(postData.dayjsEndTime);
+    return postData;
+  }
+  throw new Error("Ref Options is null");
+};
 const submit = async () => {
   try {
     if (!options.value?.config) throw new Error("");
     if (!(await formRef.value?.validate())?.valid) return;
-    await execute({ params: { uuid: props.instanceId ?? "", daemonId: props.daemonId ?? "" }, data: encodeFormData().config });
-    emit("update"); open.value = false; message.success(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"));
-  } catch (error: any) { reportErrorMsg(error.message ?? t("TXT_CODE_COMMON_FAILED_TO_SAVE_PLEASE_CHECK_THE_CONFIGURATION")); }
+    await execute({
+      params: { uuid: props.instanceId ?? "", daemonId: props.daemonId ?? "" },
+      data: encodeFormData().config
+    });
+    emit("update");
+    open.value = false;
+    message.success(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"));
+  } catch (error: any) {
+    reportErrorMsg(
+      error.message ?? t("TXT_CODE_COMMON_FAILED_TO_SAVE_PLEASE_CHECK_THE_CONFIGURATION")
+    );
+  }
 };
 const handleEditDockerEnv = async () => {
   const docker = options.value?.config.docker;
@@ -61,19 +100,87 @@ defineExpose({ openDialog });
 </script>
 
 <template>
-  <AppDialog v-model:open="open" :max-width="isPhone ? '100%' : '1200px'" :title="t('TXT_CODE_INSTANCE_SETTINGS_TITLE')" :confirm-loading="isLoading" :ok-text="t('TXT_CODE_COMMON_SAVE')" :mask-closable="false" @ok="submit">
-    <VForm v-if="options" ref="formRef" validate-on="input lazy" class="instance-fundamental-form overflow-x-hidden" @submit.prevent="submit">
-      <p class="text-medium-emphasis">{{ t("TXT_CODE_COMMON_NORMAL_USERS_CAN_ONLY_MODIFY_PART_OF_THE_SETTINGS") }}</p>
+  <AppDialog
+    v-model:open="open"
+    :max-width="isPhone ? '100%' : '1200px'"
+    :title="t('TXT_CODE_INSTANCE_SETTINGS_TITLE')"
+    :confirm-loading="isLoading"
+    :ok-text="t('TXT_CODE_COMMON_SAVE')"
+    :mask-closable="false"
+    @ok="submit"
+  >
+    <VForm
+      v-if="options"
+      ref="formRef"
+      validate-on="input lazy"
+      class="instance-fundamental-form overflow-x-hidden"
+      @submit.prevent="submit"
+    >
+      <p class="text-medium-emphasis">
+        {{ t("TXT_CODE_COMMON_NORMAL_USERS_CAN_ONLY_MODIFY_PART_OF_THE_SETTINGS") }}
+      </p>
       <VRow>
-        <VCol cols="12" lg="6"><VTextField v-model="options.config.nickname" :label="t('TXT_CODE_COMMON_INSTANCE_NAME')" disabled hide-details /></VCol>
-        <VCol cols="12" lg="6"><VTextField :model-value="INSTANCE_TYPE_TRANSLATION[options.config.type]" :label="t('TXT_CODE_COMMON_INSTANCE_TYPE')" disabled hide-details /></VCol>
-        <VCol cols="12" lg="6"><VTextField :model-value="options.dayjsEndTime ? dayjs(options.dayjsEndTime).format('YYYY-MM-DD HH:mm:ss') : ''" :label="t('TXT_CODE_COMMON_EXPIRE')" disabled hide-details /></VCol>
-        <VCol cols="12" lg="6"><VSelect v-model="options.config.fileCode" :items="TERMINAL_CODE" :label="t('TXT_CODE_COMMON_FILE_ENCODING')" hide-details>
-          <template #no-data><Empty :icon="false" compact /></template>
-        </VSelect></VCol>
-        <VCol cols="12"><VTextarea v-model="options.config.startCommand" :rules="isDockerMode ? commandRules : []" :label="t('TXT_CODE_COMMON_STARTUP_COMMAND')" :placeholder="isDockerMode ? t('TXT_CODE_COMMON_LEAVE_EMPTY_TO_USE_DEFAULT_DOCKER_IMAGE_COMMAND') : t('TXT_CODE_COMMON_ENTER_STARTUP_COMMAND')" :disabled="!isDockerMode" rows="5" hide-details="auto" /></VCol>
-        <VCol cols="12" lg="9"><VTextField v-model="options.config.updateCommand" :label="t('TXT_CODE_COMMON_UPDATE_OR_INSTALL_COMMAND')" :hint="updateCommandDesc" persistent-hint :placeholder="UPDATE_CMD_TEMPLATE" :disabled="!isDockerMode" hide-details="auto" /></VCol>
-        <VCol cols="12" lg="3" class="d-flex align-center"><VBtn variant="tonal" @click="handleEditDockerEnv">{{ t('TXT_CODE_COMMON_EDIT') }}</VBtn></VCol>
+        <VCol cols="12" lg="6"
+          ><VTextField
+            v-model="options.config.nickname"
+            :label="t('TXT_CODE_COMMON_INSTANCE_NAME')"
+            disabled
+            hide-details
+        /></VCol>
+        <VCol cols="12" lg="6"
+          ><VTextField
+            :model-value="INSTANCE_TYPE_TRANSLATION[options.config.type]"
+            :label="t('TXT_CODE_COMMON_INSTANCE_TYPE')"
+            disabled
+            hide-details
+        /></VCol>
+        <VCol cols="12" lg="6"
+          ><VTextField
+            :model-value="
+              options.dayjsEndTime ? dayjs(options.dayjsEndTime).format('YYYY-MM-DD HH:mm:ss') : ''
+            "
+            :label="t('TXT_CODE_COMMON_EXPIRE')"
+            disabled
+            hide-details
+        /></VCol>
+        <VCol cols="12" lg="6"
+          ><VSelect
+            v-model="options.config.fileCode"
+            :items="TERMINAL_CODE"
+            :label="t('TXT_CODE_COMMON_FILE_ENCODING')"
+            hide-details
+          >
+            <template #no-data><Empty :icon="false" compact /></template> </VSelect
+        ></VCol>
+        <VCol cols="12"
+          ><VTextarea
+            v-model="options.config.startCommand"
+            :rules="isDockerMode ? commandRules : []"
+            :label="t('TXT_CODE_COMMON_STARTUP_COMMAND')"
+            :placeholder="
+              isDockerMode
+                ? t('TXT_CODE_COMMON_LEAVE_EMPTY_TO_USE_DEFAULT_DOCKER_IMAGE_COMMAND')
+                : t('TXT_CODE_COMMON_ENTER_STARTUP_COMMAND')
+            "
+            :disabled="!isDockerMode"
+            rows="5"
+            hide-details="auto"
+        /></VCol>
+        <VCol cols="12" lg="9"
+          ><VTextField
+            v-model="options.config.updateCommand"
+            :label="t('TXT_CODE_COMMON_UPDATE_OR_INSTALL_COMMAND')"
+            :hint="updateCommandDesc"
+            persistent-hint
+            :placeholder="UPDATE_CMD_TEMPLATE"
+            :disabled="!isDockerMode"
+            hide-details="auto"
+        /></VCol>
+        <VCol cols="12" lg="3" class="d-flex align-center"
+          ><VBtn variant="tonal" @click="handleEditDockerEnv">{{
+            t("TXT_CODE_COMMON_EDIT")
+          }}</VBtn></VCol
+        >
       </VRow>
     </VForm>
   </AppDialog>

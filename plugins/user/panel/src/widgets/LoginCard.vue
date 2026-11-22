@@ -19,20 +19,10 @@ const {
 <template>
   <!-- eslint-disable vue/no-v-html -->
   <div class="login-card-host">
-    <VAlert
-      v-if="pageInfoResult?.isFirstStartup"
-      class="mb-1"
-      type="info"
-      variant="tonal"
-    >
+    <VAlert v-if="pageInfoResult?.isFirstStartup" class="mb-1" type="info" variant="tonal">
       {{ t("TXT_CODE_FIRST_STARTUP_NOTICE") }}
     </VAlert>
-    <VCard
-      class="login-panel"
-      data-app-surface="card"
-      elevation="0"
-      rounded="xl"
-    >
+    <VCard class="login-panel" data-app-surface="card" elevation="0" rounded="xl">
       <VCardText class="login-panel-body">
         <div v-if="loginActions.length" class="login-actions">
           <template v-for="(action, index) in loginActions" :key="index">

@@ -314,9 +314,8 @@ async function packageMetadata(name, version, language) {
 }
 
 function resolveBuiltinPlugins(mode, versions, language) {
-  return withSpinner(
-    createTranslator(language)("TXT_CODE_INIT_VERSION_LOOKUP_LOADING"),
-    () => fetchBuiltinPlugins(mode, versions, language)
+  return withSpinner(createTranslator(language)("TXT_CODE_INIT_VERSION_LOOKUP_LOADING"), () =>
+    fetchBuiltinPlugins(mode, versions, language)
   );
 }
 

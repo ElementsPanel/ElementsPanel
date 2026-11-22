@@ -17,8 +17,7 @@ const input = (owner = "alice") => ({
   fileName: "example.jar"
 });
 
-const nextChanged = (tasks) =>
-  new Promise((resolve) => tasks.once("changed", resolve));
+const nextChanged = (tasks) => new Promise((resolve) => tasks.once("changed", resolve));
 
 // The push timers are unref'd so a daemon can idle-exit; a test process has no
 // other handle, so hold the loop open while an event is expected.

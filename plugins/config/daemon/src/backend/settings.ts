@@ -1,7 +1,11 @@
 import { type PluginChangeResult } from "mcsmanager-common";
 import { Service, type Context } from "cordis";
 import { remove } from "cosmokit";
-import { resetSettingsDeclarations, settingsFields, writeSettingsDeclarations } from "../../../shared/settings";
+import {
+  resetSettingsDeclarations,
+  settingsFields,
+  writeSettingsDeclarations
+} from "../../../shared/settings";
 import type {
   DaemonSettingsDeclaration,
   DaemonSettingsFormService,
@@ -34,8 +38,10 @@ export class SettingsFormService extends Service implements DaemonSettingsFormSe
   canReset(id: string) {
     const forms = this.forms(id);
     const fields = forms.length ? settingsFields(forms) : this.ctx.plugins.configuration(id).fields;
-    return fields.some((field) => field.key && field.type !== "link") &&
-      forms.every((form) => Boolean(form.defaults || form.reset));
+    return (
+      fields.some((field) => field.key && field.type !== "link") &&
+      forms.every((form) => Boolean(form.defaults || form.reset))
+    );
   }
 
   async reset(id: string): Promise<PluginChangeResult> {
@@ -53,7 +59,7 @@ export class SettingsFormService extends Service implements DaemonSettingsFormSe
     return {
       id,
       fields: settingsFields(forms),
-      values: Object.assign({}, ...await Promise.all(forms.map((form) => form.read())))
+      values: Object.assign({}, ...(await Promise.all(forms.map((form) => form.read()))))
     };
   }
 

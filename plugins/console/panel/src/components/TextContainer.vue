@@ -16,9 +16,11 @@ const showText = computed(() => {
 
 <template>
   <VTooltip location="top">
-    <template #activator="{ props: tooltipProps }"><span v-bind="tooltipProps">
-    <span>{{ showText }}</span>
-    </span></template>
+    <template #activator="{ props: tooltipProps }"
+      ><span v-bind="tooltipProps">
+        <span>{{ showText }}</span>
+      </span></template
+    >
     <span>{{ props.text }}</span>
   </VTooltip>
 </template>

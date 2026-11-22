@@ -24,7 +24,6 @@ import { useUserEditor } from "../hooks/useUserEditor";
 
 const { isPhone } = useScreen();
 const {
-  data,
   total,
   dataSource,
   getUserInfoLoading,
@@ -220,8 +219,8 @@ const rawUser = (item: BaseUserInfo | { raw: BaseUserInfo }) =>
           :rules="[requiredRule]"
           class="mb-1"
         >
-          <template #no-data><Empty :icon="false" compact /></template>
-        </VSelect><VTextField
+          <template #no-data><Empty :icon="false" compact /></template> </VSelect
+        ><VTextField
           v-model="formData.userName"
           :label="t('TXT_CODE_USER_USERNAME')"
           :hint="t('TXT_CODE_COMMON_REQUIRED_3_TO_12_CHARACTERS_SUPPORTS_ANY_LANGUAGE')"
@@ -233,7 +232,13 @@ const rawUser = (item: BaseUserInfo | { raw: BaseUserInfo }) =>
           v-model="formData.passWord"
           type="password"
           :label="t('TXT_CODE_COMMON_PASSWORD')"
-          :hint="isAddMode ? t('TXT_CODE_COMMON_REQUIRED_9_TO_36_CHARACTERS_MUST_INCLUDE_UPPERCASE_AND_LOWERCASE_LETTERS_AND_NUMBERS') : t('TXT_CODE_COMMON_LEAVE_BLANK_TO_KEEP_THE_PASSWORD_RESETTING_IT_ALSO_RESETS_2_FA')"
+          :hint="
+            isAddMode
+              ? t(
+                  'TXT_CODE_COMMON_REQUIRED_9_TO_36_CHARACTERS_MUST_INCLUDE_UPPERCASE_AND_LOWERCASE_LETTERS_AND_NUMBERS'
+                )
+              : t('TXT_CODE_COMMON_LEAVE_BLANK_TO_KEEP_THE_PASSWORD_RESETTING_IT_ALSO_RESETS_2_FA')
+          "
           persistent-hint
           :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')"
           :rules="[passwordRule]"

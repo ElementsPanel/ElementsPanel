@@ -273,7 +273,11 @@ async function startWorkers(plan, options = {}) {
         const cleanupTimeout = worker.side === "panel" ? restartShutdownTimeout : restartTimeout;
         restartTimer ??= setTimeout(() => {
           if (worker.side === "panel" && !rejectReady) {
-            console.warn(`panel plugin cleanup timed out after ${cleanupTimeout / 1000} seconds; restarting the panel worker.`);
+            console.warn(
+              `panel plugin cleanup timed out after ${
+                cleanupTimeout / 1000
+              } seconds; restarting the panel worker.`
+            );
             forcedRestart = restarting = true;
             child.kill("SIGKILL");
             return;
@@ -313,9 +317,7 @@ async function startWorkers(plan, options = {}) {
       const timer = setTimeout(
         () =>
           settle(
-            new Error(
-              `${worker.side} did not become ready within ${readyTimeout / 1000} seconds.`
-            )
+            new Error(`${worker.side} did not become ready within ${readyTimeout / 1000} seconds.`)
           ),
         readyTimeout
       );

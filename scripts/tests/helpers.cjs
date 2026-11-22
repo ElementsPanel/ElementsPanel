@@ -23,10 +23,16 @@ function frontendTestImport(id, overrides = {}) {
         const facade = path.join(directory, "panel", entry);
         const request = fs.readFileSync(facade, "utf8").match(/from\s+"([^"]+)"/)?.[1];
         const target = path.resolve(path.dirname(facade), request);
-        const relative = path.relative(path.join(directory, "panel/src"), target).split(path.sep).join("/");
+        const relative = path
+          .relative(path.join(directory, "panel/src"), target)
+          .split(path.sep)
+          .join("/");
         const short = relative.replace(/\/index$/, "");
-        for (const alias of match[1] === "console" ? ["@/", "@console/"]
-          : match[1] === "i18n" ? ["@/"] : [`@${match[1]}/`]) {
+        for (const alias of match[1] === "console"
+          ? ["@/", "@console/"]
+          : match[1] === "i18n"
+          ? ["@/"]
+          : [`@${match[1]}/`]) {
           aliases.push(alias + short, alias + relative);
         }
       }
@@ -59,9 +65,11 @@ function createLoader({ host, resolve, globals = false, transform, compiler = ts
     const filename = path.resolve(root, relative);
     if (topLevel) {
       // Match source mocks after modules move into subdirectories.
-      sourceOverrides = new Map(Object.entries(overrides)
-        .filter(([id]) => id.startsWith("."))
-        .map(([id, value]) => [path.resolve(path.dirname(filename), id), value]));
+      sourceOverrides = new Map(
+        Object.entries(overrides)
+          .filter(([id]) => id.startsWith("."))
+          .map(([id, value]) => [path.resolve(path.dirname(filename), id), value])
+      );
     }
     if (sourceCache.has(filename)) return sourceCache.get(filename).exports;
     try {
@@ -79,7 +87,9 @@ function createLoader({ host, resolve, globals = false, transform, compiler = ts
       const localRequire = Object.assign((id) => {
         if (id.startsWith(".")) {
           const base = path.resolve(path.dirname(filename), id);
-          const source = [base + ".ts", path.join(base, "index.ts")].find(file => fs.existsSync(file));
+          const source = [base + ".ts", path.join(base, "index.ts")].find((file) =>
+            fs.existsSync(file)
+          );
           if (source) return load(path.relative(root, source), overrides);
         }
         if (!id.startsWith(".") && fallback) {
@@ -108,7 +118,8 @@ function createLoader({ host, resolve, globals = false, transform, compiler = ts
         if (resolve) return resolve(id, { filename, localRequire, load, overrides });
         return hostRequire && !id.startsWith(".") ? hostRequire(id) : localRequire(id);
       };
-      let source = !globals && typeof input === "string" ? input : fs.readFileSync(filename, "utf8");
+      let source =
+        !globals && typeof input === "string" ? input : fs.readFileSync(filename, "utf8");
       if (transform) source = transform(source, filename, input);
       const bindings = Object.keys(mod.environment)
         .map((name) => `const ${name} = module.environment.${name};`)

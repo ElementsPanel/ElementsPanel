@@ -102,7 +102,10 @@ function sharedFrontendModules() {
     name: "elementspanel-workspace-host-modules",
     enforce: "pre",
     resolveId(specifier) {
-      if (SHARED_FRONTEND_MODULES.has(specifier) || specifier.startsWith("@elementspanel/epanel-plugin-"))
+      if (
+        SHARED_FRONTEND_MODULES.has(specifier) ||
+        specifier.startsWith("@elementspanel/epanel-plugin-")
+      )
         return { id: HOST_MODULE + encodeURIComponent(specifier), external: true };
       if (specifier.startsWith(HOST_MODULE)) return specifier;
     },
@@ -208,7 +211,10 @@ async function installDevelopmentRuntime({ packageRoot }) {
       const bridge = `${base}@id/${HOST_MODULE}`;
       if (pathname.startsWith(bridge)) {
         const specifier = decodeURIComponent(pathname.slice(bridge.length));
-        if (!SHARED_FRONTEND_MODULES.has(specifier) && !specifier.startsWith("@elementspanel/epanel-plugin-")) {
+        if (
+          !SHARED_FRONTEND_MODULES.has(specifier) &&
+          !specifier.startsWith("@elementspanel/epanel-plugin-")
+        ) {
           res.writeHead(404);
           res.end();
           return;

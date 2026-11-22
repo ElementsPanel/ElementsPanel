@@ -14,12 +14,7 @@ import Breadcrumbs from "./components/Breadcrumbs.vue";
 import InputDialogProvider from "./components/InputDialogProvider.vue";
 import { setVuetifyTheme } from "./vuetify";
 
-const {
-  initAppTheme,
-  isDarkTheme,
-  isSidebarOpen,
-  useSidebarLayout
-} = useAppConfigStore();
+const { initAppTheme, isDarkTheme, isSidebarOpen, useSidebarLayout } = useAppConfigStore();
 const { isAdmin } = useAppStateStore();
 const route = useRoute();
 
@@ -35,11 +30,7 @@ const showSidebar = computed(() => isAdmin.value && useDesktopLayout.value);
 const vuetifyTheme = computed(() => (isDarkTheme.value ? "dark" : "light"));
 
 // Synchronize the global Vuetify theme for dialogs mounted outside the main provider.
-watch(
-  isDarkTheme,
-  (dark) => setVuetifyTheme(dark),
-  { immediate: true }
-);
+watch(isDarkTheme, (dark) => setVuetifyTheme(dark), { immediate: true });
 
 onMounted(async () => {
   setLoadingTitle("Loading application settings...");
@@ -75,9 +66,9 @@ onMounted(async () => {
           >
             <div class="app-main-body">
               <Breadcrumbs v-if="!isLoginPage && !isImmersivePage" />
-              <RouterView v-slot="{ Component, route }">
+              <RouterView v-slot="{ Component, route: viewRoute }">
                 <Transition name="page" mode="out-in">
-                  <component :is="Component" :key="route.fullPath" />
+                  <component :is="Component" :key="viewRoute.fullPath" />
                 </Transition>
               </RouterView>
             </div>

@@ -50,16 +50,14 @@ export async function applyAuthSettings(values: Record<string, unknown>, reset =
   }
   const ssoType = settings.ssoType || "oidc";
 
-  const wantEnable =
-    config.ssoEnabled != null ? Boolean(config.ssoEnabled) : settings.ssoEnabled;
-  const clientId =
-    config.ssoClientId != null ? String(config.ssoClientId) : settings.ssoClientId;
+  const wantEnable = config.ssoEnabled != null ? Boolean(config.ssoEnabled) : settings.ssoEnabled;
+  const clientId = config.ssoClientId != null ? String(config.ssoClientId) : settings.ssoClientId;
   // An empty secret means "keep the stored one".
-  const clientSecret =
-    reset ? "" :
-    config.ssoClientSecret != null && String(config.ssoClientSecret) !== SECRET_PLACEHOLDER
-      ? String(config.ssoClientSecret)
-      : settings.ssoClientSecret;
+  const clientSecret = reset
+    ? ""
+    : config.ssoClientSecret != null && String(config.ssoClientSecret) !== SECRET_PLACEHOLDER
+    ? String(config.ssoClientSecret)
+    : settings.ssoClientSecret;
 
   if (ssoType === "oidc") {
     const issuer = config.ssoIssuer != null ? String(config.ssoIssuer) : settings.ssoIssuer;
@@ -75,11 +73,8 @@ export async function applyAuthSettings(values: Record<string, unknown>, reset =
     if (config.ssoIssuer != null) settings.ssoIssuer = issuer;
   } else {
     const authorizeUrl =
-      config.ssoAuthorizeUrl != null
-        ? String(config.ssoAuthorizeUrl)
-        : settings.ssoAuthorizeUrl;
-    const tokenUrl =
-      config.ssoTokenUrl != null ? String(config.ssoTokenUrl) : settings.ssoTokenUrl;
+      config.ssoAuthorizeUrl != null ? String(config.ssoAuthorizeUrl) : settings.ssoAuthorizeUrl;
+    const tokenUrl = config.ssoTokenUrl != null ? String(config.ssoTokenUrl) : settings.ssoTokenUrl;
     const userinfoUrl =
       config.ssoUserinfoUrl != null ? String(config.ssoUserinfoUrl) : settings.ssoUserinfoUrl;
 
@@ -114,10 +109,8 @@ export async function applyAuthSettings(values: Record<string, unknown>, reset =
 
   const typeChanged = settings.ssoType !== prevSsoType;
   const issuerChanged = ssoType === "oidc" && settings.ssoIssuer !== prevSsoIssuer;
-  const userinfoChanged =
-    ssoType === "oauth2" && settings.ssoUserinfoUrl !== prevSsoUserinfoUrl;
-  const userIdFieldChanged =
-    ssoType === "oauth2" && settings.ssoUserIdField !== prevSsoUserIdField;
+  const userinfoChanged = ssoType === "oauth2" && settings.ssoUserinfoUrl !== prevSsoUserinfoUrl;
+  const userIdFieldChanged = ssoType === "oauth2" && settings.ssoUserIdField !== prevSsoUserIdField;
   if (config.ssoScopes != null) settings.ssoScopes = String(config.ssoScopes);
   if (config.ssoOnlyMode != null) settings.ssoOnlyMode = Boolean(config.ssoOnlyMode);
   if (config.ssoAutoRedirect != null) {

@@ -161,7 +161,7 @@ export function useFileBrowser(options: Options) {
   };
 
   const rowClickTable = async (item: string, type: number) => {
-    const { tabList, currentTabKey, currentTabs, activeTab, ensureActiveTab } = getTabs();
+    const { currentTabs, activeTab } = getTabs();
     if (type === 1) return;
     try {
       const target = currentPath.value + item;
@@ -188,7 +188,7 @@ export function useFileBrowser(options: Options) {
   };
 
   const handleChangeDir = async (dir: string) => {
-    const { tabList, currentTabKey, currentTabs, activeTab, ensureActiveTab } = getTabs();
+    const { currentTabs, activeTab } = getTabs();
     if (breadcrumbs.findIndex((e) => e.path === dir) === -1)
       return reportErrorMsg(t("TXT_CODE_COMMON_PATH_NOT_FOUND"));
     breadcrumbs.splice(breadcrumbs.findIndex((e) => e.path === dir) + 1);
@@ -238,7 +238,7 @@ export function useFileBrowser(options: Options) {
   };
 
   const toDisk = async (disk: string) => {
-    const { tabList, currentTabKey, currentTabs, activeTab, ensureActiveTab } = getTabs();
+    const { currentTabs, activeTab } = getTabs();
     if (!fileStatus.value?.disks.includes(disk)) return;
     const diskName = `${disk}:/`;
     updateBreadcrumbs(diskName);

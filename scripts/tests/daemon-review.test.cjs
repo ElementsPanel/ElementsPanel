@@ -1,9 +1,9 @@
-const { from, createLoader, settle } = require("./helpers.cjs");
+const { from, createLoader, settle, deferred } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const os = require("node:os");
-const { Readable, PassThrough, Writable } = require("node:stream");
+const { Readable, PassThrough } = require("node:stream");
 const { test } = require("node:test");
 
 const daemonRequire = from("daemon");
@@ -18,6 +18,94 @@ function directory(t) {
   t.after(() => fs.rmSync(result, { recursive: true, force: true }));
   return result;
 }
+
+function directDownload(t, kind, overrides = {}) {
+  const cwd = directory(t);
+  const filename =
+    kind === "steam" ? path.join(cwd, "lib/tmp_steamcmd.zip") : path.join(cwd, "download.bin");
+  const module = load(
+    kind === "steam"
+      ? "plugins/instance/daemon/src/backend/tools/steam_cmd.ts"
+      : "plugins/instance/daemon/src/backend/service/download.ts",
+    {
+      axios: async () => ({ data: Readable.from(["downloaded bytes"]) }),
+      "./log": logger,
+      "../common/network": { getCommonHeaders: () => ({}) },
+      "../runtime": { logger, getCommonHeaders: () => ({}) },
+      "../const": {},
+      ...overrides
+    },
+    { process: { cwd: () => cwd } }
+  );
+  return {
+    filename,
+    start: () =>
+      kind === "steam"
+        ? module.downloadSteam("https://example.invalid/download")
+        : module.downloadFileToLocalFile("https://example.invalid/download", filename)
+  };
+}
+
+test("direct and Steam downloads wait for written bytes and file permissions", async (t) => {
+  for (const kind of ["file", "steam"])
+    await t.test(kind, async (t) => {
+      const permissions = deferred();
+      const started = deferred();
+      const f = directDownload(t, kind, {
+        "fs-extra": {
+          ...fse,
+          chmod: () => {
+            started.resolve();
+            return permissions.promise;
+          }
+        }
+      });
+      let finished = false;
+      const task = f.start().then((result) => {
+        finished = true;
+        return result;
+      });
+      await started.promise;
+      assert.equal(fs.readFileSync(f.filename, "utf8"), "downloaded bytes");
+      assert.equal(finished, false);
+      permissions.resolve();
+      assert.equal(await task, kind === "steam" ? f.filename : true);
+    });
+});
+
+test("direct and Steam downloads propagate failures and remove incomplete files", async (t) => {
+  for (const kind of ["file", "steam"])
+    for (const phase of ["request", "stream", "permissions"]) {
+      await t.test(`${kind}: ${phase}`, async (t) => {
+        const failure = new Error(`${phase} failed`);
+        const overrides =
+          phase === "permissions"
+            ? {
+                "fs-extra": {
+                  ...fse,
+                  chmod: async () => {
+                    throw failure;
+                  }
+                }
+              }
+            : {
+                axios: async () => {
+                  if (phase === "request") throw failure;
+                  return {
+                    data: new Readable({
+                      read() {
+                        this.destroy(failure);
+                      }
+                    })
+                  };
+                }
+              };
+        const f = directDownload(t, kind, overrides);
+        await assert.rejects(f.start(), failure);
+        assert.equal(fs.existsSync(f.filename), false);
+      });
+    }
+});
 
 function authFixture(key) {
   const events = new Map();
@@ -479,7 +567,9 @@ function scheduleFixture(t) {
   const scheduler = load(
     "plugins/instance/daemon/src/backend/service/system_instance_control.ts",
     {
-      "../instance_settings": load("plugins/instance/daemon/src/backend/instance_settings.ts", { "./entity/config": { globalConfiguration: { config: {} } } }),
+      "../instance_settings": load("plugins/instance/daemon/src/backend/instance_settings.ts", {
+        "./entity/config": { globalConfiguration: { config: {} } }
+      }),
       "node-schedule": {
         scheduleJob: (time, callback) => (time.includes("invalid") ? null : createJob(callback))
       },
@@ -681,7 +771,9 @@ test("backup quota failures preserve the actual running instance state", async (
     println() {},
     print() {}
   };
-  load("plugins/instance/daemon/src/backend/backup/index.ts", { "../i18n": { localeMessages: {} } }).apply({
+  load("plugins/instance/daemon/src/backend/backup/index.ts", {
+    "../i18n": { localeMessages: {} }
+  }).apply({
     i18n: { define() {}, $t: (key) => key },
     logger,
     settings: { config: { instanceBackupPath: backups, instanceBackupMaxSize: 0.000000001 } },
@@ -714,7 +806,9 @@ test("instance deletion awaits filesystem success and preserves retryable instan
   let failRemove = true;
   const deleted = [];
   const subsystem = load("plugins/instance/daemon/src/backend/service/system_instance.ts", {
-    "../instance_settings": load("plugins/instance/daemon/src/backend/instance_settings.ts", { "./entity/config": { globalConfiguration: { config: {} } } }),
+    "../instance_settings": load("plugins/instance/daemon/src/backend/instance_settings.ts", {
+      "./entity/config": { globalConfiguration: { config: {} } }
+    }),
     "fs-extra": {
       ...fse,
       remove: async (target) => {

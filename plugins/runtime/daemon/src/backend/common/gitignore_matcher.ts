@@ -1,42 +1,53 @@
 import path from "path";
 
 export class GitignoreMatcher {
-  private rules: { pattern: string; negate: boolean; dirOnly: boolean; anchored: boolean; hasSlash: boolean; regex: RegExp }[] = [];
+  private rules: {
+    pattern: string;
+    negate: boolean;
+    dirOnly: boolean;
+    anchored: boolean;
+    hasSlash: boolean;
+    regex: RegExp;
+  }[] = [];
   private whitelistMode: boolean;
 
-  constructor(content: string, private baseDir: string, whitelistMode: boolean = false) {
+  constructor(
+    content: string,
+    private baseDir: string,
+    whitelistMode: boolean = false
+  ) {
     this.whitelistMode = whitelistMode;
 
     const lines = content.split(/\r?\n/);
     for (const rawLine of lines) {
       const line = rawLine.trim();
 
-      if (!line || line.startsWith('#')) continue;
+      if (!line || line.startsWith("#")) continue;
 
       let pattern = line;
       let negate = false;
 
-      if (pattern.startsWith('!')) {
+      if (pattern.startsWith("!")) {
         negate = true;
         pattern = pattern.slice(1);
       }
 
-      pattern = pattern.replace(/\s+$/, '');
+      pattern = pattern.replace(/\s+$/, "");
 
       if (!pattern) continue;
 
-      const dirOnly = pattern.endsWith('/');
+      const dirOnly = pattern.endsWith("/");
       if (dirOnly) {
         pattern = pattern.slice(0, -1);
       }
 
       let anchored = false;
-      if (pattern.startsWith('/')) {
+      if (pattern.startsWith("/")) {
         anchored = true;
         pattern = pattern.slice(1);
       }
 
-      const hasSlash = pattern.includes('/');
+      const hasSlash = pattern.includes("/");
 
       const regexStr = this.patternToRegex(pattern);
       const regex = new RegExp(`^${regexStr}$`);
@@ -46,51 +57,49 @@ export class GitignoreMatcher {
   }
 
   private patternToRegex(pattern: string): string {
-    let result = '';
+    let result = "";
     let i = 0;
     while (i < pattern.length) {
       const ch = pattern[i];
-      if (ch === '\\') {
+      if (ch === "\\") {
         if (i + 1 < pattern.length) {
-          result += '\\' + pattern[i + 1];
+          result += "\\" + pattern[i + 1];
           i += 2;
         } else {
-          result += '\\\\';
+          result += "\\\\";
           i++;
         }
-      } else if (ch === '*') {
-        if (i + 1 < pattern.length && pattern[i + 1] === '*') {
-          if (i + 2 < pattern.length && pattern[i + 2] === '/') {
-            result += '(.*/)?';
+      } else if (ch === "*") {
+        if (i + 1 < pattern.length && pattern[i + 1] === "*") {
+          if (i + 2 < pattern.length && pattern[i + 2] === "/") {
+            result += "(.*/)?";
             i += 3;
           } else {
-            result += '.*';
+            result += ".*";
             i += 2;
           }
         } else {
-          result += '[^/]*';
+          result += "[^/]*";
           i++;
         }
-      } else if (ch === '?') {
-        result += '[^/]';
+      } else if (ch === "?") {
+        result += "[^/]";
         i++;
-      } else if (ch === '[') {
+      } else if (ch === "[") {
         let classEnd = i + 1;
-        let escaped = false;
         while (classEnd < pattern.length) {
-          if (pattern[classEnd] === '\\') {
-            escaped = true;
+          if (pattern[classEnd] === "\\") {
             classEnd += 2;
             continue;
           }
-          if (pattern[classEnd] === ']' && classEnd > i + 1) break;
+          if (pattern[classEnd] === "]" && classEnd > i + 1) break;
           classEnd++;
         }
         const charClass = pattern.slice(i + 1, classEnd);
-        result += '[' + charClass.replace(/[.+^${}()|]/g, '\\$&') + ']';
-        i = (classEnd < pattern.length ? classEnd + 1 : classEnd);
+        result += "[" + charClass.replace(/[.+^${}()|]/g, "\\$&") + "]";
+        i = classEnd < pattern.length ? classEnd + 1 : classEnd;
       } else {
-        result += ch.match(/[.+^${}()|\\]/) ? '\\' + ch : ch;
+        result += ch.match(/[.+^${}()|\\]/) ? "\\" + ch : ch;
         i++;
       }
     }
@@ -98,7 +107,7 @@ export class GitignoreMatcher {
   }
 
   public isIgnored(filePath: string, isDirectory: boolean = false): boolean {
-    const normalizedPath = filePath.replace(/\\/g, '/');
+    const normalizedPath = filePath.replace(/\\/g, "/");
 
     let ignored = this.whitelistMode;
 
@@ -133,7 +142,7 @@ export class GitignoreMatcher {
   }
 
   public getRules(): { pattern: string; negate: boolean; dirOnly: boolean; anchored: boolean }[] {
-    return this.rules.map(r => ({
+    return this.rules.map((r) => ({
       pattern: r.pattern,
       negate: r.negate,
       dirOnly: r.dirOnly,

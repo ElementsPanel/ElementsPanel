@@ -378,7 +378,10 @@ export function apply(ctx: PanelPluginContext) {
         try {
           await request.request("info/overview");
         } catch (error) {
-          ctx.logger.warn("Failed to refresh node information after resetting plugin settings:", error);
+          ctx.logger.warn(
+            "Failed to refresh node information after resetting plugin settings:",
+            error
+          );
         }
       }
     );

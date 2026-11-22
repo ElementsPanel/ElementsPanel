@@ -31,24 +31,35 @@ function lifecycle() {
 function setupSfc(relative, overrides = {}, props = {}) {
   const life = lifecycle();
   const emitted = [];
-  const component = load(
-    relative,
-    {
-      vue: life.vue,
-      "@/lang/i18n": i18n,
-      "@/components/Empty.vue": {},
-      "@/components/DesktopDialog.vue": {},
-      "vuetify/components": {},
-      ...overrides
-    },
-    compileSfc(relative)
-  ).default;
+  const options = {
+    vue: life.vue,
+    "@/lang/i18n": i18n,
+    "@/components/Empty.vue": {},
+    "@/components/DesktopDialog.vue": {},
+    "vuetify/components": {},
+    ...overrides
+  };
+  let uploadBindings = {};
+  if (relative.endsWith("/desktop/DesktopFileManager.vue")) {
+    const { useDesktopFileUpload } = load(
+      "plugins/file/panel/src/hooks/useDesktopFileUpload.ts",
+      options
+    );
+    options["../hooks/useDesktopFileUpload"] = {
+      useDesktopFileUpload: (...args) => {
+        uploadBindings = useDesktopFileUpload(...args);
+        return uploadBindings;
+      }
+    };
+  }
+  const component = load(relative, options, compileSfc(relative)).default;
+  const state = life.run(() =>
+    component.setup(props, { expose() {}, emit: (...args) => emitted.push(args) })
+  );
   return {
     ...life,
     emitted,
-    state: life.run(() =>
-      component.setup(props, { expose() {}, emit: (...args) => emitted.push(args) })
-    )
+    state: { ...uploadBindings, ...state }
   };
 }
 

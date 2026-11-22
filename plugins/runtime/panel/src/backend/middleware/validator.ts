@@ -12,7 +12,8 @@ function check(target: any, parameter: any) {
         if (!["string", "number"].includes(typeof target[key]) || String(target[key]).trim() === "")
           throw new Error(`Validator failed: "${key}" is not a number`);
         target[key] = Number(target[key]);
-        if (!Number.isFinite(target[key])) throw new Error(`Validator failed: "${key}" is not a number`);
+        if (!Number.isFinite(target[key]))
+          throw new Error(`Validator failed: "${key}" is not a number`);
         continue;
       }
 

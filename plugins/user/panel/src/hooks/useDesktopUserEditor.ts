@@ -103,6 +103,7 @@ export function useDesktopUserEditor(options: Options) {
       deletingUser.value = null;
       fetchUsers();
     } catch {
+      // Keep the confirmation available for retry.
     } finally {
       saving.value = false;
     }

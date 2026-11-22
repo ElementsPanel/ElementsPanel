@@ -59,25 +59,35 @@ onMounted(fetchLogs);
 </script>
 
 <template>
-  <DesktopDialog v-if="useDesktopWindow" :model-value="dialogOpen"
-    id="instance-operation-log" :title="t('TXT_CODE_COMMON_OPERATION_LOG')" icon="mdi-file-document-outline"
-    :width="680" :height="500" :z-index="10004" :padded="false" :scrollable="false"
-    @close="close" @after-leave="emitClose">
+  <DesktopDialog
+    v-if="useDesktopWindow"
+    id="instance-operation-log"
+    :model-value="dialogOpen"
+    :title="t('TXT_CODE_COMMON_OPERATION_LOG')"
+    icon="mdi-file-document-outline"
+    :width="680"
+    :height="500"
+    :z-index="10004"
+    :padded="false"
+    :scrollable="false"
+    @close="close"
+    @after-leave="emitClose"
+  >
     <InstanceOperationLogContent :loading="loading" :logs="logs" desktop />
   </DesktopDialog>
 
-    <AppDialog
-      v-else
-      v-model:open="dialogOpen"
-      :max-width="680"
-      :title="t('TXT_CODE_COMMON_OPERATION_LOG')"
-      @after-close="emitClose"
-    >
-      <InstanceOperationLogContent :loading="loading" :logs="logs" />
-      <template #footer>
-        <VBtn variant="text" @click="close">
-          {{ t("TXT_CODE_COMMON_STOP") }}
-        </VBtn>
-      </template>
-    </AppDialog>
+  <AppDialog
+    v-else
+    v-model:open="dialogOpen"
+    :max-width="680"
+    :title="t('TXT_CODE_COMMON_OPERATION_LOG')"
+    @after-close="emitClose"
+  >
+    <InstanceOperationLogContent :loading="loading" :logs="logs" />
+    <template #footer>
+      <VBtn variant="text" @click="close">
+        {{ t("TXT_CODE_COMMON_STOP") }}
+      </VBtn>
+    </template>
+  </AppDialog>
 </template>

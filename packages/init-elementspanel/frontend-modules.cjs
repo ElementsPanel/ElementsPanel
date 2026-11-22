@@ -16,10 +16,12 @@ function frontendCompatibilityError(host, plugin, { requireMetadata = false, res
       if (resolvePlugin) {
         const provider = resolvePlugin(match[1]);
         const definition = provider?.elementspanel?.panel;
-        if (provider?.elementspanel?.id !== match[1].slice("@elementspanel/epanel-plugin-".length) ||
-            definition?.frontendApi !== frontend.frontendApi ||
-            typeof definition.frontendExports?.[match[2] || "."] !== "string" ||
-            !definition.frontendExports[match[2] || "."])
+        if (
+          provider?.elementspanel?.id !== match[1].slice("@elementspanel/epanel-plugin-".length) ||
+          definition?.frontendApi !== frontend.frontendApi ||
+          typeof definition.frontendExports?.[match[2] || "."] !== "string" ||
+          !definition.frontendExports[match[2] || "."]
+        )
           return `Missing public frontend module: ${id}`;
       }
     }
@@ -27,8 +29,11 @@ function frontendCompatibilityError(host, plugin, { requireMetadata = false, res
   }
   const expected = frontend?.frontendAssets;
   if (expected === undefined && !requireMetadata) return;
-  if (!strings(expected) || !strings(runtime?.frontendAssets) ||
-      expected.some((file) => !runtime.frontendAssets.includes(file)))
+  if (
+    !strings(expected) ||
+    !strings(runtime?.frontendAssets) ||
+    expected.some((file) => !runtime.frontendAssets.includes(file))
+  )
     return "Legacy frontend assets do not match this panel.";
 }
 

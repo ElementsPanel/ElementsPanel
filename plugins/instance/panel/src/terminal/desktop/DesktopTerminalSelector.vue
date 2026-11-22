@@ -8,7 +8,7 @@ import { computed, onMounted, ref } from "vue";
 import { VIcon, VTextField } from "vuetify/components";
 
 const emit = defineProps<{
-    onOpenConsole: (instance: any, daemonId: string) => void;
+  onOpenConsole: (instance: any, daemonId: string) => void;
 }>();
 
 const searchQuery = ref("");
@@ -16,205 +16,220 @@ const searchQuery = ref("");
 const { execute: getNodes, state: nodes, isLoading } = remoteNodeList();
 
 const initNodes = async () => {
-    await getNodes();
-    nodes?.value?.sort((a, b) => (a.available === b.available ? 0 : a.available ? -1 : 1));
+  await getNodes();
+  nodes?.value?.sort((a, b) => (a.available === b.available ? 0 : a.available ? -1 : 1));
 };
 
 onMounted(async () => {
-    await initNodes();
+  await initNodes();
 });
 
 const filteredNodes = computed(() => {
-    if (!nodes.value) return [];
-    if (!searchQuery.value) return nodes.value;
-    const q = searchQuery.value.toLowerCase();
-    return nodes.value.filter(n =>
-        n.remarks.toLowerCase().includes(q) ||
-        n.ip.toLowerCase().includes(q)
-    );
+  if (!nodes.value) return [];
+  if (!searchQuery.value) return nodes.value;
+  const q = searchQuery.value.toLowerCase();
+  return nodes.value.filter(
+    (n) => n.remarks.toLowerCase().includes(q) || n.ip.toLowerCase().includes(q)
+  );
 });
 
 const openConsole = (node: NodeStatus) => {
-    if (!node.available) return;
+  if (!node.available) return;
 
-    const mockInstance = {
-        instanceUuid: "global0001",
-        config: {
-            nickname: `${computeNodeName(node.ip, node.available, node.remarks)} - Terminal`
-        }
-    };
+  const mockInstance = {
+    instanceUuid: "global0001",
+    config: {
+      nickname: `${computeNodeName(node.ip, node.available, node.remarks)} - Terminal`
+    }
+  };
 
-    emit.onOpenConsole(mockInstance, node.uuid);
+  emit.onOpenConsole(mockInstance, node.uuid);
 };
 </script>
 
 <template>
-    <div class="desktop-terminal-selector">
-        <div class="dts-toolbar">
-            <div class="dts-search">
-                <div class="dts-search-input-wrap">
-                    <VTextField v-model="searchQuery" class="dts-search-input" density="comfortable"
-                        hide-details clearable prepend-inner-icon="mdi-magnify"
-                        :label="t('TXT_CODE_COMMON_SEARCH_BY_DAEMON_NAME')" />
-                </div>
-            </div>
+  <div class="desktop-terminal-selector">
+    <div class="dts-toolbar">
+      <div class="dts-search">
+        <div class="dts-search-input-wrap">
+          <VTextField
+            v-model="searchQuery"
+            class="dts-search-input"
+            density="comfortable"
+            hide-details
+            clearable
+            prepend-inner-icon="mdi-magnify"
+            :label="t('TXT_CODE_COMMON_SEARCH_BY_DAEMON_NAME')"
+          />
         </div>
-
-        <div class="dts-list-wrap">
-            <div v-if="isLoading" class="dts-loading">
-                {{ t("TXT_CODE_COMMON_LOADING_DATA") }}
-            </div>
-            <Empty
-              v-else-if="!filteredNodes.length"
-              icon="mdi-server-network-outline"
-              :title="t('TXT_CODE_COMMON_NO_CONTENT_PLEASE_TRY_CHANGING_THE_NODE_OR_SEARCH_CRITERIA')"
-              :description="t('TXT_CODE_NO_DATA')"
-            />
-            <div v-else class="dts-grid">
-                <div v-for="node in filteredNodes" :key="node.uuid" class="dts-card"
-                    :class="{ 'dts-card--disabled': !node.available }" @click="openConsole(node)">
-                    <div class="dts-card__icon">
-                        <VIcon icon="mdi-server-network"  />
-                    </div>
-                    <div class="dts-card__info">
-                        <div class="dts-card__name">{{ computeNodeName(node.ip, node.available, node.remarks) }}</div>
-                        <div class="dts-card__status">
-                            <VIcon icon="mdi-check-circle-outline" v-if="node.available" class="status-icon status-icon--yes"  />
-                            <VIcon icon="mdi-close-circle-outline" v-else class="status-icon status-icon--no"  />
-                            {{ node.available ? t("TXT_CODE_COMMON_ONLINE") :
-                                t("TXT_CODE_COMMON_OFFLINE") }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+
+    <div class="dts-list-wrap">
+      <div v-if="isLoading" class="dts-loading">
+        {{ t("TXT_CODE_COMMON_LOADING_DATA") }}
+      </div>
+      <Empty
+        v-else-if="!filteredNodes.length"
+        icon="mdi-server-network-outline"
+        :title="t('TXT_CODE_COMMON_NO_CONTENT_PLEASE_TRY_CHANGING_THE_NODE_OR_SEARCH_CRITERIA')"
+        :description="t('TXT_CODE_NO_DATA')"
+      />
+      <div v-else class="dts-grid">
+        <div
+          v-for="node in filteredNodes"
+          :key="node.uuid"
+          class="dts-card"
+          :class="{ 'dts-card--disabled': !node.available }"
+          @click="openConsole(node)"
+        >
+          <div class="dts-card__icon">
+            <VIcon icon="mdi-server-network" />
+          </div>
+          <div class="dts-card__info">
+            <div class="dts-card__name">
+              {{ computeNodeName(node.ip, node.available, node.remarks) }}
+            </div>
+            <div class="dts-card__status">
+              <VIcon
+                v-if="node.available"
+                icon="mdi-check-circle-outline"
+                class="status-icon status-icon--yes"
+              />
+              <VIcon v-else icon="mdi-close-circle-outline" class="status-icon status-icon--no" />
+              {{ node.available ? t("TXT_CODE_COMMON_ONLINE") : t("TXT_CODE_COMMON_OFFLINE") }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style lang="scss" scoped>
 .desktop-terminal-selector {
-    height: 100%;
-    padding: 20px 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    overflow: hidden;
+  height: 100%;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
 }
 
 .dts-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 16px;
-    flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  flex-shrink: 0;
 }
 
 .dts-search {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    max-width: 320px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
 }
 
 .dts-search-input-wrap {
-    flex: 1;
-    min-width: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 .dts-search-input {
-    width: 100%;
+  width: 100%;
 }
 
 .dts-list-wrap {
-    flex: 1;
-    overflow-y: auto;
-    border: 1px solid var(--desktop-window-border);
-    border-radius: 8px;
-    padding: 16px;
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid var(--desktop-window-border);
+  border-radius: 8px;
+  padding: 16px;
 }
 
 .dts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
 }
 
 .dts-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 16px;
-    background: var(--desktop-window-titlebar-bg);
-    border: 1px solid var(--desktop-window-border);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--desktop-window-titlebar-bg);
+  border: 1px solid var(--desktop-window-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
 
-    &:hover:not(.dts-card--disabled) {
-        background: var(--desktop-window-control-hover);
-        border-color: var(--desktop-window-border);
-    }
+  &:hover:not(.dts-card--disabled) {
+    background: var(--desktop-window-control-hover);
+    border-color: var(--desktop-window-border);
+  }
 
-    &--disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
+  &--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 
-    &__icon {
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--desktop-window-control-hover);
-        border-radius: 8px;
-        font-size: 20px;
-        color: var(--desktop-window-text);
-    }
-
-    &__info {
-        flex: 1;
-        min-width: 0;
-    }
-
-    &__name {
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--desktop-window-text);
-        margin-bottom: 4px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    &__status {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 12px;
-        color: var(--desktop-window-text-muted);
-    }
-}
-
-.status-icon {
-    font-size: 12px;
-
-    &--yes {
-        color: var(--color-green-5, #52c41a);
-    }
-
-    &--no {
-        color: var(--color-red-5, #ff4d4f);
-    }
-}
-
-.dts-loading {
-    height: 100%;
+  &__icon {
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: var(--desktop-window-control-hover);
+    border-radius: 8px;
+    font-size: 20px;
+    color: var(--desktop-window-text);
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__name {
     font-size: 14px;
+    font-weight: 500;
+    color: var(--desktop-window-text);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
     color: var(--desktop-window-text-muted);
+  }
+}
+
+.status-icon {
+  font-size: 12px;
+
+  &--yes {
+    color: var(--color-green-5, #52c41a);
+  }
+
+  &--no {
+    color: var(--color-red-5, #ff4d4f);
+  }
+}
+
+.dts-loading {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--desktop-window-text-muted);
 }
 </style>

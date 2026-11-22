@@ -29,6 +29,7 @@ export function usePluginIcons() {
         icons.value[pluginId] = dataUrl;
       }
     } catch {
+      // Keep the fallback icon when fetching fails.
     }
   }
 

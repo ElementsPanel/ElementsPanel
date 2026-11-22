@@ -50,7 +50,8 @@ async function loadHostConfig() {
     },
     "node:module": { createRequire: () => ({ resolve: (name) => `/virtual/${name}` }) }
   };
-  mod.require = (id) => (Object.hasOwn(overrides, id) ? overrides[id] : Module.createRequire(filename)(id));
+  mod.require = (id) =>
+    Object.hasOwn(overrides, id) ? overrides[id] : Module.createRequire(filename)(id);
   mod._compile(
     ts.transpileModule(
       fs
@@ -101,9 +102,14 @@ test("one complete import map precedes host modules and preloads, including publ
     "index.html": {
       type: "asset",
       fileName: "index.html",
-      source: '<html><head><link rel="modulepreload" crossorigin href="./chunk.js"><script type="module" crossorigin src="./main.js"></script></head><body></body></html>'
+      source:
+        '<html><head><link rel="modulepreload" crossorigin href="./chunk.js"><script type="module" crossorigin src="./main.js"></script></head><body></body></html>'
     },
-    "assets/framework.css": { type: "asset", fileName: "assets/framework.css", source: ".v-card {}" }
+    "assets/framework.css": {
+      type: "asset",
+      fileName: "assets/framework.css",
+      source: ".v-card {}"
+    }
   };
   plugin.generateBundle.call(context, {}, bundle);
   const html = bundle["index.html"].source;
@@ -113,9 +119,13 @@ test("one complete import map precedes host modules and preloads, including publ
   const document = dom.window.document;
   const response = deferred();
   const specifier = "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
-  const manifest = [{ metadata: { id: "console", version: "1.0.11" },
-    entry: "./console@revision/frontend/index.js",
-    exports: { [specifier]: "./console@revision/frontend/exports/stores/useAppStateStore.js" } }];
+  const manifest = [
+    {
+      metadata: { id: "console", version: "1.0.11" },
+      entry: "./console@revision/frontend/index.js",
+      exports: { [specifier]: "./console@revision/frontend/exports/stores/useAppStateStore.js" }
+    }
+  ];
   dom.window.fetch = (url, options) => {
     assert.equal(url, "https://panel.test/prefix/plugins/manifest.json");
     assert.equal(options.cache, "no-store");
@@ -123,26 +133,51 @@ test("one complete import map precedes host modules and preloads, including publ
   };
   let maps = 0;
   const append = document.head.appendChild.bind(document.head);
-  document.head.appendChild = node => {
+  document.head.appendChild = (node) => {
     if (node.type === "importmap") {
-      assert.equal(++maps, 1, "browsers that only support one map must receive every mapping at once");
-      assert.equal(document.querySelectorAll('script[type="module"], link[rel="modulepreload"]').length, 0);
+      assert.equal(
+        ++maps,
+        1,
+        "browsers that only support one map must receive every mapping at once"
+      );
+      assert.equal(
+        document.querySelectorAll('script[type="module"], link[rel="modulepreload"]').length,
+        0
+      );
     }
     return append(node);
   };
-  const starting = dom.window.eval(document.querySelector('script:not([type])').textContent);
-  assert.equal(document.querySelectorAll('script[type="module"], link[rel="modulepreload"], script[type="importmap"]').length, 0);
+  const starting = dom.window.eval(document.querySelector("script:not([type])").textContent);
+  assert.equal(
+    document.querySelectorAll(
+      'script[type="module"], link[rel="modulepreload"], script[type="importmap"]'
+    ).length,
+    0
+  );
   response.resolve({ ok: true, status: 200, json: async () => ({ data: manifest }) });
   await starting;
-  const imports = JSON.parse(document.querySelector('script[type="importmap"]').textContent).imports;
+  const imports = JSON.parse(
+    document.querySelector('script[type="importmap"]').textContent
+  ).imports;
   assert.deepEqual(Object.keys(imports), [...pluginSdkModules, specifier]);
-  assert.equal(imports[specifier], "https://panel.test/prefix/plugins/console@revision/frontend/exports/stores/useAppStateStore.js");
+  assert.equal(
+    imports[specifier],
+    "https://panel.test/prefix/plugins/console@revision/frontend/exports/stores/useAppStateStore.js"
+  );
   assert.equal(maps, 1);
-  assert.equal(document.querySelector('script[type="module"]').src, "https://panel.test/prefix/main.js");
-  assert.equal(document.querySelector('link[rel="modulepreload"]').href, "https://panel.test/prefix/chunk.js");
+  assert.equal(
+    document.querySelector('script[type="module"]').src,
+    "https://panel.test/prefix/main.js"
+  );
+  assert.equal(
+    document.querySelector('link[rel="modulepreload"]').href,
+    "https://panel.test/prefix/chunk.js"
+  );
   assert.deepEqual(dom.window.ElementsPanelBootstrap.manifest, { data: manifest });
-  assert.ok(html.includes('<link rel="stylesheet" href="./assets/framework.css">'),
-    "CSS of import-map entries must be loaded even when outside the HTML entry graph");
+  assert.ok(
+    html.includes('<link rel="stylesheet" href="./assets/framework.css">'),
+    "CSS of import-map entries must be loaded even when outside the HTML entry graph"
+  );
   for (const id of pluginSdkModules) {
     const chunk = emitted.find((file) => file.id === `elements-sdk:${id}`);
     assert.equal(chunk.preserveSignature, "strict");
@@ -156,29 +191,51 @@ test("one complete import map precedes host modules and preloads, including publ
     if (id === "vue" || id === "cordis")
       assert.equal(bridge, `export * from ${JSON.stringify(id)};`);
   }
-  assert.equal(emitted.filter(file => file.type === "chunk").length, pluginSdkModules.length,
-    "the host must not emit plugin entries");
-  assert.deepEqual(JSON.parse(emitted.find(file => file.fileName === "frontend-runtime.json").source),
-    { frontendApi: 1, frontendModules: pluginSdkModules });
+  assert.equal(
+    emitted.filter((file) => file.type === "chunk").length,
+    pluginSdkModules.length,
+    "the host must not emit plugin entries"
+  );
+  assert.deepEqual(
+    JSON.parse(emitted.find((file) => file.fileName === "frontend-runtime.json").source),
+    { frontendApi: 1, frontendModules: pluginSdkModules }
+  );
   assert.equal(plugin.load("\0virtual:panel-plugins"), "export const panelPluginModules = [];");
 });
 
 test("failed discovery cannot release module scripts with an incomplete import map", async (t) => {
   const { renderFrontendBootstrap } = require("../../core/frontend/plugin-bootstrap.mjs");
   const { JSDOM } = frontendRequire("jsdom");
-  for (const invalid of [false, true]) await t.test(invalid ? "invalid public export" : "HTTP failure", async (t) => {
-    const html = renderFrontendBootstrap('<html><head><script type="module" src="./main.js"></script></head><body></body></html>', { vue: "./vue.js" });
-    const dom = new JSDOM(html, { url: "https://panel.test/", runScripts: "outside-only" });
-    t.after(() => dom.window.close());
-    const errors = [];
-    dom.window.console.error = () => {};
-    dom.window.setAppLoadingError = error => errors.push(error);
-    dom.window.fetch = async () => ({ ok: invalid, status: invalid ? 200 : 503,
-      json: async () => [{ metadata: { id: "console" }, entry: "./console/frontend/index.js", exports: { vue: "./console/frontend/vue.js" } }] });
-    await dom.window.eval(dom.window.document.querySelector('script:not([type])').textContent);
-    assert.match(errors[0], invalid ? /Invalid public module/ : /HTTP 503/);
-    assert.equal(dom.window.document.querySelectorAll('script[type="module"], script[type="importmap"]').length, 0);
-  });
+  for (const invalid of [false, true])
+    await t.test(invalid ? "invalid public export" : "HTTP failure", async (t) => {
+      const html = renderFrontendBootstrap(
+        '<html><head><script type="module" src="./main.js"></script></head><body></body></html>',
+        { vue: "./vue.js" }
+      );
+      const dom = new JSDOM(html, { url: "https://panel.test/", runScripts: "outside-only" });
+      t.after(() => dom.window.close());
+      const errors = [];
+      dom.window.console.error = () => {};
+      dom.window.setAppLoadingError = (error) => errors.push(error);
+      dom.window.fetch = async () => ({
+        ok: invalid,
+        status: invalid ? 200 : 503,
+        json: async () => [
+          {
+            metadata: { id: "console" },
+            entry: "./console/frontend/index.js",
+            exports: { vue: "./console/frontend/vue.js" }
+          }
+        ]
+      });
+      await dom.window.eval(dom.window.document.querySelector("script:not([type])").textContent);
+      assert.match(errors[0], invalid ? /Invalid public module/ : /HTTP 503/);
+      assert.equal(
+        dom.window.document.querySelectorAll('script[type="module"], script[type="importmap"]')
+          .length,
+        0
+      );
+    });
 });
 
 test("independent plugin configs externalize only public interfaces and own all emitted files", async () => {
@@ -187,16 +244,34 @@ test("independent plugin configs externalize only public interfaces and own all 
   );
   const { sourcePlugins } = require("../workspace-layout.cjs");
   const plugins = sourcePlugins("panel");
-  const user = builtinPluginConfig(plugins.find(plugin => plugin.id === "user"), "/fixture/plugins");
-  const consoleConfig = builtinPluginConfig(plugins.find(plugin => plugin.id === "console"), "/fixture/plugins");
+  const user = builtinPluginConfig(
+    plugins.find((plugin) => plugin.id === "user"),
+    "/fixture/plugins"
+  );
+  const consoleConfig = builtinPluginConfig(
+    plugins.find((plugin) => plugin.id === "console"),
+    "/fixture/plugins"
+  );
   const modules = publicFrontendModules();
   const request = "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
   const foreign = publicFrontendImports("user", modules);
   assert.deepEqual(foreign.resolveId(request), { id: request, external: true });
-  assert.equal(publicFrontendImports("console", modules).resolveId(request), modules.get(request).filename);
-  assert.throws(() => foreign.load(path.join(root, "plugins/console/panel/src/stores/useAppStateStore.ts")), /private source/);
-  assert.throws(() => foreign.resolveId("@elementspanel/epanel-plugin-console/private"), /Unknown public/);
-  assert.throws(() => foreign.load(path.join(root, "core/frontend/src/plugin/context.ts")), /private host source/);
+  assert.equal(
+    publicFrontendImports("console", modules).resolveId(request),
+    modules.get(request).filename
+  );
+  assert.throws(
+    () => foreign.load(path.join(root, "plugins/console/panel/src/stores/useAppStateStore.ts")),
+    /private source/
+  );
+  assert.throws(
+    () => foreign.resolveId("@elementspanel/epanel-plugin-console/private"),
+    /Unknown public/
+  );
+  assert.throws(
+    () => foreign.load(path.join(root, "core/frontend/src/plugin/context.ts")),
+    /private host source/
+  );
   const hostImports = publicFrontendImports(undefined, modules);
   hostImports.configResolved({ command: "build" });
   assert.throws(() => hostImports.resolveId(request), /before discovery/);
@@ -206,18 +281,32 @@ test("independent plugin configs externalize only public interfaces and own all 
   assert.throws(() => user.build.rollupOptions.external("vue/unmapped-subpath"), /Unmapped shared/);
   assert.equal(user.build.rollupOptions.external("vuetify/styles"), false);
   assert.deepEqual(Object.keys(user.build.rollupOptions.input), ["index"]);
-  assert.equal(consoleConfig.build.rollupOptions.input["exports/stores/useAppStateStore"], modules.get(request).filename);
+  assert.equal(
+    consoleConfig.build.rollupOptions.input["exports/stores/useAppStateStore"],
+    modules.get(request).filename
+  );
   assert.equal(user.build.outDir, "/fixture/plugins/user");
   assert.equal(user.build.rollupOptions.output.chunkFileNames, "frontend/chunks/[name]-[hash].js");
-  assert.equal(user.build.rollupOptions.output.assetFileNames, "frontend/assets/[name]-[hash][extname]");
-  const emitted = [];
-  user.plugins.find(plugin => plugin.name === "elements-plugin-build-manifest").generateBundle.call(
-    { emitFile: file => emitted.push(file) }, {}, {
-      "frontend/index.js": { type: "chunk", imports: ["vue", request, "frontend/chunks/local.js"], dynamicImports: [] },
-      "frontend/chunks/local.js": { type: "chunk", imports: [], dynamicImports: [] },
-      "frontend/assets/style.css": { type: "asset" }
-    }
+  assert.equal(
+    user.build.rollupOptions.output.assetFileNames,
+    "frontend/assets/[name]-[hash][extname]"
   );
+  const emitted = [];
+  user.plugins
+    .find((plugin) => plugin.name === "elements-plugin-build-manifest")
+    .generateBundle.call(
+      { emitFile: (file) => emitted.push(file) },
+      {},
+      {
+        "frontend/index.js": {
+          type: "chunk",
+          imports: ["vue", request, "frontend/chunks/local.js"],
+          dynamicImports: []
+        },
+        "frontend/chunks/local.js": { type: "chunk", imports: [], dynamicImports: [] },
+        "frontend/assets/style.css": { type: "asset" }
+      }
+    );
   const manifest = JSON.parse(emitted[0].source);
   assert.deepEqual(manifest.imports, [request, "vue"]);
   assert.deepEqual(manifest.styles, ["frontend/assets/style.css"]);
@@ -237,10 +326,14 @@ test("production URL identities share login state, registered routes and API aut
     login: "plugins/user/panel/src/hooks/useLogin.ts"
   };
   const files = {
-    router: "frontend/chunks/router.js", store: "frontend/chunks/store.js", api: "frontend/chunks/api.js",
-    console: "frontend/index.js", user: "frontend/index.js", login: "frontend/chunks/login.js"
+    router: "frontend/chunks/router.js",
+    store: "frontend/chunks/store.js",
+    api: "frontend/chunks/api.js",
+    console: "frontend/index.js",
+    user: "frontend/index.js",
+    login: "frontend/chunks/login.js"
   };
-  const moduleUrl = id => {
+  const moduleUrl = (id) => {
     const owner = id === "user" || id === "login" ? "user" : "console";
     return `https://panel.test/prefix/plugins/${owner}@revision-${owner}/${files[id]}`;
   };
@@ -272,7 +365,11 @@ test("production URL identities share login state, registered routes and API aut
     "vue-router": { ...vueRouter, createWebHashHistory: vueRouter.createMemoryHistory },
     "@vueuse/core": { ...vueUse, useLocalStorage: (_key, value) => vue.ref(value) },
     axios,
-    "@elementspanel/epanel-plugin-i18n": { t: (key) => key, LANGUAGE_KEY: "language", toStandardLang: () => "en_us" },
+    "@elementspanel/epanel-plugin-i18n": {
+      t: (key) => key,
+      LANGUAGE_KEY: "language",
+      toStandardLang: () => "en_us"
+    },
     "@elements-panel/sdk": { ctx: { menus: { loginActions: [] } } },
     "@/services/TopProgressBar": { topProgressBar: { start() {}, done() {} } },
     "@/services/apis/user": {
@@ -357,7 +454,11 @@ test("production URL identities share login state, registered routes and API aut
   const runtimeStore = fromPlugin("runtime", "store").useAppStateStore();
   consoleRouter = fromPlugin("console", "router").router;
   await fromPlugin("console", "console").apply(ctx);
-  for (const [route, permission] of [["/login", 0], ["/instances", 10], ["/customer", 1]]) {
+  for (const [route, permission] of [
+    ["/login", 0],
+    ["/instances", 10],
+    ["/customer", 1]
+  ]) {
     consoleRouter.addRoute({ path: route, name: route, component, meta: { permission } });
   }
   const login = fromPlugin("user", "user").default.setup({}, { expose() {} });

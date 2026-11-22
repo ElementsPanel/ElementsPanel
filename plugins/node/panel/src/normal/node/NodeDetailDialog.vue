@@ -28,7 +28,12 @@ defineExpose({ openDialog });
 
 <template>
   <VDialog v-model="dialog.status" class="app-dialog node-detail-dialog" max-width="900px">
-    <VCard :title="t(editMode ? 'TXT_CODE_COMMON_EDIT_DAEMON_INFORMATION' : 'TXT_CODE_COMMON_NEW_DAEMON')" rounded="xl">
+    <VCard
+      :title="
+        t(editMode ? 'TXT_CODE_COMMON_EDIT_DAEMON_INFORMATION' : 'TXT_CODE_COMMON_NEW_DAEMON')
+      "
+      rounded="xl"
+    >
       <VCardText class="node-dialog-content">
         <VForm ref="formRef" @submit.prevent="submit">
           <VTextField
@@ -47,7 +52,11 @@ defineExpose({ openDialog });
             required
           />
           <div v-if="ipNeedsMapping(dialog.data.ip)" class="form-hint">
-            {{ t("TXT_CODE_COMMON_FOR_THIS_ADDRESS_TO_WORK_YOU_MAY_NEED_TO_CONFIGURE_NODE_DIRECT_CONNECTION_MAPPINGS") }}
+            {{
+              t(
+                "TXT_CODE_COMMON_FOR_THIS_ADDRESS_TO_WORK_YOU_MAY_NEED_TO_CONFIGURE_NODE_DIRECT_CONNECTION_MAPPINGS"
+              )
+            }}
           </div>
           <VTextField
             v-model.number="dialog.data.port"
@@ -61,7 +70,11 @@ defineExpose({ openDialog });
           <VTextField
             v-model="dialog.data.apiKey"
             :label="t('TXT_CODE_COMMON_DAEMON_KEY')"
-            :placeholder="editMode ? t('TXT_CODE_COMMON_LEAVE_IT_BLANK_TO_MAKE_NO_CHANGES') : t('TXT_CODE_COMMON_PLEASE_ENTER_THE_KEY')"
+            :placeholder="
+              editMode
+                ? t('TXT_CODE_COMMON_LEAVE_IT_BLANK_TO_MAKE_NO_CHANGES')
+                : t('TXT_CODE_COMMON_PLEASE_ENTER_THE_KEY')
+            "
             :hint="t('TXT_CODE_COMMON_ENTER_THE_KEY_GENERATED_BY_THE_NODE')"
             :rules="[apiKeyRule]"
             persistent-hint
@@ -70,7 +83,11 @@ defineExpose({ openDialog });
           <VTextField
             v-model="dialog.data.prefix"
             :label="t('TXT_CODE_NODE_CONNECTION_PATH_PREFIX')"
-            :hint="t('TXT_CODE_COMMON_USED_WHEN_REUSING_PORTS_IN_MOST_CASES_NO_CONFIGURATION_IS_REQUIRED_HERE')"
+            :hint="
+              t(
+                'TXT_CODE_COMMON_USED_WHEN_REUSING_PORTS_IN_MOST_CASES_NO_CONFIGURATION_IS_REQUIRED_HERE'
+              )
+            "
             persistent-hint
           />
         </VForm>

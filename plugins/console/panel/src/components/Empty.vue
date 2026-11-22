@@ -10,6 +10,8 @@ withDefaults(
     compact?: boolean;
   }>(),
   {
+    title: undefined,
+    description: undefined,
     icon: "mdi-inbox-outline",
     compact: false
   }

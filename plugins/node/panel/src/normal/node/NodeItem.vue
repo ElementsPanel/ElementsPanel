@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import type { ComputedNodeInfo } from "@elementspanel/epanel-plugin-console/hooks/useOverviewInfo";
-import { SocketStatus } from "@elementspanel/epanel-plugin-console/hooks/useSocketIo";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import { computed, ref } from "vue";
 import {
@@ -106,11 +105,7 @@ const { compatMenuOpen, compatPanelVersionText, detailList, nodeOperations, copy
                         <span>{{ detail.warnText }}</span>
                       </VTooltip>
                       <span v-else :class="detail.success ? 'node-status-success' : ''">
-                        <VIcon
-                          v-if="detail.success"
-                          icon="mdi-check-circle-outline"
-                          size="16"
-                        />
+                        <VIcon v-if="detail.success" icon="mdi-check-circle-outline" size="16" />
                         {{ detail.value }}
                       </span>
                       <VIcon size="16" class="node-compat-chevron">
@@ -160,23 +155,25 @@ const { compatMenuOpen, compatPanelVersionText, detailList, nodeOperations, copy
                           <span>{{ t("TXT_CODE_NODE_COMPAT_STATUS") }}</span>
                         </div>
                         <div
-                          v-for="item in remoteNode.compatibility.plugins.items"
-                          :key="item.id"
+                          v-for="compatibilityItem in remoteNode.compatibility.plugins.items"
+                          :key="compatibilityItem.id"
                           class="node-compat-row"
                         >
-                          <span :title="item.id" class="node-compat-plugin-id">{{ item.id }}</span>
-                          <span>{{ item.panelVersion ?? "--" }}</span>
-                          <span>{{ item.daemonVersion ?? "--" }}</span>
-                          <span :class="compatStatusClass(item.status)">
+                          <span :title="compatibilityItem.id" class="node-compat-plugin-id">{{
+                            compatibilityItem.id
+                          }}</span>
+                          <span>{{ compatibilityItem.panelVersion ?? "--" }}</span>
+                          <span>{{ compatibilityItem.daemonVersion ?? "--" }}</span>
+                          <span :class="compatStatusClass(compatibilityItem.status)">
                             <VIcon
                               :icon="
-                                item.status === 'ok'
+                                compatibilityItem.status === 'ok'
                                   ? 'mdi-check-circle-outline'
                                   : 'mdi-alert-circle-outline'
                               "
                               size="14"
                             />
-                            {{ compatStatusText(item.status) }}
+                            {{ compatStatusText(compatibilityItem.status) }}
                           </span>
                         </div>
                       </template>
@@ -255,7 +252,6 @@ const { compatMenuOpen, compatPanelVersionText, detailList, nodeOperations, copy
 .node-status-success {
   color: var(--color-success);
 }
-
 
 .node-card {
   color: var(--text-color);
@@ -466,5 +462,4 @@ const { compatMenuOpen, compatPanelVersionText, detailList, nodeOperations, copy
     overflow-wrap: anywhere;
   }
 }
-
 </style>

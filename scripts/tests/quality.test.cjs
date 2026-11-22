@@ -4,17 +4,7 @@ const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
 const { test } = require("node:test");
-const {
-  qualityFiles,
-  matchesBaseline,
-  sourceDigest,
-  digest,
-  lintSignature,
-  lintEngine,
-  formatInput,
-  checkLint,
-  checkFormat
-} = require("../check-quality.cjs");
+const { qualityFiles, lintEngine, checkLint, checkFormat } = require("../check-quality.cjs");
 const { root: repository } = require("../quality-tools.cjs");
 
 test("quality discovery includes new plugins, scripts, templates and configs while excluding artifacts", (t) => {
@@ -59,18 +49,7 @@ test("quality discovery includes new plugins, scripts, templates and configs whi
   assert.deepEqual(files, [".gitignore", ...sources].sort());
 });
 
-test("quality baselines allow only unchanged source and identical diagnostics or format configuration", () => {
-  const source = "const value = 1;\n";
-  const signature = "existing diagnostic";
-  const entry = { source: sourceDigest(source), signature: digest(signature) };
-  assert.equal(matchesBaseline(entry, source, signature), true);
-  assert.equal(matchesBaseline(entry, source.replace(/\n/g, "\r\n"), signature), true);
-  assert.equal(matchesBaseline(entry, `${source}broken();\n`, signature), false);
-  assert.equal(matchesBaseline(entry, source, "new diagnostic or configuration"), false);
-  assert.equal(matchesBaseline(undefined, source, signature), false);
-});
-
-test("checks reject changed debt and parser errors without modifying sources", async (t) => {
+test("checks reject all diagnostics and parser errors without modifying sources", async (t) => {
   const directory = fs.mkdtempSync(path.join(repository, "scripts/.quality-probe-"));
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   t.mock.method(console, "log", () => {});
@@ -79,30 +58,15 @@ test("checks reject changed debt and parser errors without modifying sources", a
   const file = path.relative(repository, filename).split(path.sep).join("/");
   const source = "const unused=42\n";
   fs.writeFileSync(filename, source);
-  const [result] = await lintEngine().lintFiles([file]);
-  const lint = {
-    [file]: { source: sourceDigest(source), signature: digest(lintSignature(result.messages)) }
-  };
-  const input = await formatInput(file);
-  const format = { [file]: { source: sourceDigest(source), signature: digest(input.signature) } };
-  assert.equal(await checkLint([file], {}), false);
-  assert.equal(await checkFormat([file], {}), false);
-  assert.equal(await checkLint([file], lint), true);
-  assert.equal(await checkFormat([file], format), true);
+  assert.equal(await checkLint([file]), false);
+  assert.equal(await checkFormat([file]), false);
   assert.equal(fs.readFileSync(filename, "utf8"), source);
-  fs.writeFileSync(filename, "const unused=43\n");
-  assert.equal(await checkLint([file], lint), false);
-  assert.equal(await checkFormat([file], format), false);
+  fs.writeFileSync(filename, "module.exports = 42;\n");
+  assert.equal(await checkLint([file]), true);
+  assert.equal(await checkFormat([file]), true);
   fs.writeFileSync(filename, "const =;\n");
-  const [invalid] = await lintEngine().lintFiles([file]);
-  const invalidBaseline = {
-    [file]: {
-      source: sourceDigest("const =;\n"),
-      signature: digest(lintSignature(invalid.messages))
-    }
-  };
-  assert.equal(await checkLint([file], invalidBaseline), false);
-  assert.equal(await checkFormat([file], format), false);
+  assert.equal(await checkLint([file]), false);
+  assert.equal(await checkFormat([file]), false);
 });
 
 test("lint parses Vue and TypeScript and reports defects in every source family", async () => {

@@ -13,6 +13,7 @@ export function getCommonHeaders(url?: string) {
       const urlObj = new URL(url);
       headers["Referer"] = urlObj.origin;
     } catch (e) {
+      // Omit the optional Referer for invalid URLs.
     }
   }
 

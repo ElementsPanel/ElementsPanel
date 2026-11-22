@@ -313,10 +313,10 @@ const DesktopPluginDetailController = defineComponent({
 
     <DesktopPluginDetailController
       v-if="selectedPluginId"
+      v-slot="detail"
       :plugin-id="selectedPluginId"
       :daemon-id="selectedDaemonId"
       @installed="updateInstalled"
-      v-slot="detail"
     >
       <section class="dpm-view dpm-view--detail">
         <div class="dpm-toolbar dpm-detail-toolbar">
@@ -457,11 +457,13 @@ const DesktopPluginDetailController = defineComponent({
             <div class="dpm-detail-body">
               <section class="dpm-detail-main">
                 <template v-if="detail.activeTab === 'readme'">
+                  <!-- eslint-disable vue/no-v-html -- markdownToHTML sanitizes this content. -->
                   <div
                     v-if="detail.plugin.readme || detail.plugin.description"
                     class="global-markdown-html dpm-markdown"
                     v-html="detail.readme"
                   />
+                  <!-- eslint-enable vue/no-v-html -->
                   <Empty
                     v-else
                     icon="mdi-file-document-outline"
@@ -526,11 +528,13 @@ const DesktopPluginDetailController = defineComponent({
                       </strong>
                       <span>{{ detail.formatDate(entry.version.submittedAt) }}</span>
                     </header>
+                    <!-- eslint-disable vue/no-v-html -- markdownToHTML sanitizes this content. -->
                     <div
                       v-if="entry.html"
                       class="global-markdown-html dpm-markdown"
                       v-html="entry.html"
                     />
+                    <!-- eslint-enable vue/no-v-html -->
                     <Empty
                       v-else
                       icon="mdi-text-box-outline"

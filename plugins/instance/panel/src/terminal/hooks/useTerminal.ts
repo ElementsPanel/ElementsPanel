@@ -4,7 +4,10 @@ import { t } from "@elementspanel/epanel-plugin-i18n";
 import { setUpTerminalStreamChannel } from "../api";
 import { useAppConfigStore } from "@elementspanel/epanel-plugin-console/stores/useAppConfigStore";
 import { useDesktopWindowActivity } from "@elementspanel/epanel-plugin-console/hooks/useDesktopWindowActivity";
-import { mapDaemonAddress, parseForwardAddress } from "@elementspanel/epanel-plugin-console/tools/protocol";
+import {
+  mapDaemonAddress,
+  parseForwardAddress
+} from "@elementspanel/epanel-plugin-console/tools/protocol";
 import type { InstanceDetail } from "@elementspanel/epanel-plugin-console/types";
 import { INSTANCE_STATUS_CODE } from "@elementspanel/epanel-plugin-console/types/const";
 import type { DefaultEventsMap } from "@socket.io/component-emitter";
@@ -126,7 +129,8 @@ export function useTerminal() {
     });
     if (disposed) throw new Error("Terminal has been disposed");
     const remoteInfo = unref(res.value);
-    if (!remoteInfo) throw new Error(t("TXT_CODE_COMMON_UNABLE_TO_RETRIEVE_REMOTE_DAEMON_INFORMATION"));
+    if (!remoteInfo)
+      throw new Error(t("TXT_CODE_COMMON_UNABLE_TO_RETRIEVE_REMOTE_DAEMON_INFORMATION"));
     settings = normalizeTerminalSettings(remoteInfo.terminalSettings);
 
     let addr = remoteInfo.addr,
@@ -262,22 +266,26 @@ export function useTerminal() {
     else outputTimer = setTimeout(flushOutput, 1000);
   };
 
-  const stopActivityWatch = watch(canRender, (available) => {
-    if (terminal.value) terminal.value.options.cursorBlink = available;
-    if (!available) {
-      if (fitFrame !== undefined) cancelAnimationFrame(fitFrame);
-      fitFrame = undefined;
-      cancelOutputSchedule();
-      scheduleOutput();
-      return;
-    }
-    if (pendingDetail) {
-      state.value = pendingDetail;
-      pendingDetail = undefined;
-    }
-    flushOutput();
-    scheduleFit();
-  }, { flush: "post" });
+  const stopActivityWatch = watch(
+    canRender,
+    (available) => {
+      if (terminal.value) terminal.value.options.cursorBlink = available;
+      if (!available) {
+        if (fitFrame !== undefined) cancelAnimationFrame(fitFrame);
+        fitFrame = undefined;
+        cancelOutputSchedule();
+        scheduleOutput();
+        return;
+      }
+      if (pendingDetail) {
+        state.value = pendingDetail;
+        pendingDetail = undefined;
+      }
+      flushOutput();
+      scheduleFit();
+    },
+    { flush: "post" }
+  );
 
   const handleScrollbarMouseDown = (event: MouseEvent) => {
     if (event.target instanceof Element && event.target.closest(".os-scrollbar")) {
@@ -395,14 +403,17 @@ export function useTerminal() {
         if (selection) {
           // Clipboard writes require a secure context; preserve the browser's native copy fallback.
           if (window.isSecureContext) {
-            arg.preventDefault()
+            arg.preventDefault();
           }
 
-          navigator.clipboard?.writeText(selection).then(() => {
-             term.clearSelection();
-          }).catch(err => {
-             console.error("Could not copy text: ", err);
-          });
+          navigator.clipboard
+            ?.writeText(selection)
+            .then(() => {
+              term.clearSelection();
+            })
+            .catch((err) => {
+              console.error("Could not copy text: ", err);
+            });
 
           return false;
         }
@@ -484,7 +495,9 @@ export function useTerminal() {
 
   events.on("stdout", (v: StdoutData) => {
     if (disposed || !v?.text) return;
-    const text = state.value?.config?.terminalOption?.haveColor ? encodeConsoleColor(v.text) : v.text;
+    const text = state.value?.config?.terminalOption?.haveColor
+      ? encodeConsoleColor(v.text)
+      : v.text;
     outputChunks.push(text);
     outputSize += text.length;
     scheduleOutput();
@@ -554,12 +567,14 @@ export function useTerminal() {
 }
 
 export function encodeConsoleColor(text: string) {
+  // eslint-disable-next-line no-control-regex -- Match ANSI escape sequences.
   text = text.replace(/(\x1B[^m]*m)/gm, "$1;");
   text = text.replace(/ \[([A-Za-z0-9 _\-\\.]+)]/gim, " [§3$1§r]");
   text = text.replace(/^\[([A-Za-z0-9 _\-\\.]+)]/gim, "[§3$1§r]");
-  text = text.replace(/((["'])(.*?)\1)/gm, "§e$1§r");
+  text = text.replace(/((["'])(.*?)\2)/gm, "§e$1§r");
   text = text.replace(/([0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2})/gim, "§6$1§r");
-  text = text.replace(/([0-9]{2,4}[\/\-][0-9]{2,4}[\/\-][0-9]{2,4})/gim, "§6$1§r");
+  text = text.replace(/([0-9]{2,4}[/-][0-9]{2,4}[/-][0-9]{2,4})/gim, "§6$1§r");
+  // eslint-disable-next-line no-control-regex -- Match ANSI escape sequences.
   text = text.replace(/(\x1B[^m]*m);/gm, "$1");
   text = text.replace(/§0/gim, TERM_COLOR.TERM_TEXT_BLACK);
   text = text.replace(/§1/gim, TERM_COLOR.TERM_TEXT_DARK_BLUE);

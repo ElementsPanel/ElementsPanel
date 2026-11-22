@@ -121,8 +121,9 @@ function discoverPanelPlugins(options: DiscoverPluginsOptions, overrides = true)
     ...options,
     includeDisabled: true
   });
-  return (overrides ? applyPluginOverrides(plugins) : plugins)
-    .filter((plugin) => options.includeDisabled || plugin.manifest.enabled !== false);
+  return (overrides ? applyPluginOverrides(plugins) : plugins).filter(
+    (plugin) => options.includeDisabled || plugin.manifest.enabled !== false
+  );
 }
 
 /** Exposes the loader's own registry without pulling it into a plugin bundle. */
@@ -227,7 +228,11 @@ async function installPlugin(plugin: DiscoveredPlugin): Promise<LoadedPanelPlugi
       plugin.manifest.id
     );
     if (!exported) throw new Error(`Plugin "${plugin.manifest.id}" must export apply().`);
-    const module = withBackendPluginDependencies(exported, plugin.manifest.id, plugin.manifest.backendInject);
+    const module = withBackendPluginDependencies(
+      exported,
+      plugin.manifest.id,
+      plugin.manifest.backendInject
+    );
     // Apply plugins in priority order and await asynchronous setup.
     // Capture synchronous errors before Cordis disposes the scope so failed plugins are reported correctly.
     let applied: unknown;
@@ -516,12 +521,15 @@ export function getPanelFrontendManifest(): PanelFrontendPluginEntry[] {
       : [];
     const exports: Record<string, string> = {};
     for (const [name, entry] of Object.entries(plugin.manifest.frontendExports || {})) {
-      if (typeof entry !== "string" ||
-          (name !== "." && !/^[a-zA-Z0-9_-]+(?:\/[a-zA-Z0-9_-]+)*$/.test(name))) continue;
+      if (
+        typeof entry !== "string" ||
+        (name !== "." && !/^[a-zA-Z0-9_-]+(?:\/[a-zA-Z0-9_-]+)*$/.test(name))
+      )
+        continue;
       const target = path.resolve(plugin.directory, entry);
       if (!inFrontendDirectory(target) || !fs.statSync(target).isFile()) continue;
-      const specifier = `@elementspanel/epanel-plugin-${plugin.manifest.id}` +
-        (name === "." ? "" : `/${name}`);
+      const specifier =
+        `@elementspanel/epanel-plugin-${plugin.manifest.id}` + (name === "." ? "" : `/${name}`);
       exports[specifier] = toUrl(target);
     }
     entries.push({
@@ -596,7 +604,11 @@ export function getPanelPluginInventory(): PanelPluginRecord[] {
       sides: { backend: has(ENTRY_FIELDS), frontend: has(FRONTEND_FIELDS) },
       running: state === "active",
       state,
-      missingDependencies: missingBackendPluginDependencies(ctx, plugin.manifest.backendInject, running?.fork?.runtime.inject),
+      missingDependencies: missingBackendPluginDependencies(
+        ctx,
+        plugin.manifest.backendInject,
+        running?.fork?.runtime.inject
+      ),
       removable: !!plugin.packageRoot && !isEssentialNpmPlugin(plugin.manifest.id),
       error:
         running?.error?.message ||
@@ -655,11 +667,14 @@ export function removePanelPlugin(id: string): Promise<void> {
 }
 
 function findPlugin(id: string, overrides = true) {
-  const plugin = discoverPanelPlugins({
-    entryFields: ENTRY_FIELDS,
-    entryCandidates: ENTRY_CANDIDATES,
-    includeDisabled: true
-  }, overrides).find((item) => item.manifest.id === id);
+  const plugin = discoverPanelPlugins(
+    {
+      entryFields: ENTRY_FIELDS,
+      entryCandidates: ENTRY_CANDIDATES,
+      includeDisabled: true
+    },
+    overrides
+  ).find((item) => item.manifest.id === id);
   if (!plugin) throw new Error(`Plugin not found: ${id}`);
   return plugin;
 }
@@ -721,7 +736,8 @@ export function configurePanelPlugin(
   return change(async () => {
     const plugin = findPlugin(id);
     const resetting = config === null;
-    if (resetting) config = (findPlugin(id, false).manifest.config || {}) as Record<string, unknown>;
+    if (resetting)
+      config = (findPlugin(id, false).manifest.config || {}) as Record<string, unknown>;
     if (!config || typeof config !== "object" || Array.isArray(config))
       throw new Error("Plugin config must be an object.");
     validatePluginCompatibility(plugin.manifest.elements);

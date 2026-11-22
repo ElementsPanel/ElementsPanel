@@ -1,8 +1,15 @@
 import { GLOBAL_INSTANCE_NAME } from "@elementspanel/epanel-plugin-console/config/const";
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { getConfigFile, getInstanceInfo, updateConfigFile } from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import {
+  getConfigFile,
+  getInstanceInfo,
+  updateConfigFile
+} from "@elementspanel/epanel-plugin-console/services/apis/instance";
 import type { InstanceDetail, MapData } from "@elementspanel/epanel-plugin-console/types";
-import { INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@elementspanel/epanel-plugin-console/types/const";
+import {
+  INSTANCE_STATUS,
+  INSTANCE_STATUS_CODE
+} from "@elementspanel/epanel-plugin-console/types/const";
 import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
 import { usePolling } from "@elementspanel/epanel-plugin-console/hooks/usePolling";
@@ -87,7 +94,8 @@ export function useInstanceInfo(params: Params) {
 
   const instanceTypeText = computed(() => {
     return (
-      INSTANCE_TYPE_TRANSLATION[String(finalState?.value?.config.type)] || t("TXT_CODE_COMMON_UNKNOWN_TYPE")
+      INSTANCE_TYPE_TRANSLATION[String(finalState?.value?.config.type)] ||
+      t("TXT_CODE_COMMON_UNKNOWN_TYPE")
     );
   });
   const statusText = computed(
@@ -237,7 +245,9 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
   {
     fileName: "[Pufferfish] pufferfish.yml",
     type: "yml",
-    info: t("TXT_CODE_COMMON_CONFIGURATION_FILE_FOR_PUFFERFISH_IT_ALLOWS_FOR_FURTHER_CONFIGURATION_OF_A_PAPER_SERVER"),
+    info: t(
+      "TXT_CODE_COMMON_CONFIGURATION_FILE_FOR_PUFFERFISH_IT_ALLOWS_FOR_FURTHER_CONFIGURATION_OF_A_PAPER_SERVER"
+    ),
     path: "pufferfish.yml",
     redirect: "pufferfish/pufferfish.yml",
     category: [TYPE_MINECRAFT_JAVA]
@@ -342,9 +352,10 @@ export async function verifyEULA(instanceId: string, daemonId: string) {
       Modal.confirm({
         title: t("TXT_CODE_COMMON_WARN"),
         content: h("div", {
-          innerHTML: t("TXT_CODE_COMMON_YOU_HAVE_NOT_AGREED_TO_THE_YOU_NEED_TO_AGREE_TO_THIS_AGREEMENT_TO_START_THIS", [
-            '<a href="https://www.minecraft.net/eula" target="_blank">Minecraft EULA</a>'
-          ])
+          innerHTML: t(
+            "TXT_CODE_COMMON_YOU_HAVE_NOT_AGREED_TO_THE_YOU_NEED_TO_AGREE_TO_THIS_AGREEMENT_TO_START_THIS",
+            ['<a href="https://www.minecraft.net/eula" target="_blank">Minecraft EULA</a>']
+          )
         }),
         onOk: async () => {
           await updateConfigFile().execute({
@@ -356,7 +367,9 @@ export async function verifyEULA(instanceId: string, daemonId: string) {
             },
             data: { eula: true }
           });
-          message.success(t("TXT_CODE_COMMON_EULA_HAS_BEEN_ACCEPTED_SUCCESSFULLY_STARTING_INSTANCE"));
+          message.success(
+            t("TXT_CODE_COMMON_EULA_HAS_BEEN_ACCEPTED_SUCCESSFULLY_STARTING_INSTANCE")
+          );
           resolve(true);
         },
         onCancel: () => resolve(false),

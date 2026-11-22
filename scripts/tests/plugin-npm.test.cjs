@@ -69,7 +69,9 @@ function npmFixture(t, side = "panel") {
           const name = spec.slice(0, delimiter);
           const pluginId = name.split("epanel-plugin-")[1];
           const version =
-            spec.slice(delimiter + 1) === "latest" ? state.latest || "1.0.0" : spec.slice(delimiter + 1);
+            spec.slice(delimiter + 1) === "latest"
+              ? state.latest || "1.0.0"
+              : spec.slice(delimiter + 1);
           const target = path.join(options.cwd, "node_modules", name);
           if (name === `@elementspanel/${side}`) {
             const previous = JSON.parse(fs.readFileSync(path.join(target, "package.json")));
@@ -87,29 +89,38 @@ function npmFixture(t, side = "panel") {
             write(path.join(target, "runtime/worker.cjs"), "// precompiled worker fixture");
             if (side === "panel") write(path.join(target, "public/index.html"), "fixture");
           } else {
-          write(path.join(target, "package.json"), {
-            name,
-            version,
-            elementspanel: {
-              id: pluginId,
-              [side]: {
-                directory: side,
-                folder: pluginId,
-                ...(side === "panel" ? { frontendAssets: state.pluginAssets?.[version] || state.frontendAssets || [] } : {}),
-                ...state.frontendContracts?.[pluginId]?.[version],
-                elements: { api: (state.invalid || state.invalidPlugin === pluginId) && version === "2.0.0" ? 2 : 1 }
+            write(path.join(target, "package.json"), {
+              name,
+              version,
+              elementspanel: {
+                id: pluginId,
+                [side]: {
+                  directory: side,
+                  folder: pluginId,
+                  ...(side === "panel"
+                    ? {
+                        frontendAssets: state.pluginAssets?.[version] || state.frontendAssets || []
+                      }
+                    : {}),
+                  ...state.frontendContracts?.[pluginId]?.[version],
+                  elements: {
+                    api:
+                      (state.invalid || state.invalidPlugin === pluginId) && version === "2.0.0"
+                        ? 2
+                        : 1
+                  }
+                }
               }
-            }
-          });
-          write(path.join(target, side, "plugin.json"), {
-            id: pluginId,
-            version,
-            backend: "backend/index.cjs"
-          });
-          write(
-            path.join(target, side, "backend/index.cjs"),
-            `exports.apply=ctx=>ctx.set("npmVersion",${JSON.stringify(version)});`
-          );
+            });
+            write(path.join(target, side, "plugin.json"), {
+              id: pluginId,
+              version,
+              backend: "backend/index.cjs"
+            });
+            write(
+              path.join(target, side, "backend/index.cjs"),
+              `exports.apply=ctx=>ctx.set("npmVersion",${JSON.stringify(version)});`
+            );
           }
           metadata.dependencies = { ...metadata.dependencies, [name]: version };
         } else {
@@ -133,8 +144,17 @@ for (const side of ["panel", "daemon"]) {
   test(`${side}: runtime updates pin the project dependency and roll back a rejected package`, async (t) => {
     const f = npmFixture(t, side);
     const name = `@elementspanel/${side}`;
-    write(path.join(f.root, "package.json"), { private: true, dependencies: { [name]: "1.0.0", unrelated: "3.0.0" } });
-    for (const id of ["i18n", "storage", "runtime", "server", ...(side === "panel" ? ["console"] : [])])
+    write(path.join(f.root, "package.json"), {
+      private: true,
+      dependencies: { [name]: "1.0.0", unrelated: "3.0.0" }
+    });
+    for (const id of [
+      "i18n",
+      "storage",
+      "runtime",
+      "server",
+      ...(side === "panel" ? ["console"] : [])
+    ])
       writePlugin(f.host, side, id, { projectRoot: f.root });
     const options = { side, packageRoot: f.host, projectRoot: f.root };
     assert.equal(f.npmRuntimePackage(side, options).version, "1.0.0");
@@ -146,28 +166,47 @@ for (const side of ["panel", "daemon"]) {
     const manifest = JSON.parse(fs.readFileSync(path.join(f.root, "package.json")));
     assert.equal(manifest.dependencies[name], "1.5.0");
     assert.equal(manifest.dependencies.unrelated, "3.0.0");
-    const files = [f.root, f.dependencyRoot].flatMap((root) => ["package.json", "package-lock.json"].map((file) => path.join(root, file)));
-    const contents = () => files.map((file) => fs.existsSync(file) ? fs.readFileSync(file, "utf8") : null);
+    const files = [f.root, f.dependencyRoot].flatMap((root) =>
+      ["package.json", "package-lock.json"].map((file) => path.join(root, file))
+    );
+    const contents = () =>
+      files.map((file) => (fs.existsSync(file) ? fs.readFileSync(file, "utf8") : null));
     const before = contents();
     f.state.invalid = true;
     await assert.rejects(f.updateNpmRuntime({ ...options, version: "2.0.0" }), /does not match/);
     assert.deepEqual(contents(), before);
     assert.equal(f.npmRuntimePackage(side, options).version, "1.5.0");
-    assert.deepEqual(f.calls.map((call) => call.spec), [`${name}@1.5.0`, `${name}@2.0.0`, `${name}@1.5.0`]);
-    await assert.rejects(f.updateNpmRuntime({ ...options, version: "latest;echo bad" }), /Invalid runtime version/);
+    assert.deepEqual(
+      f.calls.map((call) => call.spec),
+      [`${name}@1.5.0`, `${name}@2.0.0`, `${name}@1.5.0`]
+    );
+    await assert.rejects(
+      f.updateNpmRuntime({ ...options, version: "latest;echo bad" }),
+      /Invalid runtime version/
+    );
     assert.equal(f.calls.length, 3);
     assert.equal(fs.existsSync(path.join(f.root, ".elementspanel-npm.lock")), false);
     write(path.join(f.root, "package.json"), { private: true });
-    assert.equal(f.npmRuntimePackage(side, options), undefined, "source or unmanaged runtimes cannot be replaced");
+    assert.equal(
+      f.npmRuntimePackage(side, options),
+      undefined,
+      "source or unmanaged runtimes cannot be replaced"
+    );
   });
 }
 
 test("panel updates bring built-in frontend plugins whose shared assets changed", async (t) => {
   const f = npmFixture(t);
-  write(path.join(f.root, "package.json"), { private: true, dependencies: { "@elementspanel/panel": "1.0.0" } });
+  write(path.join(f.root, "package.json"), {
+    private: true,
+    dependencies: { "@elementspanel/panel": "1.0.0" }
+  });
   for (const id of ["i18n", "storage", "runtime", "server", "console"])
     writePlugin(f.host, "panel", id, { projectRoot: f.root });
-  const original = path.join(f.dependencyRoot, "node_modules/@elementspanel/epanel-plugin-console/package.json");
+  const original = path.join(
+    f.dependencyRoot,
+    "node_modules/@elementspanel/epanel-plugin-console/package.json"
+  );
   const consoleMetadata = JSON.parse(fs.readFileSync(original));
   consoleMetadata.elementspanel.panel.frontendAssets = ["assets/old.js"];
   write(original, consoleMetadata);
@@ -178,7 +217,10 @@ test("panel updates bring built-in frontend plugins whose shared assets changed"
   const result = await f.updateNpmRuntime(options);
   assert.equal(result.version, "2.0.0");
   assert.equal(JSON.parse(fs.readFileSync(original)).version, "2.0.0");
-  assert.deepEqual(f.calls.map((call) => call.spec), ["@elementspanel/panel@2.0.0", "@elementspanel/epanel-plugin-console@latest"]);
+  assert.deepEqual(
+    f.calls.map((call) => call.spec),
+    ["@elementspanel/panel@2.0.0", "@elementspanel/epanel-plugin-console@latest"]
+  );
 });
 
 function isolatedFrontend(f, id, contract) {
@@ -189,7 +231,10 @@ function isolatedFrontend(f, id, contract) {
   write(filename, metadata);
   const hostFile = path.join(f.host, "package.json");
   const host = JSON.parse(fs.readFileSync(hostFile));
-  Object.assign(host.elementspanel, { frontendApi: 1, frontendModules: ["vue", "@elements-panel/sdk"] });
+  Object.assign(host.elementspanel, {
+    frontendApi: 1,
+    frontendModules: ["vue", "@elements-panel/sdk"]
+  });
   write(hostFile, host);
   return plugin;
 }
@@ -202,56 +247,93 @@ test("isolated plugins survive a host rebuild without being reinstalled", async 
   const provider = isolatedFrontend(f, "i18n", { frontendExports: { ".": "frontend/index.js" } });
   isolatedFrontend(f, "console", { frontendImports: ["vue", provider.name] });
   f.state.runtimeAssets = { "2.0.0": ["assets/completely-new.js"] };
-  const result = await f.updateNpmRuntime({ side: "panel", version: "2.0.0", packageRoot: f.host, projectRoot: f.root });
+  const result = await f.updateNpmRuntime({
+    side: "panel",
+    version: "2.0.0",
+    packageRoot: f.host,
+    projectRoot: f.root
+  });
   assert.equal(result.version, "2.0.0");
-  assert.deepEqual(f.calls.map(call => call.spec), ["@elementspanel/panel@2.0.0"]);
+  assert.deepEqual(
+    f.calls.map((call) => call.spec),
+    ["@elementspanel/panel@2.0.0"]
+  );
 });
 
 test("runtime migration validates the final module set and can roll back intermediate versions", async (t) => {
-  for (const fail of [false, true]) await t.test(fail ? "rollback" : "upgrade", async (t) => {
-    const f = npmFixture(t);
-    write(path.join(f.root, "package.json"), { dependencies: { "@elementspanel/panel": "1.0.0" } });
-    for (const id of ["console", "i18n", "storage", "runtime", "server"])
-      writePlugin(f.host, "panel", id, { projectRoot: f.root });
-    for (const id of ["console", "i18n"]) {
-      const file = path.join(f.dependencyRoot, `node_modules/@elementspanel/epanel-plugin-${id}/package.json`);
-      const metadata = JSON.parse(fs.readFileSync(file));
-      metadata.elementspanel.panel.frontendAssets = ["assets/legacy.js"];
-      write(file, metadata);
-    }
-    const name = "@elementspanel/epanel-plugin-i18n";
-    f.state.runtimeAssets = f.state.pluginAssets = { "1.0.0": ["assets/legacy.js"], "2.0.0": [] };
-    f.state.runtimeContracts = {
-      "1.0.0": { frontendApi: undefined, frontendModules: undefined },
-      "2.0.0": { frontendApi: 1, frontendModules: ["vue"] }
-    };
-    f.state.frontendContracts = {
-      console: { "2.0.0": { frontendApi: 1, frontendImports: [name] } },
-      i18n: { "2.0.0": { frontendApi: 1, frontendImports: ["vue"], frontendExports: { ".": "frontend/index.js" } } }
-    };
-    f.state.latest = "2.0.0";
-    if (fail) f.state.invalidPlugin = "i18n";
-    const options = { side: "panel", version: "2.0.0", packageRoot: f.host, projectRoot: f.root };
-    const update = f.updateNpmRuntime(options);
-    if (fail) await assert.rejects(update, /Unsupported/);
-    else await update;
-    const expected = fail ? "1.0.0" : "2.0.0";
-    assert.equal(f.npmRuntimePackage("panel", options).version, expected);
-    for (const id of ["console", "i18n"])
-      assert.equal(f.listNpmPlugins("panel", options).find(plugin => plugin.pluginId === id).version, expected);
-  });
+  for (const fail of [false, true])
+    await t.test(fail ? "rollback" : "upgrade", async (t) => {
+      const f = npmFixture(t);
+      write(path.join(f.root, "package.json"), {
+        dependencies: { "@elementspanel/panel": "1.0.0" }
+      });
+      for (const id of ["console", "i18n", "storage", "runtime", "server"])
+        writePlugin(f.host, "panel", id, { projectRoot: f.root });
+      for (const id of ["console", "i18n"]) {
+        const file = path.join(
+          f.dependencyRoot,
+          `node_modules/@elementspanel/epanel-plugin-${id}/package.json`
+        );
+        const metadata = JSON.parse(fs.readFileSync(file));
+        metadata.elementspanel.panel.frontendAssets = ["assets/legacy.js"];
+        write(file, metadata);
+      }
+      const name = "@elementspanel/epanel-plugin-i18n";
+      f.state.runtimeAssets = f.state.pluginAssets = { "1.0.0": ["assets/legacy.js"], "2.0.0": [] };
+      f.state.runtimeContracts = {
+        "1.0.0": { frontendApi: undefined, frontendModules: undefined },
+        "2.0.0": { frontendApi: 1, frontendModules: ["vue"] }
+      };
+      f.state.frontendContracts = {
+        console: { "2.0.0": { frontendApi: 1, frontendImports: [name] } },
+        i18n: {
+          "2.0.0": {
+            frontendApi: 1,
+            frontendImports: ["vue"],
+            frontendExports: { ".": "frontend/index.js" }
+          }
+        }
+      };
+      f.state.latest = "2.0.0";
+      if (fail) f.state.invalidPlugin = "i18n";
+      const options = { side: "panel", version: "2.0.0", packageRoot: f.host, projectRoot: f.root };
+      const update = f.updateNpmRuntime(options);
+      if (fail) await assert.rejects(update, /Unsupported/);
+      else await update;
+      const expected = fail ? "1.0.0" : "2.0.0";
+      assert.equal(f.npmRuntimePackage("panel", options).version, expected);
+      for (const id of ["console", "i18n"])
+        assert.equal(
+          f.listNpmPlugins("panel", options).find((plugin) => plugin.pluginId === id).version,
+          expected
+        );
+    });
 });
 
 test("installing a consumer of an unavailable public module restores its previous version", async (t) => {
   const f = npmFixture(t);
   const plugin = isolatedFrontend(f, "sample", {});
-  f.state.frontendContracts = { sample: {
-    "1.0.0": { frontendApi: 1, frontendImports: [] },
-    "2.0.0": { frontendApi: 1, frontendImports: ["@elementspanel/epanel-plugin-instance/api"] }
-  } };
+  f.state.frontendContracts = {
+    sample: {
+      "1.0.0": { frontendApi: 1, frontendImports: [] },
+      "2.0.0": { frontendApi: 1, frontendImports: ["@elementspanel/epanel-plugin-instance/api"] }
+    }
+  };
   const manifest = fs.readFileSync(path.join(f.dependencyRoot, "package.json"), "utf8");
-  await assert.rejects(f.installNpmPlugin({ name: plugin.name, side: "panel", version: "2.0.0", packageRoot: f.host, projectRoot: f.root }), /Missing public frontend module/);
-  assert.equal(JSON.parse(fs.readFileSync(path.join(plugin.packageRoot, "package.json"))).version, "1.0.0");
+  await assert.rejects(
+    f.installNpmPlugin({
+      name: plugin.name,
+      side: "panel",
+      version: "2.0.0",
+      packageRoot: f.host,
+      projectRoot: f.root
+    }),
+    /Missing public frontend module/
+  );
+  assert.equal(
+    JSON.parse(fs.readFileSync(path.join(plugin.packageRoot, "package.json"))).version,
+    "1.0.0"
+  );
   assert.equal(fs.readFileSync(path.join(f.dependencyRoot, "package.json"), "utf8"), manifest);
 });
 
@@ -260,27 +342,44 @@ test("provider updates preserve consumers and uninstall cannot remove an importe
   const exports = { api: "frontend/exports/api.js" };
   const provider = isolatedFrontend(f, "instance", { frontendExports: exports });
   isolatedFrontend(f, "sample", { frontendImports: [`${provider.name}/api`] });
-  f.state.frontendContracts = { instance: {
-    "1.0.0": { frontendApi: 1, frontendImports: [], frontendExports: exports },
-    "2.0.0": { frontendApi: 1, frontendImports: [], frontendExports: {} },
-    "2.1.0": { frontendApi: 1, frontendImports: [], frontendExports: exports }
-  } };
+  f.state.frontendContracts = {
+    instance: {
+      "1.0.0": { frontendApi: 1, frontendImports: [], frontendExports: exports },
+      "2.0.0": { frontendApi: 1, frontendImports: [], frontendExports: {} },
+      "2.1.0": { frontendApi: 1, frontendImports: [], frontendExports: exports }
+    }
+  };
   const options = { side: "panel", packageRoot: f.host, projectRoot: f.root };
-  await assert.rejects(f.installNpmPlugin({ ...options, name: provider.name, version: "2.0.0" }), /Missing public frontend module/);
-  assert.equal(JSON.parse(fs.readFileSync(path.join(provider.packageRoot, "package.json"))).version, "1.0.0");
+  await assert.rejects(
+    f.installNpmPlugin({ ...options, name: provider.name, version: "2.0.0" }),
+    /Missing public frontend module/
+  );
+  assert.equal(
+    JSON.parse(fs.readFileSync(path.join(provider.packageRoot, "package.json"))).version,
+    "1.0.0"
+  );
   await f.installNpmPlugin({ ...options, name: provider.name, version: "2.1.0" });
   const calls = f.calls.length;
-  await assert.rejects(f.uninstallNpmPlugin("instance", { packageRoot: f.host, projectRoot: f.root }), /Missing public frontend module/);
+  await assert.rejects(
+    f.uninstallNpmPlugin("instance", { packageRoot: f.host, projectRoot: f.root }),
+    /Missing public frontend module/
+  );
   assert.equal(f.calls.length, calls, "removal fails before invoking npm");
 });
 
 test("a failed frontend plugin update rolls back the runtime, earlier plugins and both manifests", async (t) => {
   const f = npmFixture(t);
-  write(path.join(f.root, "package.json"), { private: true, dependencies: { "@elementspanel/panel": "1.0.0" } });
+  write(path.join(f.root, "package.json"), {
+    private: true,
+    dependencies: { "@elementspanel/panel": "1.0.0" }
+  });
   for (const id of ["i18n", "storage", "runtime", "server", "console"])
     writePlugin(f.host, "panel", id, { projectRoot: f.root });
   for (const id of ["server", "console"]) {
-    const filename = path.join(f.dependencyRoot, `node_modules/@elementspanel/epanel-plugin-${id}/package.json`);
+    const filename = path.join(
+      f.dependencyRoot,
+      `node_modules/@elementspanel/epanel-plugin-${id}/package.json`
+    );
     const metadata = JSON.parse(fs.readFileSync(filename));
     metadata.elementspanel.panel.frontendAssets = ["assets/old.js"];
     write(filename, metadata);
@@ -291,11 +390,35 @@ test("a failed frontend plugin update rolls back the runtime, earlier plugins an
   f.state.invalidPlugin = "console";
   const manifests = [f.root, f.dependencyRoot].map((root) => path.join(root, "package.json"));
   const before = manifests.map((file) => fs.readFileSync(file, "utf8"));
-  await assert.rejects(f.updateNpmRuntime({ side: "panel", version: "2.0.0", packageRoot: f.host, projectRoot: f.root }), /Unsupported/);
-  assert.deepEqual(manifests.map((file) => fs.readFileSync(file, "utf8")), before);
-  assert.equal(f.npmRuntimePackage("panel", { packageRoot: f.host, projectRoot: f.root }).version, "1.0.0");
+  await assert.rejects(
+    f.updateNpmRuntime({
+      side: "panel",
+      version: "2.0.0",
+      packageRoot: f.host,
+      projectRoot: f.root
+    }),
+    /Unsupported/
+  );
+  assert.deepEqual(
+    manifests.map((file) => fs.readFileSync(file, "utf8")),
+    before
+  );
+  assert.equal(
+    f.npmRuntimePackage("panel", { packageRoot: f.host, projectRoot: f.root }).version,
+    "1.0.0"
+  );
   for (const id of ["server", "console"])
-    assert.equal(JSON.parse(fs.readFileSync(path.join(f.dependencyRoot, `node_modules/@elementspanel/epanel-plugin-${id}/package.json`))).version, "1.0.0");
+    assert.equal(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(
+            f.dependencyRoot,
+            `node_modules/@elementspanel/epanel-plugin-${id}/package.json`
+          )
+        )
+      ).version,
+      "1.0.0"
+    );
 });
 
 test("runtime release checks read JSON stdout independently from npm warnings", async (t) => {
@@ -311,7 +434,12 @@ test("runtime release checks read JSON stdout independently from npm warnings", 
       const f = npmFixture(t);
       assert.equal(await f.latestNpmRuntimeVersion("panel"), "2.0.0");
       const call = f.calls[0];
-      assert.deepEqual(call.npmArgs.slice(0, 4), ["view", "@elementspanel/panel@latest", "version", "--json"]);
+      assert.deepEqual(call.npmArgs.slice(0, 4), [
+        "view",
+        "@elementspanel/panel@latest",
+        "version",
+        "--json"
+      ]);
       assert.ok(call.npmArgs.includes("--fetch-retries=0"));
       assert.equal(call.command, npmCLI ? process.execPath : "npm");
       if (npmCLI) assert.equal(call.args[0], npmCLI);

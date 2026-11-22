@@ -115,9 +115,12 @@ export async function apply(ctx: PanelPluginContext) {
         requestCtx.body =
           errMsg ||
           String(
-            ctx.i18n.$t("TXT_CODE_COMMON_THIS_OPERATION_IS_ON_COOLDOWN_YOU_CAN_TRY_AGAIN_IN_AROUND_SECONDS", {
-              seconds: singletonMemoryRedis.ttl(speedCheckKey)
-            })
+            ctx.i18n.$t(
+              "TXT_CODE_COMMON_THIS_OPERATION_IS_ON_COOLDOWN_YOU_CAN_TRY_AGAIN_IN_AROUND_SECONDS",
+              {
+                seconds: singletonMemoryRedis.ttl(speedCheckKey)
+              }
+            )
           );
         return;
       }

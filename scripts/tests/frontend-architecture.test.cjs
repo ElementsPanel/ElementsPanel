@@ -52,12 +52,10 @@ test("frontend plugin graph is stable, detects missing dependencies and cycles",
     { id: "i18n", priority: -20, inject: ["runtime"] },
     { id: "runtime", priority: 0, inject: [] }
   ]);
-  assert.deepEqual(graph.ordered.map((item) => item.id), [
-    "independent",
-    "runtime",
-    "i18n",
-    "console"
-  ]);
+  assert.deepEqual(
+    graph.ordered.map((item) => item.id),
+    ["independent", "runtime", "i18n", "console"]
+  );
   assert.equal(graph.issues.size, 0);
 
   const invalid = resolve([
@@ -87,25 +85,37 @@ test("typed slots order entries, reject duplicate ids, honor conditions and disp
     name: "first",
     inject: ["slots"],
     apply(scope) {
-      scope.slots.register("shell.header.actions", { name: "later" }, {
-        id: "later",
-        order: 20
-      });
-      scope.slots.register("shell.header.actions", { name: "mobile" }, {
-        id: "mobile",
-        order: 10,
-        condition: ({ mobile }) => mobile
-      });
+      scope.slots.register(
+        "shell.header.actions",
+        { name: "later" },
+        {
+          id: "later",
+          order: 20
+        }
+      );
+      scope.slots.register(
+        "shell.header.actions",
+        { name: "mobile" },
+        {
+          id: "mobile",
+          order: 10,
+          condition: ({ mobile }) => mobile
+        }
+      );
     }
   });
   const second = ctx.plugin({
     name: "second",
     inject: ["slots"],
     apply(scope) {
-      scope.slots.register("shell.header.actions", { name: "first" }, {
-        id: "first",
-        order: 0
-      });
+      scope.slots.register(
+        "shell.header.actions",
+        { name: "first" },
+        {
+          id: "first",
+          order: 0
+        }
+      );
     }
   });
 
@@ -123,8 +133,7 @@ test("typed slots order entries, reject duplicate ids, honor conditions and disp
   );
 
   assert.throws(
-    () =>
-      ctx.slots.register("shell.header.actions", { name: "duplicate" }, { id: "first" }),
+    () => ctx.slots.register("shell.header.actions", { name: "duplicate" }, { id: "first" }),
     /Duplicate slot registration/
   );
   second.dispose();
@@ -187,14 +196,11 @@ test("API client sends bearer authentication without adding a query token", asyn
   };
   axios.defaults = { headers: { common: {} } };
   axios.interceptors = { request: { use: (callback) => (requestInterceptor = callback) } };
-  const { apiService, setAuthToken } = load(
-    "plugins/console/panel/src/services/apiService.ts",
-    {
-      axios: { __esModule: true, default: axios },
-      lodash: { __esModule: true, default: { cloneDeep: (value) => value } },
-      "@/tools/validator": { reportErrorMsg() {} }
-    }
-  );
+  const { apiService, setAuthToken } = load("plugins/console/panel/src/services/apiService.ts", {
+    axios: { __esModule: true, default: axios },
+    lodash: { __esModule: true, default: { cloneDeep: (value) => value } },
+    "@/tools/validator": { reportErrorMsg() {} }
+  });
 
   setAuthToken("session-token");
   assert.equal(await apiService.subscribe({ url: "/api/test", forceRequest: true }), "ok");

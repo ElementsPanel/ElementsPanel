@@ -1,7 +1,10 @@
-import type { PluginChangeResult, PluginSettingsPage, PluginState } from "../../../../core/common/src/plugin_contract";
+import type {
+  PluginChangeResult,
+  PluginSettingsPage,
+  PluginState
+} from "../../../../core/common/src/plugin_contract";
 export type { PluginChangeResult };
 import { useDefineApi } from "@elementspanel/epanel-plugin-console/stores/useDefineApi";
-
 
 export interface PluginRecord {
   packageName?: string;
@@ -143,10 +146,7 @@ export const updatePluginSettings = useDefineApi<
   method: "PUT"
 });
 
-export const resetPluginSettings = useDefineApi<
-  { params: { id: string } },
-  PluginChangeResult
->({
+export const resetPluginSettings = useDefineApi<{ params: { id: string } }, PluginChangeResult>({
   url: "/api/plugins/settings/reset",
   method: "POST"
 });

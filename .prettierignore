@@ -123,3 +123,6 @@ plugins/*/daemon/backend/
 core/frontend/components.d.ts
 core/frontend/stats.html
 package-lock.json
+
+# Keep the README unchanged as requested.
+/README.md

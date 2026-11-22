@@ -72,7 +72,9 @@ export function useDesktopLayout(options: Options) {
             updatedAt: Date.now()
           }
         });
-      } catch (e) {}
+      } catch (e) {
+        // Keep the local layout when persistence fails.
+      }
     }, 500);
   };
 

@@ -6,7 +6,10 @@ import { pipeline, Readable } from "stream";
 import { v4 } from "uuid";
 type InstanceEntity = any;
 type IAsyncTaskJSON = any;
-import type { DaemonInstancesService, DaemonPluginContext } from "../../../../../core/daemon/src/plugin";
+import type {
+  DaemonInstancesService,
+  DaemonPluginContext
+} from "../../../../../core/daemon/src/plugin";
 
 export interface InstallDownloadOptions {
   fileName?: string;
@@ -273,12 +276,22 @@ export function createInstanceInstallTaskClass(
             await this.runUpdate();
             if (this.cancelled) return;
             this.instance.println("INFO", $t("TXT_CODE_COMMON_INSTANCE_UPDATED_SUCCESSFULLY"));
-            this.instance.println("INFO", $t("TXT_CODE_COMMON_ALL_INSTALLATION_OPERATIONS_HAVE_BEEN_COMPLETED_PLEASE_TRY_TO_START_THE_INSTANCE"));
+            this.instance.println(
+              "INFO",
+              $t(
+                "TXT_CODE_COMMON_ALL_INSTALLATION_OPERATIONS_HAVE_BEEN_COMPLETED_PLEASE_TRY_TO_START_THE_INSTANCE"
+              )
+            );
           } catch (error: any) {
             this.updateFailed(error);
           }
         } else {
-          this.instance.println("INFO", $t("TXT_CODE_COMMON_ALL_INSTALLATION_OPERATIONS_HAVE_BEEN_COMPLETED_PLEASE_TRY_TO_START_THE_INSTANCE"));
+          this.instance.println(
+            "INFO",
+            $t(
+              "TXT_CODE_COMMON_ALL_INSTALLATION_OPERATIONS_HAVE_BEEN_COMPLETED_PLEASE_TRY_TO_START_THE_INSTANCE"
+            )
+          );
         }
 
         this.finished = true;

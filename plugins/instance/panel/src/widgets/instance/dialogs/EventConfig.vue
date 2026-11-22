@@ -6,11 +6,7 @@ import { updateInstanceConfig } from "@elementspanel/epanel-plugin-console/servi
 import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import AppDialog from "@elementspanel/epanel-plugin-console/components/AppDialog";
-import {
-  VForm,
-  VSwitch,
-  VTextField
-} from "vuetify/components";
+import { VForm, VSwitch, VTextField } from "vuetify/components";
 
 const props = defineProps<{
   instanceInfo?: InstanceDetail;
@@ -77,18 +73,24 @@ defineExpose({
       <div class="event-config-section">
         <div class="event-config-title">{{ t("TXT_CODE_COMMON_AUTO_RESTART") }}</div>
         <div class="event-config-description">
-          {{ t("TXT_CODE_COMMON_AUTOMATICALLY_RESTARTS_THE_INSTANCE_AFTER_AN_UNEXPECTED_STOP_OR_CRASH") }}
+          {{
+            t(
+              "TXT_CODE_COMMON_AUTOMATICALLY_RESTARTS_THE_INSTANCE_AFTER_AN_UNEXPECTED_STOP_OR_CRASH"
+            )
+          }}
         </div>
-        <VSwitch
-          v-model="options.config.eventTask.autoRestart"
-          color="primary"
-          hide-details
-        />
+        <VSwitch v-model="options.config.eventTask.autoRestart" color="primary" hide-details />
       </div>
 
       <div v-if="options.config.eventTask.autoRestart" class="event-config-section">
         <div class="event-config-title">{{ t("TXT_CODE_COMMON_MAXIMUM_AUTO_RESTART_COUNT") }}</div>
-        <div class="event-config-description">{{ t("TXT_CODE_COMMON_DO_NOT_AUTOMATICALLY_RESTART_IF_THE_AUTO_RESTART_COUNT_IS_REACHED_SET_TO_1_TO_DISABLE") }}</div>
+        <div class="event-config-description">
+          {{
+            t(
+              "TXT_CODE_COMMON_DO_NOT_AUTOMATICALLY_RESTART_IF_THE_AUTO_RESTART_COUNT_IS_REACHED_SET_TO_1_TO_DISABLE"
+            )
+          }}
+        </div>
         <VTextField
           v-model.number="options.config.eventTask.autoRestartMaxTimes"
           type="number"
@@ -102,7 +104,9 @@ defineExpose({
         <div class="event-config-description">
           {{ t("TXT_CODE_COMMON_AUTOMATICALLY_STARTS_THE_INSTANCE_WHEN_THE_NODE_STARTS") }}
           <br />
-          {{ t("TXT_CODE_COMMON_THIS_COULD_BE_USED_FOR_INSTANCE_TO_START_AS_THE_REMOTE_DAEMON_BOOTS") }}
+          {{
+            t("TXT_CODE_COMMON_THIS_COULD_BE_USED_FOR_INSTANCE_TO_START_AS_THE_REMOTE_DAEMON_BOOTS")
+          }}
         </div>
         <VSwitch v-model="options.config.eventTask.autoStart" color="primary" hide-details />
       </div>

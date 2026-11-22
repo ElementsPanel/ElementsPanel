@@ -19,7 +19,8 @@ export class RemoteRequestTimeoutError extends RemoteError {
 // Forward protocol events to a daemon and await its response.
 export default class RemoteRequest {
   constructor(public readonly rService?: RemoteService) {
-    if (!this.rService || !this.rService.socket) throw new Error($t("TXT_CODE_COMMON_INITIALIZATION_FAILED_THE_REMOTE_NODE_DOES_NOT_EXIST"));
+    if (!this.rService || !this.rService.socket)
+      throw new Error($t("TXT_CODE_COMMON_INITIALIZATION_FAILED_THE_REMOTE_NODE_DOES_NOT_EXIST"));
   }
 
   public async request<T = any>(
@@ -28,16 +29,33 @@ export default class RemoteRequest {
     timeout = 6000,
     force = false
   ): Promise<T> {
-    if (!this.rService || !this.rService.socket) throw new Error($t("TXT_CODE_COMMON_THE_NODE_SOCKET_IS_ABNORMAL_PLEASE_TRY_TO_RECONNECT_IN_THE_NODE_MANAGEMENT"));
+    if (!this.rService || !this.rService.socket)
+      throw new Error(
+        $t(
+          "TXT_CODE_COMMON_THE_NODE_SOCKET_IS_ABNORMAL_PLEASE_TRY_TO_RECONNECT_IN_THE_NODE_MANAGEMENT"
+        )
+      );
     if (!this.rService.available && !force)
-      throw new Error($t("TXT_CODE_COMMON_THE_REMOTE_NODE_IS_UNAVAILABLE_PLEASE_CONTACT_THE_ADMINISTRATOR_TO_GO_TO_THE_NODE_LIST_TO") + ` IP: ${this.rService.config.ip}`);
+      throw new Error(
+        $t(
+          "TXT_CODE_COMMON_THE_REMOTE_NODE_IS_UNAVAILABLE_PLEASE_CONTACT_THE_ADMINISTRATOR_TO_GO_TO_THE_NODE_LIST_TO"
+        ) + ` IP: ${this.rService.config.ip}`
+      );
     if (!this.rService.socket.connected && !force)
-      throw new Error($t("TXT_CODE_NODE_CONNECTION_FAILED_HINT") + ` IP: ${this.rService.config.ip}`);
+      throw new Error(
+        $t("TXT_CODE_NODE_CONNECTION_FAILED_HINT") + ` IP: ${this.rService.config.ip}`
+      );
 
     const service = this.rService;
     const socket = this.rService.socket;
-    const disconnectedMessage = $t("TXT_CODE_NODE_CONNECTION_FAILED_HINT") + ` IP: ${service.config.ip}`;
-    const timeoutMessage = [$t("TXT_CODE_COMMON_REQUEST_TIMEOUT_PLEASE_CONTACT_THE_ADMINISTRATOR_TO_CHECK_THE_NODE_NETWORK_STATUS_IP"), service.config.ip].join(" ");
+    const disconnectedMessage =
+      $t("TXT_CODE_NODE_CONNECTION_FAILED_HINT") + ` IP: ${service.config.ip}`;
+    const timeoutMessage = [
+      $t(
+        "TXT_CODE_COMMON_REQUEST_TIMEOUT_PLEASE_CONTACT_THE_ADMINISTRATOR_TO_CHECK_THE_NODE_NETWORK_STATUS_IP"
+      ),
+      service.config.ip
+    ].join(" ");
     const result = await new Promise<T>((resolve, reject) => {
       let countdownTask: NodeJS.Timeout | undefined;
       const uuid = [v4(), new Date().getTime()].join("");
@@ -46,7 +64,10 @@ export default class RemoteRequest {
       const owner = requestCtx ? core().identity.of(requestCtx).uuid || "_anonymous_" : undefined;
       const protocolData: IRequestPacket = {
         uuid,
-        data: data && typeof data === "object" && !Array.isArray(data) ? { ...data, _taskOwner: owner } : data
+        data:
+          data && typeof data === "object" && !Array.isArray(data)
+            ? { ...data, _taskOwner: owner }
+            : data
       };
 
       const cleanup = () => {
@@ -63,7 +84,8 @@ export default class RemoteRequest {
         if (msg && msg.uuid === uuid) {
           cleanup();
           if (msg.status == RemoteService.STATUS_OK) resolve(msg.data);
-          else reject(new RemoteError(String(msg.data?.err ?? msg.data ?? "Remote request failed")));
+          else
+            reject(new RemoteError(String(msg.data?.err ?? msg.data ?? "Remote request failed")));
         }
       };
 
@@ -93,7 +115,11 @@ export default class RemoteRequest {
           remoteMappings: service.config.remoteMappings
         });
       }
-      if (Array.isArray(overview?.remoteMappings) && service.socket === socket && socket.connected) {
+      if (
+        Array.isArray(overview?.remoteMappings) &&
+        service.socket === socket &&
+        socket.connected
+      ) {
         service.config.remoteMappings = overview.remoteMappings;
       }
     }

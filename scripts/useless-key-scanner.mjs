@@ -99,7 +99,7 @@ function startThread(langKeys, filesPath, database) {
   const worker = new Worker(fileURLToPath(import.meta.url), {
     workerData: { langKeys, filesPath }
   });
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     worker.on("message", (msg) => {
       const { type, data } = msg;
       if (type === "key") {

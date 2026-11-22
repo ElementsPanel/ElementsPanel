@@ -69,7 +69,9 @@ export function createFrontendPluginMetadata(
     ...(manifest.priority === undefined ? {} : { priority: manifest.priority }),
     ...(manifest.elements === undefined ? {} : { elements: manifest.elements }),
     ...(manifest.frontendApi === undefined ? {} : { frontendApi: Number(manifest.frontendApi) }),
-    ...(manifest.frontendImports === undefined ? {} : { frontendImports: stringArray(manifest.frontendImports) || [] }),
+    ...(manifest.frontendImports === undefined
+      ? {}
+      : { frontendImports: stringArray(manifest.frontendImports) || [] }),
     ...(frontendInject === undefined ? {} : { frontendInject }),
     ...(manifest.frontendImmediate === undefined
       ? {}

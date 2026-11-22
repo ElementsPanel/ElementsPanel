@@ -50,7 +50,9 @@ function workspaceEntries(projectRoot) {
   if (!fs.existsSync(directory)) return [];
   return fs
     .readdirSync(directory, { withFileTypes: true })
-    .filter((item) => item.isDirectory() && fs.existsSync(path.join(directory, item.name, "package.json")))
+    .filter(
+      (item) => item.isDirectory() && fs.existsSync(path.join(directory, item.name, "package.json"))
+    )
     .map((item) => {
       const root = path.join(directory, item.name);
       return { root, directory: item.name, manifest: readJson(path.join(root, "package.json")) };
@@ -228,11 +230,12 @@ function updateProjectManifest(projectRoot, entry) {
 function runNpm(args, cwd) {
   return new Promise((resolve, reject) => {
     const npmCLI = process.env.npm_execpath;
-    const command = npmCLI && /npm(?:-cli)?\.(?:c?js|mjs)$/.test(npmCLI)
-      ? { executable: process.execPath, args: [npmCLI, ...args] }
-      : process.platform === "win32"
-      ? { executable: process.env.ComSpec || "cmd.exe", args: ["/d", "/s", "/c", "npm", ...args] }
-      : { executable: "npm", args };
+    const command =
+      npmCLI && /npm(?:-cli)?\.(?:c?js|mjs)$/.test(npmCLI)
+        ? { executable: process.execPath, args: [npmCLI, ...args] }
+        : process.platform === "win32"
+        ? { executable: process.env.ComSpec || "cmd.exe", args: ["/d", "/s", "/c", "npm", ...args] }
+        : { executable: "npm", args };
     const child = spawn(command.executable, command.args, { cwd, stdio: "inherit", shell: false });
     child.once("error", reject);
     child.once("exit", (code, signal) => {
@@ -295,7 +298,9 @@ function buildDependencies(sides) {
 }
 
 function workspaceReadme(id, sides, packageName) {
-  return `# epanel-plugin-${id}\n\nAll plugin metadata belongs in package.json: version, description, displayName, author and keywords describe the package; elementspanel.id and elementspanel.dual define its identity and dual status. Runtime metadata belongs in elementspanel.<side>, including priority, frontendInject and elements.\n\nEach side's plugin.json contains only execution entries such as backend and frontend. Generated CSS paths are saved in package.json under elementspanel.panel.styles.\n\nThe build script lives in scripts/build.cjs and uses this package's own devDependencies. The scripts.build entry in package.json runs it. Run npm run build in this directory, or npm run build --workspace ${packageName} from the project root. The prepack script runs it before publishing.\n\nAvailable for: ${sides.join(" and ")}.\n`;
+  return `# epanel-plugin-${id}\n\nAll plugin metadata belongs in package.json: version, description, displayName, author and keywords describe the package; elementspanel.id and elementspanel.dual define its identity and dual status. Runtime metadata belongs in elementspanel.<side>, including priority, frontendInject and elements.\n\nEach side's plugin.json contains only execution entries such as backend and frontend. Generated CSS paths are saved in package.json under elementspanel.panel.styles.\n\nThe build script lives in scripts/build.cjs and uses this package's own devDependencies. The scripts.build entry in package.json runs it. Run npm run build in this directory, or npm run build --workspace ${packageName} from the project root. The prepack script runs it before publishing.\n\nAvailable for: ${sides.join(
+    " and "
+  )}.\n`;
 }
 
 async function setupWorkspace(projectRoot, args) {
@@ -313,7 +318,11 @@ async function createWorkspace(projectRoot, options) {
   const directory = options.id;
   const workspaceRoot = path.join(projectRoot, "external", directory);
   if (fs.existsSync(workspaceRoot))
-    throw new Error(createTranslator(options.language)("TXT_CODE_INIT_WORKSPACE_EXISTS", { directory: workspaceRoot }));
+    throw new Error(
+      createTranslator(options.language)("TXT_CODE_INIT_WORKSPACE_EXISTS", {
+        directory: workspaceRoot
+      })
+    );
   const dual = options.sides.length === 2;
   const packageManifest = {
     name: options.name,
@@ -321,7 +330,9 @@ async function createWorkspace(projectRoot, options) {
     description: `ElementsPanel ${options.id} plugin`,
     license: "Apache-2.0",
     files: [
-      ...(options.sides.includes("panel") ? ["panel/plugin.json", "panel/backend/", "panel/frontend/"] : []),
+      ...(options.sides.includes("panel")
+        ? ["panel/plugin.json", "panel/backend/", "panel/frontend/"]
+        : []),
       ...(options.sides.includes("daemon") ? ["daemon/plugin.json", "daemon/backend/"] : []),
       "README.md"
     ],
@@ -352,48 +363,74 @@ async function createWorkspace(projectRoot, options) {
   scaffoldBuildScript(workspaceRoot);
   fs.writeFileSync(
     path.join(workspaceRoot, "tsconfig.json"),
-    `${JSON.stringify({ compilerOptions: { target: "ES2022", module: "ESNext", strict: true, skipLibCheck: true }, include: ["panel/src/**/*", "daemon/src/**/*"] }, null, 2)}\n`
+    `${JSON.stringify(
+      {
+        compilerOptions: { target: "ES2022", module: "ESNext", strict: true, skipLibCheck: true },
+        include: ["panel/src/**/*", "daemon/src/**/*"]
+      },
+      null,
+      2
+    )}\n`
   );
   for (const side of options.sides) {
     fs.mkdirSync(path.join(workspaceRoot, side), { recursive: true });
     writeJson(path.join(workspaceRoot, side, "plugin.json"), sideManifest(side));
     scaffoldSource(path.join(workspaceRoot, side), options.id);
   }
-  fs.writeFileSync(path.join(workspaceRoot, "README.md"), workspaceReadme(options.id, options.sides, options.name));
+  fs.writeFileSync(
+    path.join(workspaceRoot, "README.md"),
+    workspaceReadme(options.id, options.sides, options.name)
+  );
   const entry = { root: workspaceRoot, directory, manifest: packageManifest };
   updateProjectManifest(projectRoot, entry);
   if (options.install) {
     await runNpm(["install", "--no-fund", "--no-audit", "--ignore-scripts"], projectRoot);
     await installCommand(projectRoot, ["--ignore-scripts"]);
   }
-  console.log(createTranslator(options.language)("TXT_CODE_INIT_WORKSPACE_CREATED", { directory: workspaceRoot }));
+  console.log(
+    createTranslator(options.language)("TXT_CODE_INIT_WORKSPACE_CREATED", {
+      directory: workspaceRoot
+    })
+  );
   return entry;
 }
 
 async function buildWorkspace(entry) {
   let script = entry.manifest.scripts?.build;
-  if (script === "epanel-workspace build" || script === `epanel-workspace build ${entry.directory}`) {
+  if (
+    script === "epanel-workspace build" ||
+    script === `epanel-workspace build ${entry.directory}`
+  ) {
     scaffoldBuildScript(entry.root);
     entry.manifest.scripts.build = BUILD_SCRIPT;
-    const sides = ["panel", "daemon"].filter(side => entry.manifest.elementspanel?.[side]);
-    entry.manifest.devDependencies = { ...buildDependencies(sides), ...entry.manifest.devDependencies };
+    const sides = ["panel", "daemon"].filter((side) => entry.manifest.elementspanel?.[side]);
+    entry.manifest.devDependencies = {
+      ...buildDependencies(sides),
+      ...entry.manifest.devDependencies
+    };
     writeJson(path.join(entry.root, "package.json"), entry.manifest);
     script = entry.manifest.scripts.build;
   }
-  if (typeof script !== "string" || !script.trim() || /^epanel-workspace\s+build(?:\s|$)/.test(script))
+  if (
+    typeof script !== "string" ||
+    !script.trim() ||
+    /^epanel-workspace\s+build(?:\s|$)/.test(script)
+  )
     throw new Error(`Plugin package must define its own scripts.build: ${entry.manifest.name}`);
   await runNpm(["run", "build"], entry.root);
 }
 
 async function buildCommand(projectRoot, args) {
-  for (const entry of selectWorkspaces(projectRoot, parseSelection(args))) await buildWorkspace(entry);
+  for (const entry of selectWorkspaces(projectRoot, parseSelection(args)))
+    await buildWorkspace(entry);
 }
 
 async function publishCommand(projectRoot, args) {
   const entries = selectWorkspaces(projectRoot, parseSelection(args));
   if (!entries.length) throw new Error("No plugin workspaces found under external/.");
   for (const entry of entries) {
-    if (entry.manifest.private) throw new Error(`Cannot publish private plugin: ${entry.manifest.name}`);
+    if (entry.manifest.private)
+      throw new Error(`Cannot publish private plugin: ${entry.manifest.name}`);
     if (!entry.manifest.scripts?.prepack) await buildWorkspace(entry);
     await runNpm(["publish", "--access", "public"], entry.root);
   }

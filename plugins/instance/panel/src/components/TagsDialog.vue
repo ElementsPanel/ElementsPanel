@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, reactive, nextTick } from "vue";
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { useInstanceTags, useInstanceTagTips } from "@elementspanel/epanel-plugin-console/hooks/useInstanceTag";
+import {
+  useInstanceTags,
+  useInstanceTagTips
+} from "@elementspanel/epanel-plugin-console/hooks/useInstanceTag";
 import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import {
@@ -89,12 +92,19 @@ defineExpose({ openDialog });
 </script>
 
 <template>
-  <VDialog :model-value="open" class="app-dialog tags-dialog" max-width="620" scrollable
-    @update:model-value="handleDialogUpdate">
+  <VDialog
+    :model-value="open"
+    class="app-dialog tags-dialog"
+    max-width="620"
+    scrollable
+    @update:model-value="handleDialogUpdate"
+  >
     <VCard :title="t('TXT_CODE_COMMON_INSTANCE_TAG')" rounded="xl">
       <VCardText class="tags-dialog__content">
         <section class="tags-dialog__section">
-          <p class="tags-dialog__label tags-dialog__label--instance">{{ t("TXT_CODE_COMMON_TAG_LIST_OF_THIS_INSTANCE") }}</p>
+          <p class="tags-dialog__label tags-dialog__label--instance">
+            {{ t("TXT_CODE_COMMON_TAG_LIST_OF_THIS_INSTANCE") }}
+          </p>
           <div class="tag-container">
             <VChip
               v-for="tag in instanceTags"
@@ -132,9 +142,18 @@ defineExpose({ openDialog });
           </div>
         </section>
 
-        <section v-if="instanceTagsTips?.length > 0" class="tags-dialog__section tags-dialog__suggestions">
+        <section
+          v-if="instanceTagsTips?.length > 0"
+          class="tags-dialog__section tags-dialog__suggestions"
+        >
           <p class="tags-dialog__label">{{ t("TXT_CODE_COMMON_SOME_OPTIONAL_TAGS") }}</p>
-          <p class="tags-dialog__hint">{{ t("TXT_CODE_COMMON_SUGGESTIONS_COME_FROM_THE_CURRENT_INSTANCE_LIST_UP_TO_30_ARE_SHOWN") }}</p>
+          <p class="tags-dialog__hint">
+            {{
+              t(
+                "TXT_CODE_COMMON_SUGGESTIONS_COME_FROM_THE_CURRENT_INSTANCE_LIST_UP_TO_30_ARE_SHOWN"
+              )
+            }}
+          </p>
           <div class="tag-container">
             <VChip
               v-for="tag in instanceTagsTips"
@@ -218,5 +237,4 @@ defineExpose({ openDialog });
 .tag-option {
   cursor: pointer;
 }
-
 </style>

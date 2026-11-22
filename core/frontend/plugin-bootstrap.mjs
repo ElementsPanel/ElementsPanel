@@ -17,8 +17,10 @@ export function parseFrontendManifest(body, baseURI) {
     const exports = {};
     const modulePrefix = `@elementspanel/epanel-plugin-${id}`;
     for (const [specifier, file] of Object.entries(item.exports || {})) {
-      if (typeof file !== "string" ||
-          (specifier !== modulePrefix && !specifier.startsWith(`${modulePrefix}/`)))
+      if (
+        typeof file !== "string" ||
+        (specifier !== modulePrefix && !specifier.startsWith(`${modulePrefix}/`))
+      )
         throw new Error(`Invalid public module in plugin ${id}: ${specifier}`);
       const url = new URL(toUrl(file));
       const directory = new URL("./", entryUrl);
@@ -66,9 +68,12 @@ async function bootstrapFrontend(hostImports, parseManifest) {
     // been installed. This also works in browsers without multiple import maps.
     for (const link of document.querySelectorAll('link[rel="elementspanel-modulepreload"]'))
       link.rel = "modulepreload";
-    for (const placeholder of document.querySelectorAll('script[type="text/elementspanel-module"]')) {
+    for (const placeholder of document.querySelectorAll(
+      'script[type="text/elementspanel-module"]'
+    )) {
       const script = document.createElement("script");
-      for (const attribute of placeholder.attributes) script.setAttribute(attribute.name, attribute.value);
+      for (const attribute of placeholder.attributes)
+        script.setAttribute(attribute.name, attribute.value);
       script.type = "module";
       script.async = false;
       script.textContent = placeholder.textContent;
@@ -86,11 +91,13 @@ export function renderFrontendBootstrap(html, imports) {
     .replace(/<script\b([^>]*)>/gi, (tag, attributes) =>
       /\btype\s*=\s*(["'])module\1/i.test(attributes)
         ? tag.replace(/\btype\s*=\s*(["'])module\1/i, 'type="text/elementspanel-module"')
-        : tag)
+        : tag
+    )
     .replace(/<link\b([^>]*)>/gi, (tag, attributes) =>
       /\brel\s*=\s*(["'])modulepreload\1/i.test(attributes)
         ? tag.replace(/\brel\s*=\s*(["'])modulepreload\1/i, 'rel="elementspanel-modulepreload"')
-        : tag);
+        : tag
+    );
   const payload = JSON.stringify(imports).replace(/</g, "\\u003c");
   const script = `<script>(${bootstrapFrontend.toString()})(${payload}, ${parseFrontendManifest.toString()});</script>`;
   // Run after the loading/error UI and every deferred module tag have parsed.

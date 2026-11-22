@@ -146,3 +146,6 @@ src/public/1.png
 # Generated artifacts left by older source layouts
 core/panel/plugins/
 core/daemon/plugins/
+
+# Temporary quality-check fixtures
+/scripts/.quality-probe-*/

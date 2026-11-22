@@ -20,11 +20,19 @@ export function migrateConfig(ctx: PanelPluginContext) {
     try {
       const config = JSON.parse(ctx.storage.readFile(configPath));
       if (refactorUserConfig(config)) {
-        ctx.logger.info(ctx.i18n.$t("TXT_CODE_COMMON_UPGRADED_CONFIGURATION_TO_NEW_VERSION"), configPath);
+        ctx.logger.info(
+          ctx.i18n.$t("TXT_CODE_COMMON_UPGRADED_CONFIGURATION_TO_NEW_VERSION"),
+          configPath
+        );
         ctx.storage.writeFile(configPath, JSON.stringify(config, null, 4));
       }
     } catch (error) {
-      ctx.logger.error(ctx.i18n.$t("TXT_CODE_COMMON_CONFIGURATION_UPGRADE_CONFIGURATION_FILE_PARSING_ERROR_IGNORED"), error);
+      ctx.logger.error(
+        ctx.i18n.$t(
+          "TXT_CODE_COMMON_CONFIGURATION_UPGRADE_CONFIGURATION_FILE_PARSING_ERROR_IGNORED"
+        ),
+        error
+      );
     }
   }
 }

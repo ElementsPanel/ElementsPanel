@@ -63,12 +63,12 @@ export class MySqlSource<T> implements IDataSource<T> {
       data: []
     };
   }
-  select(condition: any) {
+  select(_condition: any) {
     return [];
   }
-  update(condition: any, data: any) {}
-  delete(condition: any) {}
-  insert(data: any) {}
+  update(_condition: any, _data: any) {}
+  delete(_condition: any) {}
+  insert(_data: any) {}
 }
 
 // local file data source (embedded microdatabase)
@@ -104,9 +104,9 @@ export class LocalFileSource<T> implements IDataSource<T> {
     });
     return result;
   }
-  update(condition: any, data: any) {}
-  delete(condition: any) {}
-  insert(data: any) {}
+  update(_condition: any, _data: any) {}
+  delete(_condition: any) {}
+  insert(_data: any) {}
 }
 
 // Provide the unified data query interface used by the routing layer

@@ -135,7 +135,8 @@ for (const mode of ["full", "panel", "daemon"]) {
         .sort(),
       ["panel", "daemon"]
         .filter((side) => mode === "full" || mode === side)
-        .map((side) => `@elementspanel/${side}@latest`).sort()
+        .map((side) => `@elementspanel/${side}@latest`)
+        .sort()
     );
     for (const args of queries)
       assert.deepEqual([args[0], ...args.slice(2)], ["view", "--json", "--prefer-online"]);
@@ -242,7 +243,7 @@ test("the update CLI selects one side and can leave installation for later", asy
   ).closed;
   assert.equal(result.code, 0, result.output);
   assert.match(result.output, /已更新/);
-  assert.match(result.output, /\n  npm install\n  npm start/);
+  assert.match(result.output, /\n {2}npm install\n {2}npm start/);
   assert.equal(
     JSON.parse(fs.readFileSync(path.join(directory, "panel/package.json"))).dependencies[name],
     npm.pluginVersion
@@ -266,32 +267,56 @@ test("isolated plugin installation is independent of host asset hashes and check
   const host = {
     version: "1.0.0",
     elementspanel: {
-      plugins: { i18n, console: consoleName }, frontendApi: 1,
-      frontendModules: ["vue", "@elements-panel/sdk"], frontendAssets: ["assets/new-host-hash.js"]
+      plugins: { i18n, console: consoleName },
+      frontendApi: 1,
+      frontendModules: ["vue", "@elements-panel/sdk"],
+      frontendAssets: ["assets/new-host-hash.js"]
     }
   };
   npm.metadata("@elementspanel/panel", host);
   npm.metadata(i18n, {
-    version: "1.0.7", elementspanel: { id: "i18n", panel: {
-      frontendApi: 1, frontendImports: ["vue", "@elements-panel/sdk"],
-      frontendExports: { ".": "frontend/exports/index.js" }
-    } }
+    version: "1.0.7",
+    elementspanel: {
+      id: "i18n",
+      panel: {
+        frontendApi: 1,
+        frontendImports: ["vue", "@elements-panel/sdk"],
+        frontendExports: { ".": "frontend/exports/index.js" }
+      }
+    }
   });
   npm.metadata(consoleName, {
-    version: "1.0.10", elementspanel: { id: "console", panel: {
-      frontendApi: 1, frontendImports: [i18n]
-    } }
+    version: "1.0.10",
+    elementspanel: {
+      id: "console",
+      panel: {
+        frontendApi: 1,
+        frontendImports: [i18n]
+      }
+    }
   });
-  const result = await initializer.initialize({ directory: path.join(f.root, "first"), mode: "panel", install: false });
+  const result = await initializer.initialize({
+    directory: path.join(f.root, "first"),
+    mode: "panel",
+    install: false
+  });
   assert.equal(result.manifest.dependencies["@elementspanel/panel"], "1.0.0");
   host.version = "1.0.1";
   host.elementspanel.frontendAssets = ["assets/unrelated-hash.js"];
   npm.metadata("@elementspanel/panel", host);
-  await initializer.initialize({ directory: path.join(f.root, "second"), mode: "panel", install: false });
+  await initializer.initialize({
+    directory: path.join(f.root, "second"),
+    mode: "panel",
+    install: false
+  });
   host.elementspanel.frontendModules = [];
   npm.metadata("@elementspanel/panel", host);
   await assert.rejects(
-    initializer.initialize({ directory: path.join(f.root, "missing-api"), mode: "panel", install: false }),
+    initializer.initialize({
+      directory: path.join(f.root, "missing-api"),
+      mode: "panel",
+      install: false
+    }),
     /Incompatible panel assets/
   );
   assert.equal(fs.existsSync(path.join(f.root, "missing-api")), false);
@@ -430,8 +455,8 @@ test("initializer retains resolved versions after install failure and can skip d
   ]);
   const result = await output.closed;
   assert.equal(result.code, 0, result.output);
-  assert.match(result.output, /\n  cd /);
-  assert.match(result.output, /\n  npm install\n  npm start/);
+  assert.match(result.output, /\n {2}cd /);
+  assert.match(result.output, /\n {2}npm install\n {2}npm start/);
   assert.deepEqual(
     JSON.parse(fs.readFileSync(path.join(f.root, "offline/package.json"))).dependencies,
     { "@elementspanel/daemon": npm.versions.daemon }
@@ -441,7 +466,10 @@ test("initializer retains resolved versions after install failure and can skip d
 
 test("initializer rejects failed and invalid npm version queries before writing a project", async (t) => {
   const f = temporary(t);
-  for (const [name, versions] of [["unavailable", {}], ["invalid", { panel: "latest" }]]) {
+  for (const [name, versions] of [
+    ["unavailable", {}],
+    ["invalid", { panel: "latest" }]
+  ]) {
     await t.test(name, async (t) => {
       mockNpmView(t, versions);
       const directory = path.join(f.root, name);
@@ -451,7 +479,9 @@ test("initializer rejects failed and invalid npm version queries before writing 
           directory,
           mode: "panel",
           language: "zh",
-          installer: async () => { installed = true; }
+          installer: async () => {
+            installed = true;
+          }
         }),
         /无法获取 @elementspanel\/panel 的 npm 版本/
       );
@@ -601,13 +631,17 @@ test("initializer menu keeps concise labels and reports each validation error on
     async select(config) {
       titles.push(config.title);
       if (config.title === "Installation mode") {
-        assert.deepEqual(config.options.map(item => item.label), [
-          "panel + daemon", "panel", "daemon"
-        ]);
+        assert.deepEqual(
+          config.options.map((item) => item.label),
+          ["panel + daemon", "panel", "daemon"]
+        );
         return "full";
       }
       assert.equal(config.title, "Install dependencies?");
-      assert.deepEqual(config.options.map(item => item.label), ["Yes", "No"]);
+      assert.deepEqual(
+        config.options.map((item) => item.label),
+        ["Yes", "No"]
+      );
       return false;
     }
   });
@@ -616,13 +650,19 @@ test("initializer menu keeps concise labels and reports each validation error on
   assert.equal(options.daemonPort, 31002);
   assert.equal(options.install, false);
   assert.deepEqual(titles, [
-    "Installation directory", "Installation directory", "Installation mode",
-    "panel listening port", "panel listening port", "daemon listening port",
-    "daemon listening port", "Install dependencies?"
+    "Installation directory",
+    "Installation directory",
+    "Installation mode",
+    "panel listening port",
+    "panel listening port",
+    "daemon listening port",
+    "daemon listening port",
+    "Install dependencies?"
   ]);
-  assert.deepEqual(marks.map(([status]) => status), [
-    "error", "done", "error", "done", "error", "done"
-  ]);
+  assert.deepEqual(
+    marks.map(([status]) => status),
+    ["error", "done", "error", "done", "error", "done"]
+  );
   assert.match(marks[0][1], /not empty/);
   assert.match(marks[2][1], /integer/);
   assert.match(marks[4][1], /must be different/);
@@ -688,7 +728,7 @@ test("initializer wizard follows the system locale and translates Chinese prompt
   assert.match(result.output, /已初始化项目/);
   assert.match(result.output, /启动命令：/);
   assert.doesNotMatch(result.output, /如需启动，请执行：/);
-  assert.match(result.output, /\n  npm install\n  npm start/);
+  assert.match(result.output, /\n {2}npm install\n {2}npm start/);
   assert.equal(
     JSON.parse(fs.readFileSync(path.join(f.root, "中文 CLI/daemon/data/Config/global.json")))
       .language,
@@ -749,8 +789,8 @@ test("initializer CLI supports custom ports and omits cd when initializing the c
     { ...process.env, LC_ALL: "zh_CN.UTF-8" }
   ).closed;
   assert.equal(result.code, 0, result.output);
-  assert.doesNotMatch(result.output, /\n  cd /);
-  assert.match(result.output, /\n  npm install\n  npm start/);
+  assert.doesNotMatch(result.output, /\n {2}cd /);
+  assert.match(result.output, /\n {2}npm install\n {2}npm start/);
   assert.equal(
     JSON.parse(fs.readFileSync(path.join(f.root, "panel/data/SystemConfig/config.json"))).httpPort,
     1
@@ -888,17 +928,24 @@ for (const side of ["panel", "daemon"]) {
     const name = `@elementspanel/${side}`;
     const installed = path.join(f.project, "node_modules", name);
     if (!fs.existsSync(installed)) fs.symlinkSync(f.packages[side], installed, "junction");
-    write(path.join(f.project, "package.json"), { private: true, dependencies: { [name]: "1.0.0" } });
+    write(path.join(f.project, "package.json"), {
+      private: true,
+      dependencies: { [name]: "1.0.0" }
+    });
     const npmCLI = path.join(f.root, "npm-cli.cjs");
     const replacement = path.join(f.root, "updated package", side);
-    write(npmCLI, `
+    write(
+      npmCLI,
+      `
       const fs = require('node:fs');
       const path = require('node:path');
       const args = process.argv.slice(2);
       const spec = args[args.indexOf('install') + 1];
       if (spec !== ${JSON.stringify(name + "@2.0.0")}) throw new Error('Unexpected npm operation');
       fs.mkdirSync(path.dirname(${JSON.stringify(replacement)}), { recursive: true });
-      fs.cpSync(fs.realpathSync(${JSON.stringify(installed)}), ${JSON.stringify(replacement)}, { recursive: true });
+      fs.cpSync(fs.realpathSync(${JSON.stringify(installed)}), ${JSON.stringify(
+        replacement
+      )}, { recursive: true });
       const file = path.join(${JSON.stringify(replacement)}, 'package.json');
       const metadata = JSON.parse(fs.readFileSync(file));
       metadata.version = '2.0.0';
@@ -909,11 +956,16 @@ for (const side of ["panel", "daemon"]) {
       const manifest = JSON.parse(fs.readFileSync(manifestFile));
       manifest.dependencies[${JSON.stringify(name)}] = '2.0.0';
       fs.writeFileSync(manifestFile, JSON.stringify(manifest));
-    `);
-    write(path.join(f.packages[side], "app.js"), String.raw`
+    `
+    );
+    write(
+      path.join(f.packages[side], "app.js"),
+      String.raw`
       const fs = require('node:fs');
       const path = require('node:path');
-      const { createLoader, from } = require(${JSON.stringify(path.join(repository, "scripts/tests/helpers.cjs"))});
+      const { createLoader, from } = require(${JSON.stringify(
+        path.join(repository, "scripts/tests/helpers.cjs")
+      )});
       const load = createLoader({
         resolve(id, { filename, load, localRequire }) {
           if (id === 'mcsmanager-common') return Object.assign({}, ...[
@@ -926,15 +978,23 @@ for (const side of ["panel", "daemon"]) {
       });
       const { Context } = from(${JSON.stringify(side)})('cordis');
       const ctx = new Context();
-      const loader = load(${JSON.stringify(side === "panel" ? "core/panel/src/app/plugin/loader.ts" : "core/daemon/src/plugin/loader.ts")}, { './context': { ctx } });
-      const report = type => fs.appendFileSync(${JSON.stringify(path.join(f.root, "events.jsonl"))}, JSON.stringify({
+      const loader = load(${JSON.stringify(
+        side === "panel"
+          ? "core/panel/src/app/plugin/loader.ts"
+          : "core/daemon/src/plugin/loader.ts"
+      )}, { './context': { ctx } });
+      const report = type => fs.appendFileSync(${JSON.stringify(
+        path.join(f.root, "events.jsonl")
+      )}, JSON.stringify({
         type, side: ${JSON.stringify(side)}, pid: process.pid,
         version: JSON.parse(fs.readFileSync(path.join(process.env.EPANEL_PACKAGE_ROOT, 'package.json'))).version,
         packageRoot: process.env.EPANEL_PACKAGE_ROOT, restarted: process.env.EPANEL_RESTARTED === '1'
       }) + '\n');
       process.on('SIGTERM', async () => { await ctx.stop(); await ctx.plugins.waitForDisposal(); process.exit(0); });
       async function main() {
-        await loader[${JSON.stringify(side === "panel" ? "loadPanelPlugins" : "loadDaemonPlugins")} ]();
+        await loader[${JSON.stringify(
+          side === "panel" ? "loadPanelPlugins" : "loadDaemonPlugins"
+        )} ]();
         await ctx.start();
         report('runtime-start');
         ctx.setInterval(() => {
@@ -953,8 +1013,15 @@ for (const side of ["panel", "daemon"]) {
         process.send({ type: 'elementspanel:ready' });
       }
       main().catch(error => { console.error(error); process.exit(1); });
-    `);
-    const command = execute(f, path.join(f.packages[side], "bin.cjs"), ["start", "--cwd", f.project], f.root, { ...process.env, npm_execpath: npmCLI });
+    `
+    );
+    const command = execute(
+      f,
+      path.join(f.packages[side], "bin.cjs"),
+      ["start", "--cwd", f.project],
+      f.root,
+      { ...process.env, npm_execpath: npmCLI }
+    );
     const starts = () => f.events().filter((event) => event.type === "runtime-start");
     await until(() => starts().length === 1);
     write(trigger, "update");
@@ -977,9 +1044,13 @@ test("stalled panel cleanup restarts only the panel after the reply and allows s
   const trigger = path.join(f.root, "restart-panel");
   const release = path.join(f.root, "reply-flushed");
   const log = path.join(f.root, "events.jsonl");
-  write(path.join(f.packages.panel, "app.js"), `
+  write(
+    path.join(f.packages.panel, "app.js"),
+    `
     const fs = require('node:fs');
-    const { createLoader, from } = require(${JSON.stringify(path.join(repository, "scripts/tests/helpers.cjs"))});
+    const { createLoader, from } = require(${JSON.stringify(
+      path.join(repository, "scripts/tests/helpers.cjs")
+    )});
     const load = createLoader();
     const { requestProcessRestart } = load('core/common/src/process_restart.ts');
     const { trackPluginDisposal } = load('core/common/src/plugin_lifecycle.ts');
@@ -1011,34 +1082,59 @@ test("stalled panel cleanup restarts only the panel after the reply and allows s
         }, 10);
       }));
     }, 20);
-  `);
+  `
+  );
   const driver = path.join(f.root, "restart-driver.cjs");
-  write(driver, `
-    const { startWorkers } = require(${JSON.stringify(path.join(repository, "scripts/runtime/cli.cjs"))});
+  write(
+    driver,
+    `
+    const { startWorkers } = require(${JSON.stringify(
+      path.join(repository, "scripts/runtime/cli.cjs")
+    )});
     startWorkers(${JSON.stringify({
       project: f.project,
-      workers: ["daemon", "panel"].map(side => ({
-        side, packageRoot: f.packages[side], directory: path.join(f.project, side)
+      workers: ["daemon", "panel"].map((side) => ({
+        side,
+        packageRoot: f.packages[side],
+        directory: path.join(f.project, side)
       }))
     })}, { startupTimeout: 2000, restartTimeout: 2000, restartShutdownTimeout: 150 })
       .then(code => process.exitCode = code);
-  `);
+  `
+  );
   const command = execute(f, driver);
-  const starts = () => f.events().filter(event => event.side === "panel" && event.type === "start");
-  await until(() => f.events().some(event => event.side === "panel" && event.type === "ready"));
+  const starts = () =>
+    f.events().filter((event) => event.side === "panel" && event.type === "start");
+  await until(() => f.events().some((event) => event.side === "panel" && event.type === "ready"));
   for (let generation = 1; generation <= 2; generation++) {
     write(trigger, "update");
-    await until(() => f.events().filter(event => event.type === "updating").length === generation);
-    await new Promise(resolve => setTimeout(resolve, 250));
-    assert.equal(starts().length, generation, "the restart deadline starts only after the reply gate");
-    assert.equal(f.events().filter(event => event.type === "cleanup").length, generation - 1);
+    await until(
+      () => f.events().filter((event) => event.type === "updating").length === generation
+    );
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    assert.equal(
+      starts().length,
+      generation,
+      "the restart deadline starts only after the reply gate"
+    );
+    assert.equal(f.events().filter((event) => event.type === "cleanup").length, generation - 1);
     write(release, "reply");
-    await until(() => f.events().filter(event => event.side === "panel" && event.type === "ready").length === generation + 1);
+    await until(
+      () =>
+        f.events().filter((event) => event.side === "panel" && event.type === "ready").length ===
+        generation + 1
+    );
     assert.notEqual(starts()[generation - 1].pid, starts()[generation].pid);
     assert.equal(starts()[0].session, starts()[generation].session);
   }
-  assert.equal(f.events().filter(event => event.side === "daemon" && event.type === "start").length, 1);
-  assert.equal(f.events().some(event => event.side === "daemon" && event.type === "stop"), false);
+  assert.equal(
+    f.events().filter((event) => event.side === "daemon" && event.type === "start").length,
+    1
+  );
+  assert.equal(
+    f.events().some((event) => event.side === "daemon" && event.type === "stop"),
+    false
+  );
   command.child.kill("SIGTERM");
   const result = await command.closed;
   assert.equal(result.code, 0, result.output);
@@ -1252,7 +1348,9 @@ test("hosted processes deliver their final large output before the exit event", 
   const f = runtimeFixture(t);
   const log = path.join(f.root, "events.jsonl");
   const size = 2 * 1024 * 1024;
-  write(path.join(f.packages.daemon, "app.js"), String.raw`
+  write(
+    path.join(f.packages.daemon, "app.js"),
+    String.raw`
     const fs = require('node:fs');
     const host = globalThis[Symbol.for('elementspanel.instance-process-host')];
     const child = host.spawn('burst', process.execPath,
@@ -1262,17 +1360,22 @@ test("hosted processes deliver their final large output before the exit event", 
     child.stdout.on('data', data => { bytes += data.length; });
     child.on('error', error => { console.error(error); process.exit(1); });
     child.once('close', code => {
-      fs.appendFileSync(${JSON.stringify(log)}, JSON.stringify({ type: 'completed', bytes, code }) + '\n');
+      fs.appendFileSync(${JSON.stringify(
+        log
+      )}, JSON.stringify({ type: 'completed', bytes, code }) + '\n');
       child.release();
     });
     process.on('SIGTERM', () => process.exit(0));
     process.send({ type: 'elementspanel:ready' });
-  `);
+  `
+  );
   const command = execute(f, path.join(f.packages.daemon, "bin.cjs"), [
-    "start", "--cwd", f.project
+    "start",
+    "--cwd",
+    f.project
   ]);
-  await until(() => f.events().some(event => event.type === "completed"));
-  const completed = f.events().find(event => event.type === "completed");
+  await until(() => f.events().some((event) => event.type === "completed"));
+  const completed = f.events().find((event) => event.type === "completed");
   assert.equal(completed.code, 0);
   assert.equal(completed.bytes, size);
   command.child.kill("SIGTERM");

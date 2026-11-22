@@ -31,7 +31,6 @@ export function useFileTabs(options: Options) {
     sessionId,
     dataSource,
     currentDisk,
-    currentPath,
     operationForm,
     spinning,
     updateBreadcrumbs,

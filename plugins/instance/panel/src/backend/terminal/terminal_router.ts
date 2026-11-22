@@ -23,7 +23,11 @@ export function registerTerminalRoutes(getSettings: () => TerminalSettings) {
         const daemonId = String(ctx.query.daemonId);
         const instanceUuid = String(ctx.query.uuid);
         const remoteService = remote().services.getInstance(daemonId);
-        if (!remoteService) throw new Error($t("TXT_CODE_COMMON_COULD_NOT_FIND_REMOTE_WITH_GIVEN_DAEMON_ID") + ` Daemon ID: ${daemonId}`);
+        if (!remoteService)
+          throw new Error(
+            $t("TXT_CODE_COMMON_COULD_NOT_FIND_REMOTE_WITH_GIVEN_DAEMON_ID") +
+              ` Daemon ID: ${daemonId}`
+          );
         const password = timeUuid();
         await new (remote().Request)(remoteService).request("passport/register", {
           name: "stream_channel",

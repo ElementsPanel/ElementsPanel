@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from "vue";
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { getConfigFile, updateConfigFile } from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import {
+  getConfigFile,
+  updateConfigFile
+} from "@elementspanel/epanel-plugin-console/services/apis/instance";
 import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { useAppRouters } from "@elementspanel/epanel-plugin-console/hooks/useAppRouters";
 import Loading from "@elementspanel/epanel-plugin-console/components/Loading";
@@ -118,7 +121,10 @@ onMounted(async () => {
 <template>
   <main class="server-config-page">
     <VContainer fluid class="server-config-page-container">
-      <PageToolbar :title="t('TXT_CODE_COMMON_EDIT_SERVER_CONFIGURATION_FILE')" icon="mdi-file-document-edit-outline">
+      <PageToolbar
+        :title="t('TXT_CODE_COMMON_EDIT_SERVER_CONFIGURATION_FILE')"
+        icon="mdi-file-document-edit-outline"
+      >
         <template #actions>
           <VBtn variant="tonal" @click="toConfigOverview">
             {{ t("TXT_CODE_COMMON_GO_BACK") }}
@@ -140,7 +146,11 @@ onMounted(async () => {
           <Empty
             icon="mdi-file-alert-outline"
             :title="t('TXT_CODE_COMMON_UNABLE_TO_EDIT_THIS_FILE')"
-            :description="t('TXT_CODE_COMMON_THIS_MIGHT_BE_DUE_TO_LACK_OF_ACCESS_TO_THIS_FILE_TRY_EDITING_IT_VIA_FILE')"
+            :description="
+              t(
+                'TXT_CODE_COMMON_THIS_MIGHT_BE_DUE_TO_LACK_OF_ACCESS_TO_THIS_FILE_TRY_EDITING_IT_VIA_FILE'
+              )
+            "
           >
             <template #actions>
               <VBtn
@@ -148,8 +158,11 @@ onMounted(async () => {
                 prepend-icon="mdi-refresh"
                 :loading="getConfigFileLoading"
                 @click="render"
-              >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn>
-              <VBtn variant="text" @click="toConfigOverview">{{ t("TXT_CODE_COMMON_BACK_TO_CONFIGURATION_FILE_LIST") }}</VBtn>
+                >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn
+              >
+              <VBtn variant="text" @click="toConfigOverview">{{
+                t("TXT_CODE_COMMON_BACK_TO_CONFIGURATION_FILE_LIST")
+              }}</VBtn>
             </template>
           </Empty>
         </VCol>

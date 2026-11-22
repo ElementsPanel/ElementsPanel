@@ -69,8 +69,9 @@ proxyAddresses.addSubnet("fdfe:dcba:9876::", 48, "ipv6");
 const isCatalogHost = (host: string) => {
   const domain = hostname(host).replace(/\.$/, "");
   return (
-    ["cdn.modrinth.com", "api.spiget.org", "cdn.spiget.org", "mod.mcimirror.top"].includes(domain) ||
-    domain.endsWith(".forgecdn.net")
+    ["cdn.modrinth.com", "api.spiget.org", "cdn.spiget.org", "mod.mcimirror.top"].includes(
+      domain
+    ) || domain.endsWith(".forgecdn.net")
   );
 };
 const isProxyAddress = (address: string) =>

@@ -32,21 +32,44 @@ const emit = defineEmits(["update:visible", "edit"]);
       @close="emit('update:visible', false)"
     >
       <VList v-if="!configLoading" rounded="xl" class="app-responsive-list">
-        <VListItem v-for="item in configFiles" :key="item.path || item.name" :title="item.name" :subtitle="item.path">
+        <VListItem
+          v-for="item in configFiles"
+          :key="item.path || item.name"
+          :title="item.name"
+          :subtitle="item.path"
+        >
           <template #prepend><VIcon icon="mdi-file-document-outline" /></template>
-          <template #append><VBtn variant="text" @click="emit('edit', item)">{{ t("TXT_CODE_EDIT") }}</VBtn></template>
+          <template #append
+            ><VBtn variant="text" @click="emit('edit', item)">{{
+              t("TXT_CODE_EDIT")
+            }}</VBtn></template
+          >
         </VListItem>
         <Empty v-if="!configFiles.length" icon="mdi-file-document-outline" compact />
       </VList>
       <div v-else class="desktop-modal-loading"><VProgressCircular indeterminate /></div>
     </DesktopDialog>
   </template>
-  <AppDialog v-else :visible="visible" @update:visible="val => emit('update:visible', val)"
-    :title="t('TXT_CODE_CONFIG') + ': ' + currentMod?.name" :footer="null">
+  <AppDialog
+    v-else
+    :visible="visible"
+    :title="t('TXT_CODE_CONFIG') + ': ' + currentMod?.name"
+    :footer="null"
+    @update:visible="(val) => emit('update:visible', val)"
+  >
     <VList v-if="!configLoading" rounded="xl" class="app-responsive-list">
-      <VListItem v-for="item in configFiles" :key="item.path || item.name" :title="item.name" :subtitle="item.path">
+      <VListItem
+        v-for="item in configFiles"
+        :key="item.path || item.name"
+        :title="item.name"
+        :subtitle="item.path"
+      >
         <template #prepend><VIcon icon="mdi-file-document-outline" /></template>
-        <template #append><VBtn variant="text" @click="emit('edit', item)">{{ t("TXT_CODE_EDIT") }}</VBtn></template>
+        <template #append
+          ><VBtn variant="text" @click="emit('edit', item)">{{
+            t("TXT_CODE_EDIT")
+          }}</VBtn></template
+        >
       </VListItem>
       <Empty v-if="!configFiles.length" icon="mdi-file-document-outline" compact />
     </VList>

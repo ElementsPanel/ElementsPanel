@@ -118,7 +118,9 @@ export function useUserAssignments(options: Options) {
           status: assignForm.status
         }
       });
-    } catch {}
+    } catch {
+      // Keep the existing assignments when fetching fails.
+    }
   };
 
   const handleAssignNodeChange = async (nodeId: string) => {

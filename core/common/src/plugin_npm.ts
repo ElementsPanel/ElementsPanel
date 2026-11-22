@@ -309,7 +309,8 @@ function validateFrontendModuleSet(
   );
   for (const [name, metadata] of packages) {
     // Legacy consumers retain their host-asset checks at their own install/update step.
-    if (objectValue(objectValue(metadata?.elementspanel)?.panel)?.frontendApi === undefined) continue;
+    if (objectValue(objectValue(metadata?.elementspanel)?.panel)?.frontendApi === undefined)
+      continue;
     const incompatible = frontendCompatibilityError(host, metadata, {
       resolvePlugin: (provider: string) => packages.get(provider)
     });
@@ -582,19 +583,26 @@ export async function updateNpmRuntime(options: {
             );
           // Isolated plugins survive unrelated host rebuilds. Only an actual
           // module API change (or a legacy hashed import) needs a plugin update.
-          await installNpmPluginInternal({
-            name: plugin.name,
-            pluginId: plugin.id,
-            version: "latest",
-            side,
-            packageRoot: entry.root,
-            projectRoot
-          }, false);
+          await installNpmPluginInternal(
+            {
+              name: plugin.name,
+              pluginId: plugin.id,
+              version: "latest",
+              side,
+              packageRoot: entry.root,
+              projectRoot
+            },
+            false
+          );
           changedPlugins.push(original);
         }
-        validateFrontendModuleSet(entry.metadata, listNpmPlugins("panel", {
-          packageRoot: entry.root, projectRoot
-        }));
+        validateFrontendModuleSet(
+          entry.metadata,
+          listNpmPlugins("panel", {
+            packageRoot: entry.root,
+            projectRoot
+          })
+        );
       }
       return { name: previous.name, side, version };
     } catch (error) {
@@ -602,14 +610,17 @@ export async function updateNpmRuntime(options: {
         await install(previous.version);
         const packageRoot = readPackageEntry(projectRoot, previous.name).root;
         for (const plugin of changedPlugins.reverse())
-          await installNpmPluginInternal({
-            name: plugin.name,
-            pluginId: plugin.pluginId,
-            version: plugin.version,
-            side,
-            packageRoot,
-            projectRoot
-          }, false);
+          await installNpmPluginInternal(
+            {
+              name: plugin.name,
+              pluginId: plugin.pluginId,
+              version: plugin.version,
+              side,
+              packageRoot,
+              projectRoot
+            },
+            false
+          );
       } catch (rollback) {
         throw new Error(`${String(error)}; npm rollback failed: ${String(rollback)}`);
       } finally {
@@ -745,7 +756,10 @@ async function installNpmPluginInternal(
           `Plugin asset directory ${record.folder} is already used by ${collision.name}.`
         );
       if (side === "panel" && checkModuleSet)
-        validateFrontendModuleSet(host, [...others.filter((plugin) => plugin.name !== name), record]);
+        validateFrontendModuleSet(host, [
+          ...others.filter((plugin) => plugin.name !== name),
+          record
+        ]);
       const updated = readProjectManifest(targetRoot);
       updated.dependencies = { ...dependenciesOf(updated), [name]: record.version };
       updated.elementspanel = {
@@ -821,8 +835,9 @@ export async function uninstallNpmPlugin(
     if ((options.side || objectValue(host?.elementspanel)?.side) === "panel")
       validateFrontendModuleSet(
         host!,
-        listNpmPlugins("panel", { packageRoot, projectRoot, skipInvalid: true })
-          .filter((plugin) => plugin.name !== name)
+        listNpmPlugins("panel", { packageRoot, projectRoot, skipInvalid: true }).filter(
+          (plugin) => plugin.name !== name
+        )
       );
     await runNpm(
       [

@@ -1,5 +1,8 @@
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import type { PanelFrontendInstanceActionContext, PanelFrontendPluginContext } from "@elements-panel/sdk";
+import type {
+  PanelFrontendInstanceActionContext,
+  PanelFrontendPluginContext
+} from "@elements-panel/sdk";
 import {
   hasNodeFeature,
   isMinecraftInstance,

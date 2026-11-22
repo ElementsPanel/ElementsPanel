@@ -1,251 +1,252 @@
 <!doctype html>
 <html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="renderer" content="webkit" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="theme-color" content="#000000" />
 
-<head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-  <meta name="renderer" content="webkit" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <meta name="theme-color" content="#000000" />
+    <link rel="icon" href="/favicon.ico" />
+    <title>ElementsPanel</title>
 
-  <link rel="icon" href="/favicon.ico" />
-  <title>ElementsPanel</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
 
-  <style>
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-    }
-
-    #before-app-mounted {
-      --loading-bg-color: #f3efef;
-      --loading-color: #2a2828;
-      --loading-subtitle-color: #3b3939;
-      background: var(--loading-bg-color);
-      color: var(--loading-color);
-      position: fixed;
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      z-index: 9999;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-    }
-
-    @media (prefers-color-scheme: dark) {
       #before-app-mounted {
-        --loading-bg-color: #242323;
-        --loading-color: #f3efef;
-        --loading-subtitle-color: #9d9999;
-      }
-    }
-
-    #before-app-mounted .loading-box {
-      text-align: center;
-      display: grid;
-      place-items: center;
-    }
-
-    #before-app-mounted .loading-dots {
-      grid-area: 1 / 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 0;
-    }
-
-    #before-app-mounted .loading-dots.hide {
-      animation: loading-dots-exit 0.2s cubic-bezier(0.25, 0.10, 0.25, 1.00) both;
-    }
-
-    @keyframes loading-dots-exit {
-      from {
-        opacity: 1;
-        visibility: visible;
+        --loading-bg-color: #f3efef;
+        --loading-color: #2a2828;
+        --loading-subtitle-color: #3b3939;
+        background: var(--loading-bg-color);
+        color: var(--loading-color);
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
       }
 
-      to {
-        opacity: 0;
-        visibility: hidden;
-      }
-    }
-
-    #before-app-mounted .loading-dots div {
-      width: 8px;
-      height: 8px;
-      margin: 0 4px;
-      background-color: var(--loading-color);
-      border-radius: 50%;
-      animation: loading-dots-bounce 1.4s infinite ease-in-out both;
-      opacity: 0.1;
-    }
-
-    #before-app-mounted .loading-dots div:nth-child(1) {
-      animation-delay: -0.32s;
-    }
-
-    #before-app-mounted .loading-dots div:nth-child(2) {
-      animation-delay: -0.16s;
-    }
-
-    @keyframes loading-dots-bounce {
-      0%,
-      80%,
-      100% {
-        transform: scale(0);
+      @media (prefers-color-scheme: dark) {
+        #before-app-mounted {
+          --loading-bg-color: #242323;
+          --loading-color: #f3efef;
+          --loading-subtitle-color: #9d9999;
+        }
       }
 
-      40% {
-        transform: scale(1);
-      }
-    }
-
-    #before-app-mounted .loading-title {
-      grid-area: 1 / 1;
-      display: none;
-    }
-
-    #before-app-mounted .loading-error {
-      grid-area: 1 / 1;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      max-width: 400px;
-      padding: 20px;
-    }
-
-    #before-app-mounted .loading-error.show {
-      display: flex;
-      animation: loading-error-enter 0.4s cubic-bezier(0.25, 0.10, 0.25, 1.00) 0.2s both;
-    }
-
-    @keyframes loading-error-enter {
-      from {
-        opacity: 0;
-        transform: scale(1.2);
-        visibility: hidden;
+      #before-app-mounted .loading-box {
+        text-align: center;
+        display: grid;
+        place-items: center;
       }
 
-      to {
-        opacity: 1;
-        transform: scale(1);
-        visibility: visible;
+      #before-app-mounted .loading-dots {
+        grid-area: 1 / 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
       }
-    }
 
-    @media (prefers-reduced-motion: reduce) {
       #before-app-mounted .loading-dots.hide {
-        animation: none;
-        opacity: 0;
-        visibility: hidden;
+        animation: loading-dots-exit 0.2s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+      }
+
+      @keyframes loading-dots-exit {
+        from {
+          opacity: 1;
+          visibility: visible;
+        }
+
+        to {
+          opacity: 0;
+          visibility: hidden;
+        }
+      }
+
+      #before-app-mounted .loading-dots div {
+        width: 8px;
+        height: 8px;
+        margin: 0 4px;
+        background-color: var(--loading-color);
+        border-radius: 50%;
+        animation: loading-dots-bounce 1.4s infinite ease-in-out both;
+        opacity: 0.1;
+      }
+
+      #before-app-mounted .loading-dots div:nth-child(1) {
+        animation-delay: -0.32s;
+      }
+
+      #before-app-mounted .loading-dots div:nth-child(2) {
+        animation-delay: -0.16s;
+      }
+
+      @keyframes loading-dots-bounce {
+        0%,
+        80%,
+        100% {
+          transform: scale(0);
+        }
+
+        40% {
+          transform: scale(1);
+        }
+      }
+
+      #before-app-mounted .loading-title {
+        grid-area: 1 / 1;
+        display: none;
+      }
+
+      #before-app-mounted .loading-error {
+        grid-area: 1 / 1;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        max-width: 400px;
+        padding: 20px;
       }
 
       #before-app-mounted .loading-error.show {
-        animation: none;
+        display: flex;
+        animation: loading-error-enter 0.4s cubic-bezier(0.25, 0.1, 0.25, 1) 0.2s both;
       }
-    }
 
-    #before-app-mounted .error-title {
-      font-size: 20px;
-      font-weight: 600;
-      margin-bottom: 12px;
-      color: var(--loading-color);
-    }
+      @keyframes loading-error-enter {
+        from {
+          opacity: 0;
+          transform: scale(1.2);
+          visibility: hidden;
+        }
 
-    #before-app-mounted .error-message {
-      font-size: 14px;
-      line-height: 1.6;
-      color: var(--loading-subtitle-color);
-      margin-bottom: 24px;
-      text-align: center;
-      word-break: break-word;
-    }
+        to {
+          opacity: 1;
+          transform: scale(1);
+          visibility: visible;
+        }
+      }
 
-    #before-app-mounted .error-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      box-sizing: border-box;
-      height: 36px;
-      min-width: 64px;
-      padding: 0 16px;
-      font-size: 14px;
-      font-weight: 500;
-      color: #fff;
-      background-color: #3b82f6;
-      border: none;
-      border-radius: 24px;
-      cursor: pointer;
-      transition: background-color 0.2s;
-      outline: none;
-    }
+      @media (prefers-reduced-motion: reduce) {
+        #before-app-mounted .loading-dots.hide {
+          animation: none;
+          opacity: 0;
+          visibility: hidden;
+        }
 
-    #before-app-mounted .error-button:hover {
-      background-color: #2563eb;
-    }
+        #before-app-mounted .loading-error.show {
+          animation: none;
+        }
+      }
 
-    #before-app-mounted .error-button:active {
-      background-color: #1d4ed8;
-    }
-  </style>
+      #before-app-mounted .error-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: var(--loading-color);
+      }
 
-  <script>
-    (function (window) {
-      window.closeLoadingContainer = function () {
-        document.getElementById("before-app-mounted").setAttribute("style", "display:none");
-      };
+      #before-app-mounted .error-message {
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--loading-subtitle-color);
+        margin-bottom: 24px;
+        text-align: center;
+        word-break: break-word;
+      }
 
-      window.setLoadingTitle = function (title) {
-        document
-          .getElementById("before-app-mounted")
-          .querySelector(".loading-title").textContent = title;
-      };
+      #before-app-mounted .error-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        height: 36px;
+        min-width: 64px;
+        padding: 0 16px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #fff;
+        background-color: #3b82f6;
+        border: none;
+        border-radius: 24px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        outline: none;
+      }
 
-      window.setAppLoadingError = function (error) {
-        const container = document.getElementById("before-app-mounted");
-        const loadingBox = container.querySelector(".loading-box");
-        const errorBox = container.querySelector(".loading-error");
-        const errorMessage = errorBox.querySelector(".error-message");
+      #before-app-mounted .error-button:hover {
+        background-color: #2563eb;
+      }
 
-        // Fade out loading dots before the error enters.
-        const loadingDots = loadingBox.querySelector(".loading-dots");
-        const loadingTitle = loadingBox.querySelector(".loading-title");
-        if (loadingDots) loadingDots.classList.add("hide");
-        if (loadingTitle) loadingTitle.style.display = "none";
+      #before-app-mounted .error-button:active {
+        background-color: #1d4ed8;
+      }
+    </style>
 
-        // Show error box with message
-        errorMessage.textContent = error;
-        errorBox.classList.add("show");
-      };
-    })(window);
-  </script>
-</head>
+    <script>
+      (function (window) {
+        window.closeLoadingContainer = function () {
+          document.getElementById("before-app-mounted").setAttribute("style", "display:none");
+        };
 
-<body>
-  <div id="before-app-mounted">
-    <noscript>You need to enable JavaScript to run this Website.</noscript>
-    <div class="loading-box">
-      <div class="loading-dots">
-        <div></div>
-        <div></div>
-        <div></div>
-      </div>
-      <div class="loading-title">Loading...</div>
-      <div class="loading-error">
-        <div class="error-title">Error</div>
-        <div class="error-message"></div>
-        <button class="error-button" onclick="location.reload()">Reload</button>
+        window.setLoadingTitle = function (title) {
+          document
+            .getElementById("before-app-mounted")
+            .querySelector(".loading-title").textContent = title;
+        };
+
+        window.setAppLoadingError = function (error) {
+          const container = document.getElementById("before-app-mounted");
+          const loadingBox = container.querySelector(".loading-box");
+          const errorBox = container.querySelector(".loading-error");
+          const errorMessage = errorBox.querySelector(".error-message");
+
+          // Fade out loading dots before the error enters.
+          const loadingDots = loadingBox.querySelector(".loading-dots");
+          const loadingTitle = loadingBox.querySelector(".loading-title");
+          if (loadingDots) loadingDots.classList.add("hide");
+          if (loadingTitle) loadingTitle.style.display = "none";
+
+          // Show error box with message
+          errorMessage.textContent = error;
+          errorBox.classList.add("show");
+        };
+      })(window);
+    </script>
+  </head>
+
+  <body>
+    <div id="before-app-mounted">
+      <noscript>You need to enable JavaScript to run this Website.</noscript>
+      <div class="loading-box">
+        <div class="loading-dots">
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+        <div class="loading-title">Loading...</div>
+        <div class="loading-error">
+          <div class="error-title">Error</div>
+          <div class="error-message"></div>
+          <button class="error-button" onclick="location.reload()">Reload</button>
+        </div>
       </div>
     </div>
-  </div>
-  <div id="app-mount-point" style="width: 100%; height: 100svh"></div>
-  <script type="module" src="/src/main.ts"></script>
-</body>
-
+    <div id="app-mount-point" style="width: 100%; height: 100svh"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>

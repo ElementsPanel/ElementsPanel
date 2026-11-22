@@ -63,7 +63,7 @@ export default class RemoteService {
       logger().info($t("TXT_CODE_DAEMON_INFO_DISCONNECT", { v: daemonInfo }));
       await this.onDisconnect();
     });
-    this.socket.on("connect_error", async (error: Error) => {
+    this.socket.on("connect_error", async (_error: Error) => {
       await this.onDisconnect();
     });
 
@@ -76,7 +76,8 @@ export default class RemoteService {
   public async setLanguage(language?: string) {
     if (!language) language = i18next().language;
     logger().info(
-      `${$t("TXT_CODE_DAEMON_INFO_SET_LANGUAGE")} (${this.config.ip}:${this.config.port}/${this.config.remarks
+      `${$t("TXT_CODE_DAEMON_INFO_SET_LANGUAGE")} (${this.config.ip}:${this.config.port}/${
+        this.config.remarks
       }) language: ${language}`
     );
     return await new RemoteRequest(this).request("info/setting", {

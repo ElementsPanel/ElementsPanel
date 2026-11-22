@@ -159,11 +159,15 @@ class InstanceProcessHost {
           if (metadata.pid && metadata.pid !== child.pid) {
             try {
               process.kill(metadata.pid, "SIGKILL");
-            } catch {}
+            } catch {
+              // The game process may have already exited.
+            }
           }
           child.kill("SIGKILL");
         }
-      } catch {}
+      } catch {
+        // The child may have already exited.
+      }
     }
     this.records.clear();
   }

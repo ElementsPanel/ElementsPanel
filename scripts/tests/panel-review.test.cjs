@@ -1,8 +1,5 @@
 const { from, createLoader, transpile, settle: tick } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const os = require("node:os");
-const path = require("node:path");
 const { EventEmitter } = require("node:events");
 const { test } = require("node:test");
 
@@ -427,17 +424,28 @@ test("failed auth settings validation preserves the live config and existing SSO
 });
 
 test("restoring authentication defaults clears saved SSO secrets while normal blank writes retain them", async () => {
-  let settings = { ssoType: "oidc", ssoEnabled: false, ssoClientId: "", ssoClientSecret: "saved secret", migrationVersion: 1 };
-  const { applyAuthSettings } = load("plugins/user/panel/src/backend/routers/auth_settings_router.ts", {
-    "../runtime": {},
-    "../middleware/permission": {},
-    "../service/auth_settings": {
-      authSettings: () => settings,
-      saveAuthSettings: async value => { settings = value; }
-    },
-    "../service/sso_service": { clearOIDCCache() {} },
-    "../service/user_service": { __esModule: true, default: { unbindAllSso: async () => 0 } }
-  });
+  let settings = {
+    ssoType: "oidc",
+    ssoEnabled: false,
+    ssoClientId: "",
+    ssoClientSecret: "saved secret",
+    migrationVersion: 1
+  };
+  const { applyAuthSettings } = load(
+    "plugins/user/panel/src/backend/routers/auth_settings_router.ts",
+    {
+      "../runtime": {},
+      "../middleware/permission": {},
+      "../service/auth_settings": {
+        authSettings: () => settings,
+        saveAuthSettings: async (value) => {
+          settings = value;
+        }
+      },
+      "../service/sso_service": { clearOIDCCache() {} },
+      "../service/user_service": { __esModule: true, default: { unbindAllSso: async () => 0 } }
+    }
+  );
   await applyAuthSettings({ ssoClientSecret: "" });
   assert.equal(settings.ssoClientSecret, "saved secret");
   await applyAuthSettings({ ssoClientSecret: "", ssoEnabled: false }, true);
@@ -546,7 +554,11 @@ test("enabled user plugin failure denies requests/uploads until its guard return
     },
     "./version": { initVersionManager() {}, getVersion: () => "test" },
     "./service/mini_redis": cache,
-    "./service/operation_logger": { OperationLogger: class { dispose() {} } },
+    "./service/operation_logger": {
+      OperationLogger: class {
+        dispose() {}
+      }
+    },
     "./service/overview": {},
     "./overview": {}
   });
@@ -614,10 +626,12 @@ test("node overview imports legacy mappings and refreshes the addresses used by 
     "mcsmanager-common": { removeTrail: (value) => value }
   });
   const config = new RemoteServiceConfig();
-  const legacy = [{
-    from: { ip: "panel.example", port: 443, prefix: "/panel" },
-    to: { ip: "node.example", port: 443, prefix: "/node" }
-  }];
+  const legacy = [
+    {
+      from: { ip: "panel.example", port: 443, prefix: "/panel" },
+      to: { ip: "node.example", port: 443, prefix: "/node" }
+    }
+  ];
   config.remoteMappings = legacy;
   let mappings = null;
   let supportsMappings = true;
@@ -647,10 +661,12 @@ test("node overview imports legacy mappings and refreshes the addresses used by 
   mappings = structuredClone(legacy);
   mappings[0].to.port = 8443;
   await request.request("info/overview");
-  assert.deepEqual(config.getConvertedRemoteMappings(), [{
-    from: { addr: "panel.example:443", prefix: "/panel" },
-    to: { addr: "node.example:8443", prefix: "/node" }
-  }]);
+  assert.deepEqual(config.getConvertedRemoteMappings(), [
+    {
+      from: { addr: "panel.example:443", prefix: "/panel" },
+      to: { addr: "node.example:8443", prefix: "/node" }
+    }
+  ]);
   mappings = [];
   await request.request("info/overview");
   assert.deepEqual(config.getConvertedRemoteMappings(), []);

@@ -1,13 +1,5 @@
 import { v4 } from "uuid";
-import {
-  $t,
-  identity,
-  koa,
-  middleware,
-  operations,
-  remote,
-  roles
-} from "./runtime";
+import { $t, identity, koa, middleware, operations, remote, roles } from "./runtime";
 
 function timeUuid() {
   return v4().replace(/-/gim, "") + new Date().getTime();
@@ -150,12 +142,16 @@ export function registerFileRoutes() {
         const deep = Boolean(ctx.request.body.deep);
         const remoteService = remote().services.getInstance(daemonId);
         const timeout = Math.min(5 * 60 * 1000, Math.max(15 * 1000, targets.length * 2 * 1000));
-        const result = await new (remote().Request)(remoteService).request("file/chmod_batch", {
-          targets,
-          instanceUuid,
-          chmod,
-          deep
-        }, timeout);
+        const result = await new (remote().Request)(remoteService).request(
+          "file/chmod_batch",
+          {
+            targets,
+            instanceUuid,
+            chmod,
+            deep
+          },
+          timeout
+        );
         ctx.body = result;
       } catch (err) {
         ctx.body = err;
@@ -275,7 +271,11 @@ export function registerFileRoutes() {
         const fileName = String(ctx.request.body.file_name);
 
         const remoteService = remote().services.getInstance(daemonId);
-        if (!remoteService) throw new Error($t("TXT_CODE_COMMON_COULD_NOT_FIND_REMOTE_WITH_GIVEN_DAEMON_ID") + ` Daemon ID: ${daemonId}`);
+        if (!remoteService)
+          throw new Error(
+            $t("TXT_CODE_COMMON_COULD_NOT_FIND_REMOTE_WITH_GIVEN_DAEMON_ID") +
+              ` Daemon ID: ${daemonId}`
+          );
 
         const downloadId = timeUuid();
         ctx.body = downloadId;
@@ -363,8 +363,10 @@ export function registerFileRoutes() {
         const source = String(ctx.request.body.source);
         const targets = ctx.request.body.targets;
         const type = Number(ctx.request.body.type);
-        if (typeof targets !== "string" &&
-            (!Array.isArray(targets) || !targets.every((target) => typeof target === "string"))) {
+        if (
+          typeof targets !== "string" &&
+          (!Array.isArray(targets) || !targets.every((target) => typeof target === "string"))
+        ) {
           ctx.throw(400, "Invalid compression targets");
         }
         const code = String(ctx.request.body.code);
@@ -397,7 +399,11 @@ export function registerFileRoutes() {
         const instanceUuid = String(ctx.query.uuid);
         const fileName = String(ctx.query.file_name);
         const remoteService = remote().services.getInstance(daemonId);
-        if (!remoteService) throw new Error($t("TXT_CODE_COMMON_COULD_NOT_FIND_REMOTE_WITH_GIVEN_DAEMON_ID") + ` Daemon ID: ${daemonId}`);
+        if (!remoteService)
+          throw new Error(
+            $t("TXT_CODE_COMMON_COULD_NOT_FIND_REMOTE_WITH_GIVEN_DAEMON_ID") +
+              ` Daemon ID: ${daemonId}`
+          );
         const addr = remoteService.config.fullAddr;
         const remoteMappings = remoteService.config.getConvertedRemoteMappings();
         const password = timeUuid();
@@ -437,7 +443,11 @@ export function registerFileRoutes() {
         const instanceUuid = String(ctx.query.uuid);
         const uploadDir = String(ctx.query.upload_dir);
         const remoteService = remote().services.getInstance(daemonId);
-        if (!remoteService) throw new Error($t("TXT_CODE_COMMON_COULD_NOT_FIND_REMOTE_WITH_GIVEN_DAEMON_ID") + ` Daemon ID: ${daemonId}`);
+        if (!remoteService)
+          throw new Error(
+            $t("TXT_CODE_COMMON_COULD_NOT_FIND_REMOTE_WITH_GIVEN_DAEMON_ID") +
+              ` Daemon ID: ${daemonId}`
+          );
         const addr = remoteService.config.fullAddr;
         const remoteMappings = remoteService.config.getConvertedRemoteMappings();
         const password = timeUuid();

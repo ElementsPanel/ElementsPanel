@@ -30,9 +30,9 @@ function migrateFromSystemConfig(ctx: PanelPluginContext): boolean {
 }
 
 export async function initMarketSettings(ctx: PanelPluginContext) {
-  const stored = (await ctx.storage.getStorage().load(CATEGORY, MarketSettings, ID)) as
-    | MarketSettings
-    | null;
+  const stored = (await ctx.storage
+    .getStorage()
+    .load(CATEGORY, MarketSettings, ID)) as MarketSettings | null;
   if (stored) {
     settings = stored;
     return;

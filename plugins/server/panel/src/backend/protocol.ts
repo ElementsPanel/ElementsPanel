@@ -55,8 +55,12 @@ export function protocol(ctx: PanelPluginContext) {
       return;
     }
 
-    if ((requestCtx.status >= 300 && requestCtx.status < 400) ||
-        requestCtx.status === 204 || requestCtx.status === 205) return;
+    if (
+      (requestCtx.status >= 300 && requestCtx.status < 400) ||
+      requestCtx.status === 204 ||
+      requestCtx.status === 205
+    )
+      return;
     requestCtx.type = "application/json";
 
     if (requestCtx.status == 404) {

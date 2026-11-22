@@ -210,7 +210,7 @@ export function registerModManagerRoutes(
     }),
     async (requestCtx) => {
       try {
-        const { daemonId, uuid, fileName, type, uploadId } = requestCtx.request.body;
+        const { daemonId, uuid, fileName, type } = requestCtx.request.body;
         const remoteService = daemonId;
         if (type === "download") {
           const result = await remoteRequest(remoteService).request("file/download_stop", {

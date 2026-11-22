@@ -155,7 +155,7 @@ async function panelFixture(t, options = {}) {
 test("panel routes, translations and timers follow dependency lifetime", async (t) => {
   const clear = t.mock.method(global, "clearInterval");
   const fixture = await panelFixture(t, { deferWebsocket: true });
-  const { ctx, fork, remote, network, request } = fixture;
+  const { ctx, fork, network, request } = fixture;
   assert.equal((await request("/api/mod/list")).body, undefined);
   assert.equal(ctx.i18n.items.size, 0);
 
@@ -182,7 +182,7 @@ test("panel routes, translations and timers follow dependency lifetime", async (
 });
 
 test("panel mod API preserves authorization, validation and daemon event names", async (t) => {
-  const { ctx, remote, policy, calls, request } = await panelFixture(t);
+  const { ctx, policy, calls, request } = await panelFixture(t);
   await until(() => ctx.i18n.items.size === 1);
   assert.equal((await request("/api/mod/list", { role: 0 })).status, 403);
   policy.allowed = false;
@@ -243,6 +243,7 @@ test("Spigot version filenames are safe for batch downloads and match their fall
       const fileName = version.files[0].filename;
       assert.equal(version.files[1].filename, fileName);
       assert.match(fileName, /\.jar$/);
+      // eslint-disable-next-line no-control-regex -- Reject control characters in file names.
       assert.doesNotMatch(fileName, /[\\/:*?"<>|\x00-\x1f\x7f]/);
       assert.doesNotMatch(fileName, /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i);
       assert.ok(Buffer.byteLength(fileName, "utf8") <= 255);
@@ -653,7 +654,9 @@ function mirrorManager(respond, preference) {
   });
   const manager = new ModManagerService(
     {
-      effect(callback) { dispose = callback(); },
+      effect(callback) {
+        dispose = callback();
+      },
       setInterval() {},
       sleep: async () => {},
       logger: { warn() {} }
@@ -665,13 +668,21 @@ function mirrorManager(respond, preference) {
 
 test("Mod request limits bound retries even when both sources fail", async () => {
   for (const retries of [0, 2]) {
-    const f = mirrorManager(() => { throw { code: "ECONNRESET" }; });
-    f.manager.setSettings({ sourcePreference: "mirror", requestTimeoutMs: 12000, requestRetries: retries });
+    const f = mirrorManager(() => {
+      throw { code: "ECONNRESET" };
+    });
+    f.manager.setSettings({
+      sourcePreference: "mirror",
+      requestTimeoutMs: 12000,
+      requestRetries: retries
+    });
     await f.manager.searchProjects("unavailable", 0, 10, { source: "modrinth" });
     assert.equal(f.requests.length, retries + 2);
-    assert.ok(f.requests.every(request => request.timeout === 12000));
+    assert.ok(f.requests.every((request) => request.timeout === 12000));
     assert.equal(new URL(f.requests[0].url).hostname, "mod.mcimirror.top");
-    assert.ok(f.requests.slice(1).every(request => new URL(request.url).hostname === "api.modrinth.com"));
+    assert.ok(
+      f.requests.slice(1).every((request) => new URL(request.url).hostname === "api.modrinth.com")
+    );
     f.dispose();
   }
 });
@@ -679,15 +690,27 @@ test("Mod request limits bound retries even when both sources fail", async () =>
 test("Modrinth search, metadata, version lists and hash lookup use MCIM with ElementsPanel UA", async () => {
   const responses = {
     "/tag/game_version": [{ version: "1.21.1", version_type: "release" }],
-    "/search": { hits: [
-      { project_id: "sodium", title: "Sodium", project_type: "mod" },
-      { project_id: "pack", title: "Modpack", project_type: "modpack" },
-      { project_id: "server", title: "Java Server", project_type: "minecraft_java_server" }
-    ], total_hits: 1 },
+    "/search": {
+      hits: [
+        { project_id: "sodium", title: "Sodium", project_type: "mod" },
+        { project_id: "pack", title: "Modpack", project_type: "modpack" },
+        { project_id: "server", title: "Java Server", project_type: "minecraft_java_server" }
+      ],
+      total_hits: 1
+    },
     "/project/sodium": { id: "sodium", project_type: "mod", title: "Sodium" },
-    "/project/sodium/version": [{
-      id: "v1", files: [{ url: "https://cdn.modrinth.com/data/sodium/versions/v1/mod.jar", filename: "mod.jar", primary: true }]
-    }],
+    "/project/sodium/version": [
+      {
+        id: "v1",
+        files: [
+          {
+            url: "https://cdn.modrinth.com/data/sodium/versions/v1/mod.jar",
+            filename: "mod.jar",
+            primary: true
+          }
+        ]
+      }
+    ],
     "/version_file/hash": { id: "v1", project_id: "sodium" },
     "/version_files": { hash2: { id: "v1", project_id: "sodium" } },
     "/projects": [{ id: "sodium", title: "Sodium" }]
@@ -702,13 +725,26 @@ test("Modrinth search, metadata, version lists and hash lookup use MCIM with Ele
   });
   assert.deepEqual(await f.manager.getMinecraftVersions(), ["1.21.1"]);
   const search = await f.manager.searchProjects("sodium", 0, 10, { source: "modrinth" });
-  assert.deepEqual(search.hits.map((hit) => [hit.id, hit.source]), [["sodium", "Modrinth"]]);
+  assert.deepEqual(
+    search.hits.map((hit) => [hit.id, hit.source]),
+    [["sodium", "Modrinth"]]
+  );
   const versions = await f.manager.getProjectVersions("sodium", "Modrinth");
-  assert.equal(versions[0].files[0].url, "https://mod.mcimirror.top/data/sodium/versions/v1/mod.jar");
-  assert.equal(versions[0].files[0].fallbackUrl, "https://cdn.modrinth.com/data/sodium/versions/v1/mod.jar");
+  assert.equal(
+    versions[0].files[0].url,
+    "https://mod.mcimirror.top/data/sodium/versions/v1/mod.jar"
+  );
+  assert.equal(
+    versions[0].files[0].fallbackUrl,
+    "https://cdn.modrinth.com/data/sodium/versions/v1/mod.jar"
+  );
   assert.equal((await f.manager.getInfoByHash("hash")).project.id, "sodium");
   assert.equal((await f.manager.getInfosByHashes(["hash2"])).hash2.project.id, "sodium");
-  assert.equal(responses["/project/sodium/version"][0].files[0].fallbackUrl, undefined, "leave upstream responses untouched");
+  assert.equal(
+    responses["/project/sodium/version"][0].files[0].fallbackUrl,
+    undefined,
+    "leave upstream responses untouched"
+  );
   for (const request of f.requests) {
     assert.equal(request.headers["User-Agent"], "ElementsPanel");
     assert.equal(request.headers["x-api-key"], undefined);
@@ -720,22 +756,39 @@ test("CurseForge MCIM requests need no API key and only supported file hosts gai
     const parsed = new URL(url);
     assert.equal(parsed.origin, "https://mod.mcimirror.top");
     if (parsed.pathname === "/curseforge/v1/mods/search") {
-      return { data: { data: [
-        { id: 238222, name: "Example", classId: 6 },
-        { id: 447100, name: "Modpack", classId: 4471 }
-      ], pagination: { totalCount: 1 } } };
+      return {
+        data: {
+          data: [
+            { id: 238222, name: "Example", classId: 6 },
+            { id: 447100, name: "Modpack", classId: 4471 }
+          ],
+          pagination: { totalCount: 1 }
+        }
+      };
     }
     if (parsed.pathname === "/curseforge/v1/mods/238222") {
       return { data: { data: { id: 238222, name: "Example", classId: 6 } } };
     }
     assert.equal(parsed.pathname, "/curseforge/v1/mods/238222/files");
-    return { data: { data: ["edge.forgecdn.net", "mediafilez.forgecdn.net"].map((host, index) => ({
-      id: index + 1, fileName: "mod.jar", gameVersions: ["1.21.1", "Fabric"],
-      downloadUrl: `https://${host}/files/1/2/mod.jar`
-    })) } };
+    return {
+      data: {
+        data: ["edge.forgecdn.net", "mediafilez.forgecdn.net"].map((host, index) => ({
+          id: index + 1,
+          fileName: "mod.jar",
+          gameVersions: ["1.21.1", "Fabric"],
+          downloadUrl: `https://${host}/files/1/2/mod.jar`
+        }))
+      }
+    };
   });
-  const search = await f.manager.searchProjects("Example", 0, 10, { source: "curseforge", type: "mod" });
-  assert.deepEqual(search.hits.map((hit) => [hit.id, hit.source]), [["238222", "CurseForge"]]);
+  const search = await f.manager.searchProjects("Example", 0, 10, {
+    source: "curseforge",
+    type: "mod"
+  });
+  assert.deepEqual(
+    search.hits.map((hit) => [hit.id, hit.source]),
+    [["238222", "CurseForge"]]
+  );
   const versions = await f.manager.getProjectVersions("238222", "CurseForge");
   assert.equal(versions[0].files[0].url, "https://mod.mcimirror.top/files/1/2/mod.jar");
   assert.equal(versions[0].files[0].fallbackUrl, "https://edge.forgecdn.net/files/1/2/mod.jar");
@@ -777,7 +830,12 @@ test("official source preference requests official APIs first and falls back to 
   const f = mirrorManager(({ url }) => {
     const parsed = new URL(url);
     if (parsed.origin === "https://api.modrinth.com") {
-      return { data: { hits: [{ project_id: "sodium", title: "Sodium", project_type: "mod" }], total_hits: 1 } };
+      return {
+        data: {
+          hits: [{ project_id: "sodium", title: "Sodium", project_type: "mod" }],
+          total_hits: 1
+        }
+      };
     }
     throw new Error(`Unexpected request to ${url}`);
   }, "official");
@@ -791,13 +849,21 @@ test("official source preference requests official APIs first and falls back to 
     const parsed = new URL(url);
     if (parsed.origin === "https://api.curse.tools") throw { response: { status: 503 } };
     assert.equal(parsed.origin, "https://mod.mcimirror.top");
-    return { data: { data: [{ id: 238222, name: "Example", classId: 6 }], pagination: { totalCount: 1 } } };
+    return {
+      data: { data: [{ id: 238222, name: "Example", classId: 6 }], pagination: { totalCount: 1 } }
+    };
   }, "official");
-  const fallbackSearch = await outage.manager.searchProjects("Example", 0, 10, { source: "curseforge", type: "mod" });
+  const fallbackSearch = await outage.manager.searchProjects("Example", 0, 10, {
+    source: "curseforge",
+    type: "mod"
+  });
   assert.equal(fallbackSearch.hits[0].source, "CurseForge");
   assert.equal(outage.requests.length, 2);
   assert.equal(outage.requests[0].url, "https://api.curse.tools/v1/cf/mods/search");
-  assert.ok(outage.requests[0].headers["x-api-key"], "the official CurseForge API needs its key on the primary request");
+  assert.ok(
+    outage.requests[0].headers["x-api-key"],
+    "the official CurseForge API needs its key on the primary request"
+  );
   assert.equal(outage.requests[1].url, "https://mod.mcimirror.top/curseforge/v1/mods/search");
   assert.equal(outage.requests[1].headers["x-api-key"], undefined, "the mirror proxies the key");
   assert.deepEqual(outage.requests[0].params, outage.requests[1].params);
@@ -809,21 +875,37 @@ test("official source preference requests official APIs first and falls back to 
 
 test("MCIM file mapping preserves encoded paths and excludes lookalike hosts, credentials and custom ports", () => {
   const { withMirrorDownload } = load("plugins/instance/panel/src/backend/mod/mcim.ts");
-  const original = { url: "https://cdn.modrinth.com/data/a/versions/b/file%20name.jar?token=example", filename: "file name.jar", hashes: { sha1: "hash" } };
+  const original = {
+    url: "https://cdn.modrinth.com/data/a/versions/b/file%20name.jar?token=example",
+    filename: "file name.jar",
+    hashes: { sha1: "hash" }
+  };
   const mirrored = withMirrorDownload(original, "official");
-  assert.equal(mirrored.fallbackUrl, "https://mod.mcimirror.top/data/a/versions/b/file%20name.jar?token=example");
+  assert.equal(
+    mirrored.fallbackUrl,
+    "https://mod.mcimirror.top/data/a/versions/b/file%20name.jar?token=example"
+  );
   assert.equal(mirrored.url, original.url);
   assert.deepEqual(mirrored.hashes, original.hashes);
   for (const url of [
-    "https://cdn.modrinth.com.evil.example/file.jar", "https://edge.forgecdn.net:8443/file.jar",
-    "https://user:password@cdn.modrinth.com/file.jar", "https://mediafilez.forgecdn.net/file.jar",
-    "https://api.spiget.org/v2/resources/1/download", "https://mod.mcimirror.top/data/a/file.jar", "invalid"
-  ]) assert.equal(withMirrorDownload({ url }, "official").fallbackUrl, undefined);
+    "https://cdn.modrinth.com.evil.example/file.jar",
+    "https://edge.forgecdn.net:8443/file.jar",
+    "https://user:password@cdn.modrinth.com/file.jar",
+    "https://mediafilez.forgecdn.net/file.jar",
+    "https://api.spiget.org/v2/resources/1/download",
+    "https://mod.mcimirror.top/data/a/file.jar",
+    "invalid"
+  ])
+    assert.equal(withMirrorDownload({ url }, "official").fallbackUrl, undefined);
 });
 
 test("download URLs put the preferred source first and keep the other one as fallback", () => {
   const { withMirrorDownload } = load("plugins/instance/panel/src/backend/mod/mcim.ts");
-  const file = { url: "https://cdn.modrinth.com/data/a/versions/b/mod.jar", filename: "mod.jar", primary: true };
+  const file = {
+    url: "https://cdn.modrinth.com/data/a/versions/b/mod.jar",
+    filename: "mod.jar",
+    primary: true
+  };
   const mirrorFirst = withMirrorDownload(file, "mirror");
   assert.equal(mirrorFirst.url, "https://mod.mcimirror.top/data/a/versions/b/mod.jar");
   assert.equal(mirrorFirst.fallbackUrl, file.url);
@@ -833,28 +915,31 @@ test("download URLs put the preferred source first and keep the other one as fal
   assert.equal(officialFirst.url, file.url);
   assert.equal(officialFirst.fallbackUrl, "https://mod.mcimirror.top/data/a/versions/b/mod.jar");
   // A file the mirror cannot proxy keeps its single URL in either mode.
-  const unproxied = { url: "https://mediafilez.forgecdn.net/files/1/2/mod.jar", filename: "mod.jar" };
+  const unproxied = {
+    url: "https://mediafilez.forgecdn.net/files/1/2/mod.jar",
+    filename: "mod.jar"
+  };
   assert.deepEqual(withMirrorDownload(unproxied, "mirror"), unproxied);
   assert.deepEqual(withMirrorDownload(unproxied, "official"), unproxied);
 });
 
-test("a client URL pair is re-ordered by the current preference before it reaches the daemon", async (t) => {
+test("a client URL pair is re-ordered by the current preference before it reaches the daemon", async () => {
   const { preferDownload } = load("plugins/instance/panel/src/backend/mod/mcim.ts");
   const officialUrl = "https://cdn.modrinth.com/data/a/versions/b/mod.jar";
   const mirrorUrl = "https://mod.mcimirror.top/data/a/versions/b/mod.jar";
   // Stale pairs are ordered either way, whichever side the client listed first.
-  assert.deepEqual(
-    preferDownload(officialUrl, mirrorUrl, "mirror"),
-    { url: mirrorUrl, fallbackUrl: officialUrl }
-  );
-  assert.deepEqual(
-    preferDownload(mirrorUrl, officialUrl, "official"),
-    { url: officialUrl, fallbackUrl: mirrorUrl }
-  );
-  assert.deepEqual(
-    preferDownload(officialUrl, mirrorUrl, "official"),
-    { url: officialUrl, fallbackUrl: mirrorUrl }
-  );
+  assert.deepEqual(preferDownload(officialUrl, mirrorUrl, "mirror"), {
+    url: mirrorUrl,
+    fallbackUrl: officialUrl
+  });
+  assert.deepEqual(preferDownload(mirrorUrl, officialUrl, "official"), {
+    url: officialUrl,
+    fallbackUrl: mirrorUrl
+  });
+  assert.deepEqual(preferDownload(officialUrl, mirrorUrl, "official"), {
+    url: officialUrl,
+    fallbackUrl: mirrorUrl
+  });
   // Pairs without a mirror counterpart (SpigotMC's CDNs) keep the client order.
   const spigot = [
     "https://cdn.spiget.org/file/1/mod.jar",
@@ -881,7 +966,7 @@ test("the download route applies the live preference to stale version lists", as
       return () => {};
     }
   };
-  const { ctx, remote, calls, request } = await panelFixture(t, { storage, settingsForm });
+  const { calls, request } = await panelFixture(t, { storage, settingsForm });
   await until(() => declaration);
 
   const officialUrl = "https://cdn.modrinth.com/data/a/versions/b/mod.jar";
@@ -914,7 +999,10 @@ test("the download route applies the live preference to stale version lists", as
   assert.equal(calls[1].data.fallbackUrl, mirrorUrl);
 
   // SpigotMC has no mirror variant, so its two CDNs stay in the client order.
-  const spigot = ["https://cdn.spiget.org/file/1/mod.jar", "https://api.spiget.org/v2/resources/1/download"];
+  const spigot = [
+    "https://cdn.spiget.org/file/1/mod.jar",
+    "https://api.spiget.org/v2/resources/1/download"
+  ];
   await download(...spigot);
   assert.equal(calls[2].data.url, spigot[0]);
   assert.equal(calls[2].data.fallbackUrl, spigot[1]);
@@ -976,13 +1064,19 @@ test("the stored source preference loads at startup and the settings form switch
   // Writing persists the choice and switches the running service without a restart.
   await declaration.write({ sourcePreference: "official" });
   assert.deepEqual(warnings, [], "loading and saving settings use declared services");
-  assert.deepEqual(stored.get("ModManagerSettings:config"), { sourcePreference: "official", ...defaults });
+  assert.deepEqual(stored.get("ModManagerSettings:config"), {
+    sourcePreference: "official",
+    ...defaults
+  });
   assert.deepEqual(await declaration.read(), { sourcePreference: "official", ...defaults });
   assert.equal(await searchOrigin(first), "https://api.modrinth.com");
 
   // A value outside the declared options is refused instead of persisted.
   await assert.rejects(declaration.write({ sourcePreference: "bogus" }));
-  assert.deepEqual(stored.get("ModManagerSettings:config"), { sourcePreference: "official", ...defaults });
+  assert.deepEqual(stored.get("ModManagerSettings:config"), {
+    sourcePreference: "official",
+    ...defaults
+  });
   await declaration.write({ requestTimeoutMs: 15000, requestRetries: 0 });
   await searchOrigin(first);
   assert.equal(requests.at(-1).timeout, 15000);
@@ -998,7 +1092,9 @@ test("the stored source preference loads at startup and the settings form switch
   // A fresh plugin instance starts on the stored preference.
   const previousDeclaration = declaration;
   const second = await panelFixture(t, { storage, settingsForm, axios });
-  await until(() => declaration !== previousDeclaration && declaration.read().sourcePreference === "official");
+  await until(
+    () => declaration !== previousDeclaration && declaration.read().sourcePreference === "official"
+  );
   assert.equal(await searchOrigin(second), "https://api.modrinth.com");
   assert.equal(requests.at(-1).timeout, 15000);
 });

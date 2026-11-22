@@ -107,12 +107,9 @@ export async function getInstanceDetails(
       continue;
     }
     try {
-      let instancesInfo = await new (remote().Request)(remoteService).request(
-        "instance/section",
-        {
-          instanceUuids: [iterator.instanceUuid]
-        }
-      );
+      let instancesInfo = await new (remote().Request)(remoteService).request("instance/section", {
+        instanceUuids: [iterator.instanceUuid]
+      });
       if (!instancesInfo || instancesInfo.length === 0) continue;
       instancesInfo = instancesInfo[0];
       resInstances.push({

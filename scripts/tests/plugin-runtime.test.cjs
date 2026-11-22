@@ -6,7 +6,6 @@ const path = require("node:path");
 const { EventEmitter } = require("node:events");
 const { test } = require("node:test");
 const { installNpmPlugin } = require("./npm-fixtures.cjs");
-const root = path.resolve(__dirname, "../..");
 const hostRequire = from("panel");
 const ts = hostRequire("typescript");
 const { Context } = hostRequire("cordis");
@@ -40,9 +39,15 @@ function fixture(t, side = "panel", commonOverrides) {
     side === "panel" ? "core/panel/src/app/plugin/loader.ts" : "core/daemon/src/plugin/loader.ts",
     {
       "./context": { ctx },
-      ...(commonOverrides ? { "mcsmanager-common": Object.assign(
-        {}, ...commonNames.map((name) => load(`core/common/src/${name}.ts`)), commonOverrides
-      ) } : {})
+      ...(commonOverrides
+        ? {
+            "mcsmanager-common": Object.assign(
+              {},
+              ...commonNames.map((name) => load(`core/common/src/${name}.ts`)),
+              commonOverrides
+            )
+          }
+        : {})
     }
   );
   t.after(async () => {
@@ -91,9 +96,11 @@ for (const side of ["panel", "daemon"]) {
       ctx.set("${id}Value",${JSON.stringify(version)});
       ctx.on("dispose",()=>ctx.root.testEvents.push("dispose:${id}"));
     };`;
-    const write = (id, version = "1.0.0") => installNpmPlugin(packageRoot, side, id, {
-      version, source: source(id, version)
-    });
+    const write = (id, version = "1.0.0") =>
+      installNpmPlugin(packageRoot, side, id, {
+        version,
+        source: source(id, version)
+      });
     f = fixture(t, side, {
       canRestartProcess: () => true,
       requestProcessRestart: (_ctx, _settle, ready) => {
@@ -108,7 +115,11 @@ for (const side of ["panel", "daemon"]) {
           await npmContinue.promise;
         }
         if (update.pluginId === "broken") throw new Error("npm failed");
-        return { ...write(update.pluginId, update.version), pluginId: update.pluginId, version: update.version };
+        return {
+          ...write(update.pluginId, update.version),
+          pluginId: update.pluginId,
+          version: update.version
+        };
       },
       async updateNpmRuntime(update) {
         calls.push("runtime");
@@ -133,7 +144,9 @@ for (const side of ["panel", "daemon"]) {
       updates: [
         { name: `@elementspanel/${side}`, version: "2.0.0", runtime: true },
         ...["sample", "broken", "server"].map((pluginId) => ({
-          pluginId, name: `@elementspanel/epanel-plugin-${pluginId}`, version: "2.0.0"
+          pluginId,
+          name: `@elementspanel/epanel-plugin-${pluginId}`,
+          version: "2.0.0"
         }))
       ]
     });
@@ -149,10 +162,16 @@ for (const side of ["panel", "daemon"]) {
     assert.equal(result.restartRequired, false);
     assert.equal(f.ctx.sampleValue, "1.0.0");
     assert.equal(f.ctx.serverValue, "1.0.0");
-    assert.deepEqual(f.ctx.testEvents, [], "neither npm installs nor the queued watcher reload dispose running plugins");
+    assert.deepEqual(
+      f.ctx.testEvents,
+      [],
+      "neither npm installs nor the queued watcher reload dispose running plugins"
+    );
     assert.equal(f.inventory().find((plugin) => plugin.id === "sample").version, "2.0.0");
     let ready = false;
-    const restarting = restartReady().then(() => { ready = true; });
+    const restarting = restartReady().then(() => {
+      ready = true;
+    });
     await settle();
     assert.equal(ready, false);
     replied.resolve();
@@ -163,15 +182,20 @@ for (const side of ["panel", "daemon"]) {
   test(`${side}: failed batches do not restart and unsupervised updates require one manual restart`, async (t) => {
     let fail = true;
     let restarts = 0;
-    const write = (version) => installNpmPlugin(packageRoot, side, "sample", {
-      version, source: `exports.apply=ctx=>ctx.set("sampleValue",${JSON.stringify(version)});`
-    });
+    const write = (version) =>
+      installNpmPlugin(packageRoot, side, "sample", {
+        version,
+        source: `exports.apply=ctx=>ctx.set("sampleValue",${JSON.stringify(version)});`
+      });
     const f = fixture(t, side, {
       async installNpmPlugin(update) {
         if (fail) throw new Error("npm failed");
         return { ...write(update.version), pluginId: "sample", version: update.version };
       },
-      requestProcessRestart: () => { restarts++; return false; }
+      requestProcessRestart: () => {
+        restarts++;
+        return false;
+      }
     });
     const previousRoot = process.env.EPANEL_PACKAGE_ROOT;
     const packageRoot = path.join(f.directory, "node_modules", "@elementspanel", side);
@@ -182,7 +206,9 @@ for (const side of ["panel", "daemon"]) {
     });
     write("1.0.0");
     await f.start();
-    const updates = [{ pluginId: "sample", name: "@elementspanel/epanel-plugin-sample", version: "2.0.0" }];
+    const updates = [
+      { pluginId: "sample", name: "@elementspanel/epanel-plugin-sample", version: "2.0.0" }
+    ];
     const failed = await f.ctx.plugins.updateBatch({ updates });
     assert.ok(failed.results[0].error);
     assert.equal(failed.restartRequired, false);
@@ -322,7 +348,9 @@ for (const side of ["panel", "daemon"]) {
     await f.ctx.events.flush();
     assert.equal(f.inventory().find((p) => p.id === "consumer").state, "pending");
     assert.equal(f.inventory().find((p) => p.id === "consumer").running, false);
-    assert.deepEqual(f.inventory().find((p) => p.id === "consumer").missingDependencies, ["example"]);
+    assert.deepEqual(f.inventory().find((p) => p.id === "consumer").missingDependencies, [
+      "example"
+    ]);
     const result = await f.enabled("provider", true);
     assert.equal(result.result.application, "applied");
     assert.equal(f.inventory().find((p) => p.id === "consumer").state, "active");
@@ -343,14 +371,15 @@ for (const side of ["panel", "daemon"]) {
   test(`${side}: declared plugin dependencies recover after installation, disabling and failure`, async (t) => {
     const f = fixture(t, side);
     f.write("consumer", 'exports.apply=ctx=>ctx.set("consumerValue",42);', {
-      priority: -100, backendInject: ["provider"]
+      priority: -100,
+      backendInject: ["provider"]
     });
     await f.start();
     const consumer = () => f.inventory().find((plugin) => plugin.id === "consumer");
     assert.equal(consumer().state, "pending");
     assert.deepEqual(consumer().missingDependencies, ["provider"]);
     assert.equal(f.ctx.get("consumerValue"), undefined);
-    f.write("provider", 'exports.apply=()=>{};', { priority: 100 });
+    f.write("provider", "exports.apply=()=>{};", { priority: 100 });
     await f.reload();
     assert.equal(consumer().state, "active");
     assert.deepEqual(consumer().missingDependencies, []);
@@ -366,7 +395,7 @@ for (const side of ["panel", "daemon"]) {
     assert.equal(f.inventory().find((plugin) => plugin.id === "provider").state, "failed");
     assert.equal(consumer().state, "pending");
     assert.deepEqual(consumer().missingDependencies, ["provider"]);
-    f.write("provider", 'exports.apply=async()=>{await Promise.resolve()};');
+    f.write("provider", "exports.apply=async()=>{await Promise.resolve()};");
     await f.reload();
     assert.equal(consumer().state, "active");
     assert.deepEqual(consumer().missingDependencies, []);
@@ -532,20 +561,27 @@ test("a revision changes when a nested module changes, and public assets never r
   poll();
   assert.notEqual(events.body.read().toString(), initial);
   restarting();
-  assert.equal(events.body.writableEnded, true, "the notification response ends before transport shutdown");
+  assert.equal(
+    events.body.writableEnded,
+    true,
+    "the notification response ends before transport shutdown"
+  );
   dispose();
 });
 
 test("public frontend exports use the provider revision and stay inside its frontend directory", async (t) => {
   const f = fixture(t);
   const directory = f.write("public-api", "exports.apply=()=>{};", {
-    frontend: "frontend/index.js", frontendApi: 1,
+    frontend: "frontend/index.js",
+    frontendApi: 1,
     frontendExports: { session: "frontend/session.js", escape: "index.cjs" }
   });
   fs.mkdirSync(path.join(directory, "frontend"));
   fs.writeFileSync(path.join(directory, "frontend/index.js"), "export function apply() {};");
   fs.writeFileSync(path.join(directory, "frontend/session.js"), "export const session = {};");
-  const entry = f.loader.getPanelFrontendManifest().find(item => item.metadata.id === "public-api");
+  const entry = f.loader
+    .getPanelFrontendManifest()
+    .find((item) => item.metadata.id === "public-api");
   assert.equal(entry.metadata.frontendApi, 1);
   assert.deepEqual(entry.exports, {
     "@elementspanel/epanel-plugin-public-api/session": `./public-api@${entry.revision}/frontend/session.js`
@@ -614,7 +650,9 @@ for (const side of ["panel", "daemon"]) {
     await f.enabled("sample", false);
     await f.configure("sample", { label: "disabled custom" });
     await f.configure("sample", null);
-    const overrides = JSON.parse(fs.readFileSync(path.join(f.directory, "data/plugin-overrides.json")));
+    const overrides = JSON.parse(
+      fs.readFileSync(path.join(f.directory, "data/plugin-overrides.json"))
+    );
     assert.deepEqual(overrides.plugins.sample, { enabled: false });
     assert.deepEqual(overrides.plugins.other.config, { preserved: true });
     f.write("sample", source, { ...metadata, config: { label: "new default" } });
@@ -630,9 +668,7 @@ test("settings forms validate server-side before the plugin writes and report re
   f.ctx.plugin(SettingsFormService);
   let writes = 0;
   let defaults = { port: 23333, unrelatedSecret: "keep" };
-  let fields = [
-    { key: "port", title: "Port", type: "number", min: 1, max: 65535, required: true }
-  ];
+  let fields = [{ key: "port", title: "Port", type: "number", min: 1, max: 65535, required: true }];
   let lastValues;
   f.ctx.plugin({
     name: "settings-example",

@@ -10,14 +10,6 @@ import { $t, archive, settings } from "./runtime";
 /** Resolved per use: the module is required before `apply()` runs. */
 const ERROR_MSG_01 = () => $t("TXT_CODE_SYSTEM_FILE_ILLEGAL_ACCESS");
 
-interface IFile {
-  name: string;
-  size: number;
-  time: string;
-  type: number;
-  mode: number;
-}
-
 export default class FileManager {
   public cwd: string = ".";
 
@@ -311,7 +303,9 @@ export default class FileManager {
         filesPath.push(this.toAbsolutePath(iterator));
         try {
           totalSize += fs.statSync(this.toAbsolutePath(iterator))?.size;
-        } catch (error: any) {}
+        } catch (error: any) {
+          // Skip files removed during enumeration.
+        }
       }
     }
     if (totalSize > MAX_TOTAL_FIELS_SIZE)
@@ -322,7 +316,8 @@ export default class FileManager {
   async edit(target: string, data?: string) {
     if (!this.check(target)) throw new Error(ERROR_MSG_01());
     const absPath = this.toAbsolutePath(target);
-    const content = typeof data === "string" ? iconv.encode(data, this.fileCode || "utf-8") : undefined;
+    const content =
+      typeof data === "string" ? iconv.encode(data, this.fileCode || "utf-8") : undefined;
     const size = content?.length ?? fs.statSync(absPath).size;
     const maxEditSizeMiB = settings().config.maxFileEditSizeMiB ?? 5;
     if (size > maxEditSizeMiB * 1024 * 1024) {

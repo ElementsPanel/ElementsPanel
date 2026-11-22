@@ -39,20 +39,13 @@ export const addNode = useDefineApi<
   method: "POST"
 });
 
-export const deleteNode = useDefineApi<
-  { params: { uuid: string } },
-  any
->({
+export const deleteNode = useDefineApi<{ params: { uuid: string } }, any>({
   url: "/api/service/remote_service",
   method: "DELETE"
 });
 
-export const connectNode = useDefineApi<
-  { params: { uuid: string } },
-  any
->({
+export const connectNode = useDefineApi<{ params: { uuid: string } }, any>({
   url: "/api/service/link_remote_service",
   method: "GET",
   forceRequest: true
 });
-

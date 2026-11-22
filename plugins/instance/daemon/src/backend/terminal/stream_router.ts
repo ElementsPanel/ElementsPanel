@@ -105,9 +105,13 @@ export function registerTerminalEvents(ctx: DaemonPluginContext, service = ctx.i
         const text = await readOutputLogTail(filePath, data.size);
         return protocol.response(routerCtx, text);
       }
-      protocol.responseError(routerCtx, new Error($t("TXT_CODE_INSTANCE_ROUTER_TERMINAL_LOG_NOT_EXIST")), {
-        disablePrint: true
-      });
+      protocol.responseError(
+        routerCtx,
+        new Error($t("TXT_CODE_INSTANCE_ROUTER_TERMINAL_LOG_NOT_EXIST")),
+        {
+          disablePrint: true
+        }
+      );
     } catch (error: any) {
       protocol.responseError(routerCtx, error);
     }

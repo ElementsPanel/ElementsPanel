@@ -21,7 +21,10 @@ function policy(t, records = [{ address: "8.8.8.8", family: 4 }]) {
     }
   });
   const options = safe.publicDownloadRequestOptions("https://downloads.example/server.jar");
-  t.after(() => { options.httpAgent.destroy(); options.httpsAgent.destroy(); });
+  t.after(() => {
+    options.httpAgent.destroy();
+    options.httpsAgent.destroy();
+  });
   return { ...safe, options, resolver, lookups };
 }
 
@@ -37,37 +40,80 @@ function lookup(policy, options = {}) {
 test("public download addresses accept public IPv4/IPv6 and reject non-public or embedded private IPs", (t) => {
   const { isPublicAddress } = policy(t);
   for (const address of [
-    "8.8.8.8", "1.1.1.1", "93.184.216.34", "2606:4700:4700::1111",
-    "2001:4860:4860::8888", "::ffff:8.8.8.8", "64:ff9b::808:808"
-  ]) assert.equal(isPublicAddress(address), true, address);
+    "8.8.8.8",
+    "1.1.1.1",
+    "93.184.216.34",
+    "2606:4700:4700::1111",
+    "2001:4860:4860::8888",
+    "::ffff:8.8.8.8",
+    "64:ff9b::808:808"
+  ])
+    assert.equal(isPublicAddress(address), true, address);
   for (const address of [
-    "0.0.0.0", "10.0.0.1", "100.100.100.200", "127.0.0.1", "169.254.169.254",
-    "172.16.1.1", "192.168.1.1", "198.18.0.1", "192.0.2.1", "224.0.0.1", "255.255.255.255",
-    "168.63.129.16", "::", "::1", "fc00::1", "fe80::1", "fe80::1%eth0", "ff02::1",
-    "2001:db8::1", "2002:7f00:1::", "::ffff:127.0.0.1", "::ffff:7f00:1",
-    "::ffff:192.168.1.1", "64:ff9b::a00:1", "64:ff9b::7f00:1", "64:ff9b:1::1", "invalid"
-  ]) assert.equal(isPublicAddress(address), false, address);
+    "0.0.0.0",
+    "10.0.0.1",
+    "100.100.100.200",
+    "127.0.0.1",
+    "169.254.169.254",
+    "172.16.1.1",
+    "192.168.1.1",
+    "198.18.0.1",
+    "192.0.2.1",
+    "224.0.0.1",
+    "255.255.255.255",
+    "168.63.129.16",
+    "::",
+    "::1",
+    "fc00::1",
+    "fe80::1",
+    "fe80::1%eth0",
+    "ff02::1",
+    "2001:db8::1",
+    "2002:7f00:1::",
+    "::ffff:127.0.0.1",
+    "::ffff:7f00:1",
+    "::ffff:192.168.1.1",
+    "64:ff9b::a00:1",
+    "64:ff9b::7f00:1",
+    "64:ff9b:1::1",
+    "invalid"
+  ])
+    assert.equal(isPublicAddress(address), false, address);
 });
 
 test("initial URLs reject credentials, local names and private literals that bypass socket lookup", (t) => {
   const { assertPublicDownloadUrl } = policy(t);
   for (const url of [
-    "file:///etc/passwd", "ftp://downloads.example/file", "https://user:pass@downloads.example/file",
-    "http://localhost/file", "http://localhost./file", "http://server.local/file",
-    "http://server.localhost/file", "http://127.0.0.1/", "http://2130706433/",
-    "http://0x7f000001/", "http://[::1]/", "http://[::ffff:127.0.0.1]/"
-  ]) assert.throws(() => assertPublicDownloadUrl(url), /public HTTP\(S\)/, url);
+    "file:///etc/passwd",
+    "ftp://downloads.example/file",
+    "https://user:pass@downloads.example/file",
+    "http://localhost/file",
+    "http://localhost./file",
+    "http://server.local/file",
+    "http://server.localhost/file",
+    "http://127.0.0.1/",
+    "http://2130706433/",
+    "http://0x7f000001/",
+    "http://[::1]/",
+    "http://[::ffff:127.0.0.1]/"
+  ])
+    assert.throws(() => assertPublicDownloadUrl(url), /public HTTP\(S\)/, url);
   for (const url of [
-    "https://downloads.example/file", "https://8.8.8.8/file", "https://[2606:4700:4700::1111]/file"
-  ]) assert.equal(assertPublicDownloadUrl(url).href, url);
+    "https://downloads.example/file",
+    "https://8.8.8.8/file",
+    "https://[2606:4700:4700::1111]/file"
+  ])
+    assert.equal(assertPublicDownloadUrl(url).href, url);
 });
 
 test("the socket lookup returns the same checked records and preserves public IPv6 answers", async (t) => {
   const p = policy(t, [
-    { address: "2606:4700:4700::1111", family: 6 }, { address: "8.8.8.8", family: 4 }
+    { address: "2606:4700:4700::1111", family: 6 },
+    { address: "8.8.8.8", family: 4 }
   ]);
   assert.deepEqual(await lookup(p, { all: true, hints: 0 }), {
-    address: p.resolver.records, family: undefined
+    address: p.resolver.records,
+    family: undefined
   });
   assert.equal(p.lookups.length, 1);
   assert.equal(p.lookups[0].options.all, true);
@@ -82,9 +128,13 @@ test("the socket lookup returns the same checked records and preserves public IP
 test("mixed DNS results and IPv4-mapped private addresses are rejected before connection", async (t) => {
   const p = policy(t);
   for (const records of [
-    [{ address: "8.8.8.8", family: 4 }, { address: "10.0.0.1", family: 4 }],
+    [
+      { address: "8.8.8.8", family: 4 },
+      { address: "10.0.0.1", family: 4 }
+    ],
     [{ address: "::ffff:127.0.0.1", family: 6 }],
-    [{ address: "8.8.8.8", family: 0 }], []
+    [{ address: "8.8.8.8", family: 0 }],
+    []
   ]) {
     p.resolver.records = records;
     await assert.rejects(lookup(p, { all: true }), { code: "ERR_UNSAFE_DOWNLOAD_URL" });
@@ -93,10 +143,17 @@ test("mixed DNS results and IPv4-mapped private addresses are rejected before co
 
 test("HTTP agent invokes the checked DNS lookup rather than connecting to a private answer", async (t) => {
   const p = policy(t, [{ address: "127.0.0.1", family: 4 }]);
-  await assert.rejects(new Promise((resolve, reject) => {
-    const request = http.get("http://downloads.example:1/file", { agent: p.options.httpAgent }, resolve);
-    request.on("error", reject);
-  }), { code: "ERR_UNSAFE_DOWNLOAD_URL" });
+  await assert.rejects(
+    new Promise((resolve, reject) => {
+      const request = http.get(
+        "http://downloads.example:1/file",
+        { agent: p.options.httpAgent },
+        resolve
+      );
+      request.on("error", reject);
+    }),
+    { code: "ERR_UNSAFE_DOWNLOAD_URL" }
+  );
   assert.equal(p.lookups.length, 1);
 });
 
@@ -104,17 +161,32 @@ test("redirects recheck literal destinations and retain DNS checks for redirecte
   const p = policy(t);
   const redirect = (url) => {
     const parsed = new URL(url);
-    return { href: url, hostname: parsed.hostname.replace(/^\[|\]$/g, ""), protocol: parsed.protocol };
+    return {
+      href: url,
+      hostname: parsed.hostname.replace(/^\[|\]$/g, ""),
+      protocol: parsed.protocol
+    };
   };
   for (const url of [
-    "http://127.0.0.1/file", "http://169.254.169.254/latest/meta-data/",
-    "http://[::ffff:127.0.0.1]/file", "https://user:pass@downloads.example/file", "ftp://downloads.example/file"
-  ]) assert.throws(() => p.options.beforeRedirect(redirect(url)), /public HTTP\(S\)/);
+    "http://127.0.0.1/file",
+    "http://169.254.169.254/latest/meta-data/",
+    "http://[::ffff:127.0.0.1]/file",
+    "https://user:pass@downloads.example/file",
+    "ftp://downloads.example/file"
+  ])
+    assert.throws(() => p.options.beforeRedirect(redirect(url)), /public HTTP\(S\)/);
   assert.doesNotThrow(() => p.options.beforeRedirect(redirect("https://cdn.example/file")));
-  assert.doesNotThrow(() => p.options.beforeRedirect(redirect("https://[2606:4700:4700::1111]/file")));
-  assert.throws(() => p.options.beforeRedirect({
-    ...redirect("https://cdn.example/file"), hostname: "127.0.0.1"
-  }), /public HTTP\(S\)/);
+  assert.doesNotThrow(() =>
+    p.options.beforeRedirect(redirect("https://[2606:4700:4700::1111]/file"))
+  );
+  assert.throws(
+    () =>
+      p.options.beforeRedirect({
+        ...redirect("https://cdn.example/file"),
+        hostname: "127.0.0.1"
+      }),
+    /public HTTP\(S\)/
+  );
   p.resolver.records = [{ address: "192.168.0.1", family: 4 }];
   await assert.rejects(lookup(p), { code: "ERR_UNSAFE_DOWNLOAD_URL" });
 });
@@ -134,17 +206,27 @@ test("known HTTPS mod CDNs support proxy Fake-IP answers without relaxing arbitr
       );
     });
   };
-  for (const host of ["cdn.modrinth.com", "mediafilez.forgecdn.net", "cdn.spiget.org", "api.spiget.org", "mod.mcimirror.top"]) {
+  for (const host of [
+    "cdn.modrinth.com",
+    "mediafilez.forgecdn.net",
+    "cdn.spiget.org",
+    "api.spiget.org",
+    "mod.mcimirror.top"
+  ]) {
     const url = `https://${host}/mod.jar`;
     assert.deepEqual(await resolveWith(url), p.resolver.records);
     assert.equal(p.publicDownloadRequestOptions(url).httpsAgent.options.rejectUnauthorized, true);
   }
   for (const url of [
-    "https://downloads.example/mod.jar", "https://cdn.modrinth.com.evil.example/mod.jar",
-    "http://cdn.modrinth.com/mod.jar", "https://cdn.modrinth.com:8443/mod.jar",
-    "https://mod.mcimirror.top.evil.example/mod.jar", "http://mod.mcimirror.top/mod.jar",
+    "https://downloads.example/mod.jar",
+    "https://cdn.modrinth.com.evil.example/mod.jar",
+    "http://cdn.modrinth.com/mod.jar",
+    "https://cdn.modrinth.com:8443/mod.jar",
+    "https://mod.mcimirror.top.evil.example/mod.jar",
+    "http://mod.mcimirror.top/mod.jar",
     "https://mod.mcimirror.top:8443/mod.jar"
-  ]) await assert.rejects(resolveWith(url), { code: "ERR_UNSAFE_DOWNLOAD_URL" });
+  ])
+    await assert.rejects(resolveWith(url), { code: "ERR_UNSAFE_DOWNLOAD_URL" });
   await assert.rejects(resolveWith("https://cdn.modrinth.com/mod.jar", "internal.example"), {
     code: "ERR_UNSAFE_DOWNLOAD_URL"
   });
@@ -166,7 +248,10 @@ test("catalog redirects select the correct DNS policy at every hop", (t) => {
     const url = new URL(href);
     return { href, hostname: url.hostname, protocol: url.protocol };
   };
-  for (const href of ["https://downloads.example/mod.jar", "https://cdn.modrinth.com:8443/mod.jar"]) {
+  for (const href of [
+    "https://downloads.example/mod.jar",
+    "https://cdn.modrinth.com:8443/mod.jar"
+  ]) {
     const target = redirect(href);
     catalog.beforeRedirect(target);
     assert.equal(target.agents.https.options.lookup, p.lookupPublicAddress);
@@ -188,15 +273,32 @@ test("download transport disables environment proxies and keeps retry and cancel
   const manager = load(directory + "download_manager.ts", {
     axios: async (config) => {
       requests.push(config);
-      if (++attempts === 1) throw { response: { status: 503, data: { destroy() { destroyed++; } } } };
+      if (++attempts === 1)
+        throw {
+          response: {
+            status: 503,
+            data: {
+              destroy() {
+                destroyed++;
+              }
+            }
+          }
+        };
       return response;
     },
     "./public_download": p,
     "../entity/config": { globalConfiguration: { config: {} } },
     "../common/network": { getCommonHeaders: () => ({}) },
-    "timers/promises": { setTimeout: async () => { retries++; } }
+    "timers/promises": {
+      setTimeout: async () => {
+        retries++;
+      }
+    }
   }).default;
-  assert.equal(await manager.requestWithRetry("https://downloads.example/file", new AbortController()), response);
+  assert.equal(
+    await manager.requestWithRetry("https://downloads.example/file", new AbortController()),
+    response
+  );
   assert.equal(retries, 1);
   assert.equal(destroyed, 1);
   for (const request of requests) {

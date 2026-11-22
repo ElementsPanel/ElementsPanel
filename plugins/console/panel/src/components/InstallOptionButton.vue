@@ -16,8 +16,13 @@ const handleClick = (e: Event, action: (e: Event) => void) => {
 </script>
 
 <template>
-  <div class="install-option-button" role="button" tabindex="0" @click="(e) => handleClick(e, option.action)"
-    @keydown.enter.space.prevent="(e) => handleClick(e, option.action)">
+  <div
+    class="install-option-button"
+    role="button"
+    tabindex="0"
+    @click="(e) => handleClick(e, option.action)"
+    @keydown.enter.space.prevent="(e) => handleClick(e, option.action)"
+  >
     <div class="button-inner">
       <div class="button-icon">
         <component :is="option.icon" />

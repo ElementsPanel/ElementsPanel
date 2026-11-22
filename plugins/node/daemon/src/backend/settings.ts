@@ -1,4 +1,7 @@
-import type { DaemonPluginContext, DaemonSettingField } from "../../../../../core/daemon/src/plugin";
+import type {
+  DaemonPluginContext,
+  DaemonSettingField
+} from "../../../../../core/daemon/src/plugin";
 
 type RemoteMapping = NonNullable<
   DaemonPluginContext["settings"]["config"]["remoteMappings"]
@@ -43,7 +46,11 @@ export function registerSettings(ctx: DaemonPluginContext) {
           itemTitleKey: "fromIp",
           maxItems: 100,
           fields: (["from", "to"] as const).flatMap((side): DaemonSettingField[] => {
-            const title = $t(side === "from" ? "TXT_CODE_COMMON_WHEN_ACCESSING_PANEL_FROM" : "TXT_CODE_COMMON_ACCESS_DAEMON_FROM");
+            const title = $t(
+              side === "from"
+                ? "TXT_CODE_COMMON_WHEN_ACCESSING_PANEL_FROM"
+                : "TXT_CODE_COMMON_ACCESS_DAEMON_FROM"
+            );
             return [
               {
                 key: `${side}Ip`,

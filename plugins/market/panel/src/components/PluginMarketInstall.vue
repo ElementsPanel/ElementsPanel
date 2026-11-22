@@ -94,7 +94,7 @@ const actionText = computed(() =>
     : "TXT_CODE_PLUGIN_MARKET_ADD"
 );
 const versions = computed(() => detail.value?.versions ?? (props.version ? [props.version] : []));
-const version = computed(() =>
+const targetVersion = computed(() =>
   versions.value.find((item) => item.version === selectedVersion.value)
 );
 const versionItems = computed(() => {
@@ -126,7 +126,7 @@ const configTargets = computed(() => {
 });
 const majorWarning = computed(() => {
   const current = plugin.value.installedVersion?.split(/[.+-]/);
-  const target = version.value?.version.split(/[.+-]/);
+  const target = targetVersion.value?.version.split(/[.+-]/);
   return (
     current &&
     target &&
@@ -134,7 +134,7 @@ const majorWarning = computed(() => {
   );
 });
 const requirements = computed(() => {
-  const selected = version.value;
+  const selected = targetVersion.value;
   if (!selected) return [];
   return [
     ...Object.entries(selected.dependencies ?? {}).map(([name, range]) => ({
@@ -351,12 +351,12 @@ onBeforeUnmount(() => {
         >
           <template #no-data><Empty :icon="false" compact /></template>
         </VSelect>
-        <PluginMarketSideBadge :sides="version?.sides ?? plugin.sides" />
+        <PluginMarketSideBadge :sides="targetVersion?.sides ?? plugin.sides" />
         <VAlert
-          v-if="version?.deprecated"
+          v-if="targetVersion?.deprecated"
           type="warning"
           variant="tonal"
-          :text="t('TXT_CODE_PLUGIN_MARKET_DEPRECATED', { reason: version.deprecated })"
+          :text="t('TXT_CODE_PLUGIN_MARKET_DEPRECATED', { reason: targetVersion.deprecated })"
           class="my-1"
         />
         <VAlert
@@ -435,7 +435,7 @@ onBeforeUnmount(() => {
         >
         <PluginMarketOperations
           :plugin="plugin"
-          :version="version"
+          :version="targetVersion"
           :disabled="disabled || loading || applyingChanges"
           allow-version-change
           @installed="installedUpdated"

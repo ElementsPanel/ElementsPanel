@@ -103,7 +103,7 @@ export async function apply(ctx: DaemonPluginContext) {
       if (!language) return;
       ctx.logger.warn(ctx.i18n.$t("TXT_CODE_COMMON_NODE_LANGUAGE_HAS_BEEN_CHANGED"), language);
       void i18next.changeLanguage(language);
-      fs.remove(LOCAL_PRESET_LANG_PATH, () => { });
+      fs.remove(LOCAL_PRESET_LANG_PATH, () => {});
       config.language = language;
     }
   });
@@ -139,7 +139,10 @@ export async function apply(ctx: DaemonPluginContext) {
       scope.protocol.response(request, backgroundTasks.list(String(data?.owner || "")));
     });
     scope.protocol.on("tasks/cancel", (request, data) => {
-      scope.protocol.response(request, backgroundTasks.cancel(String(data?.owner || ""), String(data?.id || "")));
+      scope.protocol.response(
+        request,
+        backgroundTasks.cancel(String(data?.owner || ""), String(data?.id || ""))
+      );
     });
     scope.protocol.on("tasks/clear", (request, data) => {
       backgroundTasks.clear(String(data?.owner || ""));

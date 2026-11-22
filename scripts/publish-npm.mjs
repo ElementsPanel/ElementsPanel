@@ -83,12 +83,11 @@ async function readPackages() {
     }
     if (typeof manifest.name !== "string" || typeof manifest.version !== "string")
       throw new Error(`Invalid package metadata in ${manifestPath}.`);
-    const expectedName =
-      directory.startsWith("epanel-plugin-")
-        ? `@elementspanel/${directory}`
-        : directory === "init-elementspanel"
-        ? "@elementspanel/init"
-        : `@elementspanel/${directory}`;
+    const expectedName = directory.startsWith("epanel-plugin-")
+      ? `@elementspanel/${directory}`
+      : directory === "init-elementspanel"
+      ? "@elementspanel/init"
+      : `@elementspanel/${directory}`;
     if (manifest.name !== expectedName) {
       throw new Error(
         `${directory} contains ${manifest.name}@${manifest.version}; expected ${expectedName}. Run npm run package:npm first.`
@@ -142,7 +141,9 @@ function publish(packageInfo, options) {
   if (options.dryRun) args.push("--dry-run");
   if (options.otp) args.push("--otp", options.otp);
   if (options.tag) args.push("--tag", options.tag);
-  console.log(`${options.dryRun ? "Checking" : "Publishing"} ${packageInfo.name}@${packageInfo.version}`);
+  console.log(
+    `${options.dryRun ? "Checking" : "Publishing"} ${packageInfo.name}@${packageInfo.version}`
+  );
   const result = runNpm(args);
   if (result.status !== 0) process.exit(result.status || 1);
 }

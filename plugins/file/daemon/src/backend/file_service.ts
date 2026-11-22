@@ -22,6 +22,7 @@ export function getWindowsDisks() {
     try {
       if (fs.existsSync(`${letter}:\\`)) res.push(letter);
     } catch (error) {
+      // Skip inaccessible drives.
     }
   }
   cacheDisks = res;

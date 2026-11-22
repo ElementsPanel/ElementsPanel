@@ -1,5 +1,10 @@
 import { useDefineApi } from "@elementspanel/epanel-plugin-console/stores/useDefineApi";
-import type { BaseUserInfo, EditUserInfo, LoginUserInfo, UserInstance } from "@elementspanel/epanel-plugin-console/types/user";
+import type {
+  BaseUserInfo,
+  EditUserInfo,
+  LoginUserInfo,
+  UserInstance
+} from "@elementspanel/epanel-plugin-console/types/user";
 import type { SsoPublicConfig } from "@elementspanel/epanel-plugin-console/services/apis/user";
 
 export const loginUser = useDefineApi<
@@ -211,7 +216,5 @@ export const ssoUnbind = useDefineApi<
   url: "/api/auth/sso/unbind",
   method: "PUT"
 });
-
-
 
 export type { SsoPublicConfig };

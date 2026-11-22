@@ -57,7 +57,14 @@ defineExpose({
 
   <div v-else class="ml-4 mr-4 mt-2 mb-2">
     <VTabs v-model="activeKey" @update:model-value="(key) => setActiveKey(String(key))">
-      <VTab v-for="item in props.menus" :key="item.key" :value="item.key" class="mb-2" @click="handleChangeMenu(item)">{{ item.title }}</VTab>
+      <VTab
+        v-for="item in props.menus"
+        :key="item.key"
+        :value="item.key"
+        class="mb-2"
+        @click="handleChangeMenu(item)"
+        >{{ item.title }}</VTab
+      >
     </VTabs>
     <div style="text-align: left">
       <slot :name="activeKey"></slot>

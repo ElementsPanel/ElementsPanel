@@ -1,7 +1,15 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { VBtn, VCard, VCardActions, VCardText, VCheckbox, VDialog, VSpacer } from "vuetify/components";
+import {
+  VBtn,
+  VCard,
+  VCardActions,
+  VCardText,
+  VCheckbox,
+  VDialog,
+  VSpacer
+} from "vuetify/components";
 
 interface Props {
   title: string;
@@ -44,13 +52,7 @@ defineExpose({
 </script>
 
 <template>
-  <VDialog
-    v-model="open"
-    class="app-dialog warning-dialog"
-    max-width="600"
-    persistent
-    scrollable
-  >
+  <VDialog v-model="open" class="app-dialog warning-dialog" max-width="600" persistent scrollable>
     <VCard :title="props.title" rounded="xl">
       <VCardText class="warning-dialog__body">
         <pre class="warning-dialog__message">{{ props.subTitle }}</pre>
@@ -84,5 +86,4 @@ defineExpose({
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-
 </style>

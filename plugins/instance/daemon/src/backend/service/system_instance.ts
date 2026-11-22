@@ -100,8 +100,8 @@ class InstanceSubsystem extends EventEmitter {
 
         instance
           .forceExec(new FunctionDispatcher())
-          .then((v) => {})
-          .catch((v) => {});
+          .then((_v) => {})
+          .catch((_v) => {});
         this.addInstance(instance);
       } catch (error: any) {
         logger.error(
@@ -291,7 +291,10 @@ class InstanceSubsystem extends EventEmitter {
     if (instance) {
       if (instanceUuid === this.GLOBAL_INSTANCE_UUID)
         throw new Error("Cannot delete the global terminal instance");
-      if (instance.status() !== Instance.STATUS_STOP) throw new Error($t("TXT_CODE_COMMON_PLEASE_MAKE_SURE_THE_INSTANCE_IS_STOPPED_BEFORE_DELETING_IT"));
+      if (instance.status() !== Instance.STATUS_STOP)
+        throw new Error(
+          $t("TXT_CODE_COMMON_PLEASE_MAKE_SURE_THE_INSTANCE_IS_STOPPED_BEFORE_DELETING_IT")
+        );
       const directory = path.resolve(instance.absoluteCwdPath());
       if (deleteFile && directory === path.parse(directory).root) {
         throw new Error($t("TXT_CODE_INSTANCE_FILE_ACCESS_DENIED"));
@@ -316,7 +319,9 @@ class InstanceSubsystem extends EventEmitter {
   forward(targetInstanceUuid: string, socket: Socket) {
     try {
       this.instanceStream.requestForward(socket, targetInstanceUuid);
-    } catch (err) {}
+    } catch (err) {
+      // A disconnected socket needs no new subscription.
+    }
   }
 
   stopForward(targetInstanceUuid: string, socket: Socket) {
@@ -325,7 +330,9 @@ class InstanceSubsystem extends EventEmitter {
       if (!instance) throw new Error($t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
       instance.watchers.delete(socket.id);
       this.instanceStream.cannelForward(socket, targetInstanceUuid);
-    } catch (err) {}
+    } catch (err) {
+      // The instance or socket may have already been removed.
+    }
   }
 
   forEachForward(instanceUuid: string, callback: (socket: Socket) => void) {

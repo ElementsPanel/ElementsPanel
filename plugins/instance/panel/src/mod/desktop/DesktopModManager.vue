@@ -14,663 +14,871 @@ import { useLocalMods } from "../normal/mod-manager/useLocalMods";
 import { useModConfig } from "../normal/mod-manager/useModConfig";
 import { useModSearch } from "./mod-manager/useModSearch";
 import { useModUpload } from "../normal/mod-manager/useModUpload";
-import { VAlert, VBadge, VBtn, VIcon, VProgressCircular, VSelect, VTabs, VTab, VTextField, VWindow, VWindowItem } from "vuetify/components";
+import {
+  VAlert,
+  VBadge,
+  VBtn,
+  VIcon,
+  VProgressCircular,
+  VSelect,
+  VTabs,
+  VTab,
+  VTextField,
+  VWindow,
+  VWindowItem
+} from "vuetify/components";
 
-const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
+const ConfirmDialog = computed(
+  () => usePluginService<FrontendDesktopService>("desktop")?.confirmation
+);
 
 const TAB_KEY_MODS = "TAB_KEY_MODS";
 const TAB_KEY_PLUGINS = "TAB_KEY_PLUGINS";
 const TAB_KEY_DOWNLOAD = "TAB_KEY_DOWNLOAD";
 
 const props = defineProps<{
-    instanceUuid: string;
-    daemonId: string;
+  instanceUuid: string;
+  daemonId: string;
 }>();
 
 const emit = defineEmits<{
-    (e: "close"): void;
-    (e: "open-file-editor", filePath: string, fileName: string): void;
+  (e: "close"): void;
+  (e: "open-file-editor", filePath: string, fileName: string): void;
 }>();
 
 const { instanceInfo, isRunning: isInstanceRunning } = useInstanceInfo({
-    instanceId: props.instanceUuid,
-    daemonId: props.daemonId,
-    autoRefresh: true
+  instanceId: props.instanceUuid,
+  daemonId: props.daemonId,
+  autoRefresh: true
 });
 
 const activeKey = ref(TAB_KEY_MODS);
 const headerSearchQuery = ref("");
 
 const isWindows = computed(() => {
-    const config = instanceInfo.value?.config;
-    if (config?.crlf === 2) return true;
-    const cwd = config?.cwd || "";
-    if (/^[a-zA-Z]:\\/.test(cwd) || cwd.includes("\\")) return true;
-    return false;
+  const config = instanceInfo.value?.config;
+  if (config?.crlf === 2) return true;
+  const cwd = config?.cwd || "";
+  if (/^[a-zA-Z]:\\/.test(cwd) || cwd.includes("\\")) return true;
+  return false;
 });
 
 const isRunning = computed(() => {
-    const s = instanceInfo.value?.status;
-    return s === 2 || s === 3;
+  const s = instanceInfo.value?.status;
+  return s === 2 || s === 3;
 });
 
 const fileLockDialog = ref({
-    show: false,
-    type: "",
-    name: "",
-    data: null as any,
-    immediateFn: null as (() => Promise<void>) | null,
-    resolve: null as ((value: "cancel" | "immediate" | "queue") => void) | null
+  show: false,
+  type: "",
+  name: "",
+  data: null as any,
+  immediateFn: null as (() => Promise<void>) | null,
+  resolve: null as ((value: "cancel" | "immediate" | "queue") => void) | null
 });
 
 const checkAndConfirm = async (
-    type: string,
-    name: string,
-    data: any,
-    immediateFn: () => Promise<void>
+  type: string,
+  name: string,
+  data: any,
+  immediateFn: () => Promise<void>
 ) => {
-    if (isWindows.value && isRunning.value) {
-        return new Promise<void>((resolve) => {
-            fileLockDialog.value = {
-                show: true,
-                type,
-                name,
-                data,
-                immediateFn,
-                resolve: (action: "cancel" | "immediate" | "queue") => {
-                    fileLockDialog.value.show = false;
-                    if (action === "immediate") {
-                        immediateFn().then(resolve);
-                    } else if (action === "queue") {
-                        addDeferredTask(type, name, data);
-                        resolve();
-                    } else {
-                        resolve();
-                    }
-                }
-            };
-        });
-    } else {
-        await immediateFn();
-    }
+  if (isWindows.value && isRunning.value) {
+    return new Promise<void>((resolve) => {
+      fileLockDialog.value = {
+        show: true,
+        type,
+        name,
+        data,
+        immediateFn,
+        resolve: (action: "cancel" | "immediate" | "queue") => {
+          fileLockDialog.value.show = false;
+          if (action === "immediate") {
+            immediateFn().then(resolve);
+          } else if (action === "queue") {
+            addDeferredTask(type, name, data);
+            resolve();
+          } else {
+            resolve();
+          }
+        }
+      };
+    });
+  } else {
+    await immediateFn();
+  }
 };
 
 const handleFileLockCancel = () => {
-    if (fileLockDialog.value.resolve) {
-        fileLockDialog.value.resolve("cancel");
-    }
+  if (fileLockDialog.value.resolve) {
+    fileLockDialog.value.resolve("cancel");
+  }
 };
 
 const handleFileLockImmediate = () => {
-    if (fileLockDialog.value.resolve) {
-        fileLockDialog.value.resolve("immediate");
-    }
+  if (fileLockDialog.value.resolve) {
+    fileLockDialog.value.resolve("immediate");
+  }
 };
 
 const handleFileLockQueue = () => {
-    if (fileLockDialog.value.resolve) {
-        fileLockDialog.value.resolve("queue");
-    }
+  if (fileLockDialog.value.resolve) {
+    fileLockDialog.value.resolve("queue");
+  }
 };
 
 const { addDeferredTask } = useDeferredTasks(props.instanceUuid, props.daemonId, async () => {
-    await loadMods();
+  await loadMods();
 });
 
 watch(
-    () => isInstanceRunning.value,
-    (running) => {
-        if (!running) {
-            loadMods();
-        }
+  () => isInstanceRunning.value,
+  (running) => {
+    if (!running) {
+      loadMods();
     }
+  }
 );
 
 const {
-    loading,
-    loadingExtra,
-    mods,
-    folders,
-    loadMods: originalLoadMods,
-    onToggle,
-    onDelete,
-    tablePagination
+  loading,
+  loadingExtra,
+  mods,
+  folders,
+  loadMods: originalLoadMods,
+  onToggle,
+  onDelete,
+  tablePagination
 } = useLocalMods(props.instanceUuid, props.daemonId, checkAndConfirm, addDeferredTask);
 
 const getCurrentFolder = () => {
-    if (activeKey.value === TAB_KEY_MODS) return "mods";
-    if (activeKey.value === TAB_KEY_PLUGINS) return "plugins";
-    return undefined;
+  if (activeKey.value === TAB_KEY_MODS) return "mods";
+  if (activeKey.value === TAB_KEY_PLUGINS) return "plugins";
+  return undefined;
 };
 
 const loadMods = async (folder?: string) => {
-    const targetFolder = folder !== undefined ? folder : getCurrentFolder();
-    await originalLoadMods(targetFolder);
+  const targetFolder = folder !== undefined ? folder : getCurrentFolder();
+  await originalLoadMods(targetFolder);
 };
 
 const {
-    searchFilters,
-    searchLoading,
-    searched,
-    searchResults,
-    searchTotal,
-    searchPage,
-    searchLimit,
-    mcVersions,
-    loaderOptions,
-    loadMcVersions,
-    onSearch,
-    resetSearch,
-    showVersions,
-    onDownload,
-    showVersionModal,
-    selectedMod,
-    versions,
-    versionsLoading,
-    formatDate,
-    saveLocationDialog
+  searchFilters,
+  searchLoading,
+  searchResults,
+  searchTotal,
+  searchPage,
+  searchLimit,
+  mcVersions,
+  loaderOptions,
+  loadMcVersions,
+  onSearch,
+  resetSearch,
+  showVersions,
+  onDownload,
+  showVersionModal,
+  selectedMod,
+  versions,
+  versionsLoading,
+  saveLocationDialog
 } = useModSearch(props.instanceUuid, props.daemonId, () => mods.value, loadMods, folders, true);
 
 const openExternal = (mod: any) => {
-    const { source, id, slug, name } = mod;
-    const baseUrlMap: Record<string, string> = {
-        Modrinth: `https://modrinth.com/project/${slug || id}`,
-        CurseForge: `https://www.curseforge.com/projects/${id}`,
-        SpigotMC: `https://www.spigotmc.org/resources/${id}`,
-        MCMod: `https://www.mcmod.cn/class/${id}.html`
-    };
-    const url = baseUrlMap[source];
-    if (!url) {
-        notifyDesktop(t("TXT_CODE_COMMON_THIS_MODULE_OR_PLUGIN_DOES_NOT_CURRENTLY_SUPPORT_EXPANDING_DETAILS"), "error");
-    } else {
-        window.open(url, "_blank");
-    }
+  const { source, id, slug } = mod;
+  const baseUrlMap: Record<string, string> = {
+    Modrinth: `https://modrinth.com/project/${slug || id}`,
+    CurseForge: `https://www.curseforge.com/projects/${id}`,
+    SpigotMC: `https://www.spigotmc.org/resources/${id}`,
+    MCMod: `https://www.mcmod.cn/class/${id}.html`
+  };
+  const url = baseUrlMap[source];
+  if (!url) {
+    notifyDesktop(
+      t("TXT_CODE_COMMON_THIS_MODULE_OR_PLUGIN_DOES_NOT_CURRENTLY_SUPPORT_EXPANDING_DETAILS"),
+      "error"
+    );
+  } else {
+    window.open(url, "_blank");
+  }
 };
 
 const handleDownload = async (version: any) => {
-    const task = await onDownload(version);
-    if (task) {
-        await checkAndConfirm(task.type, task.name, task.data, task.immediateFn);
-    }
+  const task = await onDownload(version);
+  if (task) {
+    await checkAndConfirm(task.type, task.name, task.data, task.immediateFn);
+  }
 };
 
 const handleSaveLocationSelect = (type: "mod" | "plugin") => {
-    if (saveLocationDialog.value.resolve) {
-        saveLocationDialog.value.resolve(type);
-    }
-    saveLocationDialog.value.show = false;
-    saveLocationDialog.value.resolve = null;
-    saveLocationDialog.value.reject = null;
+  if (saveLocationDialog.value.resolve) {
+    saveLocationDialog.value.resolve(type);
+  }
+  saveLocationDialog.value.show = false;
+  saveLocationDialog.value.resolve = null;
+  saveLocationDialog.value.reject = null;
 };
 
 const handleSaveLocationCancel = () => {
-    if (saveLocationDialog.value.reject) {
-        saveLocationDialog.value.reject(new Error("Cancelled"));
-    }
-    saveLocationDialog.value.show = false;
-    saveLocationDialog.value.resolve = null;
-    saveLocationDialog.value.reject = null;
+  if (saveLocationDialog.value.reject) {
+    saveLocationDialog.value.reject(new Error("Cancelled"));
+  }
+  saveLocationDialog.value.show = false;
+  saveLocationDialog.value.resolve = null;
+  saveLocationDialog.value.reject = null;
 };
 
 const {
-    opacity,
-    handleDragover,
-    handleDragleave,
-    handleDrop,
-    onUploadClick,
-    onFileChange,
-    fileInput
+  opacity,
+  handleDragover,
+  handleDragleave,
+  handleDrop,
+  onUploadClick,
+  onFileChange,
+  fileInput
 } = useModUpload(props.instanceUuid, props.daemonId, activeKey, loadMods);
 
-const { showConfigModal, currentMod, configFiles, configLoading, openConfig } =
-    useModConfig(props.instanceUuid, props.daemonId, ref(null));
+const { showConfigModal, currentMod, configFiles, configLoading, openConfig } = useModConfig(
+  props.instanceUuid,
+  props.daemonId,
+  ref(null)
+);
 
 const handleEditFile = (file: any) => {
-    showConfigModal.value = false;
-    emit("open-file-editor", file.path, file.name);
+  showConfigModal.value = false;
+  emit("open-file-editor", file.path, file.name);
 };
 
 const hasModsFolder = computed(() => folders.value.includes("mods"));
 const hasPluginsFolder = computed(() => folders.value.includes("plugins"));
 
 watch(
-    [hasModsFolder, hasPluginsFolder, loading],
-    ([hasMods, hasPlugins, isLoading]) => {
-        if (isLoading) return;
-        if (hasMods && activeKey.value === TAB_KEY_MODS) return;
-        if (hasPlugins && activeKey.value === TAB_KEY_PLUGINS) return;
-        if (activeKey.value === TAB_KEY_DOWNLOAD) return;
+  [hasModsFolder, hasPluginsFolder, loading],
+  ([hasMods, hasPlugins, isLoading]) => {
+    if (isLoading) return;
+    if (hasMods && activeKey.value === TAB_KEY_MODS) return;
+    if (hasPlugins && activeKey.value === TAB_KEY_PLUGINS) return;
+    if (activeKey.value === TAB_KEY_DOWNLOAD) return;
 
-        if (hasMods) {
-            activeKey.value = TAB_KEY_MODS;
-            loadMods("mods");
-        } else if (hasPlugins) {
-            activeKey.value = TAB_KEY_PLUGINS;
-            loadMods("plugins");
-        } else {
-            activeKey.value = TAB_KEY_DOWNLOAD;
-        }
-    },
-    { immediate: true }
+    if (hasMods) {
+      activeKey.value = TAB_KEY_MODS;
+      loadMods("mods");
+    } else if (hasPlugins) {
+      activeKey.value = TAB_KEY_PLUGINS;
+      loadMods("plugins");
+    } else {
+      activeKey.value = TAB_KEY_DOWNLOAD;
+    }
+  },
+  { immediate: true }
 );
 
 const filterBySearch = (list: any[]) => {
-    if (!headerSearchQuery.value) return list;
-    const query = headerSearchQuery.value.toLowerCase();
-    return list.filter(
-        (m: any) =>
-            (m.name || "").toLowerCase().includes(query) || (m.file || "").toLowerCase().includes(query)
-    );
+  if (!headerSearchQuery.value) return list;
+  const query = headerSearchQuery.value.toLowerCase();
+  return list.filter(
+    (m: any) =>
+      (m.name || "").toLowerCase().includes(query) || (m.file || "").toLowerCase().includes(query)
+  );
 };
 
 const filteredMods = computed(() => filterBySearch(mods.value));
 const filteredPlugins = computed(() => filterBySearch(mods.value));
 
 const columns = computed(() => {
-    const cols: any[] = [
-        {
-            title: "",
-            key: "icon",
-            dataIndex: "icon",
-            width: 50,
-            align: "center"
-        },
-        {
-            title: t("TXT_CODE_NAME"),
-            key: "name",
-            dataIndex: "name",
-            sorter: (a: any, b: any) => (a.name || "").localeCompare(b.name || "")
-        },
-        {
-            title: t("TXT_CODE_VERSION"),
-            key: "version",
-            dataIndex: "version",
-            width: 120
-        },
-        {
-            title: t("TXT_CODE_STATUS"),
-            key: "enabled",
-            dataIndex: "enabled",
-            width: 80,
-            align: "center",
-            sorter: (a: any, b: any) => (a.enabled === b.enabled ? 0 : a.enabled ? -1 : 1)
-        },
-        {
-            title: t("TXT_CODE_OPERATE"),
-            key: "action",
-            dataIndex: "action",
-            width: 140,
-            align: "center"
-        }
-    ];
-    return cols;
+  const cols: any[] = [
+    {
+      title: "",
+      key: "icon",
+      dataIndex: "icon",
+      width: 50,
+      align: "center"
+    },
+    {
+      title: t("TXT_CODE_NAME"),
+      key: "name",
+      dataIndex: "name",
+      sorter: (a: any, b: any) => (a.name || "").localeCompare(b.name || "")
+    },
+    {
+      title: t("TXT_CODE_VERSION"),
+      key: "version",
+      dataIndex: "version",
+      width: 120
+    },
+    {
+      title: t("TXT_CODE_STATUS"),
+      key: "enabled",
+      dataIndex: "enabled",
+      width: 80,
+      align: "center",
+      sorter: (a: any, b: any) => (a.enabled === b.enabled ? 0 : a.enabled ? -1 : 1)
+    },
+    {
+      title: t("TXT_CODE_OPERATE"),
+      key: "action",
+      dataIndex: "action",
+      width: 140,
+      align: "center"
+    }
+  ];
+  return cols;
 });
 
 const searchColumns = computed(() => {
-    const cols: any[] = [
-        { title: "", key: "icon", dataIndex: "icon", width: 50, align: "center" },
-        {
-            title: t("TXT_CODE_NAME"),
-            key: "name",
-            dataIndex: "name"
-        },
-        {
-            title: t("TXT_CODE_VERSION"),
-            key: "version",
-            dataIndex: "version",
-            width: 140,
-            align: "left"
-        },
-        {
-            title: t("TXT_CODE_TYPE"),
-            key: "type",
-            dataIndex: "type",
-            width: 80,
-            align: "center"
-        },
-        {
-            title: t("TXT_CODE_SOURCE"),
-            key: "source",
-            dataIndex: "source",
-            width: 100,
-            align: "center"
-        },
-        {
-            title: t("TXT_CODE_OPERATE"),
-            key: "action",
-            dataIndex: "action",
-            width: 100,
-            align: "center"
-        }
-    ];
-    return cols;
+  const cols: any[] = [
+    { title: "", key: "icon", dataIndex: "icon", width: 50, align: "center" },
+    {
+      title: t("TXT_CODE_NAME"),
+      key: "name",
+      dataIndex: "name"
+    },
+    {
+      title: t("TXT_CODE_VERSION"),
+      key: "version",
+      dataIndex: "version",
+      width: 140,
+      align: "left"
+    },
+    {
+      title: t("TXT_CODE_TYPE"),
+      key: "type",
+      dataIndex: "type",
+      width: 80,
+      align: "center"
+    },
+    {
+      title: t("TXT_CODE_SOURCE"),
+      key: "source",
+      dataIndex: "source",
+      width: 100,
+      align: "center"
+    },
+    {
+      title: t("TXT_CODE_OPERATE"),
+      key: "action",
+      dataIndex: "action",
+      width: 100,
+      align: "center"
+    }
+  ];
+  return cols;
 });
 
 const handleTableChange = (pagination: any) => {
-    if (
-        tablePagination.current !== pagination.current ||
-        tablePagination.pageSize !== pagination.pageSize
-    ) {
-        tablePagination.current = pagination.current;
-        tablePagination.pageSize = pagination.pageSize;
-        loadMods(getCurrentFolder());
-    }
+  if (
+    tablePagination.current !== pagination.current ||
+    tablePagination.pageSize !== pagination.pageSize
+  ) {
+    tablePagination.current = pagination.current;
+    tablePagination.pageSize = pagination.pageSize;
+    loadMods(getCurrentFolder());
+  }
 };
 
 const handleTabChange = (newKey: string | number) => {
-    tablePagination.current = 1;
-    if (newKey === TAB_KEY_MODS || newKey === TAB_KEY_PLUGINS) {
-        loadMods(newKey === TAB_KEY_MODS ? "mods" : "plugins");
-    }
+  tablePagination.current = 1;
+  if (newKey === TAB_KEY_MODS || newKey === TAB_KEY_PLUGINS) {
+    loadMods(newKey === TAB_KEY_MODS ? "mods" : "plugins");
+  }
 };
 
 const onTabChange = (value: unknown) => handleTabChange(String(value));
 
 onMounted(async () => {
-    loadMcVersions();
-    await loadMods(getCurrentFolder());
+  loadMcVersions();
+  await loadMods(getCurrentFolder());
 });
 </script>
 
 <template>
-    <div class="dmm">
-        <div v-if="activeKey === TAB_KEY_MODS || activeKey === TAB_KEY_PLUGINS" class="dmm-header">
-            <div class="dmm-header__right">
-                <div class="dmm-search">
-                    <VTextField v-model="headerSearchQuery" :label="t('TXT_CODE_SEARCH_PLACEHOLDER')"
-                        density="comfortable" hide-details clearable prepend-inner-icon="mdi-magnify" width="200" />
-                </div>
-                <VBtn class="dmm-btn dmm-btn--sm" variant="text" @click="onUploadClick" :title="t('TXT_CODE_COMMON_UPLOAD')">
-                    <VIcon icon="mdi-upload-outline"  /> {{ t("TXT_CODE_COMMON_UPLOAD") }}
-                </VBtn>
-                <VBtn class="dmm-btn dmm-btn--sm dmm-btn--primary" variant="text" :disabled="loading" @click="() => loadMods()"
-                    :title="t('TXT_CODE_REFRESH')">
-                    <VIcon icon="mdi-refresh" :class="{ 'desktop-icon-spin': loading }"  /> {{ t("TXT_CODE_REFRESH") }}
-                </VBtn>
-            </div>
+  <div class="dmm">
+    <div v-if="activeKey === TAB_KEY_MODS || activeKey === TAB_KEY_PLUGINS" class="dmm-header">
+      <div class="dmm-header__right">
+        <div class="dmm-search">
+          <VTextField
+            v-model="headerSearchQuery"
+            :label="t('TXT_CODE_SEARCH_PLACEHOLDER')"
+            density="comfortable"
+            hide-details
+            clearable
+            prepend-inner-icon="mdi-magnify"
+            width="200"
+          />
         </div>
-
-        <div class="dmm-body">
-            <div class="dmm-content" @dragover.prevent="handleDragover" @dragleave.prevent="handleDragleave"
-                @drop.prevent="handleDrop">
-                <div v-if="opacity" class="dmm-drag-overlay">
-                    <div class="dmm-drag-overlay__inner">
-                        <VIcon icon="mdi-upload-outline" class="dmm-drag-overlay__icon"  />
-                        <div class="dmm-drag-overlay__text">{{ t("TXT_CODE_DRAG_TO_UPLOAD") }}</div>
-                    </div>
-                </div>
-
-                <VAlert v-if="isWindows && isRunning" type="warning" variant="tonal" class="dmm-alert"
-                    :title="t('TXT_CODE_MOD_WIN_FILE_LOCK_TITLE')">
-                    {{ t("TXT_CODE_MOD_WIN_RUNNING_ALERT") }}
-                </VAlert>
-
-                <VTabs v-model="activeKey" class="dmm-tabs" @update:model-value="onTabChange">
-                    <VTab v-if="hasModsFolder" :value="TAB_KEY_MODS">
-                        {{ t("TXT_CODE_MOD_LIST") }}
-                        <VBadge v-if="!loading && activeKey === TAB_KEY_MODS" :content="filteredMods.length" inline color="grey" />
-                        <VProgressCircular v-if="loading || loadingExtra" indeterminate size="14" width="2" class="ms-2" />
-                    </VTab>
-                    <VTab v-if="hasPluginsFolder" :value="TAB_KEY_PLUGINS">
-                        {{ t("TXT_CODE_PLUGIN_LIST") }}
-                        <VBadge v-if="!loading && activeKey === TAB_KEY_PLUGINS" :content="filteredPlugins.length" inline color="grey" />
-                        <VProgressCircular v-if="loading || loadingExtra" indeterminate size="14" width="2" class="ms-2" />
-                    </VTab>
-                    <VTab :value="TAB_KEY_DOWNLOAD">{{ t('TXT_CODE_COMMON_DOWNLOAD_MODULES_PLUGINS') }}</VTab>
-                </VTabs>
-                <VWindow v-model="activeKey" class="dmm-window" :touch="false">
-                    <VWindowItem v-if="hasModsFolder" :value="TAB_KEY_MODS">
-                        <div class="dmm-table-wrapper">
-                            <LocalModTable :key="TAB_KEY_MODS" :loading="loading" :data-source="filteredMods" :is-desktop="true"
-                                :columns="columns" :pagination="tablePagination" @change="handleTableChange"
-                                @toggle="onToggle" @delete="onDelete" @config="openConfig" @open-external="openExternal"
-                                @refresh="loadMods" />
-                        </div>
-                    </VWindowItem>
-                    <VWindowItem v-if="hasPluginsFolder" :value="TAB_KEY_PLUGINS">
-                        <div class="dmm-table-wrapper">
-                            <LocalModTable :key="TAB_KEY_PLUGINS" :loading="loading" :data-source="filteredPlugins" :is-desktop="true"
-                                :columns="columns" :pagination="tablePagination" @change="handleTableChange"
-                                @toggle="onToggle" @delete="onDelete" @config="openConfig" @open-external="openExternal"
-                                @refresh="loadMods" />
-                        </div>
-                    </VWindowItem>
-                    <VWindowItem :value="TAB_KEY_DOWNLOAD">
-                        <div class="dmm-download">
-                            <div class="dmm-search-form">
-                                <div class="dmm-search-grid">
-                                    <VTextField v-model="searchFilters.query" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')" density="compact" hide-details @keyup.enter="onSearch" />
-                                    <VSelect v-model="searchFilters.source" :items="[{title:t('TXT_CODE_COMMON_ALL_PLATFORMS'),value:'all'},{title:'Modrinth',value:'modrinth'},{title:'CurseForge',value:'curseforge'},{title:'SpigotMC',value:'spigotmc'}]" density="compact" hide-details>
-                                      <template #no-data><Empty :icon="false" compact /></template>
-                                    </VSelect>
-                                    <VSelect v-model="searchFilters.version" :items="[{title:t('TXT_CODE_COMMON_ALL_VERSIONS'),value:''}, ...mcVersions.map(v=>({title:v,value:v}))]" clearable :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT_CONTENT')" density="compact" hide-details>
-                                      <template #no-data><Empty :icon="false" compact /></template>
-                                    </VSelect>
-                                    <VSelect v-model="searchFilters.type" :items="[{title:t('TXT_CODE_MOD_ALL_TYPES'),value:'all'},{title:t('TXT_CODE_MOD'),value:'mod'},{title:t('TXT_CODE_PLUGIN'),value:'plugin'}]" density="compact" hide-details>
-                                      <template #no-data><Empty :icon="false" compact /></template>
-                                    </VSelect>
-                                    <VSelect v-model="searchFilters.environment" :items="[{title:t('TXT_CODE_COMMON_CLIENT_SERVER'),value:'all'},{title:t('TXT_CODE_SERVER'),value:'server'},{title:t('TXT_CODE_CLIENT'),value:'client'}]" density="compact" hide-details>
-                                      <template #no-data><Empty :icon="false" compact /></template>
-                                    </VSelect>
-                                    <VSelect v-model="searchFilters.loader" :items="loaderOptions.flatMap((group) => group.options)" item-title="label" item-value="value" clearable :placeholder="t('TXT_CODE_SELECT_LOADER')" density="compact" hide-details>
-                                      <template #no-data><Empty :icon="false" compact /></template>
-                                    </VSelect>
-                                </div>
-                                <div class="dmm-search-actions">
-                                    <VBtn color="primary" size="small" variant="text" :loading="searchLoading" @click="onSearch">
-                                        <VIcon icon="mdi-magnify" />
-                                        {{ t("TXT_CODE_SEARCH") }}
-                                    </VBtn>
-                                    <VBtn size="small" variant="text" @click="resetSearch">{{ t("TXT_CODE_COMMON_RESET_FILTER_CONDITIONS") }}</VBtn>
-                                </div>
-                            </div>
-                            <SearchModTable :loading="searchLoading" :data-source="searchResults" :is-desktop="true"
-                                :columns="searchColumns" :mods="mods" :pagination="{
-                                    current: searchPage,
-                                    pageSize: searchLimit,
-                                    total: searchTotal,
-                                    showSizeChanger: true,
-                                    pageSizeOptions: ['10', '20', '50'],
-                                    showTotal: (total: number) => t('TXT_CODE_TOTAL_ITEMS', { total })
-                                }" @change="(p: any) => onSearch(p.current, p.pageSize)" @show-versions="showVersions"
-                                @open-external="openExternal" @download="handleDownload" />
-                        </div>
-                    </VWindowItem>
-                </VWindow>
-
-                <ModVersionModal v-model:visible="showVersionModal" :selected-mod="selectedMod" :versions="versions"
-                    :versions-loading="versionsLoading" :search-filters="searchFilters" :mods="mods" :is-desktop="true"
-                    @download="handleDownload" />
-
-                <ModConfigModal v-model:visible="showConfigModal" :current-mod="currentMod" :config-files="configFiles"
-                    :config-loading="configLoading" :is-desktop="true" @edit="handleEditFile" />
-            </div>
-        </div>
-
-        <input ref="fileInput" type="file" multiple style="display: none" accept=".jar,.zip" @change="onFileChange" />
-
-        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="saveLocationDialog.show" id="mod-save-location-dialog" :width="440" :height="220"
-            :title="t('TXT_CODE_MOD_SAVE_LOCATION_TITLE')" :message="t('TXT_CODE_MOD_SELECT_SAVE_DIR')"
-            :actions="[
-                { id: 'mod', text: t('TXT_CODE_MOD'), icon: 'mdi-folder-outline', highlighted: saveLocationDialog.detectedType === 'mod' },
-                { id: 'plugin', text: t('TXT_CODE_PLUGIN'), icon: 'mdi-folder-outline', highlighted: saveLocationDialog.detectedType === 'plugin' }
-            ]" @cancel="handleSaveLocationCancel" @action="(id: string) => handleSaveLocationSelect(id as 'mod' | 'plugin')" />
-
-        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="fileLockDialog.show" id="mod-file-lock-dialog" :width="480" :height="240"
-            :title="t('TXT_CODE_MOD_WIN_FILE_LOCK_TITLE')" :message="t('TXT_CODE_MOD_WIN_FILE_LOCK_DESC')"
-            :actions="[
-                { id: 'immediate', text: t('TXT_CODE_MOD_TRY_IMMEDIATELY'), danger: true },
-                { id: 'queue', text: t('TXT_CODE_MOD_ADD_TO_QUEUE') }
-            ]" @cancel="handleFileLockCancel"
-            @action="(id: string) => id === 'immediate' ? handleFileLockImmediate() : handleFileLockQueue()" />
+        <VBtn
+          class="dmm-btn dmm-btn--sm"
+          variant="text"
+          :title="t('TXT_CODE_COMMON_UPLOAD')"
+          @click="onUploadClick"
+        >
+          <VIcon icon="mdi-upload-outline" /> {{ t("TXT_CODE_COMMON_UPLOAD") }}
+        </VBtn>
+        <VBtn
+          class="dmm-btn dmm-btn--sm dmm-btn--primary"
+          variant="text"
+          :disabled="loading"
+          :title="t('TXT_CODE_REFRESH')"
+          @click="() => loadMods()"
+        >
+          <VIcon icon="mdi-refresh" :class="{ 'desktop-icon-spin': loading }" />
+          {{ t("TXT_CODE_REFRESH") }}
+        </VBtn>
+      </div>
     </div>
+
+    <div class="dmm-body">
+      <div
+        class="dmm-content"
+        @dragover.prevent="handleDragover"
+        @dragleave.prevent="handleDragleave"
+        @drop.prevent="handleDrop"
+      >
+        <div v-if="opacity" class="dmm-drag-overlay">
+          <div class="dmm-drag-overlay__inner">
+            <VIcon icon="mdi-upload-outline" class="dmm-drag-overlay__icon" />
+            <div class="dmm-drag-overlay__text">{{ t("TXT_CODE_DRAG_TO_UPLOAD") }}</div>
+          </div>
+        </div>
+
+        <VAlert
+          v-if="isWindows && isRunning"
+          type="warning"
+          variant="tonal"
+          class="dmm-alert"
+          :title="t('TXT_CODE_MOD_WIN_FILE_LOCK_TITLE')"
+        >
+          {{ t("TXT_CODE_MOD_WIN_RUNNING_ALERT") }}
+        </VAlert>
+
+        <VTabs v-model="activeKey" class="dmm-tabs" @update:model-value="onTabChange">
+          <VTab v-if="hasModsFolder" :value="TAB_KEY_MODS">
+            {{ t("TXT_CODE_MOD_LIST") }}
+            <VBadge
+              v-if="!loading && activeKey === TAB_KEY_MODS"
+              :content="filteredMods.length"
+              inline
+              color="grey"
+            />
+            <VProgressCircular
+              v-if="loading || loadingExtra"
+              indeterminate
+              size="14"
+              width="2"
+              class="ms-2"
+            />
+          </VTab>
+          <VTab v-if="hasPluginsFolder" :value="TAB_KEY_PLUGINS">
+            {{ t("TXT_CODE_PLUGIN_LIST") }}
+            <VBadge
+              v-if="!loading && activeKey === TAB_KEY_PLUGINS"
+              :content="filteredPlugins.length"
+              inline
+              color="grey"
+            />
+            <VProgressCircular
+              v-if="loading || loadingExtra"
+              indeterminate
+              size="14"
+              width="2"
+              class="ms-2"
+            />
+          </VTab>
+          <VTab :value="TAB_KEY_DOWNLOAD">{{ t("TXT_CODE_COMMON_DOWNLOAD_MODULES_PLUGINS") }}</VTab>
+        </VTabs>
+        <VWindow v-model="activeKey" class="dmm-window" :touch="false">
+          <VWindowItem v-if="hasModsFolder" :value="TAB_KEY_MODS">
+            <div class="dmm-table-wrapper">
+              <LocalModTable
+                :key="TAB_KEY_MODS"
+                :loading="loading"
+                :data-source="filteredMods"
+                :is-desktop="true"
+                :columns="columns"
+                :pagination="tablePagination"
+                @change="handleTableChange"
+                @toggle="onToggle"
+                @delete="onDelete"
+                @config="openConfig"
+                @open-external="openExternal"
+                @refresh="loadMods"
+              />
+            </div>
+          </VWindowItem>
+          <VWindowItem v-if="hasPluginsFolder" :value="TAB_KEY_PLUGINS">
+            <div class="dmm-table-wrapper">
+              <LocalModTable
+                :key="TAB_KEY_PLUGINS"
+                :loading="loading"
+                :data-source="filteredPlugins"
+                :is-desktop="true"
+                :columns="columns"
+                :pagination="tablePagination"
+                @change="handleTableChange"
+                @toggle="onToggle"
+                @delete="onDelete"
+                @config="openConfig"
+                @open-external="openExternal"
+                @refresh="loadMods"
+              />
+            </div>
+          </VWindowItem>
+          <VWindowItem :value="TAB_KEY_DOWNLOAD">
+            <div class="dmm-download">
+              <div class="dmm-search-form">
+                <div class="dmm-search-grid">
+                  <VTextField
+                    v-model="searchFilters.query"
+                    :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')"
+                    density="compact"
+                    hide-details
+                    @keyup.enter="onSearch"
+                  />
+                  <VSelect
+                    v-model="searchFilters.source"
+                    :items="[
+                      { title: t('TXT_CODE_COMMON_ALL_PLATFORMS'), value: 'all' },
+                      { title: 'Modrinth', value: 'modrinth' },
+                      { title: 'CurseForge', value: 'curseforge' },
+                      { title: 'SpigotMC', value: 'spigotmc' }
+                    ]"
+                    density="compact"
+                    hide-details
+                  >
+                    <template #no-data><Empty :icon="false" compact /></template>
+                  </VSelect>
+                  <VSelect
+                    v-model="searchFilters.version"
+                    :items="[
+                      { title: t('TXT_CODE_COMMON_ALL_VERSIONS'), value: '' },
+                      ...mcVersions.map((v) => ({ title: v, value: v }))
+                    ]"
+                    clearable
+                    :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT_CONTENT')"
+                    density="compact"
+                    hide-details
+                  >
+                    <template #no-data><Empty :icon="false" compact /></template>
+                  </VSelect>
+                  <VSelect
+                    v-model="searchFilters.type"
+                    :items="[
+                      { title: t('TXT_CODE_MOD_ALL_TYPES'), value: 'all' },
+                      { title: t('TXT_CODE_MOD'), value: 'mod' },
+                      { title: t('TXT_CODE_PLUGIN'), value: 'plugin' }
+                    ]"
+                    density="compact"
+                    hide-details
+                  >
+                    <template #no-data><Empty :icon="false" compact /></template>
+                  </VSelect>
+                  <VSelect
+                    v-model="searchFilters.environment"
+                    :items="[
+                      { title: t('TXT_CODE_COMMON_CLIENT_SERVER'), value: 'all' },
+                      { title: t('TXT_CODE_SERVER'), value: 'server' },
+                      { title: t('TXT_CODE_CLIENT'), value: 'client' }
+                    ]"
+                    density="compact"
+                    hide-details
+                  >
+                    <template #no-data><Empty :icon="false" compact /></template>
+                  </VSelect>
+                  <VSelect
+                    v-model="searchFilters.loader"
+                    :items="loaderOptions.flatMap((group) => group.options)"
+                    item-title="label"
+                    item-value="value"
+                    clearable
+                    :placeholder="t('TXT_CODE_SELECT_LOADER')"
+                    density="compact"
+                    hide-details
+                  >
+                    <template #no-data><Empty :icon="false" compact /></template>
+                  </VSelect>
+                </div>
+                <div class="dmm-search-actions">
+                  <VBtn
+                    color="primary"
+                    size="small"
+                    variant="text"
+                    :loading="searchLoading"
+                    @click="onSearch"
+                  >
+                    <VIcon icon="mdi-magnify" />
+                    {{ t("TXT_CODE_SEARCH") }}
+                  </VBtn>
+                  <VBtn size="small" variant="text" @click="resetSearch">{{
+                    t("TXT_CODE_COMMON_RESET_FILTER_CONDITIONS")
+                  }}</VBtn>
+                </div>
+              </div>
+              <SearchModTable
+                :loading="searchLoading"
+                :data-source="searchResults"
+                :is-desktop="true"
+                :columns="searchColumns"
+                :mods="mods"
+                :pagination="{
+                  current: searchPage,
+                  pageSize: searchLimit,
+                  total: searchTotal,
+                  showSizeChanger: true,
+                  pageSizeOptions: ['10', '20', '50'],
+                  showTotal: (total: number) => t('TXT_CODE_TOTAL_ITEMS', { total })
+                }"
+                @change="(p: any) => onSearch(p.current, p.pageSize)"
+                @show-versions="showVersions"
+                @open-external="openExternal"
+                @download="handleDownload"
+              />
+            </div>
+          </VWindowItem>
+        </VWindow>
+
+        <ModVersionModal
+          v-model:visible="showVersionModal"
+          :selected-mod="selectedMod"
+          :versions="versions"
+          :versions-loading="versionsLoading"
+          :search-filters="searchFilters"
+          :mods="mods"
+          :is-desktop="true"
+          @download="handleDownload"
+        />
+
+        <ModConfigModal
+          v-model:visible="showConfigModal"
+          :current-mod="currentMod"
+          :config-files="configFiles"
+          :config-loading="configLoading"
+          :is-desktop="true"
+          @edit="handleEditFile"
+        />
+      </div>
+    </div>
+
+    <input
+      ref="fileInput"
+      type="file"
+      multiple
+      style="display: none"
+      accept=".jar,.zip"
+      @change="onFileChange"
+    />
+
+    <component
+      :is="ConfirmDialog"
+      v-if="ConfirmDialog"
+      id="mod-save-location-dialog"
+      v-model="saveLocationDialog.show"
+      :width="440"
+      :height="220"
+      :title="t('TXT_CODE_MOD_SAVE_LOCATION_TITLE')"
+      :message="t('TXT_CODE_MOD_SELECT_SAVE_DIR')"
+      :actions="[
+        {
+          id: 'mod',
+          text: t('TXT_CODE_MOD'),
+          icon: 'mdi-folder-outline',
+          highlighted: saveLocationDialog.detectedType === 'mod'
+        },
+        {
+          id: 'plugin',
+          text: t('TXT_CODE_PLUGIN'),
+          icon: 'mdi-folder-outline',
+          highlighted: saveLocationDialog.detectedType === 'plugin'
+        }
+      ]"
+      @cancel="handleSaveLocationCancel"
+      @action="(id: string) => handleSaveLocationSelect(id as 'mod' | 'plugin')"
+    />
+
+    <component
+      :is="ConfirmDialog"
+      v-if="ConfirmDialog"
+      id="mod-file-lock-dialog"
+      v-model="fileLockDialog.show"
+      :width="480"
+      :height="240"
+      :title="t('TXT_CODE_MOD_WIN_FILE_LOCK_TITLE')"
+      :message="t('TXT_CODE_MOD_WIN_FILE_LOCK_DESC')"
+      :actions="[
+        { id: 'immediate', text: t('TXT_CODE_MOD_TRY_IMMEDIATELY'), danger: true },
+        { id: 'queue', text: t('TXT_CODE_MOD_ADD_TO_QUEUE') }
+      ]"
+      @cancel="handleFileLockCancel"
+      @action="
+        (id: string) => (id === 'immediate' ? handleFileLockImmediate() : handleFileLockQueue())
+      "
+    />
+  </div>
 </template>
 
 <style lang="scss" scoped>
 .dmm {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    color: var(--desktop-window-text);
-    font-size: 13px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  color: var(--desktop-window-text);
+  font-size: 13px;
 }
 
 .dmm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--desktop-window-border);
+  flex-shrink: 0;
+
+  &__right {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--desktop-window-border);
-    flex-shrink: 0;
-
-    &__right {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
+    gap: 8px;
+  }
 }
 
 .dmm-search-grid {
-    display: grid;
-    grid-template-columns: minmax(180px, 2fr) repeat(5, minmax(120px, 1fr));
-    gap: 10px;
-    align-items: center;
+  display: grid;
+  grid-template-columns: minmax(180px, 2fr) repeat(5, minmax(120px, 1fr));
+  gap: 10px;
+  align-items: center;
 }
 
 @media (max-width: 900px) {
-    .dmm-search-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+  .dmm-search-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .dmm-btn {
-    background: var(--desktop-window-titlebar-bg);
-    border: 1px solid var(--desktop-window-border);
-    border-radius: 6px;
-    color: var(--desktop-window-text);
-    padding: 6px 12px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
+  background: var(--desktop-window-titlebar-bg);
+  border: 1px solid var(--desktop-window-border);
+  border-radius: 6px;
+  color: var(--desktop-window-text);
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  &:hover:not(:disabled) {
+    background: var(--desktop-window-control-hover);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &--sm {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+
+  &--primary {
+    color: #1890ff;
+    border-color: rgba(24, 144, 255, 0.3);
+    background: rgba(24, 144, 255, 0.1);
 
     &:hover:not(:disabled) {
-        background: var(--desktop-window-control-hover);
+      background: rgba(24, 144, 255, 0.2);
     }
-
-    &:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    }
-
-    &--sm {
-        padding: 4px 10px;
-        font-size: 11px;
-    }
-
-    &--primary {
-        color: #1890ff;
-        border-color: rgba(24, 144, 255, 0.3);
-        background: rgba(24, 144, 255, 0.1);
-
-        &:hover:not(:disabled) {
-            background: rgba(24, 144, 255, 0.2);
-        }
-    }
+  }
 }
 
 .dmm-search {
-    min-width: 0;
+  min-width: 0;
 }
 
 .dmm-body {
-    flex: 1;
-    overflow: hidden;
-    position: relative;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
 }
 
 .dmm-content {
-    height: 100%;
-    overflow: auto;
-    padding: 8px 12px;
-    position: relative;
+  height: 100%;
+  overflow: auto;
+  padding: 8px 12px;
+  position: relative;
 }
 
 .dmm-drag-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 100;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: rgba(128, 128, 128, 0.1);
-    border: 2px dashed var(--color-primary);
-    border-radius: 8px;
-    pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(128, 128, 128, 0.1);
+  border: 2px dashed var(--color-primary);
+  border-radius: 8px;
+  pointer-events: none;
 
-    &__inner {
-        text-align: center;
-    }
+  &__inner {
+    text-align: center;
+  }
 
-    &__icon {
-        font-size: 48px;
-        color: var(--color-primary);
-    }
+  &__icon {
+    font-size: 48px;
+    color: var(--color-primary);
+  }
 
-    &__text {
-        margin-top: 8px;
-        font-size: 16px;
-        font-weight: bold;
-        color: var(--color-primary);
-    }
+  &__text {
+    margin-top: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--color-primary);
+  }
 }
 
 .dmm-alert {
-    margin-bottom: 12px;
-    padding: 8px 14px !important;
+  margin-bottom: 12px;
+  padding: 8px 14px !important;
 
-    :deep(.v-alert__content) {
-        text-align: left !important;
-    }
+  :deep(.v-alert__content) {
+    text-align: left !important;
+  }
 }
 
 .dmm-tabs {
-    :deep(.v-slide-group) {
-        margin-bottom: 0;
-    }
+  :deep(.v-slide-group) {
+    margin-bottom: 0;
+  }
 }
 
 .dmm-table-wrapper {
-    padding: 8px 0;
+  padding: 8px 0;
 }
 
 .dmm-download {
-    padding: 8px 0;
+  padding: 8px 0;
 }
 
 .dmm-search-form {
-    margin-bottom: 12px;
+  margin-bottom: 12px;
 
-    :deep(.v-input) {
-        margin-bottom: 0;
-    }
+  :deep(.v-input) {
+    margin-bottom: 0;
+  }
 
-    :deep(.v-field__input) {
-        text-align: left !important;
-        font-size: 12px;
-    }
+  :deep(.v-field__input) {
+    text-align: left !important;
+    font-size: 12px;
+  }
 }
 
 .dmm-search-actions {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-    margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 8px;
 }
 </style>

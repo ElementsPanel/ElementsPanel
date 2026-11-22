@@ -11,7 +11,9 @@ const themeModes = [
 
 export function useThemeSwitch() {
   const { currentTheme, setTheme } = useAppConfigStore();
-  const modeIndex = computed(() => themeModes.findIndex((mode) => mode.value === currentTheme.value));
+  const modeIndex = computed(() =>
+    themeModes.findIndex((mode) => mode.value === currentTheme.value)
+  );
   const themeIcon = computed(() => (themeModes[modeIndex.value] ?? themeModes[0]).icon);
   const themeTitle = computed(() => t((themeModes[modeIndex.value] ?? themeModes[0]).label));
 

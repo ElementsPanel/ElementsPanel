@@ -36,9 +36,9 @@ function migrateFromSystemConfig(keys: Array<keyof AuthSettings>): boolean {
 }
 
 export async function initAuthSettings() {
-  const stored = (await storage().getStorage().load(CATEGORY, AuthSettings, ID)) as
-    | AuthSettings
-    | null;
+  const stored = (await storage()
+    .getStorage()
+    .load(CATEGORY, AuthSettings, ID)) as AuthSettings | null;
   settings = stored ?? new AuthSettings();
 
   let shouldSave = !stored;

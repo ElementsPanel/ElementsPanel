@@ -20,8 +20,7 @@ const messages = {
     TXT_CODE_INIT_DIRECTORY_NOT_EMPTY: "Installation directory is not empty: {directory}",
     TXT_CODE_INIT_PORTS_CONFLICT: "panel and daemon ports must be different.",
     TXT_CODE_INIT_DIRECTORY_PROMPT: "Installation directory (my-panel): ",
-    TXT_CODE_INIT_MODE_PROMPT:
-      "Installation mode: 1) panel + daemon  2) panel  3) daemon (1): ",
+    TXT_CODE_INIT_MODE_PROMPT: "Installation mode: 1) panel + daemon  2) panel  3) daemon (1): ",
     TXT_CODE_INIT_MODE_INVALID: "Choose 1, 2 or 3.",
     TXT_CODE_INIT_PORT_PROMPT: "{side} listening port ({port}): ",
     TXT_CODE_INIT_INSTALL_PROMPT: "Install dependencies? (Y/n): ",
@@ -93,10 +92,8 @@ const messages = {
     TXT_CODE_INIT_PORT_TITLE: "{side} 监听端口",
     TXT_CODE_INIT_MODE_UNKNOWN: "未知安装模式：{mode}",
     TXT_CODE_INIT_VERSION_LOOKUP_LOADING: "正在获取版本...",
-    TXT_CODE_INIT_VERSION_LOOKUP_FAILED:
-      "无法获取 {name} 的 npm 版本，请检查 registry 和网络。",
-    TXT_CODE_INIT_PLUGIN_ASSETS_MISMATCH:
-      "{name} 与面板资源不兼容，请更新面板或使用兼容版本。",
+    TXT_CODE_INIT_VERSION_LOOKUP_FAILED: "无法获取 {name} 的 npm 版本，请检查 registry 和网络。",
+    TXT_CODE_INIT_PLUGIN_ASSETS_MISMATCH: "{name} 与面板资源不兼容，请更新面板或使用兼容版本。",
     TXT_CODE_INIT_PLUGIN_CATALOGUE_MISSING: "{side} 缺少插件清单。",
     TXT_CODE_INIT_PLUGIN_CATALOGUE_INVALID: "{side} 插件清单无效。",
     TXT_CODE_INIT_PLUGIN_METADATA_INVALID: "{side} 元数据无效：{name}",

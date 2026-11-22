@@ -7,32 +7,34 @@
 }
 
 @mixin background-image-surface($color) {
-  &:not(:where(
-    .desktop-window,
-    .desktop-window *,
-    .desktop-dialog,
-    .desktop-dialog *,
-    .desktop-login-window,
-    .desktop-login-window *,
-    .desktop-mode-active .v-overlay,
-    .desktop-mode-active .v-overlay *,
-    .v-navigation-drawer,
-    .v-navigation-drawer *,
-    .v-menu,
-    .v-menu *,
-    .v-dialog,
-    .v-dialog *,
-    .v-bottom-sheet,
-    .v-bottom-sheet *,
-    .v-bottom-sheet__content,
-    .v-bottom-sheet__content *,
-    .v-select__content,
-    .v-select__content *,
-    .v-autocomplete__content,
-    .v-autocomplete__content *,
-    .v-combobox__content,
-    .v-combobox__content *
-  )) {
+  &:not(
+      :where(
+          .desktop-window,
+          .desktop-window *,
+          .desktop-dialog,
+          .desktop-dialog *,
+          .desktop-login-window,
+          .desktop-login-window *,
+          .desktop-mode-active .v-overlay,
+          .desktop-mode-active .v-overlay *,
+          .v-navigation-drawer,
+          .v-navigation-drawer *,
+          .v-menu,
+          .v-menu *,
+          .v-dialog,
+          .v-dialog *,
+          .v-bottom-sheet,
+          .v-bottom-sheet *,
+          .v-bottom-sheet__content,
+          .v-bottom-sheet__content *,
+          .v-select__content,
+          .v-select__content *,
+          .v-autocomplete__content,
+          .v-autocomplete__content *,
+          .v-combobox__content,
+          .v-combobox__content *
+        )
+    ) {
     --app-surface-color: #{$color};
     background-color: var(--app-surface-color) !important;
   }
@@ -68,7 +70,9 @@ body.app-background-image {
     @include background-image-surface(var(--app-background-control));
   }
 
-  .v-card:where(.v-card--variant-elevated, .v-card--variant-flat):not(:where([data-app-surface], [class*="bg-"])),
+  .v-card:where(.v-card--variant-elevated, .v-card--variant-flat):not(
+      :where([data-app-surface], [class*="bg-"])
+    ),
   .v-table,
   .v-list:not(:where([data-app-surface])),
   [data-app-surface="card"] {
@@ -76,11 +80,7 @@ body.app-background-image {
   }
 
   // Nested lists share their container's surface instead of painting it twice.
-  :is(
-    .v-card,
-    .v-list,
-    [data-app-surface="card"]
-  ) :is(.v-table, .v-list),
+  :is(.v-card, .v-list, [data-app-surface="card"]) :is(.v-table, .v-list),
   [data-app-surface="transparent"] {
     @include background-image-surface(transparent);
   }

@@ -6,7 +6,11 @@ import { useSchedule } from "@elementspanel/epanel-plugin-console/hooks/useSched
 import { t as $t, t } from "@elementspanel/epanel-plugin-i18n";
 import { ctx } from "@elements-panel/sdk";
 import { padZero } from "@elementspanel/epanel-plugin-console/tools/common";
-import { ScheduleActionType, ScheduleCreateType, ScheduleType } from "@elementspanel/epanel-plugin-console/types/const";
+import {
+  ScheduleActionType,
+  ScheduleCreateType,
+  ScheduleType
+} from "@elementspanel/epanel-plugin-console/types/const";
 import type { Schedule } from "@elementspanel/epanel-plugin-console/types";
 import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { computed, onMounted, ref } from "vue";
@@ -191,14 +195,26 @@ onMounted(async () => {
       </PageToolbar>
 
       <VCard rounded="xl" flat>
-        <VDataTable :headers="headers" :items="scheduleRows" :items-per-page="15" :loading="scheduleListLoading"
-          :loading-text="t('TXT_CODE_COMMON_LOADING_DATA')" class="schedule-table">
+        <VDataTable
+          :headers="headers"
+          :items="scheduleRows"
+          :items-per-page="15"
+          :loading="scheduleListLoading"
+          :loading-text="t('TXT_CODE_COMMON_LOADING_DATA')"
+          class="schedule-table"
+        >
           <template #no-data><Empty icon="mdi-clock-outline" /></template>
           <template #item.count="{ item }">
-            {{ Number(rawSchedule(item).count) > 0 ? rawSchedule(item).count : t("TXT_CODE_SCHEDULE_REPEAT_FOREVER") }}
+            {{
+              Number(rawSchedule(item).count) > 0
+                ? rawSchedule(item).count
+                : t("TXT_CODE_SCHEDULE_REPEAT_FOREVER")
+            }}
           </template>
           <template #item.action="{ item }">
-            {{ scheduleActionTypes[rawSchedule(item).action] ?? (rawSchedule(item).action || "--") }}
+            {{
+              scheduleActionTypes[rawSchedule(item).action] ?? (rawSchedule(item).action || "--")
+            }}
           </template>
           <template #item.type="{ item }">
             {{ ScheduleType[rawSchedule(item).type as keyof typeof ScheduleType] ?? "--" }}
@@ -208,12 +224,21 @@ onMounted(async () => {
           </template>
           <template #item.actions="{ item }">
             <div class="schedule-row-actions">
-              <VBtn size="small" variant="text" prepend-icon="mdi-pencil-outline"
-                @click.stop="openScheduleDialog(rawSchedule(item))">
+              <VBtn
+                size="small"
+                variant="text"
+                prepend-icon="mdi-pencil-outline"
+                @click.stop="openScheduleDialog(rawSchedule(item))"
+              >
                 {{ t("TXT_CODE_COMMON_EDIT") }}
               </VBtn>
-              <VBtn size="small" color="error" variant="text" prepend-icon="mdi-delete-outline"
-                @click="openDeleteDialog(rawSchedule(item))">
+              <VBtn
+                size="small"
+                color="error"
+                variant="text"
+                prepend-icon="mdi-delete-outline"
+                @click="openDeleteDialog(rawSchedule(item))"
+              >
                 {{ t("TXT_CODE_COMMON_DELETE") }}
               </VBtn>
             </div>
@@ -222,7 +247,10 @@ onMounted(async () => {
       </VCard>
     </VContainer>
     <VDialog v-model="deleteDialogOpen" class="app-dialog" max-width="460px">
-      <VCard rounded="xl" :title="t('TXT_CODE_COMMON_ARE_YOU_SURE_YOU_WANT_TO_DELETE_THIS_SCHEDULED_TASK')">
+      <VCard
+        rounded="xl"
+        :title="t('TXT_CODE_COMMON_ARE_YOU_SURE_YOU_WANT_TO_DELETE_THIS_SCHEDULED_TASK')"
+      >
         <VCardText>
           {{ deleteCandidate?.name || "" }}
         </VCardText>
@@ -239,8 +267,13 @@ onMounted(async () => {
     </VDialog>
 
     <Teleport to="body">
-      <NewSchedule v-model="scheduleDialogOpen" :daemon-id="daemonId ?? ''" :instance-id="instanceId ?? ''"
-        :task="scheduleDialogTask" @get-schedule-list="getScheduleList()" />
+      <NewSchedule
+        v-model="scheduleDialogOpen"
+        :daemon-id="daemonId ?? ''"
+        :instance-id="instanceId ?? ''"
+        :task="scheduleDialogTask"
+        @get-schedule-list="getScheduleList()"
+      />
     </Teleport>
   </main>
 </template>

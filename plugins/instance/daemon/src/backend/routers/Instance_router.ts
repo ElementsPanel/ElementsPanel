@@ -140,7 +140,9 @@ routerApp.on("instance/detail", async (ctx, data) => {
     try {
       // Skip unreadable permission-dependent fields while returning the remaining configuration.
       processInfo = await instance.forceExec(new ProcessInfoCommand());
-    } catch (err: any) {}
+    } catch (err: any) {
+      // Return the remaining details if process inspection fails.
+    }
     protocol.msg(ctx, "instance/detail", {
       instanceUuid: instance.instanceUuid,
       started: instance.startCount,
@@ -309,7 +311,10 @@ routerApp.on("instance/delete-directory", async (ctx, data) => {
     if (!instance) throw new Error($t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
     if (instanceUuid === InstanceSubsystem.GLOBAL_INSTANCE_UUID)
       throw new Error("Cannot delete the global terminal instance");
-    if (instance.status() !== Instance.STATUS_STOP) throw new Error($t("TXT_CODE_COMMON_PLEASE_MAKE_SURE_THE_INSTANCE_IS_STOPPED_BEFORE_DELETING_IT"));
+    if (instance.status() !== Instance.STATUS_STOP)
+      throw new Error(
+        $t("TXT_CODE_COMMON_PLEASE_MAKE_SURE_THE_INSTANCE_IS_STOPPED_BEFORE_DELETING_IT")
+      );
     const directory = path.resolve(instance.absoluteCwdPath());
     if (directory === path.parse(directory).root)
       throw new Error($t("TXT_CODE_INSTANCE_FILE_ACCESS_DENIED"));
@@ -397,11 +402,17 @@ routerApp.on("instance/asynchronous", (ctx, data) => {
       const task = registeredTask.create(instance as Instance, parameter);
       TaskCenter.addTask(task);
       const tasks = daemon.backgroundTasks;
-      tasks?.follow((task as any).wait ? (task as any).wait() : new Promise<void>((resolve, reject) => {
-        task.once("stopped", resolve);
-        task.once("error", reject);
-      }));
-      tasks?.progress(undefined, () => { void task.stop().catch((err: unknown) => logger.warn(err)); });
+      tasks?.follow(
+        (task as any).wait
+          ? (task as any).wait()
+          : new Promise<void>((resolve, reject) => {
+              task.once("stopped", resolve);
+              task.once("error", reject);
+            })
+      );
+      tasks?.progress(undefined, () => {
+        void task.stop().catch((err: unknown) => logger.warn(err));
+      });
       return protocol.response(ctx, task.toObject());
     }
   }
@@ -426,7 +437,7 @@ routerApp.on("instance/stop_asynchronous", (ctx, data) => {
     task
       .stop(instance)
       .then(() => {})
-      .catch((err) => {});
+      .catch((_err) => {});
   } else {
     return protocol.error(
       ctx,

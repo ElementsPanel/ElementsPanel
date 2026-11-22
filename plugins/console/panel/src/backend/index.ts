@@ -54,7 +54,11 @@ function readAppearance(config: AppearanceConfig) {
   };
 }
 
-function writeAppearance(values: AppearanceValues, config: AppearanceConfig, save: () => Promise<void>) {
+function writeAppearance(
+  values: AppearanceValues,
+  config: AppearanceConfig,
+  save: () => Promise<void>
+) {
   // Treat a clearable input's null as removal; only omitted fields retain the saved image.
   const valueOrCurrent = (value: unknown, currentValue: unknown) =>
     value === undefined ? currentValue : value;
@@ -122,14 +126,7 @@ function isSafeFileName(fileName: string) {
   return !/[\\/:*?"<>|]/.test(fileName) && !fileName.includes("..") && fileName.length > 0;
 }
 
-export const inject = [
-  "koa",
-  "i18n",
-  "middleware",
-  "roles",
-  "globals",
-  "settings"
-];
+export const inject = ["koa", "i18n", "middleware", "roles", "globals", "settings"];
 
 export function apply(ctx: PanelPluginContext) {
   const $t = ctx.i18n.$t;
@@ -138,99 +135,109 @@ export function apply(ctx: PanelPluginContext) {
 
   const migration = migrateLegacyAppearance(settings.config, () => settings.save());
 
-  ctx.inject(["settingsForm"], (settingsCtx) => settingsCtx.settingsForm.declare({
-    defaults: () => readAppearance({}),
-    fields: () => {
-      const appearancePage = { id: "appearance", title: $t("TXT_CODE_SETTINGS_PAGE_APPEARANCE") };
-      return [
-        {
-          key: "pageTitle",
-          page: appearancePage,
-          type: "string",
-          title: $t("TXT_CODE_COMMON_PAGE_TITLE"),
-          description: $t("TXT_CODE_COMMON_THIS_CHANGES_THE_PAGE_TITLE_OF_THE_BROWSER_TAB_LEAVE_BLANK_TO_RESET_TO_DEFAULT")
-        },
-        {
-          key: "logoImagePerTheme",
-          page: appearancePage,
-          type: "boolean",
-          title: $t("TXT_CODE_CONSOLE_LOGO_PER_THEME")
-        },
-        {
-          key: "logoImage",
-          page: appearancePage,
-          type: "string",
-          title: $t("TXT_CODE_CONSOLE_LOGO"),
-          description: $t("TXT_CODE_CONSOLE_LOGO_HINT"),
-          fileUpload: true,
-          visibleWhen: "logoImagePerTheme=false"
-        },
-        {
-          key: "logoImageLight",
-          page: appearancePage,
-          type: "string",
-          title: $t("TXT_CODE_CONSOLE_LOGO_LIGHT"),
-          description: $t("TXT_CODE_CONSOLE_LOGO_HINT"),
-          fileUpload: true,
-          visibleWhen: "logoImagePerTheme"
-        },
-        {
-          key: "logoImageDark",
-          page: appearancePage,
-          type: "string",
-          title: $t("TXT_CODE_CONSOLE_LOGO_DARK"),
-          description: $t("TXT_CODE_CONSOLE_LOGO_HINT"),
-          fileUpload: true,
-          visibleWhen: "logoImagePerTheme"
-        },
-        {
-          key: "backgroundImagePerTheme",
-          page: appearancePage,
-          type: "boolean",
-          title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_PER_THEME")
-        },
-        {
-          key: "backgroundImage",
-          page: appearancePage,
-          type: "string",
-          title: $t("TXT_CODE_COMMON_UI_BACKGROUND_IMAGE"),
-          description: $t("TXT_CODE_COMMON_THIS_FEATURE_MAY_BE_UNSTABLE_CANNOT_GUARANTEE_BEST_USER_EXPERIENCE"),
-          fileUpload: true,
-          visibleWhen: "backgroundImagePerTheme=false"
-        },
-        {
-          key: "backgroundImageLight",
-          page: appearancePage,
-          type: "string",
-          title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_LIGHT"),
-          description: $t("TXT_CODE_COMMON_THIS_FEATURE_MAY_BE_UNSTABLE_CANNOT_GUARANTEE_BEST_USER_EXPERIENCE"),
-          fileUpload: true,
-          visibleWhen: "backgroundImagePerTheme"
-        },
-        {
-          key: "backgroundImageDark",
-          page: appearancePage,
-          type: "string",
-          title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_DARK"),
-          description: $t("TXT_CODE_COMMON_THIS_FEATURE_MAY_BE_UNSTABLE_CANNOT_GUARANTEE_BEST_USER_EXPERIENCE"),
-          fileUpload: true,
-          visibleWhen: "backgroundImagePerTheme"
-        },
-        {
-          key: "backgroundImageBlur",
-          page: appearancePage,
-          type: "number",
-          control: "slider",
-          title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_BLUR"),
-          min: 0,
-          max: 50,
-          unit: "px"
-        }
-      ];
-    },
-    read: () => readAppearance(settings.config),
-    write: (values) => writeAppearance(values, settings.config, () => settings.save())
-  }));
+  ctx.inject(["settingsForm"], (settingsCtx) =>
+    settingsCtx.settingsForm.declare({
+      defaults: () => readAppearance({}),
+      fields: () => {
+        const appearancePage = { id: "appearance", title: $t("TXT_CODE_SETTINGS_PAGE_APPEARANCE") };
+        return [
+          {
+            key: "pageTitle",
+            page: appearancePage,
+            type: "string",
+            title: $t("TXT_CODE_COMMON_PAGE_TITLE"),
+            description: $t(
+              "TXT_CODE_COMMON_THIS_CHANGES_THE_PAGE_TITLE_OF_THE_BROWSER_TAB_LEAVE_BLANK_TO_RESET_TO_DEFAULT"
+            )
+          },
+          {
+            key: "logoImagePerTheme",
+            page: appearancePage,
+            type: "boolean",
+            title: $t("TXT_CODE_CONSOLE_LOGO_PER_THEME")
+          },
+          {
+            key: "logoImage",
+            page: appearancePage,
+            type: "string",
+            title: $t("TXT_CODE_CONSOLE_LOGO"),
+            description: $t("TXT_CODE_CONSOLE_LOGO_HINT"),
+            fileUpload: true,
+            visibleWhen: "logoImagePerTheme=false"
+          },
+          {
+            key: "logoImageLight",
+            page: appearancePage,
+            type: "string",
+            title: $t("TXT_CODE_CONSOLE_LOGO_LIGHT"),
+            description: $t("TXT_CODE_CONSOLE_LOGO_HINT"),
+            fileUpload: true,
+            visibleWhen: "logoImagePerTheme"
+          },
+          {
+            key: "logoImageDark",
+            page: appearancePage,
+            type: "string",
+            title: $t("TXT_CODE_CONSOLE_LOGO_DARK"),
+            description: $t("TXT_CODE_CONSOLE_LOGO_HINT"),
+            fileUpload: true,
+            visibleWhen: "logoImagePerTheme"
+          },
+          {
+            key: "backgroundImagePerTheme",
+            page: appearancePage,
+            type: "boolean",
+            title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_PER_THEME")
+          },
+          {
+            key: "backgroundImage",
+            page: appearancePage,
+            type: "string",
+            title: $t("TXT_CODE_COMMON_UI_BACKGROUND_IMAGE"),
+            description: $t(
+              "TXT_CODE_COMMON_THIS_FEATURE_MAY_BE_UNSTABLE_CANNOT_GUARANTEE_BEST_USER_EXPERIENCE"
+            ),
+            fileUpload: true,
+            visibleWhen: "backgroundImagePerTheme=false"
+          },
+          {
+            key: "backgroundImageLight",
+            page: appearancePage,
+            type: "string",
+            title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_LIGHT"),
+            description: $t(
+              "TXT_CODE_COMMON_THIS_FEATURE_MAY_BE_UNSTABLE_CANNOT_GUARANTEE_BEST_USER_EXPERIENCE"
+            ),
+            fileUpload: true,
+            visibleWhen: "backgroundImagePerTheme"
+          },
+          {
+            key: "backgroundImageDark",
+            page: appearancePage,
+            type: "string",
+            title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_DARK"),
+            description: $t(
+              "TXT_CODE_COMMON_THIS_FEATURE_MAY_BE_UNSTABLE_CANNOT_GUARANTEE_BEST_USER_EXPERIENCE"
+            ),
+            fileUpload: true,
+            visibleWhen: "backgroundImagePerTheme"
+          },
+          {
+            key: "backgroundImageBlur",
+            page: appearancePage,
+            type: "number",
+            control: "slider",
+            title: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_BLUR"),
+            min: 0,
+            max: 50,
+            unit: "px"
+          }
+        ];
+      },
+      read: () => readAppearance(settings.config),
+      write: (values) => writeAppearance(values, settings.config, () => settings.save())
+    })
+  );
 
   const router = ctx.koa.router("/api/overview");
 
@@ -256,10 +263,10 @@ export function apply(ctx: PanelPluginContext) {
     } finally {
       if (Array.isArray(files)) {
         files.forEach((file) => {
-          if (file?.filepath) fs.remove(file.filepath, () => { });
+          if (file?.filepath) fs.remove(file.filepath, () => {});
         });
       } else if (tmpFile?.filepath) {
-        fs.remove(tmpFile.filepath, () => { });
+        fs.remove(tmpFile.filepath, () => {});
       }
     }
   });

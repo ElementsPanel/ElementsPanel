@@ -71,7 +71,7 @@ const navigationProps = computed(() =>
 watch(isPhone, (phone) => {
   if (!phone) sidebarOpen.value = false;
 });
-const scope = ref<Scope>("panel");
+const selectedScope = ref<Scope>("panel");
 const route = useRoute();
 const router = useRouter();
 const preferredPluginId = ref(String(props.pluginId ?? route.query.plugin ?? ""));
@@ -90,26 +90,33 @@ const {
   loadNodes,
   loadNodePlugins,
   reloadNodePluginsAfterToggle,
-  refreshInventory,
   isDisposed
 } = usePluginInventory({
-  scope,
+  scope: selectedScope,
   selectedNodeId,
   isBusy: () => actionSubmitting.value
 });
 
 const selectedTargetId = computed({
-  get: () => (scope.value === "panel" ? "" : selectedNodeId.value || undefined),
+  get: () => (selectedScope.value === "panel" ? "" : selectedNodeId.value || undefined),
   set: (daemonId: string | undefined) => {
     if (daemonId === undefined) return;
-    scope.value = daemonId ? "node" : "panel";
+    selectedScope.value = daemonId ? "node" : "panel";
     if (daemonId) selectedNodeId.value = daemonId;
   }
 });
-defineExpose({ scope, selectedNodeId, selectedTargetId, nodes, nodesLoading, loadNodes, loading });
+defineExpose({
+  scope: selectedScope,
+  selectedNodeId,
+  selectedTargetId,
+  nodes,
+  nodesLoading,
+  loadNodes,
+  loading
+});
 
 const currentList = computed<Array<PluginRecord | NodePluginRecord>>(() =>
-  scope.value === "panel" ? plugins.value : nodePlugins.value
+  selectedScope.value === "panel" ? plugins.value : nodePlugins.value
 );
 
 const lastResult = ref<PluginChangeResult | null>(null);
@@ -120,7 +127,6 @@ const recordResult = (result?: PluginChangeResult | boolean) => {
 };
 
 const {
-  pluginGroupsState,
   pluginGroupsLoading,
   pluginContextMenu,
   pluginContextPlugin,
@@ -140,7 +146,7 @@ const {
   confirmRemoveGroup,
   movePluginToGroup,
   moveContextPluginToGroup
-} = usePluginGroups({ scope, selectedNodeId, currentList });
+} = usePluginGroups({ scope: selectedScope, selectedNodeId, currentList });
 const { draggedPluginId, dragOverGroupId, endPluginDrag, preparePluginDrag, selectPluginFromList } =
   usePluginDrag({
     closePluginContextMenu,
@@ -152,13 +158,17 @@ const {
   remarksLoading,
   savingRemark,
   remarkDialog,
-  loadPluginRemarks,
   editContextPluginRemark,
   savePluginRemark
-} = usePluginRemarks({ scope, selectedNodeId, pluginContextPlugin, closePluginContextMenu });
+} = usePluginRemarks({
+  scope: selectedScope,
+  selectedNodeId,
+  pluginContextPlugin,
+  closePluginContextMenu
+});
 
 watch(
-  [scope, selectedNodeId],
+  [selectedScope, selectedNodeId],
   () => {
     endPluginDrag();
     closePluginContextMenu();
@@ -168,9 +178,9 @@ watch(
 );
 
 const currentId = computed({
-  get: () => (scope.value === "panel" ? selectedId.value : nodeSelectedId.value),
+  get: () => (selectedScope.value === "panel" ? selectedId.value : nodeSelectedId.value),
   set: (value: string) => {
-    if (scope.value === "panel") selectedId.value = value;
+    if (selectedScope.value === "panel") selectedId.value = value;
     else nodeSelectedId.value = value;
   }
 });
@@ -200,7 +210,7 @@ const {
   requestResetContextPluginSettings,
   confirmResetSettings
 } = usePluginSettings({
-  scope,
+  scope: selectedScope,
   selectedNodeId,
   currentId,
   pluginContextPlugin,
@@ -243,13 +253,13 @@ const stateLabels = {
   "restart-required": "TXT_CODE_PLUGIN_RESTART_REQUIRED"
 };
 const frontendPlugin = computed(() =>
-  scope.value === "panel"
+  selectedScope.value === "panel"
     ? ctx.plugins.loaded.find((item) => item.metadata.id === currentId.value)
     : undefined
 );
 const unavailableDependencies = (plugin: PluginRecord | NodePluginRecord) => {
   const frontend =
-    scope.value === "panel"
+    selectedScope.value === "panel"
       ? ctx.plugins?.loaded.find((item) => item.metadata.id === plugin.id)
       : undefined;
   const missing = (frontend?.metadata.frontendInject ?? []).filter(
@@ -266,7 +276,7 @@ const unavailableDependencies = (plugin: PluginRecord | NodePluginRecord) => {
 const pluginWarning = (plugin: PluginRecord | NodePluginRecord) => {
   if (!plugin.enabled) return false;
   const frontend =
-    scope.value === "panel"
+    selectedScope.value === "panel"
       ? ctx.plugins?.loaded.find((item) => item.metadata.id === plugin.id)
       : undefined;
   return (
@@ -293,12 +303,11 @@ const {
   nodeTargetItems,
   retryFrontend,
   requestAction,
-  toggle,
   toggleSelected,
   toggleContextPlugin,
   confirmAction
 } = usePluginActions({
-  scope,
+  scope: selectedScope,
   selectedNodeId,
   currentId,
   plugins,
@@ -319,7 +328,7 @@ onBeforeRouteLeave((to) => {
   if (to.path === "/plugins/config") return true;
   const query = { ...to.query };
   const contributed: Record<string, string> = {
-    scope: scope.value,
+    scope: selectedScope.value,
     daemonId: selectedNodeId.value,
     plugin: currentId.value
   };
@@ -333,12 +342,12 @@ onBeforeRouteLeave((to) => {
   return inherited ? { path: to.path, query } : true;
 });
 
-watch(scope, (value) => {
+watch(selectedScope, (value) => {
   if (value === "node" && !nodes.value.length && !nodeError.value) loadNodes();
 });
 
-watch([scope, selectedNodeId], () => {
-  if (scope.value === "node") void loadNodePlugins();
+watch([selectedScope, selectedNodeId], () => {
+  if (selectedScope.value === "node") void loadNodePlugins();
 });
 
 watch(
@@ -350,12 +359,12 @@ watch(
   ([targetScope, daemonId, pluginId]) => {
     if (typeof pluginId === "string") preferredPluginId.value = pluginId;
     if (targetScope !== "node") {
-      if (targetScope === "panel") scope.value = "panel";
+      if (targetScope === "panel") selectedScope.value = "panel";
       if (typeof pluginId === "string" && plugins.value.some((item) => item.id === pluginId))
         selectedId.value = pluginId;
       return;
     }
-    scope.value = "node";
+    selectedScope.value = "node";
     if (typeof daemonId === "string") selectedNodeId.value = daemonId;
   },
   { immediate: true }
@@ -387,7 +396,7 @@ watch(
 );
 
 watch(
-  [scope, currentId, selectedNodeId],
+  [selectedScope, currentId, selectedNodeId],
   () => {
     lastResult.value = null;
     toggleTooltipOpen.value = false;
@@ -402,8 +411,8 @@ watch(
 let lastSyncedPath = "";
 const syncRoute = () => {
   if (route.path !== "/plugins/config" || pluginGroupsLoading.value) return;
-  const query: Record<string, string> = { scope: scope.value };
-  if (scope.value === "node" && selectedNodeId.value) query.daemonId = selectedNodeId.value;
+  const query: Record<string, string> = { scope: selectedScope.value };
+  if (selectedScope.value === "node" && selectedNodeId.value) query.daemonId = selectedNodeId.value;
   if (currentId.value) query.plugin = currentId.value;
   if (currentId.value) preferredPluginId.value = currentId.value;
   const fullPath = router.resolve({ query }).fullPath;
@@ -413,7 +422,7 @@ const syncRoute = () => {
   window.history.replaceState(window.history.state, "", `${pathname}${search}#${fullPath}`);
 };
 
-watch([scope, currentId, selectedNodeId, pluginGroupsLoading], syncRoute);
+watch([selectedScope, currentId, selectedNodeId, pluginGroupsLoading], syncRoute);
 </script>
 
 <template>
@@ -597,7 +606,7 @@ watch([scope, currentId, selectedNodeId, pluginGroupsLoading], syncRoute);
 
       <div class="plugin-config-body">
         <Empty
-          v-if="scope === 'node' && nodeError"
+          v-if="selectedScope === 'node' && nodeError"
           icon="mdi-alert-circle-outline"
           :title="t('TXT_CODE_PLUGIN_NODE_LIST_FAILED')"
           :description="nodeError"
@@ -681,7 +690,7 @@ watch([scope, currentId, selectedNodeId, pluginGroupsLoading], syncRoute);
           </div>
           <div v-else-if="schema && schema.fields.length" class="plugin-config-form">
             <SettingsPages
-              :key="`${scope}:${selectedNodeId}:${schema.id}`"
+              :key="`${selectedScope}:${selectedNodeId}:${schema.id}`"
               v-model:page="settingsPage"
               :navigation-target="settingsPagesTarget"
               :fields="schema.fields"

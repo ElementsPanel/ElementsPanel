@@ -29,7 +29,8 @@ const dataSource = ref<DownloadFileConfigItem>({
 
 const submit = async () => {
   if (!dataSource.value.url) return reportValidatorError(t("TXT_CODE_COMMON_URL_REQUIRED"));
-  if (!dataSource.value.fileName) return reportValidatorError(t("TXT_CODE_COMMON_FILE_NAME_REQUIRED"));
+  if (!dataSource.value.fileName)
+    return reportValidatorError(t("TXT_CODE_COMMON_FILE_NAME_REQUIRED"));
   try {
     const url = new URL(dataSource.value.url);
     if (!["http:", "https:"].includes(url.protocol)) throw new Error("Unsupported protocol");
@@ -74,9 +75,25 @@ watch(
   <VDialog v-model="open" class="app-dialog" max-width="440" persistent scrollable>
     <VCard :title="t('TXT_CODE_COMMON_REMOTE_DOWNLOAD_RESOURCES')" rounded="xl">
       <VCardText class="dialog-form">
-        <div class="dialog-help">{{ t("TXT_CODE_COMMON_THE_URL_MUST_BE_REACHABLE_FROM_THE_NODE_DOWNLOAD_SPEED_MAY_BE_LIMITED") }}</div>
-        <VTextField v-model="dataSource.url" :label="t('TXT_CODE_COMMON_FILE_URL_ADDRESS')" :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')" hide-details="auto" />
-        <VTextField v-model="dataSource.fileName" :label="t('TXT_CODE_COMMON_FILE_NAME')" :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')" hide-details="auto" />
+        <div class="dialog-help">
+          {{
+            t(
+              "TXT_CODE_COMMON_THE_URL_MUST_BE_REACHABLE_FROM_THE_NODE_DOWNLOAD_SPEED_MAY_BE_LIMITED"
+            )
+          }}
+        </div>
+        <VTextField
+          v-model="dataSource.url"
+          :label="t('TXT_CODE_COMMON_FILE_URL_ADDRESS')"
+          :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')"
+          hide-details="auto"
+        />
+        <VTextField
+          v-model="dataSource.fileName"
+          :label="t('TXT_CODE_COMMON_FILE_NAME')"
+          :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')"
+          hide-details="auto"
+        />
       </VCardText>
       <VCardActions>
         <VSpacer />

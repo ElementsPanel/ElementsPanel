@@ -4,33 +4,35 @@ import { t } from "@elementspanel/epanel-plugin-i18n";
 import type { FrontendFileManagerService } from "@elements-panel/sdk";
 import { usePluginService, type FrontendDesktopService } from "@elements-panel/sdk";
 import {
-    createAsyncTask,
-    queryAsyncTask
+  createAsyncTask,
+  queryAsyncTask
 } from "@elementspanel/epanel-plugin-console/services/apis/instance";
 import { notifyDesktop } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { deleteBackup, getBackupList, restoreBackup } from "../api";
 import { VBtn, VIcon, VProgressCircular } from "vuetify/components";
 
-const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
+const ConfirmDialog = computed(
+  () => usePluginService<FrontendDesktopService>("desktop")?.confirmation
+);
 
 const fileApi = () => {
-    const service = usePluginService<FrontendFileManagerService>("file");
-    if (!service) throw new Error("file plugin is not installed");
-    return service.api as {
-        fileContent: () => { execute: (config?: any) => Promise<any> };
-        touchFile: () => { execute: (config?: any) => Promise<any> };
-    };
+  const service = usePluginService<FrontendFileManagerService>("file");
+  if (!service) throw new Error("file plugin is not installed");
+  return service.api as {
+    fileContent: () => { execute: (config?: any) => Promise<any> };
+    touchFile: () => { execute: (config?: any) => Promise<any> };
+  };
 };
 
 const props = defineProps<{
-    instanceUuid: string;
-    daemonId: string;
+  instanceUuid: string;
+  daemonId: string;
 }>();
 
 const emit = defineEmits<{
-    (e: "close"): void;
-    (e: "open-file-editor", filePath: string, fileName: string): void;
+  (e: "close"): void;
+  (e: "open-file-editor", filePath: string, fileName: string): void;
 }>();
 
 const loading = ref(false);
@@ -40,509 +42,563 @@ const backupList = ref<{ name: string; size: number; time: string }[]>([]);
 const listLoading = ref(false);
 
 const deleteDialog = ref({
-    show: false,
-    name: "",
-    resolve: null as ((value: boolean) => void) | null
+  show: false,
+  name: "",
+  resolve: null as ((value: boolean) => void) | null
 });
 
 const restoreDialog = ref({
-    show: false,
-    name: "",
-    resolve: null as ((value: boolean) => void) | null
+  show: false,
+  name: "",
+  resolve: null as ((value: boolean) => void) | null
 });
 
 const backupConfirmDialog = ref({
-    show: false,
-    resolve: null as ((value: boolean) => void) | null
+  show: false,
+  resolve: null as ((value: boolean) => void) | null
 });
 
 const epbaklstConfirmDialog = ref({
-    show: false,
-    resolve: null as ((value: boolean) => void) | null
+  show: false,
+  resolve: null as ((value: boolean) => void) | null
 });
 
 let timer: any = null;
 
 const fetchBackupList = async () => {
-    listLoading.value = true;
-    try {
-        const { execute: queryTask } = queryAsyncTask();
-        const taskRes = await queryTask({
-            params: {
-                daemonId: props.daemonId,
-                uuid: props.instanceUuid,
-                task_name: "instance_backup"
-            },
-            data: {
-                taskId: ""
-            }
-        });
-        if (taskRes.value && taskRes.value.status === 1) {
-            taskStatus.value = 1;
-            taskId.value = taskRes.value.taskId;
-            startQuery();
-        }
-
-        const { execute } = getBackupList();
-        const res = await execute({
-            params: {
-                daemonId: props.daemonId,
-                uuid: props.instanceUuid
-            }
-        });
-        if (res.value) {
-            backupList.value = res.value;
-        }
-    } catch (error: any) {
-        notifyDesktop(error.message || t("TXT_CODE_INSTANCE_BACKUP_FAILED_FETCH"), "error");
-    } finally {
-        listLoading.value = false;
+  listLoading.value = true;
+  try {
+    const { execute: queryTask } = queryAsyncTask();
+    const taskRes = await queryTask({
+      params: {
+        daemonId: props.daemonId,
+        uuid: props.instanceUuid,
+        task_name: "instance_backup"
+      },
+      data: {
+        taskId: ""
+      }
+    });
+    if (taskRes.value && taskRes.value.status === 1) {
+      taskStatus.value = 1;
+      taskId.value = taskRes.value.taskId;
+      startQuery();
     }
+
+    const { execute } = getBackupList();
+    const res = await execute({
+      params: {
+        daemonId: props.daemonId,
+        uuid: props.instanceUuid
+      }
+    });
+    if (res.value) {
+      backupList.value = res.value;
+    }
+  } catch (error: any) {
+    notifyDesktop(error.message || t("TXT_CODE_INSTANCE_BACKUP_FAILED_FETCH"), "error");
+  } finally {
+    listLoading.value = false;
+  }
 };
 
 const startBackup = async () => {
-    if (taskStatus.value === 1 || loading.value) return;
-    backupConfirmDialog.value = {
-        show: true,
-        resolve: async (val: boolean) => {
-            backupConfirmDialog.value.show = false;
-            if (val) {
-                if (taskStatus.value === 1 || loading.value) return;
-                loading.value = true;
-                try {
-                    const { execute } = createAsyncTask();
-                    const res = await execute({
-                        params: {
-                            daemonId: props.daemonId,
-                            uuid: props.instanceUuid,
-                            task_name: "instance_backup"
-                        },
-                        data: {
-                            time: new Date().getTime(),
-                            newInstanceName: ""
-                        }
-                    });
-                    if (res.value) {
-                        taskId.value = res.value.taskId;
-                        notifyDesktop(t("TXT_CODE_INSTANCE_BACKUP_STARTED"), "success");
-                        startQuery();
-                    }
-                } catch (error: any) {
-                    notifyDesktop(error.message || t("TXT_CODE_INSTANCE_BACKUP_FAILED_START"), "error");
-                } finally {
-                    loading.value = false;
-                }
+  if (taskStatus.value === 1 || loading.value) return;
+  backupConfirmDialog.value = {
+    show: true,
+    resolve: async (val: boolean) => {
+      backupConfirmDialog.value.show = false;
+      if (val) {
+        if (taskStatus.value === 1 || loading.value) return;
+        loading.value = true;
+        try {
+          const { execute } = createAsyncTask();
+          const res = await execute({
+            params: {
+              daemonId: props.daemonId,
+              uuid: props.instanceUuid,
+              task_name: "instance_backup"
+            },
+            data: {
+              time: new Date().getTime(),
+              newInstanceName: ""
             }
+          });
+          if (res.value) {
+            taskId.value = res.value.taskId;
+            notifyDesktop(t("TXT_CODE_INSTANCE_BACKUP_STARTED"), "success");
+            startQuery();
+          }
+        } catch (error: any) {
+          notifyDesktop(error.message || t("TXT_CODE_INSTANCE_BACKUP_FAILED_START"), "error");
+        } finally {
+          loading.value = false;
         }
-    };
+      }
+    }
+  };
 };
 
 const startQuery = () => {
-    if (timer) clearInterval(timer);
-    timer = setInterval(async () => {
-        if (!taskId.value) return;
-        try {
-            const { execute } = queryAsyncTask();
-            const res = await execute({
-                params: {
-                    daemonId: props.daemonId,
-                    uuid: props.instanceUuid,
-                    task_name: "instance_backup"
-                },
-                data: {
-                    taskId: taskId.value
-                }
-            });
-            if (res.value) {
-                taskStatus.value = res.value.status;
-                if (taskStatus.value !== 1) {
-                    clearInterval(timer);
-                    timer = null;
-                    fetchBackupList();
-                    if (taskStatus.value === 0) {
-                        notifyDesktop(t("TXT_CODE_INSTANCE_BACKUP_COMPLETED"), "success");
-                    }
-                }
-            }
-        } catch (error) {
-            clearInterval(timer);
-            timer = null;
+  if (timer) clearInterval(timer);
+  timer = setInterval(async () => {
+    if (!taskId.value) return;
+    try {
+      const { execute } = queryAsyncTask();
+      const res = await execute({
+        params: {
+          daemonId: props.daemonId,
+          uuid: props.instanceUuid,
+          task_name: "instance_backup"
+        },
+        data: {
+          taskId: taskId.value
         }
-    }, 2000);
+      });
+      if (res.value) {
+        taskStatus.value = res.value.status;
+        if (taskStatus.value !== 1) {
+          clearInterval(timer);
+          timer = null;
+          fetchBackupList();
+          if (taskStatus.value === 0) {
+            notifyDesktop(t("TXT_CODE_INSTANCE_BACKUP_COMPLETED"), "success");
+          }
+        }
+      }
+    } catch (error) {
+      clearInterval(timer);
+      timer = null;
+    }
+  }, 2000);
 };
 
 const handleDelete = (backupName: string) => {
-    deleteDialog.value = {
-        show: true,
-        name: backupName,
-        resolve: async (val: boolean) => {
-            deleteDialog.value.show = false;
-            if (val) {
-                try {
-                    const { execute } = deleteBackup();
-                    await execute({
-                        params: {
-                            daemonId: props.daemonId,
-                            uuid: props.instanceUuid,
-                            backupName
-                        }
-                    });
-                    notifyDesktop(t("TXT_CODE_COMMON_DELETE_SUCCESS"), "success");
-                    fetchBackupList();
-                } catch (error: any) {
-                    notifyDesktop(error.message || t("TXT_CODE_INSTANCE_BACKUP_FAILED_DELETE"), "error");
-                }
+  deleteDialog.value = {
+    show: true,
+    name: backupName,
+    resolve: async (val: boolean) => {
+      deleteDialog.value.show = false;
+      if (val) {
+        try {
+          const { execute } = deleteBackup();
+          await execute({
+            params: {
+              daemonId: props.daemonId,
+              uuid: props.instanceUuid,
+              backupName
             }
+          });
+          notifyDesktop(t("TXT_CODE_COMMON_DELETE_SUCCESS"), "success");
+          fetchBackupList();
+        } catch (error: any) {
+          notifyDesktop(error.message || t("TXT_CODE_INSTANCE_BACKUP_FAILED_DELETE"), "error");
         }
-    };
+      }
+    }
+  };
 };
 
 const handleEditEpbaklst = async () => {
-    const filePath = ".epbaklst";
-    const fileName = ".epbaklst";
-    try {
-        const { execute: readFile } = fileApi().fileContent();
-        const res = await readFile({
-            params: {
+  const filePath = ".epbaklst";
+  const fileName = ".epbaklst";
+  try {
+    const { execute: readFile } = fileApi().fileContent();
+    const res = await readFile({
+      params: {
+        daemonId: props.daemonId,
+        uuid: props.instanceUuid
+      },
+      data: {
+        target: filePath
+      }
+    });
+    if (res.value !== undefined) {
+      emit("open-file-editor", filePath, fileName);
+    }
+  } catch {
+    epbaklstConfirmDialog.value = {
+      show: true,
+      resolve: async (val: boolean) => {
+        epbaklstConfirmDialog.value.show = false;
+        if (val) {
+          try {
+            const { execute: createFile } = fileApi().touchFile();
+            await createFile({
+              params: {
                 daemonId: props.daemonId,
                 uuid: props.instanceUuid
-            },
-            data: {
+              },
+              data: {
                 target: filePath
-            }
-        });
-        if (res.value !== undefined) {
+              }
+            });
+            const { execute: writeFile } = fileApi().fileContent();
+            await writeFile({
+              params: {
+                daemonId: props.daemonId,
+                uuid: props.instanceUuid
+              },
+              data: {
+                target: filePath,
+                text: "$black\n"
+              }
+            });
+            notifyDesktop(t("TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATED"), "success");
             emit("open-file-editor", filePath, fileName);
+          } catch (error: any) {
+            notifyDesktop(error.message, "error");
+          }
         }
-    } catch {
-        epbaklstConfirmDialog.value = {
-            show: true,
-            resolve: async (val: boolean) => {
-                epbaklstConfirmDialog.value.show = false;
-                if (val) {
-                    try {
-                        const { execute: createFile } = fileApi().touchFile();
-                        await createFile({
-                            params: {
-                                daemonId: props.daemonId,
-                                uuid: props.instanceUuid
-                            },
-                            data: {
-                                target: filePath
-                            }
-                        });
-                        const { execute: writeFile } = fileApi().fileContent();
-                        await writeFile({
-                            params: {
-                                daemonId: props.daemonId,
-                                uuid: props.instanceUuid
-                            },
-                            data: {
-                                target: filePath,
-                                text: "$black\n"
-                            }
-                        });
-                        notifyDesktop(t("TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATED"), "success");
-                        emit("open-file-editor", filePath, fileName);
-                    } catch (error: any) {
-                        notifyDesktop(error.message, "error");
-                    }
-                }
-            }
-        };
-    }
+      }
+    };
+  }
 };
 
 const handleRestore = (backupName: string) => {
-    restoreDialog.value = {
-        show: true,
-        name: backupName,
-        resolve: async (val: boolean) => {
-            restoreDialog.value.show = false;
-            if (val) {
-                try {
-                    const { execute } = restoreBackup();
-                    await execute({
-                        params: {
-                            daemonId: props.daemonId,
-                            uuid: props.instanceUuid,
-                            backupName
-                        }
-                    });
-                    notifyDesktop(t("TXT_CODE_INSTANCE_BACKUP_RESTORE_STARTED"), "success");
-                } catch (error: any) {
-                    notifyDesktop(error.message || t("TXT_CODE_INSTANCE_BACKUP_FAILED_RESTORE"), "error");
-                }
+  restoreDialog.value = {
+    show: true,
+    name: backupName,
+    resolve: async (val: boolean) => {
+      restoreDialog.value.show = false;
+      if (val) {
+        try {
+          const { execute } = restoreBackup();
+          await execute({
+            params: {
+              daemonId: props.daemonId,
+              uuid: props.instanceUuid,
+              backupName
             }
+          });
+          notifyDesktop(t("TXT_CODE_INSTANCE_BACKUP_RESTORE_STARTED"), "success");
+        } catch (error: any) {
+          notifyDesktop(error.message || t("TXT_CODE_INSTANCE_BACKUP_FAILED_RESTORE"), "error");
         }
-    };
+      }
+    }
+  };
 };
 
 const formatSize = (bytes: number) => {
-    if (bytes === 0) return "0 B";
-    const k = 1024;
-    const sizes = ["B", "KB", "MB", "GB", "TB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
 onMounted(() => {
-    fetchBackupList();
+  fetchBackupList();
 });
 
 onUnmounted(() => {
-    if (timer) clearInterval(timer);
+  if (timer) clearInterval(timer);
 });
 </script>
 
 <template>
-    <div class="ds-backup">
-        <div class="ds-backup-body">
-            <div class="ds-backup-list-container">
-                <div class="list-header">
-                    {{ t("TXT_CODE_INSTANCE_BACKUP_LIST") }}
-                    <VIcon icon="mdi-sync" :class="{ 'desktop-icon-spin': listLoading }" class="refresh-btn" @click="fetchBackupList"  />
-                </div>
-                <div v-if="backupList.length > 0" class="backup-list">
-                    <div v-for="item in backupList" :key="item.name" class="backup-item">
-                        <div class="backup-item__info">
-                            <div class="backup-item__name" :title="item.name">{{ item.name }}</div>
-                            <div class="backup-item__meta">
-                                <span>{{ formatSize(item.size) }}</span>
-                                <span class="separator">|</span>
-                                <span>{{ item.time }}</span>
-                            </div>
-                        </div>
-                        <div class="backup-item__actions">
-                            <VBtn icon variant="text" class="action-btn action-btn--restore"
-                                :title="t('TXT_CODE_INSTANCE_BACKUP_RESTORE')" @click="handleRestore(item.name)">
-                                <VIcon icon="mdi-restore"  />
-                            </VBtn>
-                            <VBtn icon variant="text" class="action-btn action-btn--delete" :title="t('TXT_CODE_INSTANCE_BACKUP_DELETE')"
-                                @click="handleDelete(item.name)">
-                                <VIcon icon="mdi-delete-outline"  />
-                            </VBtn>
-                        </div>
-                    </div>
-                </div>
-                <Empty
-                  v-else-if="!listLoading"
-                  icon="mdi-cloud-outline"
-                  :description="t('TXT_CODE_INSTANCE_BACKUP_INTRO')"
-                  compact
-                />
-                <div v-else class="list-loading">
-                    <VProgressCircular indeterminate />
-                </div>
+  <div class="ds-backup">
+    <div class="ds-backup-body">
+      <div class="ds-backup-list-container">
+        <div class="list-header">
+          {{ t("TXT_CODE_INSTANCE_BACKUP_LIST") }}
+          <VIcon
+            icon="mdi-sync"
+            :class="{ 'desktop-icon-spin': listLoading }"
+            class="refresh-btn"
+            @click="fetchBackupList"
+          />
+        </div>
+        <div v-if="backupList.length > 0" class="backup-list">
+          <div v-for="item in backupList" :key="item.name" class="backup-item">
+            <div class="backup-item__info">
+              <div class="backup-item__name" :title="item.name">{{ item.name }}</div>
+              <div class="backup-item__meta">
+                <span>{{ formatSize(item.size) }}</span>
+                <span class="separator">|</span>
+                <span>{{ item.time }}</span>
+              </div>
             </div>
+            <div class="backup-item__actions">
+              <VBtn
+                icon
+                variant="text"
+                class="action-btn action-btn--restore"
+                :title="t('TXT_CODE_INSTANCE_BACKUP_RESTORE')"
+                @click="handleRestore(item.name)"
+              >
+                <VIcon icon="mdi-restore" />
+              </VBtn>
+              <VBtn
+                icon
+                variant="text"
+                class="action-btn action-btn--delete"
+                :title="t('TXT_CODE_INSTANCE_BACKUP_DELETE')"
+                @click="handleDelete(item.name)"
+              >
+                <VIcon icon="mdi-delete-outline" />
+              </VBtn>
+            </div>
+          </div>
         </div>
-        <div class="ds-backup-footer">
-            <VBtn class="ds-dialog-btn ds-dialog-btn--default" variant="text" :disabled="loading" @click="handleEditEpbaklst">
-                {{ t("TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST") }}
-            </VBtn>
-            <VBtn class="ds-dialog-btn ds-dialog-btn--primary" variant="text" :disabled="loading" @click="startBackup">
-                {{ t("TXT_CODE_INSTANCE_BACKUP_CREATE") }}
-            </VBtn>
+        <Empty
+          v-else-if="!listLoading"
+          icon="mdi-cloud-outline"
+          :description="t('TXT_CODE_INSTANCE_BACKUP_INTRO')"
+          compact
+        />
+        <div v-else class="list-loading">
+          <VProgressCircular indeterminate />
         </div>
-
-        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="deleteDialog.show" id="backup-delete-dialog"
-            :title="t('TXT_CODE_COMMON_CONFIRM_DELETION')" :message="t('TXT_CODE_INSTANCE_BACKUP_DELETE_CONFIRM', { name: deleteDialog.name })"
-            danger @cancel="deleteDialog.resolve?.(false)" @confirm="deleteDialog.resolve?.(true)" />
-
-        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="restoreDialog.show" id="backup-restore-dialog" :height="250"
-            :title="t('TXT_CODE_INSTANCE_BACKUP_RESTORE')"
-            :message="t('TXT_CODE_INSTANCE_BACKUP_RESTORE_CONFIRM', { name: restoreDialog.name })"
-            @cancel="restoreDialog.resolve?.(false)" @confirm="restoreDialog.resolve?.(true)" />
-
-        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="epbaklstConfirmDialog.show" id="backup-epbaklst-confirm-dialog"
-            :title="t('TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST')" :message="t('TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATE_CONFIRM')"
-            @cancel="epbaklstConfirmDialog.resolve?.(false)" @confirm="epbaklstConfirmDialog.resolve?.(true)" />
-
-        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="backupConfirmDialog.show" id="backup-confirm-dialog"
-            :title="t('TXT_CODE_INSTANCE_BACKUP_CREATE')" :message="t('TXT_CODE_INSTANCE_BACKUP_CREATE_CONFIRM')"
-            @cancel="backupConfirmDialog.resolve?.(false)" @confirm="backupConfirmDialog.resolve?.(true)" />
+      </div>
     </div>
+    <div class="ds-backup-footer">
+      <VBtn
+        class="ds-dialog-btn ds-dialog-btn--default"
+        variant="text"
+        :disabled="loading"
+        @click="handleEditEpbaklst"
+      >
+        {{ t("TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST") }}
+      </VBtn>
+      <VBtn
+        class="ds-dialog-btn ds-dialog-btn--primary"
+        variant="text"
+        :disabled="loading"
+        @click="startBackup"
+      >
+        {{ t("TXT_CODE_INSTANCE_BACKUP_CREATE") }}
+      </VBtn>
+    </div>
+
+    <component
+      :is="ConfirmDialog"
+      v-if="ConfirmDialog"
+      id="backup-delete-dialog"
+      v-model="deleteDialog.show"
+      :title="t('TXT_CODE_COMMON_CONFIRM_DELETION')"
+      :message="t('TXT_CODE_INSTANCE_BACKUP_DELETE_CONFIRM', { name: deleteDialog.name })"
+      danger
+      @cancel="deleteDialog.resolve?.(false)"
+      @confirm="deleteDialog.resolve?.(true)"
+    />
+
+    <component
+      :is="ConfirmDialog"
+      v-if="ConfirmDialog"
+      id="backup-restore-dialog"
+      v-model="restoreDialog.show"
+      :height="250"
+      :title="t('TXT_CODE_INSTANCE_BACKUP_RESTORE')"
+      :message="t('TXT_CODE_INSTANCE_BACKUP_RESTORE_CONFIRM', { name: restoreDialog.name })"
+      @cancel="restoreDialog.resolve?.(false)"
+      @confirm="restoreDialog.resolve?.(true)"
+    />
+
+    <component
+      :is="ConfirmDialog"
+      v-if="ConfirmDialog"
+      id="backup-epbaklst-confirm-dialog"
+      v-model="epbaklstConfirmDialog.show"
+      :title="t('TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST')"
+      :message="t('TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATE_CONFIRM')"
+      @cancel="epbaklstConfirmDialog.resolve?.(false)"
+      @confirm="epbaklstConfirmDialog.resolve?.(true)"
+    />
+
+    <component
+      :is="ConfirmDialog"
+      v-if="ConfirmDialog"
+      id="backup-confirm-dialog"
+      v-model="backupConfirmDialog.show"
+      :title="t('TXT_CODE_INSTANCE_BACKUP_CREATE')"
+      :message="t('TXT_CODE_INSTANCE_BACKUP_CREATE_CONFIRM')"
+      @cancel="backupConfirmDialog.resolve?.(false)"
+      @confirm="backupConfirmDialog.resolve?.(true)"
+    />
+  </div>
 </template>
 
 <style lang="scss" scoped>
 .ds-backup {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    color: var(--desktop-window-text);
-    font-size: 13px;
-    overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  color: var(--desktop-window-text);
+  font-size: 13px;
+  overflow: hidden;
 }
 
 .ds-backup-body {
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    padding: 16px 20px 0;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px 0;
 }
 
 .ds-backup-footer {
-    padding: var(--app-dialog-actions-padding, 8px);
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    border-top: 1px solid var(--desktop-window-border);
-    flex-shrink: 0;
+  padding: var(--app-dialog-actions-padding, 8px);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  border-top: 1px solid var(--desktop-window-border);
+  flex-shrink: 0;
 }
 
 .ds-dialog-btn {
-    padding: 7px 16px;
-    border: none;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s;
-    color: var(--desktop-window-text);
-    white-space: nowrap;
+  padding: 7px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  color: var(--desktop-window-text);
+  white-space: nowrap;
 
-    &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &--primary {
+    background: var(--color-blue-5, #1677ff);
+    color: #fff;
+    border-color: var(--color-blue-5, #1677ff);
+
+    &:hover:not(:disabled) {
+      background: var(--color-blue-6, #4096ff);
     }
+  }
 
-    &--primary {
-        background: var(--color-blue-5, #1677ff);
-        color: #fff;
-        border-color: var(--color-blue-5, #1677ff);
+  &--default {
+    background: var(--desktop-window-titlebar-bg);
+    border: 1px solid var(--desktop-window-border);
 
-        &:hover:not(:disabled) {
-            background: var(--color-blue-6, #4096ff);
-        }
+    &:hover:not(:disabled) {
+      background: var(--desktop-window-control-hover);
     }
-
-    &--default {
-        background: var(--desktop-window-titlebar-bg);
-        border: 1px solid var(--desktop-window-border);
-
-        &:hover:not(:disabled) {
-            background: var(--desktop-window-control-hover);
-        }
-    }
+  }
 }
 
 .ds-backup-list-container {
-    width: 100%;
-    flex: 1;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+
+  .list-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--desktop-window-text);
+
+    .refresh-btn {
+      margin-left: auto;
+      cursor: pointer;
+      opacity: 0.7;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+
+  .backup-list {
     display: flex;
     flex-direction: column;
-    position: relative;
+    gap: 10px;
+    padding-bottom: 20px;
+  }
 
-    .list-header {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 600;
-        margin-bottom: 16px;
-        color: var(--desktop-window-text);
+  .backup-item {
+    background: var(--desktop-window-titlebar-bg);
+    border: 1px solid var(--desktop-window-border);
+    border-radius: 16px;
+    overflow: hidden;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s;
 
-        .refresh-btn {
-            margin-left: auto;
-            cursor: pointer;
-            opacity: 0.7;
-
-            &:hover {
-                opacity: 1;
-            }
-        }
+    &:hover {
+      border-color: var(--color-blue-5);
     }
 
-    .backup-list {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        padding-bottom: 20px;
+    &__info {
+      flex: 1;
+      min-width: 0;
+      margin-right: 16px;
     }
 
-    .backup-item {
-        background: var(--desktop-window-titlebar-bg);
-        border: 1px solid var(--desktop-window-border);
-        border-radius: 16px;
-        overflow: hidden;
-        padding: 12px 16px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        transition: all 0.2s;
+    &__name {
+      font-weight: 500;
+      margin-bottom: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    &__meta {
+      font-size: 12px;
+      color: var(--desktop-window-text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .separator {
+        opacity: 0.3;
+      }
+    }
+
+    &__actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-btn {
+      background: transparent;
+      border: none;
+      padding: 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: all 0.2s;
+
+      &--restore {
+        color: var(--color-blue-5);
 
         &:hover {
-            border-color: var(--color-blue-5);
+          background: rgba(22, 119, 255, 0.1);
         }
+      }
 
-        &__info {
-            flex: 1;
-            min-width: 0;
-            margin-right: 16px;
+      &--delete {
+        color: #ff4d4f;
+
+        &:hover {
+          background: rgba(255, 77, 79, 0.1);
         }
-
-        &__name {
-            font-weight: 500;
-            margin-bottom: 4px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        &__meta {
-            font-size: 12px;
-            color: var(--desktop-window-text-muted);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-
-            .separator {
-                opacity: 0.3;
-            }
-        }
-
-        &__actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .action-btn {
-            background: transparent;
-            border: none;
-            padding: 6px;
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            transition: all 0.2s;
-
-            &--restore {
-                color: var(--color-blue-5);
-
-                &:hover {
-                    background: rgba(22, 119, 255, 0.1);
-                }
-            }
-
-            &--delete {
-                color: #ff4d4f;
-
-                &:hover {
-                    background: rgba(255, 77, 79, 0.1);
-                }
-            }
-        }
+      }
     }
+  }
 
-    .list-loading {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+  .list-loading {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 </style>

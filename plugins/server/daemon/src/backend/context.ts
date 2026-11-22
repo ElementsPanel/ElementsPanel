@@ -8,7 +8,7 @@ export default class RouterContext {
     public event?: string
   ) {}
 
-  public response(data: any) {
+  public response(_data: any) {
     return this;
   }
 }

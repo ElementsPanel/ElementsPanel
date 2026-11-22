@@ -188,7 +188,11 @@ for (const side of ["panel", "daemon"]) {
     assert.equal(closes, 1, "drain and disposal share one idempotent close operation");
     if (side === "panel") {
       load(filename, overrides).apply(ctx);
-      assert.deepEqual(sessions[1], sessions[0], "signed sessions retain the launcher's restart configuration");
+      assert.deepEqual(
+        sessions[1],
+        sessions[0],
+        "signed sessions retain the launcher's restart configuration"
+      );
       await hooks.get("dispose")();
     }
   });

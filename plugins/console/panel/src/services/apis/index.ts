@@ -38,8 +38,8 @@ export const settingInfo = useDefineApi<any, Settings>({
 
 export const setSettingInfo = useDefineApi<
   | {
-    data: Partial<Settings>;
-  }
+      data: Partial<Settings>;
+    }
   | undefined,
   string
 >({

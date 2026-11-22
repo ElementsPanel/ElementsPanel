@@ -8,7 +8,7 @@ import { addJava, deleteJava, downloadJava, usingJava } from "../api";
 import { parseTimestamp } from "@elementspanel/epanel-plugin-console/tools/time";
 import type { JavaInfo } from "../types";
 import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { VBtn, VDataTable } from "vuetify/components";
 import { useJavaList } from "../hooks/useJavaList";
 import JavaRuntimeStatus from "../components/JavaRuntimeStatus.vue";
@@ -23,6 +23,14 @@ const props = defineProps<{
   instanceId?: string;
 }>();
 const resolvedInstanceId = computed(() => props.instanceUuid ?? props.instanceId ?? "");
+const selectedJavaId = ref<string>();
+watch(
+  () => props.instanceInfo?.config.java.id,
+  (id) => {
+    selectedJavaId.value = id;
+  },
+  { immediate: true }
+);
 const open = ref(false);
 const {
   javaList,
@@ -38,7 +46,9 @@ const deleteDialogOpen = ref(false);
 const deleteCandidate = ref<JavaInfo>();
 const { isLoading } = updateInstanceConfig();
 const javaDescription = computed(() =>
-  t("TXT_CODE_COMMON_AFTER_COMPLETING_THE_CONFIGURATION_THE_JAVA_COMMAND_WILL_BE_REPLACED_WITH").replace("<mcsm_java>", "{mcsm_java}")
+  t(
+    "TXT_CODE_COMMON_AFTER_COMPLETING_THE_CONFIGURATION_THE_JAVA_COMMAND_WILL_BE_REPLACED_WITH"
+  ).replace("<mcsm_java>", "{mcsm_java}")
 );
 
 const refreshJavaList = async (out = false) => {
@@ -108,7 +118,7 @@ const handleUsingJava = async (info: JavaInfo) => {
       params: { daemonId: props.daemonId ?? "", instanceId: resolvedInstanceId.value },
       data: { id: info.fullname }
     });
-    if (props.instanceInfo) props.instanceInfo.config.java.id = info.fullname;
+    selectedJavaId.value = info.fullname;
     message.success(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"));
     await refreshJavaList();
   } catch (err: any) {
@@ -139,7 +149,8 @@ defineExpose({ open: openDialog, openDialog });
     @ok="close"
   >
     <div class="text-medium-emphasis mb-1">
-      {{ t("TXT_CODE_COMMON_SELECT_JAVA_FOR_THE_INSTANCE_DOCKER_INSTANCES_USE_THE_IMAGE_S_RUNTIME") }}<br />{{ javaDescription }}
+      {{ t("TXT_CODE_COMMON_SELECT_JAVA_FOR_THE_INSTANCE_DOCKER_INSTANCES_USE_THE_IMAGE_S_RUNTIME")
+      }}<br />{{ javaDescription }}
     </div>
     <div class="java-actions">
       <VBtn variant="text" prepend-icon="mdi-plus" @click="handleAddJava">{{
@@ -165,7 +176,8 @@ defineExpose({ open: openDialog, openDialog });
           prepend-icon="mdi-refresh"
           :loading="listLoading"
           @click="refreshJavaList()"
-        >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn>
+          >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn
+        >
       </template>
     </Empty>
     <VDataTable
@@ -178,9 +190,7 @@ defineExpose({ open: openDialog, openDialog });
     >
       <template #no-data><Empty icon="mdi-language-java" /></template>
       <template #item.fullname="{ item }">{{ item.info.fullname }}</template>
-      <template #item.installTime="{ item }">{{
-        parseTimestamp(item.info.installTime)
-      }}</template>
+      <template #item.installTime="{ item }">{{ parseTimestamp(item.info.installTime) }}</template>
       <template #item.status="{ item }"><JavaRuntimeStatus :runtime="item" /></template>
       <template #item.actions="{ item }">
         <div class="java-row-actions">
@@ -195,13 +205,11 @@ defineExpose({ open: openDialog, openDialog });
             size="small"
             variant="text"
             :disabled="
-              item.info.fullname === props.instanceInfo?.config.java.id ||
-              item.info.downloading ||
-              !!item.info.error
+              item.info.fullname === selectedJavaId || item.info.downloading || !!item.info.error
             "
             @click="handleUsingJava(item.info)"
             >{{
-              item.info.fullname === props.instanceInfo?.config.java.id
+              item.info.fullname === selectedJavaId
                 ? t("TXT_CODE_COMMON_IN_USE")
                 : t("TXT_CODE_COMMON_USE")
             }}</VBtn
@@ -225,7 +233,10 @@ defineExpose({ open: openDialog, openDialog });
     ok-color="error"
     :ok-text="t('TXT_CODE_COMMON_DELETE')"
     @ok="handleDeleteJava"
-    ><p>{{ deleteCandidate?.fullname }}</p><div>{{ t("TXT_CODE_COMMON_EXTERNALLY_ADDED_JAVA_IS_REMOVED_FROM_THE_LIST_ITS_FILES_ARE_KEPT") }}</div></AppDialog
+    ><p>{{ deleteCandidate?.fullname }}</p>
+    <div>
+      {{ t("TXT_CODE_COMMON_EXTERNALLY_ADDED_JAVA_IS_REMOVED_FROM_THE_LIST_ITS_FILES_ARE_KEPT") }}
+    </div></AppDialog
   >
 </template>
 

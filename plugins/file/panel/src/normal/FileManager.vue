@@ -18,7 +18,6 @@ import dayjs from "dayjs";
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref } from "vue";
 import { useRoute } from "vue-router";
 import {
-  VAlert,
   VBtn,
   VCard,
   VCardActions,
@@ -357,7 +356,13 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <main class="file-manager-page" :style="{ opacity: opacity ? 0.45 : 1 }" @dragover="handleDragover" @dragleave="handleDragleave" @drop="handleDrop">
+  <main
+    class="file-manager-page"
+    :style="{ opacity: opacity ? 0.45 : 1 }"
+    @dragover="handleDragover"
+    @dragleave="handleDragleave"
+    @drop="handleDrop"
+  >
     <VContainer fluid class="file-manager-container">
       <VRow class="file-manager-toolbar d-flex align-center" density="comfortable">
         <VCol cols="12" lg="3" class="file-manager-title">
@@ -366,37 +371,102 @@ onUnmounted(() => {
         </VCol>
         <VCol cols="12" lg="4" class="file-manager-search">
           <VTextField
-            :disabled="!currentTabs.length"
             v-model.trim.lazy="operationForm.name"
+            :disabled="!currentTabs.length"
             :label="t('TXT_CODE_COMMON_SEARCH_BY_FILE_NAME')"
             prepend-inner-icon="mdi-magnify"
             hide-details
             clearable
             density="comfortable"
             @change="handleSearchChange"
-            @click:clear="operationForm.name = ''; handleSearchChange()"
+            @click:clear="
+              operationForm.name = '';
+              handleSearchChange();
+            "
           />
         </VCol>
         <VCol cols="12" lg="5" class="file-manager-actions">
           <span class="selected-count" :class="{ 'selected-count-empty': !selectedRowKeys.length }">
-            {{ `${t("TXT_CODE_COMMON_SELECT")} ${String(selectedRowKeys.length)} ${t("TXT_CODE_COMMON_ITEMS")}` }}
+            {{
+              `${t("TXT_CODE_COMMON_SELECT")} ${String(selectedRowKeys.length)} ${t(
+                "TXT_CODE_COMMON_ITEMS"
+              )}`
+            }}
           </span>
-          <VBtn :disabled="!currentTabs.length" variant="text" prepend-icon="mdi-link-variant" @click="downloadFromURLFile">{{ t("TXT_CODE_COMMON_REMOTE_DOWNLOAD") }}</VBtn>
-          <VFileInput :disabled="!currentTabs.length" v-model="fileList" class="file-upload-input" multiple hide-details hide-input accept="*/*" @update:model-value="onFileSelect" />
-          <VBtn :disabled="!currentTabs.length" variant="text" prepend-icon="mdi-upload" @click="openFilePicker">{{ t("TXT_CODE_FILE_UPLOAD") }}</VBtn>
-          <VBtn :disabled="!currentTabs.length" v-if="clipboard?.value?.length" color="primary" variant="text" @click="paste">{{ t("TXT_CODE_COMMON_PASTE_FILES") }}</VBtn>
-          <VBtn :disabled="!currentTabs.length" v-else variant="text" prepend-icon="mdi-refresh" @click="reloadList">{{ t("TXT_CODE_FILE_LIST_REFRESH") }}</VBtn>
+          <VBtn
+            :disabled="!currentTabs.length"
+            variant="text"
+            prepend-icon="mdi-link-variant"
+            @click="downloadFromURLFile"
+            >{{ t("TXT_CODE_COMMON_REMOTE_DOWNLOAD") }}</VBtn
+          >
+          <VFileInput
+            v-model="fileList"
+            :disabled="!currentTabs.length"
+            class="file-upload-input"
+            multiple
+            hide-details
+            hide-input
+            accept="*/*"
+            @update:model-value="onFileSelect"
+          />
+          <VBtn
+            :disabled="!currentTabs.length"
+            variant="text"
+            prepend-icon="mdi-upload"
+            @click="openFilePicker"
+            >{{ t("TXT_CODE_FILE_UPLOAD") }}</VBtn
+          >
+          <VBtn
+            v-if="clipboard?.value?.length"
+            :disabled="!currentTabs.length"
+            color="primary"
+            variant="text"
+            @click="paste"
+            >{{ t("TXT_CODE_COMMON_PASTE_FILES") }}</VBtn
+          >
+          <VBtn
+            v-else
+            :disabled="!currentTabs.length"
+            variant="text"
+            prepend-icon="mdi-refresh"
+            @click="reloadList"
+            >{{ t("TXT_CODE_FILE_LIST_REFRESH") }}</VBtn
+          >
           <VMenu :disabled="!currentTabs.length" location="bottom end">
             <template #activator="{ props: menuProps }">
-              <VBtn :disabled="!currentTabs.length" v-bind="menuProps" color="primary" append-icon="mdi-chevron-down">{{ isMultiple ? t("TXT_CODE_COMMON_BATCH_OPERATION") : t("TXT_CODE_COMMON_NEW") }}</VBtn>
+              <VBtn
+                :disabled="!currentTabs.length"
+                v-bind="menuProps"
+                color="primary"
+                append-icon="mdi-chevron-down"
+                >{{
+                  isMultiple ? t("TXT_CODE_COMMON_BATCH_OPERATION") : t("TXT_CODE_COMMON_NEW")
+                }}</VBtn
+              >
             </template>
             <VList>
               <template v-if="isMultiple">
-                <VListItem v-for="item in actionMenuItems" :key="item.key" :title="item.label" :prepend-icon="item.icon" :base-color="item.color" @click="item.onClick" />
+                <VListItem
+                  v-for="item in actionMenuItems"
+                  :key="item.key"
+                  :title="item.label"
+                  :prepend-icon="item.icon"
+                  :base-color="item.color"
+                  @click="item.onClick"
+                />
               </template>
               <template v-else>
-                <VListItem :title="t('TXT_CODE_COMMON_BLANK_FILE')" prepend-icon="mdi-file-plus-outline" @click="touchFile()" />
-                <VListItem :title="t('TXT_CODE_COMMON_DIRECTORY')" prepend-icon="mdi-folder-plus-outline" @click="touchFile(true)" />
+                <VListItem
+                  :title="t('TXT_CODE_COMMON_BLANK_FILE')"
+                  prepend-icon="mdi-file-plus-outline"
+                  @click="touchFile()"
+                />
+                <VListItem
+                  :title="t('TXT_CODE_COMMON_DIRECTORY')"
+                  prepend-icon="mdi-folder-plus-outline"
+                  @click="touchFile(true)"
+                />
               </template>
             </VList>
           </VMenu>
@@ -407,75 +477,289 @@ onUnmounted(() => {
         <VCardText>
           <div v-if="uploadData.current" class="upload-status">
             <div class="upload-status-line">
-              <span class="upload-file-name">{{ `${uploadData.currentFile} ${uploadInstanceTag}`.trim() }}</span>
+              <span class="upload-file-name">{{
+                `${uploadData.currentFile} ${uploadInstanceTag}`.trim()
+              }}</span>
               <span>({{ uploadData.files[0] }}/{{ uploadData.files[1] }})</span>
-              <div class="upload-task-list"><UploadTaskProgress v-for="(uTask, i) in uploadService.task.filter((v) => v)" :key="i" :progress="uTask!.progress / (uTask!.rangeEnd - uTask!.rangeStart)" :retries="uTask!.retries" /></div>
-              <VBtn v-if="uploadData.suspending" icon="mdi-play" size="small" variant="text" @click="uploadService.unsuspend()" />
-              <VBtn v-else icon="mdi-pause" size="small" variant="text" @click="uploadService.suspend()" />
+              <div class="upload-task-list">
+                <UploadTaskProgress
+                  v-for="(uTask, i) in uploadService.task.filter((v) => v)"
+                  :key="i"
+                  :progress="uTask!.progress / (uTask!.rangeEnd - uTask!.rangeStart)"
+                  :retries="uTask!.retries"
+                />
+              </div>
+              <VBtn
+                v-if="uploadData.suspending"
+                icon="mdi-play"
+                size="small"
+                variant="text"
+                @click="uploadService.unsuspend()"
+              />
+              <VBtn
+                v-else
+                icon="mdi-pause"
+                size="small"
+                variant="text"
+                @click="uploadService.suspend()"
+              />
               <VBtn icon="mdi-close" size="small" variant="text" @click="uploadService.stop()" />
             </div>
-            <div class="upload-progress-line"><VProgressLinear :model-value="progress" color="primary" height="6" rounded="xl" /><span>{{ convertFileSize(uploadData.current![0].toString()) }} / {{ convertFileSize(uploadData.current![1].toString()) }}</span></div>
+            <div class="upload-progress-line">
+              <VProgressLinear
+                :model-value="progress"
+                color="primary"
+                height="6"
+                rounded="xl"
+              /><span
+                >{{ convertFileSize(uploadData.current![0].toString()) }} /
+                {{ convertFileSize(uploadData.current![1].toString()) }}</span
+              >
+            </div>
           </div>
 
-          <FileManagerTabs :active-tab="activeTab" :tabs="currentTabs" @select="handleTabChange" @close="onEditTabs($event, 'remove')" @add="onEditTabs('', 'add')" @reorder="handleReorderTabs" />
+          <FileManagerTabs
+            :active-tab="activeTab"
+            :tabs="currentTabs"
+            @select="handleTabChange"
+            @close="onEditTabs($event, 'remove')"
+            @add="onEditTabs('', 'add')"
+            @reorder="handleReorderTabs"
+          />
 
           <template v-if="currentTabs.length">
-          <FileManagerPathBar :breadcrumbs="breadcrumbs" :current-disk="currentDisk" :file-status="fileStatus" @select="handleChangeDir" @disk="toDisk" />
-          <VDataTableServer
-            :model-value="selectedRowKeys"
-            :headers="tableHeaders"
-            :items="dataSource || []"
-            item-value="name"
-            show-select
-            :loading="spinning"
-            :items-length="operationForm.total"
-            :items-per-page="operationForm.pageSize"
-            :page="operationForm.current"
-            :items-per-page-options="[25, 50, 100, 200]"
-            :row-props="getRowProps"
-            class="file-table"
-            @update:model-value="handleSelectedKeys"
-            @update:options="handleTableOptions"
-          >
-            <template #no-data><Empty icon="mdi-folder-open-outline" /></template>
-            <template #item.name="{ item }">
-              <VBtn variant="text" class="file-name" @click="handleClickFile(rawFile(item))"><VIcon :icon="getMdiIconName(rawFile(item))" size="18" class="mr-1" />{{ rawFile(item).name }}</VBtn>
-            </template>
-            <template #item.type="{ item }">{{ rawFile(item).type === 0 ? t("TXT_CODE_FILE_FOLDER") : filterFileName(rawFile(item).name) }}</template>
-            <template #item.size="{ item }">{{ rawFile(item).type === 0 || !rawFile(item).size ? "--" : convertFileSize(String(rawFile(item).size)) }}</template>
-            <template #item.time="{ item }">{{ rawFile(item).type === 0 ? "--" : dayjs(rawFile(item).time).format("YYYY-MM-DD HH:mm:ss") }}</template>
-            <template #item.mode="{ item }">{{ rawFile(item).mode || "--" }}</template>
-            <template #item.actions="{ item }">
-              <VMenu location="bottom end">
-                <template #activator="{ props: menuProps }"><VBtn v-bind="menuProps" size="small" variant="text" append-icon="mdi-chevron-down">{{ t("TXT_CODE_COMMON_ACTIONS") }}</VBtn></template>
-                <VList><VListItem v-for="action in rowMenuItems(rawFile(item))" :key="action.key" :title="action.label" :prepend-icon="action.icon" :base-color="action.color" @click="runMenuAction(action, rawFile(item))" /></VList>
-              </VMenu>
-            </template>
-          </VDataTableServer>
+            <FileManagerPathBar
+              :breadcrumbs="breadcrumbs"
+              :current-disk="currentDisk"
+              :file-status="fileStatus"
+              @select="handleChangeDir"
+              @disk="toDisk"
+            />
+            <VDataTableServer
+              :model-value="selectedRowKeys"
+              :headers="tableHeaders"
+              :items="dataSource || []"
+              item-value="name"
+              show-select
+              :loading="spinning"
+              :items-length="operationForm.total"
+              :items-per-page="operationForm.pageSize"
+              :page="operationForm.current"
+              :items-per-page-options="[25, 50, 100, 200]"
+              :row-props="getRowProps"
+              class="file-table"
+              @update:model-value="handleSelectedKeys"
+              @update:options="handleTableOptions"
+            >
+              <template #no-data><Empty icon="mdi-folder-open-outline" /></template>
+              <template #item.name="{ item }">
+                <VBtn variant="text" class="file-name" @click="handleClickFile(rawFile(item))"
+                  ><VIcon :icon="getMdiIconName(rawFile(item))" size="18" class="mr-1" />{{
+                    rawFile(item).name
+                  }}</VBtn
+                >
+              </template>
+              <template #item.type="{ item }">{{
+                rawFile(item).type === 0
+                  ? t("TXT_CODE_FILE_FOLDER")
+                  : filterFileName(rawFile(item).name)
+              }}</template>
+              <template #item.size="{ item }">{{
+                rawFile(item).type === 0 || !rawFile(item).size
+                  ? "--"
+                  : convertFileSize(String(rawFile(item).size))
+              }}</template>
+              <template #item.time="{ item }">{{
+                rawFile(item).type === 0
+                  ? "--"
+                  : dayjs(rawFile(item).time).format("YYYY-MM-DD HH:mm:ss")
+              }}</template>
+              <template #item.mode="{ item }">{{ rawFile(item).mode || "--" }}</template>
+              <template #item.actions="{ item }">
+                <VMenu location="bottom end">
+                  <template #activator="{ props: menuProps }"
+                    ><VBtn
+                      v-bind="menuProps"
+                      size="small"
+                      variant="text"
+                      append-icon="mdi-chevron-down"
+                      >{{ t("TXT_CODE_COMMON_ACTIONS") }}</VBtn
+                    ></template
+                  >
+                  <VList
+                    ><VListItem
+                      v-for="action in rowMenuItems(rawFile(item))"
+                      :key="action.key"
+                      :title="action.label"
+                      :prepend-icon="action.icon"
+                      :base-color="action.color"
+                      @click="runMenuAction(action, rawFile(item))"
+                  /></VList>
+                </VMenu>
+              </template>
+            </VDataTableServer>
           </template>
         </VCardText>
       </VCard>
     </VContainer>
 
-    <VMenu v-model="contextMenu.open" :target="[contextMenu.x, contextMenu.y]" location="bottom start">
-      <VList v-if="contextMenu.record" min-width="190"><VListItem v-for="action in rowMenuItems(contextMenu.record)" :key="action.key" :title="action.label" :prepend-icon="action.icon" :base-color="action.color" @click="runMenuAction(action, contextMenu.record!)" /></VList>
+    <VMenu
+      v-model="contextMenu.open"
+      :target="[contextMenu.x, contextMenu.y]"
+      location="bottom start"
+    >
+      <VList v-if="contextMenu.record" min-width="190"
+        ><VListItem
+          v-for="action in rowMenuItems(contextMenu.record)"
+          :key="action.key"
+          :title="action.label"
+          :prepend-icon="action.icon"
+          :base-color="action.color"
+          @click="runMenuAction(action, contextMenu.record!)"
+      /></VList>
     </VMenu>
 
-    <VDialog v-model="dropConfirm.open" class="app-dialog" max-width="460" persistent><VCard :title="t('TXT_CODE_COMMON_CONFIRM_UPLOAD')" rounded="xl"><VCardText>{{ dropConfirm.name }}</VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="dropConfirm.open = false">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn><VBtn color="primary" @click="confirmDrop">{{ t("TXT_CODE_COMMON_UPLOAD") }}</VBtn></VCardActions></VCard></VDialog>
+    <VDialog v-model="dropConfirm.open" class="app-dialog" max-width="460" persistent
+      ><VCard :title="t('TXT_CODE_COMMON_CONFIRM_UPLOAD')" rounded="xl"
+        ><VCardText>{{ dropConfirm.name }}</VCardText
+        ><VCardActions
+          ><VSpacer /><VBtn variant="text" @click="dropConfirm.open = false">{{
+            t("TXT_CODE_COMMON_CANCEL")
+          }}</VBtn
+          ><VBtn color="primary" @click="confirmDrop">{{
+            t("TXT_CODE_COMMON_UPLOAD")
+          }}</VBtn></VCardActions
+        ></VCard
+      ></VDialog
+    >
 
     <VDialog v-model="dialog.show" class="app-dialog" :max-width="dialogMaxWidth" scrollable>
-      <VCard :title="dialog.title" rounded="xl"><VCardText>
-        <p v-if="dialog.info">{{ dialog.info }}</p>
-        <VTextField v-if="dialog.mode === ''" v-model="dialog.value" :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')" autofocus />
-        <div v-if="dialog.mode === 'zip'" class="dialog-stack"><VTextField v-model="dialog.value" :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_THE_NAME_FOR_THE_ARCHIVE')" suffix=".zip" /><div>{{ t("TXT_CODE_COMMON_ZIP_FILES_USE_UTF_8_SELECT_UTF_8_WHEN_EXTRACTING_THEM") }}</div></div>
-        <div v-if="dialog.mode === 'unzip'" class="dialog-stack"><strong>{{ t("TXT_CODE_COMMON_PLEASE_SELECT_THE_DECOMPRESSION_MODE") }}</strong><VRadioGroup v-model="dialog.unzipmode" inline><VRadio value="0" :label="t('TXT_CODE_COMMON_TO_THE_CURRENT_DIR')" /><VRadio value="1" :label="t('TXT_CODE_COMMON_TO_A_NEW_DIR')" /></VRadioGroup><VTextField v-if="dialog.unzipmode === '1'" v-model="dialog.value" :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_THE_DIRECTORY_NAME')" /><strong>{{ t("TXT_CODE_COMMON_PLEASE_SELECT_THE_FORMAT_OF_THE_COMPRESSED_FILE") }}</strong><div class="dialog-help">{{ t("TXT_CODE_COMMON_FOR_GARBLED_FILENAMES_TRY_GBK_FOR_MAINLAND_CHINA_BIG5_FOR_TAIWAN_OR_HONG_KONG_AND_UTF") }}</div><VRadioGroup v-model="dialog.code" inline><VRadio value="utf-8" label="UTF-8" /><VRadio value="gbk" label="GBK" /><VRadio value="big5" label="BIG5" /></VRadioGroup></div>
-        <div v-if="dialog.mode === 'permission'" class="permission-grid"><div v-for="item in permission.item" :key="item.role"><strong>{{ item.key }}</strong><VCheckbox v-model="permission.data[item.role]" value="4" :label="t('TXT_CODE_COMMON_READ')" hide-details /><VCheckbox v-model="permission.data[item.role]" value="2" :label="t('TXT_CODE_COMMON_WRITE')" hide-details /><VCheckbox v-model="permission.data[item.role]" value="1" :label="t('TXT_CODE_COMMON_EXECUTE')" hide-details /></div><VCheckbox v-model="permission.deep" :label="t('TXT_CODE_COMMON_APPLY_TO_SUBDIRECTORIES')" hide-details /></div>
-      </VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="dialog.cancel()">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn><VBtn color="primary" :loading="dialog.loading" @click="dialog.ok()">{{ t("TXT_CODE_COMMON_CONFIRM") }}</VBtn></VCardActions></VCard>
+      <VCard :title="dialog.title" rounded="xl"
+        ><VCardText>
+          <p v-if="dialog.info">{{ dialog.info }}</p>
+          <VTextField
+            v-if="dialog.mode === ''"
+            v-model="dialog.value"
+            :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')"
+            autofocus
+          />
+          <div v-if="dialog.mode === 'zip'" class="dialog-stack">
+            <VTextField
+              v-model="dialog.value"
+              :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_THE_NAME_FOR_THE_ARCHIVE')"
+              suffix=".zip"
+            />
+            <div>
+              {{ t("TXT_CODE_COMMON_ZIP_FILES_USE_UTF_8_SELECT_UTF_8_WHEN_EXTRACTING_THEM") }}
+            </div>
+          </div>
+          <div v-if="dialog.mode === 'unzip'" class="dialog-stack">
+            <strong>{{ t("TXT_CODE_COMMON_PLEASE_SELECT_THE_DECOMPRESSION_MODE") }}</strong
+            ><VRadioGroup v-model="dialog.unzipmode" inline
+              ><VRadio value="0" :label="t('TXT_CODE_COMMON_TO_THE_CURRENT_DIR')" /><VRadio
+                value="1"
+                :label="t('TXT_CODE_COMMON_TO_A_NEW_DIR')" /></VRadioGroup
+            ><VTextField
+              v-if="dialog.unzipmode === '1'"
+              v-model="dialog.value"
+              :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_THE_DIRECTORY_NAME')"
+            /><strong>{{
+              t("TXT_CODE_COMMON_PLEASE_SELECT_THE_FORMAT_OF_THE_COMPRESSED_FILE")
+            }}</strong>
+            <div class="dialog-help">
+              {{
+                t(
+                  "TXT_CODE_COMMON_FOR_GARBLED_FILENAMES_TRY_GBK_FOR_MAINLAND_CHINA_BIG5_FOR_TAIWAN_OR_HONG_KONG_AND_UTF"
+                )
+              }}
+            </div>
+            <VRadioGroup v-model="dialog.code" inline
+              ><VRadio value="utf-8" label="UTF-8" /><VRadio value="gbk" label="GBK" /><VRadio
+                value="big5"
+                label="BIG5"
+            /></VRadioGroup>
+          </div>
+          <div v-if="dialog.mode === 'permission'" class="permission-grid">
+            <div v-for="item in permission.item" :key="item.role">
+              <strong>{{ item.key }}</strong
+              ><VCheckbox
+                v-model="permission.data[item.role]"
+                value="4"
+                :label="t('TXT_CODE_COMMON_READ')"
+                hide-details
+              /><VCheckbox
+                v-model="permission.data[item.role]"
+                value="2"
+                :label="t('TXT_CODE_COMMON_WRITE')"
+                hide-details
+              /><VCheckbox
+                v-model="permission.data[item.role]"
+                value="1"
+                :label="t('TXT_CODE_COMMON_EXECUTE')"
+                hide-details
+              />
+            </div>
+            <VCheckbox
+              v-model="permission.deep"
+              :label="t('TXT_CODE_COMMON_APPLY_TO_SUBDIRECTORIES')"
+              hide-details
+            />
+          </div> </VCardText
+        ><VCardActions
+          ><VSpacer /><VBtn variant="text" @click="dialog.cancel()">{{
+            t("TXT_CODE_COMMON_CANCEL")
+          }}</VBtn
+          ><VBtn color="primary" :loading="dialog.loading" @click="dialog.ok()">{{
+            t("TXT_CODE_COMMON_CONFIRM")
+          }}</VBtn></VCardActions
+        ></VCard
+      >
     </VDialog>
 
-    <VDialog v-model="archivePreview.show" class="app-dialog" max-width="1100" scrollable @after-leave="closeArchivePreview"><VCard :title="`${t('TXT_CODE_ARCHIVE_PREVIEW')}: ${archivePreview.title}`" rounded="xl"><VCardText><ArchivePreview :entries="archivePreview.entries" :loading="archivePreview.loading" /></VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="closeArchivePreview">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn></VCardActions></VCard></VDialog>
-    <VDialog v-model="deleteDialog.show" class="app-dialog" max-width="460" persistent><VCard :title="t('TXT_CODE_COMMON_CONFIRM_DELETION')" rounded="xl"><VCardText class="text-error">{{ t("TXT_CODE_COMMON_THIS_ACTION_CANNOT_BE_UNDONE") }}</VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="deleteDialog.resolve && deleteDialog.resolve(false)">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn><VBtn color="error" :loading="deleteDialog.loading" @click="deleteDialog.resolve && deleteDialog.resolve(true)">{{ t("TXT_CODE_COMMON_CONFIRM") }}</VBtn></VCardActions></VCard></VDialog>
-    <FileEditor v-if="daemonId && instanceId" ref="FileEditorDialog" :daemon-id="daemonId" :instance-id="instanceId" @save="getFileList" />
+    <VDialog
+      v-model="archivePreview.show"
+      class="app-dialog"
+      max-width="1100"
+      scrollable
+      @after-leave="closeArchivePreview"
+      ><VCard :title="`${t('TXT_CODE_ARCHIVE_PREVIEW')}: ${archivePreview.title}`" rounded="xl"
+        ><VCardText
+          ><ArchivePreview
+            :entries="archivePreview.entries"
+            :loading="archivePreview.loading" /></VCardText
+        ><VCardActions
+          ><VSpacer /><VBtn variant="text" @click="closeArchivePreview">{{
+            t("TXT_CODE_COMMON_CANCEL")
+          }}</VBtn></VCardActions
+        ></VCard
+      ></VDialog
+    >
+    <VDialog v-model="deleteDialog.show" class="app-dialog" max-width="460" persistent
+      ><VCard :title="t('TXT_CODE_COMMON_CONFIRM_DELETION')" rounded="xl"
+        ><VCardText class="text-error">{{
+          t("TXT_CODE_COMMON_THIS_ACTION_CANNOT_BE_UNDONE")
+        }}</VCardText
+        ><VCardActions
+          ><VSpacer /><VBtn
+            variant="text"
+            @click="deleteDialog.resolve && deleteDialog.resolve(false)"
+            >{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn
+          ><VBtn
+            color="error"
+            :loading="deleteDialog.loading"
+            @click="deleteDialog.resolve && deleteDialog.resolve(true)"
+            >{{ t("TXT_CODE_COMMON_CONFIRM") }}</VBtn
+          ></VCardActions
+        ></VCard
+      ></VDialog
+    >
+    <FileEditor
+      v-if="daemonId && instanceId"
+      ref="FileEditorDialog"
+      :daemon-id="daemonId"
+      :instance-id="instanceId"
+      @save="getFileList"
+    />
   </main>
 </template>
 

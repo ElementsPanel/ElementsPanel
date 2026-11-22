@@ -22,7 +22,9 @@ export function frontendAliases() {
     "@console": path.join(repository, "plugins/console/panel/src"),
     "@instance": path.join(repository, "plugins/instance/panel/src"),
     "@": path.join(repository, "plugins/console/panel/src"),
-    "@mdi/font/css/materialdesignicons.css": require.resolve("@mdi/font/css/materialdesignicons.css"),
+    "@mdi/font/css/materialdesignicons.css": require.resolve(
+      "@mdi/font/css/materialdesignicons.css"
+    ),
     "overlayscrollbars/overlayscrollbars.css": require.resolve(
       "overlayscrollbars/overlayscrollbars.css"
     ),
@@ -35,7 +37,9 @@ export function publicFrontendModules() {
   const modules = new Map();
   for (const plugin of layout.sourcePlugins("panel", repository)) {
     const { packageMetadata } = readPluginMetadata(plugin.directory);
-    for (const [name, entry] of Object.entries(packageMetadata.elementspanel.frontendExports || {})) {
+    for (const [name, entry] of Object.entries(
+      packageMetadata.elementspanel.frontendExports || {}
+    )) {
       if (name !== "." && !/^[a-zA-Z0-9_-]+(?:\/[a-zA-Z0-9_-]+)*$/.test(name))
         throw new Error(`Invalid public frontend module: ${packageMetadata.name}/${name}`);
       const filename = path.resolve(plugin.directory, entry);
@@ -58,10 +62,11 @@ export function publicFrontendImports(owner, modules = publicFrontendModules()) 
     resolveId(source) {
       const entry = modules.get(source);
       if (entry && owner === "@host")
-        throw new Error(`The frontend host cannot import plugin module ${source} before discovery.`);
-      if (entry) return !owner || owner === entry.owner
-        ? entry.filename
-        : { id: source, external: true };
+        throw new Error(
+          `The frontend host cannot import plugin module ${source} before discovery.`
+        );
+      if (entry)
+        return !owner || owner === entry.owner ? entry.filename : { id: source, external: true };
       if (source.startsWith("@elementspanel/epanel-plugin-"))
         throw new Error(`Unknown public frontend module: ${source}`);
     },
@@ -69,10 +74,14 @@ export function publicFrontendImports(owner, modules = publicFrontendModules()) 
       if (!owner) return;
       const filename = normalize(id.split("?")[0]);
       if (owner !== "@host" && filename.startsWith(`${normalize(path.join(frontendRoot, "src"))}/`))
-        throw new Error(`Plugin ${owner} imports private host source ${filename}. Use @elements-panel/sdk.`);
+        throw new Error(
+          `Plugin ${owner} imports private host source ${filename}. Use @elements-panel/sdk.`
+        );
       const prefix = `${normalize(path.join(repository, "plugins"))}/`;
       if (filename.startsWith(prefix) && filename.slice(prefix.length).split("/")[0] !== owner)
-        throw new Error(`Plugin ${owner} imports private source ${filename}. Use its public frontend API.`);
+        throw new Error(
+          `Plugin ${owner} imports private source ${filename}. Use its public frontend API.`
+        );
     }
   };
 }
@@ -114,13 +123,19 @@ export function builtinPluginConfig(plugin, outputRoot) {
           this.emitFile({
             type: "asset",
             fileName: "manifest.json",
-            source: JSON.stringify({
-              entry: "frontend/index.js",
-              styles: Object.keys(bundle).filter((name) => name.endsWith(".css")).sort(),
-              exports,
-              imports: [...imports].sort(),
-              frontendApi: 1
-            }, null, 2)
+            source: JSON.stringify(
+              {
+                entry: "frontend/index.js",
+                styles: Object.keys(bundle)
+                  .filter((name) => name.endsWith(".css"))
+                  .sort(),
+                exports,
+                imports: [...imports].sort(),
+                frontendApi: 1
+              },
+              null,
+              2
+            )
           });
         }
       }

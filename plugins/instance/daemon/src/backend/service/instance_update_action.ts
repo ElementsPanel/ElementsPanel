@@ -63,7 +63,9 @@ export class InstanceUpdateAction extends AsyncTask {
       stdio: "pipe",
       windowsHide: true
     });
-    process.once("error", (error) => { void this.error(error); });
+    process.once("error", (error) => {
+      void this.error(error);
+    });
 
     this.pid = process.pid;
     this.process = process;
@@ -93,7 +95,7 @@ export class InstanceUpdateAction extends AsyncTask {
     }
   }
 
-  public async onError(err: Error) {}
+  public async onError(_err: Error) {}
   public toObject(): IAsyncTaskJSON {
     throw new Error("Method not implemented.");
   }

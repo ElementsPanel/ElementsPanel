@@ -47,8 +47,7 @@ function parseDockerHostToDockerOptions(dockerHost: string): Docker.DockerOption
 
       if (url.protocol === "tcp:" || url.protocol === "http:" || url.protocol === "https:") {
         const tlsEnabled = process.env.DOCKER_TLS_VERIFY?.trim() === "1";
-        const protocol =
-          url.protocol === "https:" ? "https" : tlsEnabled ? "https" : "http";
+        const protocol = url.protocol === "https:" ? "https" : tlsEnabled ? "https" : "http";
         const defaultPort = protocol === "https" ? 2376 : 2375;
         const port = url.port ? Number(url.port) : defaultPort;
         return {

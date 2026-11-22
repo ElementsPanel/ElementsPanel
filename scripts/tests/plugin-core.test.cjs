@@ -330,7 +330,10 @@ test("browser rejects incompatible packages and remounts changed foundations on 
     foundation
   );
   assert.equal(foundation.fork.uid, null);
-  assert.equal(loader.getLoadedPlugins().find((item) => item.metadata.id === "console").state, "active");
+  assert.equal(
+    loader.getLoadedPlugins().find((item) => item.metadata.id === "console").state,
+    "active"
+  );
   assert.equal(router.currentRoute.value.path, "/feature");
   assert.equal(ctx.routes.ownerOf("/feature"), "feature");
   assert.ok(document.querySelector("#plugin-console"));

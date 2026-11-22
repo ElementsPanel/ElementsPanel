@@ -6,7 +6,16 @@ import { useRemoteNode } from "@elementspanel/epanel-plugin-console/hooks/useRem
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { computed, onMounted, onUnmounted } from "vue";
-import { VBtn, VCard, VCardActions, VCardText, VChip, VDialog, VIcon, VSpacer } from "vuetify/components";
+import {
+  VBtn,
+  VCard,
+  VCardActions,
+  VCardText,
+  VChip,
+  VDialog,
+  VIcon,
+  VSpacer
+} from "vuetify/components";
 
 interface Props {
   destroyComponent(delay?: number): void;
@@ -20,9 +29,13 @@ const { isVisible, openDialog, cancel, submit } = useDialog<ComputedNodeInfo>(pr
 
 const { response, refresh: refreshOverviewInfo, refreshLoading } = useRemoteNode({ poll: false });
 
-const availableNodes = computed(() => response.value?.remote?.filter((node) => node.available) || []);
+const availableNodes = computed(
+  () => response.value?.remote?.filter((node) => node.available) || []
+);
 let disposed = false;
-onUnmounted(() => { disposed = true; });
+onUnmounted(() => {
+  disposed = true;
+});
 
 const refreshNodes = async () => {
   if (refreshLoading.value) return;
@@ -73,67 +86,92 @@ defineExpose({
   <VDialog v-model="isVisible" max-width="840" persistent>
     <VCard :title="t('TXT_CODE_COMMON_SELECT_NODE')">
       <VCardText>
-    <div class="node-select-container">
-      <div class="node-grid">
-        <Empty
-          v-if="availableNodes.length === 0"
-          icon="mdi-server-network-outline"
-          :title="t('TXT_CODE_COMMON_NO_AVAILABLE_NODES_HINT')"
-          class="node-select-empty"
-          compact
-        >
-          <template #actions>
-            <VBtn color="primary" :loading="refreshLoading" @click="refreshNodes">
-              {{ t("TXT_CODE_COMMON_GO_TO_THE_NODE_PAGE") }}
-            </VBtn>
-          </template>
-        </Empty>
-        <VCard
-          v-for="item in sortedNodes"
-          v-else
-          :key="item.uuid + item.remarks + item.ip"
-          :data-ip="item.ip"
-          :data-uuid="item.uuid"
-          class="node-item"
-          variant="text"
-          rounded="8px"
-          :class="{ 'node-unsupported': props.targetPlatforms && props.targetPlatforms.length > 0 && !isNodeSupported(item) }"
-          @click="selectNode(item)"
-        >
-          <div class="node-content">
-            <div class="node-header">
-              <span class="node-name">{{ item.remarks || `${item.ip}:${item.port}` }}</span>
-              <div class="node-tags">
-                <VChip v-if="item.available" color="success" size="small" variant="tonal">{{ t("TXT_CODE_COMMON_AVAILABLE") }}</VChip>
-                <VChip v-else color="error" size="small" variant="tonal">{{ t("TXT_CODE_COMMON_UNAVAILABLE") }}</VChip>
-                <VChip
-                  v-if="props.targetPlatforms && props.targetPlatforms.length > 0 && !isNodeSupported(item)"
-                  color="warning" size="small" variant="tonal"
-                >
-                  <VIcon start icon="mdi-alert-circle-outline" />
-                  {{ t("TXT_CODE_NODE_PLATFORM_UNSUPPORTED") }}
-                </VChip>
+        <div class="node-select-container">
+          <div class="node-grid">
+            <Empty
+              v-if="availableNodes.length === 0"
+              icon="mdi-server-network-outline"
+              :title="t('TXT_CODE_COMMON_NO_AVAILABLE_NODES_HINT')"
+              class="node-select-empty"
+              compact
+            >
+              <template #actions>
+                <VBtn color="primary" :loading="refreshLoading" @click="refreshNodes">
+                  {{ t("TXT_CODE_COMMON_GO_TO_THE_NODE_PAGE") }}
+                </VBtn>
+              </template>
+            </Empty>
+            <VCard
+              v-for="item in sortedNodes"
+              v-else
+              :key="item.uuid + item.remarks + item.ip"
+              :data-ip="item.ip"
+              :data-uuid="item.uuid"
+              class="node-item"
+              variant="text"
+              rounded="8px"
+              :class="{
+                'node-unsupported':
+                  props.targetPlatforms &&
+                  props.targetPlatforms.length > 0 &&
+                  !isNodeSupported(item)
+              }"
+              @click="selectNode(item)"
+            >
+              <div class="node-content">
+                <div class="node-header">
+                  <span class="node-name">{{ item.remarks || `${item.ip}:${item.port}` }}</span>
+                  <div class="node-tags">
+                    <VChip v-if="item.available" color="success" size="small" variant="tonal">{{
+                      t("TXT_CODE_COMMON_AVAILABLE")
+                    }}</VChip>
+                    <VChip v-else color="error" size="small" variant="tonal">{{
+                      t("TXT_CODE_COMMON_UNAVAILABLE")
+                    }}</VChip>
+                    <VChip
+                      v-if="
+                        props.targetPlatforms &&
+                        props.targetPlatforms.length > 0 &&
+                        !isNodeSupported(item)
+                      "
+                      color="warning"
+                      size="small"
+                      variant="tonal"
+                    >
+                      <VIcon start icon="mdi-alert-circle-outline" />
+                      {{ t("TXT_CODE_NODE_PLATFORM_UNSUPPORTED") }}
+                    </VChip>
+                  </div>
+                </div>
+                <div class="node-details">
+                  <span>ID: {{ item.uuid }}</span>
+                  <span>{{ t("TXT_CODE_COMMON_PLATFORM") }}: {{ item?.platformText }}</span>
+                  <span
+                    :class="{
+                      'node-warning-text':
+                        props.targetPlatforms &&
+                        props.targetPlatforms.length > 0 &&
+                        !isNodeSupported(item)
+                    }"
+                  >
+                    <template
+                      v-if="
+                        props.targetPlatforms &&
+                        props.targetPlatforms.length > 0 &&
+                        !isNodeSupported(item)
+                      "
+                    >
+                      <VIcon icon="mdi-alert-circle-outline" class="mr-0" />
+                    </template>
+                    {{ t("TXT_CODE_UI_DOCKER_PLATFORMS") }}:
+                    {{ item?.dockerPlatforms?.join(", ") || "--" }}
+                  </span>
+                  <span>{{ t("TXT_CODE_COMMON_IP") }}: {{ item.ip }}:{{ item.port }}</span>
+                </div>
               </div>
-            </div>
-            <div class="node-details">
-              <span>ID: {{ item.uuid }}</span>
-              <span>{{ t("TXT_CODE_COMMON_PLATFORM") }}: {{ item?.platformText }}</span>
-              <span
-                :class="{
-                  'node-warning-text': props.targetPlatforms && props.targetPlatforms.length > 0 && !isNodeSupported(item)
-                }"
-              >
-                <template v-if="props.targetPlatforms && props.targetPlatforms.length > 0 && !isNodeSupported(item)">
-                  <VIcon icon="mdi-alert-circle-outline" class="mr-0" />
-                </template>
-                {{ t("TXT_CODE_UI_DOCKER_PLATFORMS") }}: {{ item?.dockerPlatforms?.join(", ") || "--" }}
-              </span>
-              <span>{{ t("TXT_CODE_COMMON_IP") }}: {{ item.ip }}:{{ item.port }}</span>
-            </div>
+            </VCard>
           </div>
-        </VCard>
-      </div>
-    </div>
+        </div>
       </VCardText>
       <VCardActions>
         <VSpacer />

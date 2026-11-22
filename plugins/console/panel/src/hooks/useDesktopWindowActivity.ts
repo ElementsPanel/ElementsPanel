@@ -5,7 +5,9 @@ export interface DesktopWindowActivity {
   interacting: Readonly<Ref<boolean>>;
 }
 
-const activityKey: InjectionKey<DesktopWindowActivity> = Symbol.for("elementspanel.desktop-window-activity");
+const activityKey: InjectionKey<DesktopWindowActivity> = Symbol.for(
+  "elementspanel.desktop-window-activity"
+);
 const defaultActivity: DesktopWindowActivity = {
   visible: computed(() => true),
   interacting: computed(() => false)

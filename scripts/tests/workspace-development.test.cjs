@@ -319,11 +319,7 @@ test("frontend uses same-port middleware and host module bridges without startin
     assert.equal(response.headers.get("Content-Type"), "text/javascript");
     assert.equal(response.headers.get("Cache-Control"), "no-store");
   }
-  runtime.middleware(
-    { url: "/plugins/__dev/@id/epanel-host:unknown" },
-    response,
-    assert.ifError
-  );
+  runtime.middleware({ url: "/plugins/__dev/@id/epanel-host:unknown" }, response, assert.ifError);
   assert.equal(response.sentStatus, 404);
   assert.equal(response.body, undefined);
   assert.match(

@@ -21,7 +21,11 @@ async function sendRconCommand(instance: Instance, command: string) {
     setTimeout(() => {
       if (!hasResult) {
         rconServer.disconnect().catch(() => {});
-        instance.print(`[RCON] ${$t("TXT_CODE_COMMON_COMMAND_DELIVERED_BUT_NO_RESPONSE_RECEIVED_PLEASE_CHECK_IN_GAME")}\n`);
+        instance.print(
+          `[RCON] ${$t(
+            "TXT_CODE_COMMON_COMMAND_DELIVERED_BUT_NO_RESPONSE_RECEIVED_PLEASE_CHECK_IN_GAME"
+          )}\n`
+        );
         resolve("");
       }
     }, 1000 * 10);

@@ -1,4 +1,9 @@
-import { validatePluginSettings, type PluginChangeResult, type PluginSettingField, type PluginSettingsPage } from "mcsmanager-common";
+import {
+  validatePluginSettings,
+  type PluginChangeResult,
+  type PluginSettingField,
+  type PluginSettingsPage
+} from "mcsmanager-common";
 
 interface SettingsDeclaration {
   page?(): PluginSettingsPage;
@@ -10,14 +15,18 @@ interface SettingsDeclaration {
   reset?(): void | Promise<void>;
 }
 
-export function settingsFields<T extends PluginSettingField>(forms: Array<{
-  fields(): T[];
-  page?(): PluginSettingsPage;
-}>): T[] {
+export function settingsFields<T extends PluginSettingField>(
+  forms: Array<{
+    fields(): T[];
+    page?(): PluginSettingsPage;
+  }>
+): T[] {
   const fields: T[] = [];
   for (const form of forms) {
     const page = form.page?.();
-    fields.push(...form.fields().map((field) => page && !field.page ? { ...field, page } : field));
+    fields.push(
+      ...form.fields().map((field) => (page && !field.page ? { ...field, page } : field))
+    );
   }
   return fields;
 }
@@ -25,7 +34,11 @@ export function settingsFields<T extends PluginSettingField>(forms: Array<{
 function fieldValues(fields: PluginSettingField[], values: Record<string, unknown>) {
   const result: Record<string, unknown> = {};
   for (const field of fields) {
-    if (field.key && field.type !== "link" && Object.prototype.hasOwnProperty.call(values, field.key))
+    if (
+      field.key &&
+      field.type !== "link" &&
+      Object.prototype.hasOwnProperty.call(values, field.key)
+    )
       result[field.key] = values[field.key];
   }
   return result;
@@ -36,7 +49,8 @@ async function applyDeclarations(
   operations: Array<() => void | Promise<void>>,
   snapshot?: Record<string, unknown>[]
 ): Promise<PluginChangeResult> {
-  const previous = snapshot ?? (forms.length > 1 ? await Promise.all(forms.map((form) => form.read())) : []);
+  const previous =
+    snapshot ?? (forms.length > 1 ? await Promise.all(forms.map((form) => form.read())) : []);
   let attempted = 0;
   try {
     for (const operation of operations) {
@@ -60,21 +74,34 @@ async function applyDeclarations(
   };
 }
 
-export async function writeSettingsDeclarations(forms: SettingsDeclaration[], values: Record<string, unknown>) {
+export async function writeSettingsDeclarations(
+  forms: SettingsDeclaration[],
+  values: Record<string, unknown>
+) {
   const sections = forms.map((form) => {
     const fields = form.fields();
     validatePluginSettings(fields, values);
     const selected = forms.length > 1 ? fieldValues(fields, values) : values;
     return { form, fields, selected };
   });
-  const previous = forms.length > 1 ? await Promise.all(forms.map((form) => form.read())) : undefined;
-  const changed = sections.map((section, index) => ({ ...section, previous: previous?.[index] }))
-    .filter((section) => !previous || Object.keys(section.selected).some((key) =>
-      JSON.stringify(section.previous![key]) !== JSON.stringify(section.selected[key])
-    ));
+  const previous =
+    forms.length > 1 ? await Promise.all(forms.map((form) => form.read())) : undefined;
+  const changed = sections
+    .map((section, index) => ({ ...section, previous: previous?.[index] }))
+    .filter(
+      (section) =>
+        !previous ||
+        Object.keys(section.selected).some(
+          (key) => JSON.stringify(section.previous![key]) !== JSON.stringify(section.selected[key])
+        )
+    );
   return applyDeclarations(
     changed.map((section) => section.form),
-    changed.map(({ form, selected }) => () => form.write(selected)),
+    changed.map(
+      ({ form, selected }) =>
+        () =>
+          form.write(selected)
+    ),
     previous ? changed.map((section) => section.previous!) : undefined
   );
 }

@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { useAppRouters } from "@elementspanel/epanel-plugin-console/hooks/useAppRouters";
-import { TYPE_STEAM_SERVER_UNIVERSAL, useInstanceInfo } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
+import {
+  TYPE_STEAM_SERVER_UNIVERSAL,
+  useInstanceInfo
+} from "@elementspanel/epanel-plugin-console/hooks/useInstance";
 import { useOverviewInfo } from "@elementspanel/epanel-plugin-console/hooks/useOverviewInfo";
 import { useServerConfig } from "@elementspanel/epanel-plugin-console/hooks/useServerConfig";
 import { t } from "@elementspanel/epanel-plugin-i18n";
@@ -33,7 +36,7 @@ const emit = defineEmits<{
 }>();
 
 const { isAdmin, state } = useAppStateStore();
-const { toPage: toOtherPager } = useAppRouters();
+useAppRouters();
 const { state: overviewState } = useOverviewInfo();
 
 const rconSettingsDialog = ref<InstanceType<typeof RconSettings>>();
@@ -156,12 +159,7 @@ watch(instanceInfo, (cfg, oldCfg) => {
   <div class="dim-mgr-btns">
     <div class="dim-mgr-btns__title">{{ t("TXT_CODE_COMMON_MANAGE_INSTANCE") }}</div>
     <div class="dim-mgr-btns__row">
-      <VTooltip
-        v-for="btn in btns"
-        :key="btn.title"
-        :text="btn.title"
-        location="top"
-      >
+      <VTooltip v-for="btn in btns" :key="btn.title" :text="btn.title" location="top">
         <template #activator="{ props: tooltipProps }">
           <div v-bind="tooltipProps" class="dim-mgr-btn" @click="btn.click">
             <VIcon :icon="btn.icon" size="small" />

@@ -62,20 +62,53 @@ onMounted(() => {
 
 <template>
   <div class="line-option-wrapper" :class="{ 'option-card': card }">
-    <VCard class="line-option-card" :variant="card || isDesktop ? 'tonal' : 'outlined'" rounded="xl">
+    <VCard
+      class="line-option-card"
+      :variant="card || isDesktop ? 'tonal' : 'outlined'"
+      rounded="xl"
+    >
       <VCardText>
         <div v-if="!custom">
-          <VRow :density="card ? 'comfortable' : 'compact'" :class="card ? 'option-card-body' : 'd-flex align-center'">
-            <VCol cols="12" :md="card ? 12 : 7" class="option-title"><slot name="title"></slot></VCol>
-            <VCol cols="12" :md="card ? 12 : 11" class="option-info"><slot name="info"></slot></VCol>
+          <VRow
+            :density="card ? 'comfortable' : 'compact'"
+            :class="card ? 'option-card-body' : 'd-flex align-center'"
+          >
+            <VCol cols="12" :md="card ? 12 : 7" class="option-title"
+              ><slot name="title"></slot
+            ></VCol>
+            <VCol cols="12" :md="card ? 12 : 11" class="option-info"
+              ><slot name="info"></slot
+            ></VCol>
             <VCol cols="12" :md="card ? 12 : 6">
               <div v-if="$slots.optionInput"><slot name="optionInput"></slot></div>
               <div v-else class="line-option-control">
-                <VTextField v-if="type == CONTROL.INPUT" v-model="computedValue" density="compact" hide-details />
-                <VSelect v-else v-model="computedValue" :items="[{ title: t('TXT_CODE_COMMON_YES'), value: true }, { title: t('TXT_CODE_COMMON_NO'), value: false }]" density="compact" hide-details>
+                <VTextField
+                  v-if="type == CONTROL.INPUT"
+                  v-model="computedValue"
+                  density="compact"
+                  hide-details
+                />
+                <VSelect
+                  v-else
+                  v-model="computedValue"
+                  :items="[
+                    { title: t('TXT_CODE_COMMON_YES'), value: true },
+                    { title: t('TXT_CODE_COMMON_NO'), value: false }
+                  ]"
+                  density="compact"
+                  hide-details
+                >
                   <template #no-data><Empty :icon="false" compact /></template>
                 </VSelect>
-                <VBtn v-if="type == CONTROL.SELECT" icon variant="text" size="small" rounded="xl" @click="forceType"><VIcon icon="mdi-pencil-outline" /></VBtn>
+                <VBtn
+                  v-if="type == CONTROL.SELECT"
+                  icon
+                  variant="text"
+                  size="small"
+                  rounded="xl"
+                  @click="forceType"
+                  ><VIcon icon="mdi-pencil-outline"
+                /></VBtn>
               </div>
             </VCol>
           </VRow>
@@ -116,6 +149,13 @@ onMounted(() => {
   }
 }
 
-.line-option-control { display: flex; align-items: center; gap: 6px; }
-.line-option-control :deep(.v-input) { flex: 1; min-width: 0; }
+.line-option-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.line-option-control :deep(.v-input) {
+  flex: 1;
+  min-width: 0;
+}
 </style>

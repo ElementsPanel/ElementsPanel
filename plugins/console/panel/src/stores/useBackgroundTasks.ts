@@ -1,7 +1,11 @@
 import { createGlobalState } from "@vueuse/core";
 import { computed, ref } from "vue";
 import { apiService, onApiMutation } from "@/services/apiService";
-import { createTaskStream, type TaskStreamState, type TaskStreamUpdate } from "@/hooks/useTaskStream";
+import {
+  createTaskStream,
+  type TaskStreamState,
+  type TaskStreamUpdate
+} from "@/hooks/useTaskStream";
 import { useAppStateStore } from "./useAppStateStore";
 
 export interface BackgroundTask {
@@ -57,11 +61,14 @@ export const useBackgroundTasks = createGlobalState(() => {
   /** Use polling only until a task-stream push arrives, including for older daemons. */
   const scheduleFallback = () => {
     if (fallbackTimer || !isLogged.value) return;
-    fallbackTimer = setTimeout(() => {
-      fallbackTimer = undefined;
-      if (!isLogged.value) return;
-      void refresh({ silent: true }).finally(scheduleFallback);
-    }, open.value ? 5_000 : 15_000);
+    fallbackTimer = setTimeout(
+      () => {
+        fallbackTimer = undefined;
+        if (!isLogged.value) return;
+        void refresh({ silent: true }).finally(scheduleFallback);
+      },
+      open.value ? 5_000 : 15_000
+    );
   };
 
   /** Detects an old daemon: running work but no push for a whole interval. */

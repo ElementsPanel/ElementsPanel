@@ -41,7 +41,10 @@ const savePreview = () => {
   if (!draggedKey.value) return;
   const keys = [...previewOrder.value];
   endDrag();
-  if (keys.length === props.tabs.length && keys.some((key, position) => key !== props.tabs[position].key))
+  if (
+    keys.length === props.tabs.length &&
+    keys.some((key, position) => key !== props.tabs[position].key)
+  )
     emit("reorder", keys);
 };
 
@@ -85,7 +88,7 @@ const updatePreview = (event: DragEvent) => {
   if (!target) return;
   const from = previewOrder.value.indexOf(draggedKey.value);
   const to = previewOrder.value.indexOf(target.key);
-  if (from === -1 || to === -1 || (from < to) !== target.after) return;
+  if (from === -1 || to === -1 || from < to !== target.after) return;
   const keys = [...previewOrder.value];
   keys.splice(from, 1);
   keys.splice(to, 0, draggedKey.value);
@@ -99,7 +102,9 @@ const handleDragOver = (event: DragEvent) => {
   if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
   updatePreview(event);
 
-  const container = (event.currentTarget as HTMLElement).querySelector<HTMLElement>(".v-slide-group__container");
+  const container = (event.currentTarget as HTMLElement).querySelector<HTMLElement>(
+    ".v-slide-group__container"
+  );
   if (container && container.scrollWidth > container.clientWidth) {
     const bounds = container.getBoundingClientRect();
     if (event.clientX < bounds.left + 32) container.scrollLeft -= 20;
@@ -122,8 +127,19 @@ const handleDrop = (event: DragEvent) => {
 </script>
 
 <template>
-  <div ref="tabsRow" class="file-tabs-row" @dragover="handleDragOver" @dragleave="handleDragLeave" @drop="handleDrop">
-    <VTabs :model-value="activeTab" density="compact" show-arrows @update:model-value="typeof $event === 'string' && emit('select', $event)">
+  <div
+    ref="tabsRow"
+    class="file-tabs-row"
+    @dragover="handleDragOver"
+    @dragleave="handleDragLeave"
+    @drop="handleDrop"
+  >
+    <VTabs
+      :model-value="activeTab"
+      density="compact"
+      show-arrows
+      @update:model-value="typeof $event === 'string' && emit('select', $event)"
+    >
       <TransitionGroup name="file-folder-tabs">
         <VTab
           v-for="tab in displayedTabs"
@@ -157,7 +173,13 @@ const handleDrop = (event: DragEvent) => {
         </VTab>
       </TransitionGroup>
     </VTabs>
-    <VBtn icon="mdi-plus" size="small" variant="text" :aria-label="t('TXT_CODE_COMMON_NEW_TASK')" @click="emit('add')" />
+    <VBtn
+      icon="mdi-plus"
+      size="small"
+      variant="text"
+      :aria-label="t('TXT_CODE_COMMON_NEW_TASK')"
+      @click="emit('add')"
+    />
   </div>
   <Empty
     v-if="!tabs.length"
@@ -222,10 +244,17 @@ const handleDrop = (event: DragEvent) => {
   pointer-events: auto;
 }
 @media (hover: none) {
-  .file-folder-tab .file-tab-label { transform: translateX(-16px); }
-  .file-folder-tab .file-tab-close { opacity: 1; pointer-events: auto; }
+  .file-folder-tab .file-tab-label {
+    transform: translateX(-16px);
+  }
+  .file-folder-tab .file-tab-close {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .file-folder-tabs-move { transition: none; }
+  .file-folder-tabs-move {
+    transition: none;
+  }
 }
 </style>

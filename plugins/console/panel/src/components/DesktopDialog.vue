@@ -8,31 +8,37 @@ import { computed, onMounted, onUnmounted, ref, useSlots, type Component } from 
 
 defineOptions({ inheritAttrs: false });
 
-const props = withDefaults(defineProps<{
-  modelValue: boolean;
-  id?: string;
-  title?: string | null;
-  icon?: string | Component;
-  width?: number | string;
-  height?: number;
-  zIndex?: number;
-  resizable?: boolean;
-  closable?: boolean;
-  keyboard?: boolean;
-  padded?: boolean;
-  scrollable?: boolean;
-  transition?: string;
-}>(), {
-  width: 420,
-  height: 485,
-  zIndex: 10001,
-  resizable: false,
-  closable: true,
-  keyboard: true,
-  padded: true,
-  scrollable: true,
-  transition: "desktop-window"
-});
+const props = withDefaults(
+  defineProps<{
+    modelValue: boolean;
+    id?: string;
+    title?: string | null;
+    icon?: string | Component;
+    width?: number | string;
+    height?: number;
+    zIndex?: number;
+    resizable?: boolean;
+    closable?: boolean;
+    keyboard?: boolean;
+    padded?: boolean;
+    scrollable?: boolean;
+    transition?: string;
+  }>(),
+  {
+    id: undefined,
+    title: undefined,
+    icon: undefined,
+    width: 420,
+    height: 485,
+    zIndex: 10001,
+    resizable: false,
+    closable: true,
+    keyboard: true,
+    padded: true,
+    scrollable: true,
+    transition: "desktop-window"
+  }
+);
 
 const emit = defineEmits<{
   "update:modelValue": [value: boolean];
@@ -50,7 +56,10 @@ const updateViewport = () => {
   viewport.value = { width: window.innerWidth, height: window.innerHeight };
 };
 const size = computed(() => ({
-  width: Math.min(Number.parseFloat(String(props.width)) || 420, Math.max(1, viewport.value.width - 32)),
+  width: Math.min(
+    Number.parseFloat(String(props.width)) || 420,
+    Math.max(1, viewport.value.width - 32)
+  ),
   height: Math.min(props.height, Math.max(1, viewport.value.height - 80))
 }));
 onMounted(() => window.addEventListener("resize", updateViewport));
@@ -105,7 +114,9 @@ defineExpose({ getElement: () => dialogElement.value?.$el });
               'desktop-dialog__body--unpadded': !padded,
               'desktop-dialog__body--contained': !scrollable
             }"
-          ><slot /></div>
+          >
+            <slot />
+          </div>
           <div v-if="slots.footer" class="desktop-dialog__footer"><slot name="footer" /></div>
         </div>
       </component>
@@ -130,7 +141,9 @@ defineExpose({ getElement: () => dialogElement.value?.$el });
   padding: 16px 20px;
   color: var(--desktop-window-text);
 
-  &--unpadded { padding: 0; }
+  &--unpadded {
+    padding: 0;
+  }
   &--contained {
     display: flex;
     flex-direction: column;

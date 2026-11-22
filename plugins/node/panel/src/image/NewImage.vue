@@ -26,22 +26,30 @@ const dockerFileDrawer = ref(false);
 const imageList = [
   {
     title: t("TXT_CODE_COMMON_CREATE_OPEN_JDK_8_ENVIRONMENT_IMAGE"),
-    description: t("TXT_CODE_COMMON_BUILT_IN_JAVA_8_RUNTIME_ENVIRONMENT_IDEAL_FOR_MINECRAFT_SERVER_1_7_1_16"),
+    description: t(
+      "TXT_CODE_COMMON_BUILT_IN_JAVA_8_RUNTIME_ENVIRONMENT_IDEAL_FOR_MINECRAFT_SERVER_1_7_1_16"
+    ),
     type: 1
   },
   {
     title: t("TXT_CODE_COMMON_CREATE_OPEN_JDK_17_ENVIRONMENT_IMAGE"),
-    description: t("TXT_CODE_COMMON_BUILT_IN_JAVA_17_RUNTIME_ENVIRONMENT_IDEAL_FOR_MINECRAFT_SERVERS_1_18_AND_LATER"),
+    description: t(
+      "TXT_CODE_COMMON_BUILT_IN_JAVA_17_RUNTIME_ENVIRONMENT_IDEAL_FOR_MINECRAFT_SERVERS_1_18_AND_LATER"
+    ),
     type: 2
   },
   {
     title: t("TXT_CODE_COMMON_CREATE_UBUNTU_22_04_ENVIRONMENT_IMAGE"),
-    description: t("TXT_CODE_COMMON_IDEAL_FOR_MINECRAFT_BEDROCK_EDITION_SERVER_OR_OTHER_LINUX_PROGRAMS"),
+    description: t(
+      "TXT_CODE_COMMON_IDEAL_FOR_MINECRAFT_BEDROCK_EDITION_SERVER_OR_OTHER_LINUX_PROGRAMS"
+    ),
     type: 3
   },
   {
     title: t("TXT_CODE_COMMON_CREATE_CUSTOM_ENVIRONMENT_IMAGE_USING_DOCKER_FILE"),
-    description: t("TXT_CODE_COMMON_CREATE_ENVIRONMENT_IMAGE_USING_DOCKER_FILE_IT_IS_RECOMMENDED_ONLY_FOR_EXPERIENCED_USER"),
+    description: t(
+      "TXT_CODE_COMMON_CREATE_ENVIRONMENT_IMAGE_USING_DOCKER_FILE_IT_IS_RECOMMENDED_ONLY_FOR_EXPERIENCED_USER"
+    ),
     type: 4
   }
 ];
@@ -101,55 +109,59 @@ const toImageListPage = () => {
 
       <VRow density="compact" class="node-image-row">
         <VCol cols="12">
-        <CardPanel>
-          <template #body>
-            <div>
+          <CardPanel>
+            <template #body>
+              <div>
                 <p class="text-body-medium text-medium-emphasis">
-                  {{ t("TXT_CODE_COMMON_IMAGES_PROVIDE_SEPARATE_RUNTIME_ENVIRONMENTS_SELECT_A_TEMPLATE_THEN_EDIT_ITS_DOCKERFILE") }}
+                  {{
+                    t(
+                      "TXT_CODE_COMMON_IMAGES_PROVIDE_SEPARATE_RUNTIME_ENVIRONMENTS_SELECT_A_TEMPLATE_THEN_EDIT_ITS_DOCKERFILE"
+                    )
+                  }}
                 </p>
-            </div>
-          </template>
-        </CardPanel>
-      </VCol>
+              </div>
+            </template>
+          </CardPanel>
+        </VCol>
 
-      <VCol
-        v-for="i in imageList"
-        :key="i.title + i.description + i.type"
-        cols="12"
-        :lg="6"
-        :md="8"
-        :sm="12"
-      >
-        <VBtn
-          block
-          color="primary"
-          variant="tonal"
-          height="100%"
-          class="images-button text-none"
-          @click="selectType(i.type)"
+        <VCol
+          v-for="i in imageList"
+          :key="i.title + i.description + i.type"
+          cols="12"
+          :lg="6"
+          :md="8"
+          :sm="12"
         >
-          <span class="d-flex flex-column ga-2 w-100">
-            <span class="text-body-large font-weight-bold">{{ i.title }}</span>
-            <span class="text-body-medium text-medium-emphasis">{{ i.description }}</span>
-          </span>
-        </VBtn>
-      </VCol>
+          <VBtn
+            block
+            color="primary"
+            variant="tonal"
+            height="100%"
+            class="images-button text-none"
+            @click="selectType(i.type)"
+          >
+            <span class="d-flex flex-column ga-2 w-100">
+              <span class="text-body-large font-weight-bold">{{ i.title }}</span>
+              <span class="text-body-medium text-medium-emphasis">{{ i.description }}</span>
+            </span>
+          </VBtn>
+        </VCol>
       </VRow>
     </VContainer>
 
     <VDialog v-model="dockerFileDrawer" max-width="768" scrollable>
-    <VCard :title="t('TXT_CODE_NODE_DOCKERFILE_EDITOR')">
-      <VCardText>
-    <DockerFileForm
-      :docker-file="dockerFile"
-      :name="name"
-      :version="version"
-      :daemon-id="daemonId ?? ''"
-      @close="dockerFileDrawer = false"
-    />
-      </VCardText>
-    </VCard>
-  </VDialog>
+      <VCard :title="t('TXT_CODE_NODE_DOCKERFILE_EDITOR')">
+        <VCardText>
+          <DockerFileForm
+            :docker-file="dockerFile"
+            :name="name"
+            :version="version"
+            :daemon-id="daemonId ?? ''"
+            @close="dockerFileDrawer = false"
+          />
+        </VCardText>
+      </VCard>
+    </VDialog>
   </main>
 </template>
 
@@ -168,5 +180,4 @@ const toImageListPage = () => {
     overflow-wrap: anywhere;
   }
 }
-
 </style>

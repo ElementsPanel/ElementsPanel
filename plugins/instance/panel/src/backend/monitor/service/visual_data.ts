@@ -66,6 +66,7 @@ export class VisualDataHistory {
         totalInstance += info.instance.total;
         runningInstance += info.instance.running;
       } catch (error) {
+        // Skip unavailable nodes in this sample.
       }
     }
     this.requestSamples.shift();

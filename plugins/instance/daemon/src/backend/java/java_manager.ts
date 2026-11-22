@@ -109,7 +109,11 @@ export class JavaManager {
       [".", ".."].includes(info.fullname) ||
       /[\\/:*?"<>|\0]/.test(info.fullname)
     ) {
-      throw new Error(this.dependencies.translate("TXT_CODE_COMMON_THE_NAME_CONTAINS_INVALID_CHARACTERS_PLEASE_MODIFY_THE_NAME"));
+      throw new Error(
+        this.dependencies.translate(
+          "TXT_CODE_COMMON_THE_NAME_CONTAINS_INVALID_CHARACTERS_PLEASE_MODIFY_THE_NAME"
+        )
+      );
     }
     if (this.exists(info.fullname))
       throw new Error(this.dependencies.translate("TXT_CODE_COMMON_JAVA_ALREADY_EXISTS"));
@@ -128,7 +132,8 @@ export class JavaManager {
   /** Share one installation per node and version; publish progress in runtime metadata. */
   async startInstall(version: string): Promise<IJavaRuntime> {
     await this.ready;
-    if (this.disposed) throw new Error(this.dependencies.translate("TXT_CODE_JAVA_MSL_INTERRUPTED"));
+    if (this.disposed)
+      throw new Error(this.dependencies.translate("TXT_CODE_JAVA_MSL_INTERRUPTED"));
     if (typeof version !== "string" || !/^[1-9][0-9]{0,2}$/.test(version))
       throw new Error(this.dependencies.translate("TXT_CODE_JAVA_MSL_INVALID_VERSION"));
     const id = `msl_${version}`;
@@ -136,7 +141,8 @@ export class JavaManager {
     if (existing && !existing.info.error) return existing;
     if (!(await this.source.versions()).versions.includes(version))
       throw new Error(this.dependencies.translate("TXT_CODE_JAVA_MSL_INVALID_VERSION"));
-    if (this.disposed) throw new Error(this.dependencies.translate("TXT_CODE_JAVA_MSL_INTERRUPTED"));
+    if (this.disposed)
+      throw new Error(this.dependencies.translate("TXT_CODE_JAVA_MSL_INTERRUPTED"));
     // Another request may have started this version while the catalogue loaded.
     const current = this.javaList.get(id);
     if (current && (!current.info.error || this.jobs.has(id))) return current;
@@ -151,8 +157,15 @@ export class JavaManager {
     this.jobs.set(id, job);
     job.done = this.install(info, job.controller.signal).finally(() => this.jobs.delete(id));
     const tasks = this.dependencies.backgroundTasks;
-    tasks?.progress(() => ({ current: info.progress || 0, total: 100 }), () => job.controller.abort());
-    tasks?.follow(job.done.then(() => { if (info.error) throw new Error(info.error); }));
+    tasks?.progress(
+      () => ({ current: info.progress || 0, total: 100 }),
+      () => job.controller.abort()
+    );
+    tasks?.follow(
+      job.done.then(() => {
+        if (info.error) throw new Error(info.error);
+      })
+    );
     return runtime;
   }
 
@@ -204,10 +217,12 @@ export class JavaManager {
   async getJavaRuntimeCommand(id: string) {
     const java = this.getJava(id);
     if (!java) throw new Error(this.dependencies.translate("TXT_CODE_COMMON_JAVA_NOT_FOUND"));
-    if (java.info.downloading) throw new Error(this.dependencies.translate("TXT_CODE_COMMON_JAVA_IS_DOWNLOADING"));
+    if (java.info.downloading)
+      throw new Error(this.dependencies.translate("TXT_CODE_COMMON_JAVA_IS_DOWNLOADING"));
     if (java.info.error) throw new Error(java.info.error);
     const executable = await findJavaExecutable(java.info.path || java.path);
-    if (!executable) throw new Error(this.dependencies.translate("TXT_CODE_COMMON_JAVA_PATH_NOT_FOUND"));
+    if (!executable)
+      throw new Error(this.dependencies.translate("TXT_CODE_COMMON_JAVA_PATH_NOT_FOUND"));
     return javaExecutableCommand(executable);
   }
 
@@ -215,7 +230,9 @@ export class JavaManager {
     const java = this.getJava(id);
     if (!java) throw new Error(this.dependencies.translate("TXT_CODE_COMMON_JAVA_NOT_FOUND"));
     if (java.info.downloading || this.jobs.has(id))
-      throw new Error(this.dependencies.translate("TXT_CODE_COMMON_THIS_JAVA_IS_STILL_BEING_DOWNLOADED"));
+      throw new Error(
+        this.dependencies.translate("TXT_CODE_COMMON_THIS_JAVA_IS_STILL_BEING_DOWNLOADED")
+      );
     if (java.usingInstances.length)
       throw new Error(this.dependencies.translate("TXT_CODE_COMMON_JAVA_IS_CURRENTLY_RUNNING"));
     await fs.remove(java.path);

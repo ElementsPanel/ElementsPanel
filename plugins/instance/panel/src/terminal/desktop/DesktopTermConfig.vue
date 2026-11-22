@@ -5,9 +5,21 @@ import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen"
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import { updateInstanceConfig } from "@elementspanel/epanel-plugin-console/services/apis/instance";
 import { TERMINAL_CODE } from "@elementspanel/epanel-plugin-console/types/const";
-import { notifyDesktop, notifyDesktopError } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
+import {
+  notifyDesktop,
+  notifyDesktopError
+} from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import { computed, ref, watch } from "vue";
-import { VBtn, VCol, VIcon, VProgressCircular, VRow, VSelect, VSwitch, VTextField } from "vuetify/components";
+import {
+  VBtn,
+  VCol,
+  VIcon,
+  VProgressCircular,
+  VRow,
+  VSelect,
+  VSwitch,
+  VTextField
+} from "vuetify/components";
 
 const props = defineProps<{
   instanceUuid?: string;
@@ -55,9 +67,13 @@ const submit = async () => {
   }
 };
 
-watch(instanceInfo, (val) => {
-  if (val) options.value = val;
-}, { immediate: true });
+watch(
+  instanceInfo,
+  (val) => {
+    if (val) options.value = val;
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
@@ -66,43 +82,104 @@ watch(instanceInfo, (val) => {
       <VRow v-if="options" :density="isPhone ? 'compact' : 'default'">
         <VCol cols="12" md="6">
           <div class="dterm-field dterm-field--switch">
-            <div><div class="dterm-field__title">{{ t("TXT_CODE_COMMON_EMULATED_TERMINAL") }}</div><div class="dterm-field__hint">{{ t("TXT_CODE_COMMON_SUPPORTS_TAB_AND_CTRL_SHORTCUTS_DISABLE_IF_COMPATIBILITY_ISSUES_OCCUR") }}</div></div>
+            <div>
+              <div class="dterm-field__title">{{ t("TXT_CODE_COMMON_EMULATED_TERMINAL") }}</div>
+              <div class="dterm-field__hint">
+                {{
+                  t(
+                    "TXT_CODE_COMMON_SUPPORTS_TAB_AND_CTRL_SHORTCUTS_DISABLE_IF_COMPATIBILITY_ISSUES_OCCUR"
+                  )
+                }}
+              </div>
+            </div>
             <VSwitch v-model="options.config.terminalOption.pty" color="primary" hide-details />
           </div>
           <div class="dterm-field dterm-field--switch">
-            <div><div class="dterm-field__title">{{ t("TXT_CODE_COMMON_COLOR_RENDERING") }}</div><div class="dterm-field__hint">{{ t("TXT_CODE_COMMON_AUTOMATICALLY_COLORS_OUTPUT_DISABLE_IF_IT_CONFLICTS_WITH_THE_APPLICATION_S_COLORS") }}</div></div>
-            <VSwitch v-model="options.config.terminalOption.haveColor" color="primary" hide-details />
+            <div>
+              <div class="dterm-field__title">{{ t("TXT_CODE_COMMON_COLOR_RENDERING") }}</div>
+              <div class="dterm-field__hint">
+                {{
+                  t(
+                    "TXT_CODE_COMMON_AUTOMATICALLY_COLORS_OUTPUT_DISABLE_IF_IT_CONFLICTS_WITH_THE_APPLICATION_S_COLORS"
+                  )
+                }}
+              </div>
+            </div>
+            <VSwitch
+              v-model="options.config.terminalOption.haveColor"
+              color="primary"
+              hide-details
+            />
           </div>
           <div class="dterm-field">
             <div class="dterm-field__title">{{ t("TXT_CODE_COMMON_COMMAND_LINE_ENDING") }}</div>
-            <div class="dterm-field__hint">{{ t("TXT_CODE_TERMINAL_LINE_ENDING_PLATFORM_HINT") }}</div>
-            <VSelect v-model="options.config.crlf" :items="[{ title: t('TXT_CODE_COMMON_LINE_FEED'), value: 1 }, { title: t('TXT_CODE_COMMON_CARRIAGE_RETURN_AND_LINE_FEED'), value: 2 }]" :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT')" density="compact" hide-details>
+            <div class="dterm-field__hint">
+              {{ t("TXT_CODE_TERMINAL_LINE_ENDING_PLATFORM_HINT") }}
+            </div>
+            <VSelect
+              v-model="options.config.crlf"
+              :items="[
+                { title: t('TXT_CODE_COMMON_LINE_FEED'), value: 1 },
+                { title: t('TXT_CODE_COMMON_CARRIAGE_RETURN_AND_LINE_FEED'), value: 2 }
+              ]"
+              :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT')"
+              density="compact"
+              hide-details
+            >
               <template #no-data><Empty :icon="false" compact /></template>
             </VSelect>
           </div>
         </VCol>
         <VCol cols="12" md="6">
           <div class="dterm-field">
-            <div class="dterm-field__title">{{ t("TXT_CODE_COMMON_INSTANCE_SHUTDOWN_COMMAND") }}</div>
-            <div class="dterm-field__hint">{{ t("TXT_CODE_COMMON_RUNS_WHEN_STOPPING_THE_INSTANCE_C_SENDS_CTRL_C") }}</div>
+            <div class="dterm-field__title">
+              {{ t("TXT_CODE_COMMON_INSTANCE_SHUTDOWN_COMMAND") }}
+            </div>
+            <div class="dterm-field__hint">
+              {{ t("TXT_CODE_COMMON_RUNS_WHEN_STOPPING_THE_INSTANCE_C_SENDS_CTRL_C") }}
+            </div>
             <VTextField v-model="options.config.stopCommand" density="compact" hide-details />
           </div>
           <div class="dterm-field">
-            <div class="dterm-field__title">{{ t("TXT_CODE_COMMON_INPUT_AND_OUTPUT_ENCODING") }}</div>
-            <div class="dterm-field__hint">{{ t("TXT_CODE_COMMON_CHANGE_THE_ENCODING_IF_TERMINAL_OUTPUT_IS_GARBLED") }}</div>
-            <VSelect v-model="options.config.ie" :items="TERMINAL_CODE" :placeholder="t('TXT_CODE_COMMON_TERMINAL_INPUT_ENCODING')" density="compact" hide-details class="mb-1">
+            <div class="dterm-field__title">
+              {{ t("TXT_CODE_COMMON_INPUT_AND_OUTPUT_ENCODING") }}
+            </div>
+            <div class="dterm-field__hint">
+              {{ t("TXT_CODE_COMMON_CHANGE_THE_ENCODING_IF_TERMINAL_OUTPUT_IS_GARBLED") }}
+            </div>
+            <VSelect
+              v-model="options.config.ie"
+              :items="TERMINAL_CODE"
+              :placeholder="t('TXT_CODE_COMMON_TERMINAL_INPUT_ENCODING')"
+              density="compact"
+              hide-details
+              class="mb-1"
+            >
               <template #no-data><Empty :icon="false" compact /></template>
             </VSelect>
-            <VSelect v-model="options.config.oe" :items="TERMINAL_CODE" :placeholder="t('TXT_CODE_COMMON_TERMINAL_OUTPUT_ENCODING')" density="compact" hide-details>
+            <VSelect
+              v-model="options.config.oe"
+              :items="TERMINAL_CODE"
+              :placeholder="t('TXT_CODE_COMMON_TERMINAL_OUTPUT_ENCODING')"
+              density="compact"
+              hide-details
+            >
               <template #no-data><Empty :icon="false" compact /></template>
             </VSelect>
           </div>
         </VCol>
       </VRow>
-      <div v-else class="dterm-config__loading"><VProgressCircular indeterminate />{{ t("TXT_CODE_COMMON_LOADING_DATA") }}</div>
+      <div v-else class="dterm-config__loading">
+        <VProgressCircular indeterminate />{{ t("TXT_CODE_COMMON_LOADING_DATA") }}
+      </div>
     </div>
     <div class="dterm-config__footer">
-      <VBtn class="dterm-btn dterm-btn--primary" variant="text" :loading="isLoading" @click="submit">
+      <VBtn
+        class="dterm-btn dterm-btn--primary"
+        variant="text"
+        :loading="isLoading"
+        @click="submit"
+      >
         <VIcon icon="mdi-content-save-outline" />
         {{ t("TXT_CODE_COMMON_SAVE") }}
       </VBtn>
@@ -145,18 +222,40 @@ watch(instanceInfo, (val) => {
   background: var(--desktop-window-titlebar-bg);
   color: var(--desktop-window-text);
 
-  &:hover:not(:disabled) { background: var(--desktop-window-control-hover); }
-  &:disabled { opacity: 0.4; cursor: not-allowed; }
+  &:hover:not(:disabled) {
+    background: var(--desktop-window-control-hover);
+  }
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
 
   &--primary {
     color: #1677ff;
     background: rgba(22, 119, 255, 0.1);
-    &:hover:not(:disabled) { background: rgba(22, 119, 255, 0.2); }
+    &:hover:not(:disabled) {
+      background: rgba(22, 119, 255, 0.2);
+    }
   }
 }
 
-.dterm-field { margin-bottom: 20px; }
-.dterm-field--switch { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.dterm-field__title { margin-bottom: 4px; font-size: 14px; font-weight: 600; }
-.dterm-field__hint { margin-bottom: 8px; color: var(--desktop-window-text-secondary); line-height: 1.5; }
+.dterm-field {
+  margin-bottom: 20px;
+}
+.dterm-field--switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.dterm-field__title {
+  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.dterm-field__hint {
+  margin-bottom: 8px;
+  color: var(--desktop-window-text-secondary);
+  line-height: 1.5;
+}
 </style>

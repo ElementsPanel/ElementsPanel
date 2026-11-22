@@ -16,7 +16,9 @@ const publishing = import(pathToFileURL(path.join(repository, "scripts/publish-n
 test("publication skips existing versions without comparing package contents", async () => {
   const { selectPackagesForPublication } = await publishing;
   const packages = ["console", "panel", "init"].map((id) => ({
-    name: ["panel", "init"].includes(id) ? `@elementspanel/${id}` : `@elementspanel/epanel-plugin-${id}`,
+    name: ["panel", "init"].includes(id)
+      ? `@elementspanel/${id}`
+      : `@elementspanel/epanel-plugin-${id}`,
     directory: path.join("/fixture", id),
     version: "1.0.3"
   }));
@@ -81,10 +83,7 @@ function fixture(t) {
         );
         write(path.join(pluginRoot, `${manifest.backend}.map`), "{}");
       }
-      write(
-        path.join(pluginRoot, "src/private.ts"),
-        "// Source stays in the workspace"
-      );
+      write(path.join(pluginRoot, "src/private.ts"), "// Source stays in the workspace");
       if (original.frontend) {
         const entry = `${item.name}/frontend/index.js`;
         const style = `${item.name}/frontend/assets/style.css`;
@@ -159,7 +158,10 @@ test("backend bundles only externalize dependencies declared by the published ru
           if (external) break;
         }
         if (!external) continue;
-        const name = request.split("/").slice(0, request.startsWith("@") ? 2 : 1).join("/");
+        const name = request
+          .split("/")
+          .slice(0, request.startsWith("@") ? 2 : 1)
+          .join("/");
         assert.ok(allowed.has(name), `${side}/${filename} leaves undeclared import ${request}`);
       }
     }
@@ -220,12 +222,9 @@ test("workspace packaging includes runnable entry points and excludes user data 
       assert.equal(pluginManifest.version, undefined);
       assert.equal(pluginManifest.dual, undefined);
       assert.ok(
-        Object.keys(pluginManifest).every((field) =>
-          ["backend", "frontend"].includes(field)
-        )
+        Object.keys(pluginManifest).every((field) => ["backend", "frontend"].includes(field))
       );
       assert.equal(fs.existsSync(path.join(pluginRoot, "package.json")), false);
-      const folder = metadata.elementspanel[side].folder;
       const sourcePlugin = sourcePlugins(side).find((plugin) => plugin.id === id);
       const sourceMetadata = sourcePlugin.metadata;
       const definition = sourceMetadata.elementspanel[side];
@@ -266,7 +265,12 @@ test("workspace packaging includes runnable entry points and excludes user data 
     assert.match(help, /Usage:/);
   }
   assert.equal(result.plugins.length, 13);
-  assert.equal(result.plugins.some((plugin) => ["terminal", "backup", "monitor"].includes(plugin.elementspanel.id)), false);
+  assert.equal(
+    result.plugins.some((plugin) =>
+      ["terminal", "backup", "monitor"].includes(plugin.elementspanel.id)
+    ),
+    false
+  );
   assert.ok(result.plugins.some((plugin) => plugin.elementspanel.id === "node"));
   assert.ok(result.plugins.every((plugin) => /^@elementspanel\/epanel-plugin-/.test(plugin.name)));
   const instance = result.plugins.find((plugin) => plugin.elementspanel.id === "instance");
@@ -275,13 +279,23 @@ test("workspace packaging includes runnable entry points and excludes user data 
   assert.deepEqual(instance.elementspanel.panel.backendInject, ["node"]);
   assert.deepEqual(instance.elementspanel.daemon.backendInject, ["node"]);
   assert.ok(instance.elementspanel.panel.frontendInject.includes("node"));
-  assert.equal(result.plugins.find((plugin) => plugin.elementspanel.id === "node").elementspanel.panel.frontendInject.includes("instance"), false);
-  assert.equal(result.plugins.some((plugin) => plugin.elementspanel.id === "mod-manager"), false);
+  assert.equal(
+    result.plugins
+      .find((plugin) => plugin.elementspanel.id === "node")
+      .elementspanel.panel.frontendInject.includes("instance"),
+    false
+  );
+  assert.equal(
+    result.plugins.some((plugin) => plugin.elementspanel.id === "mod-manager"),
+    false
+  );
   assert.ok(fs.existsSync(path.join(f.outputRoot, "panel/public/assets/shared.js")));
   assert.ok(fs.existsSync(path.join(f.sourceRoot, "core/panel/production/app.js")));
   assert.ok(fs.existsSync(path.join(f.sourceRoot, "plugins/console/panel/backend/index.cjs.map")));
   assert.ok(
-    fs.existsSync(path.join(f.sourceRoot, "core/frontend/dist/plugins/console/frontend/index.js.map"))
+    fs.existsSync(
+      path.join(f.sourceRoot, "core/frontend/dist/plugins/console/frontend/index.js.map")
+    )
   );
   const create = JSON.parse(
     fs.readFileSync(path.join(f.outputRoot, "init-elementspanel/package.json"))
@@ -362,10 +376,7 @@ test("workspace packaging includes runnable entry points and excludes user data 
     const sideManifest = JSON.parse(fs.readFileSync(path.join(generatedRoot, side, "plugin.json")));
     assert.deepEqual(
       Object.keys(sideManifest).sort(),
-      (side === "panel"
-        ? ["backend", "frontend"]
-        : ["backend"]
-      ).sort()
+      (side === "panel" ? ["backend", "frontend"] : ["backend"]).sort()
     );
     assert.equal(
       readPluginManifest(path.join(generatedRoot, side)).description,
@@ -410,7 +421,10 @@ test("separate npm plugin packages resolve from hoisted and nested installations
       roots.every((plugin) => fs.existsSync(path.join(plugin.directory, "backend/index.cjs")))
     );
     assert.equal(roots.find((plugin) => plugin.id === "instance").folder, "instance");
-    assert.equal(roots.some((plugin) => plugin.id === "mod-manager"), false);
+    assert.equal(
+      roots.some((plugin) => plugin.id === "mod-manager"),
+      false
+    );
     assert.equal(fs.existsSync(path.join(host, "plugins")), false);
     const { planWorkers } = require(path.join(host, "runtime/cli.cjs"));
     assert.equal(planWorkers(side, host, { cwd: project }).workers.length, 1);
@@ -466,39 +480,60 @@ test("isolated plugin packages carry public entries and private assets independe
   const frontend = path.join(f.sourceRoot, "core/frontend/dist");
   const manifestFile = path.join(frontend, "plugins/manifest.json");
   const manifest = JSON.parse(fs.readFileSync(manifestFile));
-  const consoleEntry = manifest.find(entry => entry.assetDirectory === "console");
+  const consoleEntry = manifest.find((entry) => entry.assetDirectory === "console");
   const publicName = "@elementspanel/epanel-plugin-console/session";
   consoleEntry.frontendApi = 1;
   consoleEntry.imports = ["vue"];
   consoleEntry.exports = { [publicName]: "./console/frontend/exports/session.js" };
-  write(path.join(frontend, "plugins/console/frontend/exports/session.js"),
-    'export { session } from "../chunks/state.js";');
-  write(path.join(frontend, "plugins/console/frontend/chunks/state.js"),
-    'import { reactive } from "vue"; export const session = reactive({ token: null });');
+  write(
+    path.join(frontend, "plugins/console/frontend/exports/session.js"),
+    'export { session } from "../chunks/state.js";'
+  );
+  write(
+    path.join(frontend, "plugins/console/frontend/chunks/state.js"),
+    'import { reactive } from "vue"; export const session = reactive({ token: null });'
+  );
   write(manifestFile, manifest);
   write(path.join(frontend, "frontend-runtime.json"), { frontendApi: 1, frontendModules: ["vue"] });
   const { packageNpm } = await packaging;
   const result = await packageNpm(f);
-  const plugin = result.plugins.find(item => item.elementspanel.id === "console");
+  const plugin = result.plugins.find((item) => item.elementspanel.id === "console");
   assert.deepEqual(plugin.elementspanel.panel.frontendAssets, []);
   assert.deepEqual(plugin.elementspanel.panel.frontendImports, ["vue"]);
-  assert.deepEqual(plugin.elementspanel.panel.frontendExports, { session: "frontend/exports/session.js" });
-  assert.ok(fs.existsSync(path.join(f.outputRoot, "epanel-plugin-console/panel/frontend/chunks/state.js")));
+  assert.deepEqual(plugin.elementspanel.panel.frontendExports, {
+    session: "frontend/exports/session.js"
+  });
+  assert.ok(
+    fs.existsSync(path.join(f.outputRoot, "epanel-plugin-console/panel/frontend/chunks/state.js"))
+  );
   assert.equal(JSON.stringify(plugin).includes("src/public"), false);
   assert.equal(result.panel.elementspanel.frontendApi, 1);
   assert.deepEqual(result.panel.elementspanel.frontendModules, ["vue"]);
   const packagedRoot = path.join(f.outputRoot, "epanel-plugin-console");
-  const snapshot = () => fs.readdirSync(packagedRoot, { recursive: true }).sort()
-    .filter(file => fs.statSync(path.join(packagedRoot, file)).isFile())
-    .map(file => [file, fs.readFileSync(path.join(packagedRoot, file), "utf8")]);
+  const snapshot = () =>
+    fs
+      .readdirSync(packagedRoot, { recursive: true })
+      .sort()
+      .filter((file) => fs.statSync(path.join(packagedRoot, file)).isFile())
+      .map((file) => [file, fs.readFileSync(path.join(packagedRoot, file), "utf8")]);
   const before = snapshot();
-  write(path.join(frontend, "assets/shared.js"), "// Unrelated host rebuild with different contents");
+  write(
+    path.join(frontend, "assets/shared.js"),
+    "// Unrelated host rebuild with different contents"
+  );
   write(path.join(frontend, "assets/new-host-hash.js"), "// Another host chunk");
   await packageNpm(f);
-  assert.deepEqual(snapshot(), before, "a host rebuild must leave the independent plugin package byte-identical");
+  assert.deepEqual(
+    snapshot(),
+    before,
+    "a host rebuild must leave the independent plugin package byte-identical"
+  );
   fs.unlinkSync(path.join(frontend, "frontend-runtime.json"));
-  await assert.rejects(packageNpm(f), /Unsupported frontend module API/,
-    "stale host build artifacts must not be labelled with the new source API");
+  await assert.rejects(
+    packageNpm(f),
+    /Unsupported frontend module API/,
+    "stale host build artifacts must not be labelled with the new source API"
+  );
 });
 
 test("incomplete builds and symlink assets cannot produce a publishable directory", async (t) => {
@@ -520,13 +555,19 @@ test("incomplete builds and symlink assets cannot produce a publishable director
 test("missing frontend assets or daemon plugin builds fail before producing packages", async (t) => {
   const f = fixture(t);
   const { packageNpm } = await packaging;
-  const frontendEntry = path.join(f.sourceRoot, "core/frontend/dist/plugins/console/frontend/index.js");
+  const frontendEntry = path.join(
+    f.sourceRoot,
+    "core/frontend/dist/plugins/console/frontend/index.js"
+  );
   fs.unlinkSync(frontendEntry);
   await assert.rejects(packageNpm(f), /Missing compiled frontend/);
   assert.equal(fs.existsSync(f.outputRoot), false);
   write(frontendEntry, "export default {};\n");
 
-  const style = path.join(f.sourceRoot, "core/frontend/dist/plugins/console/frontend/assets/style.css");
+  const style = path.join(
+    f.sourceRoot,
+    "core/frontend/dist/plugins/console/frontend/assets/style.css"
+  );
   fs.unlinkSync(style);
   await assert.rejects(packageNpm(f), /Missing compiled style/);
   assert.equal(fs.existsSync(f.outputRoot), false);

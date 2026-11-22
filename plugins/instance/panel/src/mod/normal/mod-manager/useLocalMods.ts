@@ -1,10 +1,5 @@
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import {
-  deleteModApi,
-  getModBatchInfoApi,
-  modListApi,
-  toggleModApi
-} from "../../api";
+import { deleteModApi, getModBatchInfoApi, modListApi, toggleModApi } from "../../api";
 import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { computed, onUnmounted, reactive, ref, watch } from "vue";
 
@@ -17,7 +12,7 @@ export function useLocalMods(
     data: any,
     immediateFn: () => Promise<void>
   ) => void,
-  addDeferredTask: (type: string, name: string, data: any) => void
+  _addDeferredTask: (type: string, name: string, data: any) => void
 ) {
   const loading = ref(false);
   const loadingExtra = ref(false);

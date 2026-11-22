@@ -141,42 +141,100 @@ const toNewImagePage = () => {
 
       <VRow density="compact" class="node-image-row">
         <VCol cols="12">
-        <CardPanel>
-          <template #title>
-            {{ t("TXT_CODE_COMMON_REMOTE_DAEMON_IMAGE_LIST") }}
-          </template>
-          <template #body>
-            <p class="text-body-medium text-medium-emphasis">
+          <CardPanel>
+            <template #title>
+              {{ t("TXT_CODE_COMMON_REMOTE_DAEMON_IMAGE_LIST") }}
+            </template>
+            <template #body>
+              <p class="text-body-medium text-medium-emphasis">
                 {{ t("TXT_CODE_COMMON_REQUIRES_DOCKER_NODES_ON_THE_SAME_HOST_SHARE_ITS_IMAGES") }}
-            </p>
-            <VDataTable :headers="imageColumns.map((column) => ({ title: column.title, key: column.key || column.dataIndex, value: column.dataIndex || column.key, sortable: false }))" :items="imageDataSource || []" :loading="imageListLoading" :items-per-page="10" density="comfortable">
-              <template #no-data><Empty icon="mdi-docker" compact /></template>
-              <template #item.Id="{ item }"><code class="text-truncate">{{ item.Id }}</code></template>
-              <template #item.RepoTags="{ item }">{{ item.RepoTags?.[0] || '&lt;none&gt;' }}</template>
-              <template #item.Size="{ item }">{{ parseInt((item.Size / 1024 / 1024).toString()) }} MB</template>
-              <template #item.action="{ item }"><VBtn variant="text" size="small" @click="showDetail(item)">{{ t("TXT_CODE_COMMON_DETAILS") }}</VBtn><VBtn variant="text" size="small" color="error" @click="Modal.confirm({ title: t('TXT_CODE_COMMON_THIS_OPERATION_WILL_PERMANENTLY_DELETE_THIS_IMAGE_DO_YOU_WANT_TO_CONTINUE'), async onOk() { await delImage(item); } })">{{ t("TXT_CODE_COMMON_DELETE") }}</VBtn></template>
-            </VDataTable>
-          </template>
-        </CardPanel>
-      </VCol>
+              </p>
+              <VDataTable
+                :headers="
+                  imageColumns.map((column) => ({
+                    title: column.title,
+                    key: column.key || column.dataIndex,
+                    value: column.dataIndex || column.key,
+                    sortable: false
+                  }))
+                "
+                :items="imageDataSource || []"
+                :loading="imageListLoading"
+                :items-per-page="10"
+                density="comfortable"
+              >
+                <template #no-data><Empty icon="mdi-docker" compact /></template>
+                <template #item.Id="{ item }"
+                  ><code class="text-truncate">{{ item.Id }}</code></template
+                >
+                <template #item.RepoTags="{ item }">{{
+                  item.RepoTags?.[0] || "&lt;none&gt;"
+                }}</template>
+                <template #item.Size="{ item }"
+                  >{{ parseInt((item.Size / 1024 / 1024).toString()) }} MB</template
+                >
+                <template #item.action="{ item }"
+                  ><VBtn variant="text" size="small" @click="showDetail(item)">{{
+                    t("TXT_CODE_COMMON_DETAILS")
+                  }}</VBtn
+                  ><VBtn
+                    variant="text"
+                    size="small"
+                    color="error"
+                    @click="
+                      Modal.confirm({
+                        title: t(
+                          'TXT_CODE_COMMON_THIS_OPERATION_WILL_PERMANENTLY_DELETE_THIS_IMAGE_DO_YOU_WANT_TO_CONTINUE'
+                        ),
+                        async onOk() {
+                          await delImage(item);
+                        }
+                      })
+                    "
+                    >{{ t("TXT_CODE_COMMON_DELETE") }}</VBtn
+                  ></template
+                >
+              </VDataTable>
+            </template>
+          </CardPanel>
+        </VCol>
 
-      <VCol cols="12">
-        <CardPanel>
-          <template #title>
-            {{ t("TXT_CODE_COMMON_REMOTE_HOST_CONTAINER_LIST") }}
-          </template>
-          <template #body>
-            <p class="text-body-medium text-medium-emphasis">
+        <VCol cols="12">
+          <CardPanel>
+            <template #title>
+              {{ t("TXT_CODE_COMMON_REMOTE_HOST_CONTAINER_LIST") }}
+            </template>
+            <template #body>
+              <p class="text-body-medium text-medium-emphasis">
                 {{ t("TXT_CODE_COMMON_INCLUDES_CONTAINERS_STARTED_OUTSIDE_THE_PANEL") }}
-            </p>
-            <VDataTable :headers="containerColumns.map((column) => ({ title: column.title, key: column.key || column.dataIndex, value: column.dataIndex || column.key, sortable: false }))" :items="containerDataSource || []" :loading="containerListLoading" :items-per-page="10" density="comfortable">
-              <template #no-data><Empty icon="mdi-docker" compact /></template>
-              <template #item.Id="{ item }"><code>{{ item.Id }}</code></template>
-              <template #item.action="{ item }"><VBtn variant="text" size="small" @click="showDetail(item)">{{ t("TXT_CODE_COMMON_DETAILS") }}</VBtn></template>
-            </VDataTable>
-          </template>
-        </CardPanel>
-      </VCol>
+              </p>
+              <VDataTable
+                :headers="
+                  containerColumns.map((column) => ({
+                    title: column.title,
+                    key: column.key || column.dataIndex,
+                    value: column.dataIndex || column.key,
+                    sortable: false
+                  }))
+                "
+                :items="containerDataSource || []"
+                :loading="containerListLoading"
+                :items-per-page="10"
+                density="comfortable"
+              >
+                <template #no-data><Empty icon="mdi-docker" compact /></template>
+                <template #item.Id="{ item }"
+                  ><code>{{ item.Id }}</code></template
+                >
+                <template #item.action="{ item }"
+                  ><VBtn variant="text" size="small" @click="showDetail(item)">{{
+                    t("TXT_CODE_COMMON_DETAILS")
+                  }}</VBtn></template
+                >
+              </VDataTable>
+            </template>
+          </CardPanel>
+        </VCol>
       </VRow>
     </VContainer>
   </main>

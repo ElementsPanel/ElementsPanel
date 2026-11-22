@@ -33,6 +33,7 @@ export function normalizeTerminalSettings(value: unknown): TerminalSettings {
     values.fontFamily.length <= 256
   )
     settings.fontFamily = values.fontFamily;
-  if (typeof values.ctrlCProtection === "boolean") settings.ctrlCProtection = values.ctrlCProtection;
+  if (typeof values.ctrlCProtection === "boolean")
+    settings.ctrlCProtection = values.ctrlCProtection;
   return settings;
 }

@@ -5,11 +5,7 @@ import type {
   FrontendConnectionState,
   FrontendConnectionStatus
 } from "@elements-panel/sdk";
-import {
-  apiService,
-  setApiConnectionReporter,
-  type ApiConnectionReporter
-} from "./apiService";
+import { apiService, setApiConnectionReporter, type ApiConnectionReporter } from "./apiService";
 
 const RETRY_CAPS = [500, 1000, 2000, 4000, 8000, 10_000] as const;
 
@@ -160,7 +156,9 @@ export class ConnectionService
         signal: controller.signal
       });
       if (response.status >= 500) {
-        const error = new Error(`Panel health probe failed with HTTP ${response.status}`) as Error & {
+        const error = new Error(
+          `Panel health probe failed with HTTP ${response.status}`
+        ) as Error & {
           response?: { status: number };
         };
         error.response = { status: response.status };

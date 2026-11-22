@@ -37,10 +37,13 @@ class DownloadManager {
     const pending = this.performDownload(url, targetPath, fallbackUrl, options);
     const task = this.task;
     if (task?.path === targetPath) {
-      this.backgroundTasks?.progress(() => ({ current: task.current, total: task.total }), () => {
-        if (this.task !== task) return false;
-        return this.stop(targetPath);
-      });
+      this.backgroundTasks?.progress(
+        () => ({ current: task.current, total: task.total }),
+        () => {
+          if (this.task !== task) return false;
+          return this.stop(targetPath);
+        }
+      );
     }
     return this.backgroundTasks?.follow(pending) || pending;
   }
@@ -70,7 +73,11 @@ class DownloadManager {
       const sources = fallbackUrl ? [url, fallbackUrl] : [url];
       for (let index = 0; index < sources.length; index++) {
         try {
-          const response = await this.requestWithRetry(sources[index], controller, options.userAgent);
+          const response = await this.requestWithRetry(
+            sources[index],
+            controller,
+            options.userAgent
+          );
           const stream = response.data;
           task.total = Number(response.headers["content-length"]) || 0;
           task.current = 0;

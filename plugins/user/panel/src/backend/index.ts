@@ -85,7 +85,10 @@ export async function apply(ctx: PanelPluginContext) {
     reset: () => applyAuthSettings({ ...new AuthSettings() }, true),
     fields: () => {
       const loginPage = { id: "login", title: $t("TXT_CODE_SETTINGS_PAGE_LOGIN") };
-      const permissionsPage = { id: "permissions", title: $t("TXT_CODE_SETTINGS_PAGE_USER_PERMISSIONS") };
+      const permissionsPage = {
+        id: "permissions",
+        title: $t("TXT_CODE_SETTINGS_PAGE_USER_PERMISSIONS")
+      };
       return [
         {
           key: "loginInfo",
@@ -125,7 +128,11 @@ export async function apply(ctx: PanelPluginContext) {
           page: permissionsPage,
           type: "boolean",
           title: $t("TXT_CODE_COMMON_FILE_MANAGEMENT_FOR_USERS"),
-          description: `${$t("TXT_CODE_COMMON_FILE_MANAGEMENT_IS_A_RESOURCE_INTENSIVE_AND_LESS_CONTROLLABLE_FUNCTION")} ${$t("TXT_CODE_COMMON_IF_YOUR_REGULAR_USERS_DO_NOT_NEED_FILE_MANAGEMENT_YOU_CAN_DISABLE_THEIR_ACCESS_TO_THIS")}`
+          description: `${$t(
+            "TXT_CODE_COMMON_FILE_MANAGEMENT_IS_A_RESOURCE_INTENSIVE_AND_LESS_CONTROLLABLE_FUNCTION"
+          )} ${$t(
+            "TXT_CODE_COMMON_IF_YOUR_REGULAR_USERS_DO_NOT_NEED_FILE_MANAGEMENT_YOU_CAN_DISABLE_THEIR_ACCESS_TO_THIS"
+          )}`
         },
         {
           key: "allowJavaManager",

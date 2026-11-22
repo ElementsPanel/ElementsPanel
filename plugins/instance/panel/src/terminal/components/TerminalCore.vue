@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import { useXhrPollError } from "@elementspanel/epanel-plugin-console/hooks/useXhrPollError";
-import { logInstanceAutoRestart, logInstanceCrash } from "@elementspanel/epanel-plugin-console/services/apis/operationLog";
+import {
+  logInstanceAutoRestart,
+  logInstanceCrash
+} from "@elementspanel/epanel-plugin-console/services/apis/operationLog";
 import { getRandomId } from "@elementspanel/epanel-plugin-console/tools/randId";
 import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { t } from "@elementspanel/epanel-plugin-i18n";
@@ -51,7 +54,9 @@ const daemonId = props.daemonId;
 const terminalDomId = `terminal-window-${getRandomId()}`;
 const terminalElement = ref<HTMLElement>();
 let disposed = false;
-onBeforeUnmount(() => { disposed = true; });
+onBeforeUnmount(() => {
+  disposed = true;
+});
 
 const socketError = ref<Error>();
 const { isXhrPollError, xhrPollErrorReason } = useXhrPollError(socketError);
@@ -72,7 +77,9 @@ const initTerminal = async () => {
     const term = initTerminalWindow(dom);
     return term;
   }
-  throw new Error(t("TXT_CODE_COMMON_TERMINAL_INITIALIZATION_FAILED_PLEASE_REFRESH_THE_WEB_PAGE_AND_TRY_AGAIN"));
+  throw new Error(
+    t("TXT_CODE_COMMON_TERMINAL_INITIALIZATION_FAILED_PLEASE_REFRESH_THE_WEB_PAGE_AND_TRY_AGAIN")
+  );
 };
 
 events.on("opened", () => {
@@ -131,7 +138,9 @@ events.once("detail", async () => {
     if (value) {
       writeOutputHistory(value);
     }
-  } catch (error: any) {}
+  } catch (error: any) {
+    // History is optional while the terminal connects.
+  }
 });
 
 const refreshPage = () => {
@@ -181,20 +190,23 @@ onMounted(async () => {
         </li>
       </ul>
     </div>
-    <div class="terminal-wrapper global-card-container-shadow position-relative" data-app-surface="terminal">
+    <div
+      class="terminal-wrapper global-card-container-shadow position-relative"
+      data-app-surface="terminal"
+    >
       <div class="terminal-container">
-        <div
-          ref="terminalElement"
-          :id="terminalDomId"
-          :style="{ height: props.height }"
-        ></div>
+        <div :id="terminalDomId" ref="terminalElement" :style="{ height: props.height }"></div>
       </div>
     </div>
     <div class="command-input">
       <VTextField
         ref="inputRef"
         v-model="commandInputValue"
-        :placeholder="t('TXT_CODE_COMMON_ENTER_COMMAND_AND_PRESS_ENTER_TO_SEND_USE_ARROW_KEYS_TO_NAVIGATE_HISTORICAL_COMMANDS')"
+        :placeholder="
+          t(
+            'TXT_CODE_COMMON_ENTER_COMMAND_AND_PRESS_ENTER_TO_SEND_USE_ARROW_KEYS_TO_NAVIGATE_HISTORICAL_COMMANDS'
+          )
+        "
         prepend-inner-icon="mdi-code-tags"
         density="comfortable"
         hide-details
@@ -207,7 +219,11 @@ onMounted(async () => {
     </div>
 
     <div v-if="socketError" class="terminal-error">
-      <Empty icon="mdi-lan-disconnect" :title="t('TXT_CODE_COMMON_UNABLE_TO_CONNECT_TO_REMOTE_DAEMON')" compact>
+      <Empty
+        icon="mdi-lan-disconnect"
+        :title="t('TXT_CODE_COMMON_UNABLE_TO_CONNECT_TO_REMOTE_DAEMON')"
+        compact
+      >
         <template #description>
           <p>{{ t("TXT_CODE_COMMON_BROWSER_UNABLE_TO_CONNECT_TO_ADDRESS") + socketAddress }}</p>
           <p class="terminal-error-message">
@@ -224,16 +240,30 @@ onMounted(async () => {
                     href="https://docs.mcsmanager.com/ops/proxy_https.html"
                     target="_blank"
                     rel="noopener noreferrer"
-                  >{{ t("TXT_CODE_COMMON_REVERSE_PROXY_DESCRIPTION") }}</a>
+                    >{{ t("TXT_CODE_COMMON_REVERSE_PROXY_DESCRIPTION") }}</a
+                  >
                   <a
                     href="https://docs.mcsmanager.com/ops/mcsm_network.html"
                     target="_blank"
                     rel="noopener noreferrer"
-                  >{{ t("TXT_CODE_COMMON_NETWORK_ARCHITECTURE_DESCRIPTION") }}</a>
+                    >{{ t("TXT_CODE_COMMON_NETWORK_ARCHITECTURE_DESCRIPTION") }}</a
+                  >
                 </div>
                 <ul>
-                  <li>{{ t("TXT_CODE_COMMON_IF_YOU_ARE_A_REGULAR_USER_PLEASE_CONTACT_THE_PANEL_ADMINISTRATOR") }}</li>
-                  <li>{{ t("TXT_CODE_COMMON_CHECK_THAT_THE_BROWSER_CAN_REACH_THE_NODE_ADDRESS_AND_ITS_PORT_IS_OPEN") }}</li>
+                  <li>
+                    {{
+                      t(
+                        "TXT_CODE_COMMON_IF_YOU_ARE_A_REGULAR_USER_PLEASE_CONTACT_THE_PANEL_ADMINISTRATOR"
+                      )
+                    }}
+                  </li>
+                  <li>
+                    {{
+                      t(
+                        "TXT_CODE_COMMON_CHECK_THAT_THE_BROWSER_CAN_REACH_THE_NODE_ADDRESS_AND_ITS_PORT_IS_OPEN"
+                      )
+                    }}
+                  </li>
                   <li>{{ t("TXT_CODE_SERVER_SSL_REVERSE_PROXY_WEBSOCKET_HINT") }}</li>
                 </ul>
               </template>

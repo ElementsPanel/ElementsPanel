@@ -203,8 +203,11 @@ async function packageBuiltinPlugins(sourceRoot, outputRoot, stagingRoot) {
         metadata.elementspanel.panel.frontendAssets = frontendAssetReferences(
           path.join(directory, "panel/frontend")
         );
-      if (side === "panel" && metadata.elementspanel.panel.frontendApi === 1 &&
-          metadata.elementspanel.panel.frontendAssets.length)
+      if (
+        side === "panel" &&
+        metadata.elementspanel.panel.frontendApi === 1 &&
+        metadata.elementspanel.panel.frontendAssets.length
+      )
         throw new Error(`Isolated plugin ${plugin.name} references host frontend chunks.`);
       metadata.exports[`./${side}/plugin.json`] = `./${side}/plugin.json`;
       metadata.peerDependencies[`@elementspanel/${side}`] = `^${
@@ -258,8 +261,11 @@ async function packageRuntime(side, sourceRoot, outputRoot, plugins) {
     const contractFile = path.join(frontend, "frontend-runtime.json");
     if (await exists(contractFile)) {
       const contract = await readJson(contractFile);
-      if (contract.frontendApi !== 1 || !Array.isArray(contract.frontendModules) ||
-          contract.frontendModules.some((id) => typeof id !== "string"))
+      if (
+        contract.frontendApi !== 1 ||
+        !Array.isArray(contract.frontendModules) ||
+        contract.frontendModules.some((id) => typeof id !== "string")
+      )
         throw new Error("Invalid compiled frontend runtime contract.");
       metadata.elementspanel.frontendApi = contract.frontendApi;
       metadata.elementspanel.frontendModules = contract.frontendModules;

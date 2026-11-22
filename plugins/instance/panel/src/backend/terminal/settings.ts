@@ -68,7 +68,9 @@ export async function registerTerminalSettings(ctx: PanelPluginContext) {
         const candidate = { ...settings, ...values };
         const next = normalizeTerminalSettings(candidate);
         if (
-          (Object.keys(next) as Array<keyof TerminalSettings>).some((key) => next[key] !== candidate[key])
+          (Object.keys(next) as Array<keyof TerminalSettings>).some(
+            (key) => next[key] !== candidate[key]
+          )
         )
           throw new Error($t("TXT_CODE_TERMINAL_INVALID_SETTINGS"));
         await storage.store(CATEGORY, UUID, next);

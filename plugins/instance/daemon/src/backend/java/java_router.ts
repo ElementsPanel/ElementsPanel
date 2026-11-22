@@ -25,7 +25,10 @@ export function registerJavaManagerRoutes(
 
   protocol.on("java_manager/add", async (routerCtx, data) => {
     try {
-      if (!ctx.files.FileManager.checkFileName(data.name)) throw new Error(t("TXT_CODE_COMMON_THE_NAME_CONTAINS_INVALID_CHARACTERS_PLEASE_MODIFY_THE_NAME"));
+      if (!ctx.files.FileManager.checkFileName(data.name))
+        throw new Error(
+          t("TXT_CODE_COMMON_THE_NAME_CONTAINS_INVALID_CHARACTERS_PLEASE_MODIFY_THE_NAME")
+        );
       const info = new JavaInfo(data.name, Date.now());
       info.path = path.normalize(data.path);
       javaManager.addJava(info);

@@ -9,8 +9,12 @@ export const configData: {
   "common/server.properties": {
     desc: t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_DESCRIPTION"),
     config: {
-      "require-resource-pack": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_REQUIRE_RESOURCE_PACK"),
-      "enable-jmx-monitoring": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_ENABLE_JMX_MONITORING"),
+      "require-resource-pack": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_REQUIRE_RESOURCE_PACK"
+      ),
+      "enable-jmx-monitoring": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_ENABLE_JMX_MONITORING"
+      ),
       "sync-chunk-writes": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_SYNC_CHUNK_WRITES"),
       "generator-settings": t("TXT_CODE_GAME_CONFIG_GENERATOR_SETTINGS"),
       "allow-nether": t("TXT_CODE_GAME_CONFIG_ALLOW_NETHER"),
@@ -32,7 +36,9 @@ export const configData: {
       "texture-pack": t("TXT_CODE_GAME_CONFIG_TEXTURE_PACK"),
       "online-mode": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_ONLINE_MODE"),
       pvp: t("TXT_CODE_GAME_CONFIG_PVP"),
-      "enforce-secure-profile": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_ENFORCE_SECURE_PROFILE"),
+      "enforce-secure-profile": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_ENFORCE_SECURE_PROFILE"
+      ),
       difficulty: t("TXT_CODE_GAME_CONFIG_DIFFICULTY"),
       "player-idle-timeout": t("TXT_CODE_GAME_CONFIG_PLAYER_IDLE_TIMEOUT"),
       gamemode: t("TXT_CODE_GAME_CONFIG_GAMEMODE"),
@@ -60,11 +66,15 @@ export const configData: {
       "broadcast-console-to-ops": t("TXT_CODE_GAME_CONFIG_BROADCAST_CONSOLE_TO_OPS"),
       "enforce-whitelist": t("TXT_CODE_GAME_CONFIG_ENFORCE_WHITELIST"),
       "spawn-protection": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_SPAWN_PROTECTION"),
-      "max-chained-neighbor-updates": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_MAX_CHAINED_NEIGHBOR_UPDATES"),
+      "max-chained-neighbor-updates": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_MAX_CHAINED_NEIGHBOR_UPDATES"
+      ),
       "enable-status": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_ENABLE_STATUS"),
       "resource-pack-prompt": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_RESOURCE_PACK_PROMPT"),
       "hide-online-players": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_HIDE_ONLINE_PLAYERS"),
-      "entity-broadcast-range-percentage": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_ENTITY_BROADCAST_RANGE_PERCENTAGE"),
+      "entity-broadcast-range-percentage": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_ENTITY_BROADCAST_RANGE_PERCENTAGE"
+      ),
       "simulation-distance": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_SIMULATION_DISTANCE"),
       "rate-limit": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_RATE_LIMIT"),
       "previews-chat": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_PREVIEWS_CHAT"),
@@ -122,22 +132,52 @@ export const configData: {
       "server-portv6": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_SERVER_PORTV6"),
       "tick-distance": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_TICK_DISTANCE"),
       "max-threads": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_MAX_THREADS"),
-      "default-player-permission-level": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_DEFAULT_PLAYER_PERMISSION_LEVEL"),
-      "texturepack-required": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_TEXTUREPACK_REQUIRED"),
-      "content-log-file-enabled": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_CONTENT_LOG_FILE_ENABLED"),
-      "compression-threshold": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_COMPRESSION_THRESHOLD"),
-      "server-authoritative-movement": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_SERVER_AUTHORITATIVE_MOVEMENT"),
-      "player-movement-score-threshold": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_PLAYER_MOVEMENT_SCORE_THRESHOLD"),
-      "enable-lan-visibility": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_ENABLE_LAN_VISIBILITY"),
-      "compression-algorithm": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_COMPRESSION_ALGORITHM"),
-      "player-movement-action-direction-threshold": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_PLAYER_MOVEMENT_ACTION_DIRECTION_THRESHOLD"),
+      "default-player-permission-level": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_DEFAULT_PLAYER_PERMISSION_LEVEL"
+      ),
+      "texturepack-required": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_TEXTUREPACK_REQUIRED"
+      ),
+      "content-log-file-enabled": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_CONTENT_LOG_FILE_ENABLED"
+      ),
+      "compression-threshold": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_COMPRESSION_THRESHOLD"
+      ),
+      "server-authoritative-movement": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_SERVER_AUTHORITATIVE_MOVEMENT"
+      ),
+      "player-movement-score-threshold": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_PLAYER_MOVEMENT_SCORE_THRESHOLD"
+      ),
+      "enable-lan-visibility": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_ENABLE_LAN_VISIBILITY"
+      ),
+      "compression-algorithm": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_COMPRESSION_ALGORITHM"
+      ),
+      "player-movement-action-direction-threshold": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_PLAYER_MOVEMENT_ACTION_DIRECTION_THRESHOLD"
+      ),
       "chat-restriction": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_CHAT_RESTRICTION"),
-      "disable-player-interaction": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_DISABLE_PLAYER_INTERACTION"),
-      "client-side-chunk-generation-enabled": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_CLIENT_SIDE_CHUNK_GENERATION_ENABLED"),
-      "player-movement-distance-threshold": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_PLAYER_MOVEMENT_DISTANCE_THRESHOLD"),
-      "player-movement-duration-threshold-in-ms": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_PLAYER_MOVEMENT_DURATION_THRESHOLD_IN_MS"),
-      "correct-player-movement": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_CORRECT_PLAYER_MOVEMENT"),
-      "server-authoritative-block-breaking": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_SERVER_AUTHORITATIVE_BLOCK_BREAKING"),
+      "disable-player-interaction": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_DISABLE_PLAYER_INTERACTION"
+      ),
+      "client-side-chunk-generation-enabled": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_CLIENT_SIDE_CHUNK_GENERATION_ENABLED"
+      ),
+      "player-movement-distance-threshold": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_PLAYER_MOVEMENT_DISTANCE_THRESHOLD"
+      ),
+      "player-movement-duration-threshold-in-ms": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_PLAYER_MOVEMENT_DURATION_THRESHOLD_IN_MS"
+      ),
+      "correct-player-movement": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_CORRECT_PLAYER_MOVEMENT"
+      ),
+      "server-authoritative-block-breaking": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_SERVER_AUTHORITATIVE_BLOCK_BREAKING"
+      ),
       "generator-settings": t("TXT_CODE_GAME_CONFIG_GENERATOR_SETTINGS"),
       "allow-nether": t("TXT_CODE_GAME_CONFIG_ALLOW_NETHER"),
       "level-name": t("TXT_CODE_GAME_CONFIG_LEVEL_NAME"),
@@ -186,9 +226,15 @@ export const configData: {
       "broadcast-console-to-ops": t("TXT_CODE_GAME_CONFIG_BROADCAST_CONSOLE_TO_OPS"),
       "enforce-whitelist": t("TXT_CODE_GAME_CONFIG_ENFORCE_WHITELIST"),
       "spawn-protection": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_SPAWN_PROTECTION"),
-      "block-network-ids-are-hashes": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_BLOCK_NETWORK_IDS_ARE_HASHES"),
-      "disable-custom-skins": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_DISABLE_CUSTOM_SKINS"),
-      "server-build-radius-ratio": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_SERVER_BUILD_RADIUS_RATIO")
+      "block-network-ids-are-hashes": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_BLOCK_NETWORK_IDS_ARE_HASHES"
+      ),
+      "disable-custom-skins": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_DISABLE_CUSTOM_SKINS"
+      ),
+      "server-build-radius-ratio": t(
+        "TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_SERVER_BUILD_RADIUS_RATIO"
+      )
     }
   },
   "bukkit/spigot.yml": {
@@ -212,9 +258,15 @@ export const configData: {
             max: t("TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_ATTRIBUTE_ATTACK_DAMAGE_MAX")
           }
         },
-        "save-user-cache-on-stop-only": t("TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_SAVE_USER_CACHE_ON_STOP_ONLY"),
-        "moved-too-quickly-multiplier": t("TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_MOVED_TOO_QUICKLY_MULTIPLIER"),
-        "moved-wrongly-threshold": t("TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_MOVED_WRONGLY_THRESHOLD"),
+        "save-user-cache-on-stop-only": t(
+          "TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_SAVE_USER_CACHE_ON_STOP_ONLY"
+        ),
+        "moved-too-quickly-multiplier": t(
+          "TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_MOVED_TOO_QUICKLY_MULTIPLIER"
+        ),
+        "moved-wrongly-threshold": t(
+          "TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_MOVED_WRONGLY_THRESHOLD"
+        ),
         "sample-count": t("TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_SAMPLE_COUNT"),
         bungeecord: t("TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_BUNGEECORD"),
         "timeout-time": t("TXT_CODE_COMMON_TIMEOUT_TIME"),
@@ -236,97 +288,235 @@ export const configData: {
         log: t("TXT_CODE_GAME_CONFIG_SPIGOT_COMMANDS_LOG"),
         "tab-complete": t("TXT_CODE_GAME_CONFIG_SPIGOT_COMMANDS_TAB_COMPLETE"),
         "send-namespaced": t("TXT_CODE_GAME_CONFIG_SPIGOT_COMMANDS_SEND_NAMESPACED"),
-        "silent-commandblock-console": t("TXT_CODE_GAME_CONFIG_SPIGOT_COMMANDS_SILENT_COMMANDBLOCK_CONSOLE")
+        "silent-commandblock-console": t(
+          "TXT_CODE_GAME_CONFIG_SPIGOT_COMMANDS_SILENT_COMMANDBLOCK_CONSOLE"
+        )
       },
       players: {
         "disable-saving": t("TXT_CODE_GAME_CONFIG_SPIGOT_PLAYERS_DISABLE_SAVING")
       },
       "world-settings": {
         default: {
-          "below-zero-generation-in-existing-chunks": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_BELOW_ZERO_GENERATION_IN_EXISTING_CHUNKS"),
-          "end-portal-sound-radius": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_END_PORTAL_SOUND_RADIUS"),
-          "wither-spawn-sound-radius": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_WITHER_SPAWN_SOUND_RADIUS"),
-          "zombie-aggressive-towards-villager": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ZOMBIE_AGGRESSIVE_TOWARDS_VILLAGER"),
-          "hanging-tick-frequency": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HANGING_TICK_FREQUENCY"),
-          "enable-zombie-pigmen-portal-spawns": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENABLE_ZOMBIE_PIGMEN_PORTAL_SPAWNS"),
-          "dragon-death-sound-radius": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_DRAGON_DEATH_SOUND_RADIUS"),
+          "below-zero-generation-in-existing-chunks": t(
+            "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_BELOW_ZERO_GENERATION_IN_EXISTING_CHUNKS"
+          ),
+          "end-portal-sound-radius": t(
+            "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_END_PORTAL_SOUND_RADIUS"
+          ),
+          "wither-spawn-sound-radius": t(
+            "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_WITHER_SPAWN_SOUND_RADIUS"
+          ),
+          "zombie-aggressive-towards-villager": t(
+            "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ZOMBIE_AGGRESSIVE_TOWARDS_VILLAGER"
+          ),
+          "hanging-tick-frequency": t(
+            "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HANGING_TICK_FREQUENCY"
+          ),
+          "enable-zombie-pigmen-portal-spawns": t(
+            "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENABLE_ZOMBIE_PIGMEN_PORTAL_SPAWNS"
+          ),
+          "dragon-death-sound-radius": t(
+            "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_DRAGON_DEATH_SOUND_RADIUS"
+          ),
           "merge-radius": {
             item: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_MERGE_RADIUS_ITEM"),
             exp: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_MERGE_RADIUS_EXP")
           },
-          "nerf-spawner-mobs": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_NERF_SPAWNER_MOBS"),
-          "simulation-distance": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SIMULATION_DISTANCE"),
-          "mob-spawn-range": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_MOB_SPAWN_RANGE"),
+          "nerf-spawner-mobs": t(
+            "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_NERF_SPAWNER_MOBS"
+          ),
+          "simulation-distance": t(
+            "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SIMULATION_DISTANCE"
+          ),
+          "mob-spawn-range": t(
+            "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_MOB_SPAWN_RANGE"
+          ),
           "view-distance": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_VIEW_DISTANCE"),
-          "item-despawn-rate": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ITEM_DESPAWN_RATE"),
-          "arrow-despawn-rate": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ARROW_DESPAWN_RATE"),
-          "trident-despawn-rate": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_TRIDENT_DESPAWN_RATE"),
+          "item-despawn-rate": t(
+            "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ITEM_DESPAWN_RATE"
+          ),
+          "arrow-despawn-rate": t(
+            "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ARROW_DESPAWN_RATE"
+          ),
+          "trident-despawn-rate": t(
+            "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_TRIDENT_DESPAWN_RATE"
+          ),
           "thunder-chance": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_THUNDER_CHANCE"),
           growth: {
-            "cactus-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_CACTUS_MODIFIER"),
-            "cane-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_CANE_MODIFIER"),
-            "melon-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_MELON_MODIFIER"),
-            "mushroom-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_MUSHROOM_MODIFIER"),
-            "pumpkin-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_PUMPKIN_MODIFIER"),
-            "sapling-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_SAPLING_MODIFIER"),
-            "beetroot-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_BEETROOT_MODIFIER"),
-            "carrot-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_CARROT_MODIFIER"),
-            "potato-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_POTATO_MODIFIER"),
-            "torchflower-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_TORCHFLOWER_MODIFIER"),
-            "wheat-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_WHEAT_MODIFIER"),
-            "netherwart-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_NETHERWART_MODIFIER"),
-            "vine-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_VINE_MODIFIER"),
-            "cocoa-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_COCOA_MODIFIER"),
-            "bamboo-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_BAMBOO_MODIFIER"),
-            "sweetberry-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_SWEETBERRY_MODIFIER"),
-            "kelp-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_KELP_MODIFIER"),
-            "twistingvines-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_TWISTINGVINES_MODIFIER"),
-            "weepingvines-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_WEEPINGVINES_MODIFIER"),
-            "cavevines-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_CAVEVINES_MODIFIER"),
-            "glowberry-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_GLOWBERRY_MODIFIER"),
-            "pitcherplant-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_PITCHERPLANT_MODIFIER")
+            "cactus-modifier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_CACTUS_MODIFIER"
+            ),
+            "cane-modifier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_CANE_MODIFIER"
+            ),
+            "melon-modifier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_MELON_MODIFIER"
+            ),
+            "mushroom-modifier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_MUSHROOM_MODIFIER"
+            ),
+            "pumpkin-modifier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_PUMPKIN_MODIFIER"
+            ),
+            "sapling-modifier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_SAPLING_MODIFIER"
+            ),
+            "beetroot-modifier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_BEETROOT_MODIFIER"
+            ),
+            "carrot-modifier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_CARROT_MODIFIER"
+            ),
+            "potato-modifier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_POTATO_MODIFIER"
+            ),
+            "torchflower-modifier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_TORCHFLOWER_MODIFIER"
+            ),
+            "wheat-modifier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_WHEAT_MODIFIER"
+            ),
+            "netherwart-modifier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_NETHERWART_MODIFIER"
+            ),
+            "vine-modifier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_VINE_MODIFIER"
+            ),
+            "cocoa-modifier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_COCOA_MODIFIER"
+            ),
+            "bamboo-modifier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_BAMBOO_MODIFIER"
+            ),
+            "sweetberry-modifier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_SWEETBERRY_MODIFIER"
+            ),
+            "kelp-modifier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_KELP_MODIFIER"
+            ),
+            "twistingvines-modifier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_TWISTINGVINES_MODIFIER"
+            ),
+            "weepingvines-modifier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_WEEPINGVINES_MODIFIER"
+            ),
+            "cavevines-modifier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_CAVEVINES_MODIFIER"
+            ),
+            "glowberry-modifier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_GLOWBERRY_MODIFIER"
+            ),
+            "pitcherplant-modifier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_PITCHERPLANT_MODIFIER"
+            )
           },
           "ticks-per": {
-            "hopper-transfer": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_TICKS_PER_HOPPER_TRANSFER"),
-            "hopper-check": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_TICKS_PER_HOPPER_CHECK")
+            "hopper-transfer": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_TICKS_PER_HOPPER_TRANSFER"
+            ),
+            "hopper-check": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_TICKS_PER_HOPPER_CHECK"
+            )
           },
           "hopper-amount": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HOPPER_AMOUNT"),
-          "hopper-can-load-chunks": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HOPPER_CAN_LOAD_CHUNKS"),
+          "hopper-can-load-chunks": t(
+            "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HOPPER_CAN_LOAD_CHUNKS"
+          ),
           "entity-tracking-range": {
-            players: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_TRACKING_RANGE_PLAYERS"),
-            animals: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_TRACKING_RANGE_ANIMALS"),
-            monsters: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_TRACKING_RANGE_MONSTERS"),
-            misc: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_TRACKING_RANGE_MISC"),
-            display: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_TRACKING_RANGE_DISPLAY"),
-            other: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_TRACKING_RANGE_OTHER")
+            players: t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_TRACKING_RANGE_PLAYERS"
+            ),
+            animals: t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_TRACKING_RANGE_ANIMALS"
+            ),
+            monsters: t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_TRACKING_RANGE_MONSTERS"
+            ),
+            misc: t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_TRACKING_RANGE_MISC"
+            ),
+            display: t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_TRACKING_RANGE_DISPLAY"
+            ),
+            other: t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_TRACKING_RANGE_OTHER"
+            )
           },
           "entity-activation-range": {
-            animals: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_ANIMALS"),
-            monsters: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_MONSTERS"),
-            raiders: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_RAIDERS"),
-            misc: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_MISC"),
-            water: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WATER"),
-            villagers: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_VILLAGERS"),
-            "flying-monsters": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_FLYING_MONSTERS"),
+            animals: t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_ANIMALS"
+            ),
+            monsters: t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_MONSTERS"
+            ),
+            raiders: t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_RAIDERS"
+            ),
+            misc: t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_MISC"
+            ),
+            water: t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WATER"
+            ),
+            villagers: t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_VILLAGERS"
+            ),
+            "flying-monsters": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_FLYING_MONSTERS"
+            ),
             "wake-up-inactive": {
-              "animals-max-per-tick": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_ANIMALS_MAX_PER_TICK"),
-              "animals-every": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_ANIMALS_EVERY"),
-              "animals-for": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_ANIMALS_FOR"),
-              "monsters-max-per-tick": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_MONSTERS_MAX_PER_TICK"),
-              "monsters-every": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_MONSTERS_EVERY"),
-              "monsters-for": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_MONSTERS_FOR"),
-              "villagers-max-per-tick": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_VILLAGERS_MAX_PER_TICK"),
-              "villagers-every": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_VILLAGERS_EVERY"),
-              "villagers-for": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_VILLAGERS_FOR"),
-              "flying-monsters-max-per-tick": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_FLYING_MONSTERS_MAX_PER_TICK"),
-              "flying-monsters-every": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_FLYING_MONSTERS_EVERY"),
-              "flying-monsters-for": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_FLYING_MONSTERS_FOR")
+              "animals-max-per-tick": t(
+                "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_ANIMALS_MAX_PER_TICK"
+              ),
+              "animals-every": t(
+                "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_ANIMALS_EVERY"
+              ),
+              "animals-for": t(
+                "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_ANIMALS_FOR"
+              ),
+              "monsters-max-per-tick": t(
+                "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_MONSTERS_MAX_PER_TICK"
+              ),
+              "monsters-every": t(
+                "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_MONSTERS_EVERY"
+              ),
+              "monsters-for": t(
+                "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_MONSTERS_FOR"
+              ),
+              "villagers-max-per-tick": t(
+                "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_VILLAGERS_MAX_PER_TICK"
+              ),
+              "villagers-every": t(
+                "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_VILLAGERS_EVERY"
+              ),
+              "villagers-for": t(
+                "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_VILLAGERS_FOR"
+              ),
+              "flying-monsters-max-per-tick": t(
+                "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_FLYING_MONSTERS_MAX_PER_TICK"
+              ),
+              "flying-monsters-every": t(
+                "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_FLYING_MONSTERS_EVERY"
+              ),
+              "flying-monsters-for": t(
+                "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_FLYING_MONSTERS_FOR"
+              )
             },
-            "villagers-work-immunity-after": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_VILLAGERS_WORK_IMMUNITY_AFTER"),
-            "villagers-work-immunity-for": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_VILLAGERS_WORK_IMMUNITY_FOR"),
-            "villagers-active-for-panic": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_VILLAGERS_ACTIVE_FOR_PANIC"),
-            "tick-inactive-villagers": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_TICK_INACTIVE_VILLAGERS"),
-            "ignore-spectators": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_IGNORE_SPECTATORS")
+            "villagers-work-immunity-after": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_VILLAGERS_WORK_IMMUNITY_AFTER"
+            ),
+            "villagers-work-immunity-for": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_VILLAGERS_WORK_IMMUNITY_FOR"
+            ),
+            "villagers-active-for-panic": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_VILLAGERS_ACTIVE_FOR_PANIC"
+            ),
+            "tick-inactive-villagers": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_TICK_INACTIVE_VILLAGERS"
+            ),
+            "ignore-spectators": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_IGNORE_SPECTATORS"
+            )
           },
           "seed-village": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_VILLAGE"),
           "seed-desert": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_DESERT"),
@@ -343,20 +533,44 @@ export const configData: {
           "seed-mansion": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_MANSION"),
           "seed-fossil": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_FOSSIL"),
           "seed-portal": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_PORTAL"),
-          "seed-ancientcity": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_ANCIENTCITY"),
-          "seed-trailruins": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_TRAILRUINS"),
-          "seed-buriedtreasure": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_BURIEDTREASURE"),
+          "seed-ancientcity": t(
+            "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_ANCIENTCITY"
+          ),
+          "seed-trailruins": t(
+            "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_TRAILRUINS"
+          ),
+          "seed-buriedtreasure": t(
+            "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_BURIEDTREASURE"
+          ),
           "seed-mineshaft": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_MINESHAFT"),
-          "seed-stronghold": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_STRONGHOLD"),
-          "max-tnt-per-tick": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_MAX_TNT_PER_TICK"),
+          "seed-stronghold": t(
+            "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_STRONGHOLD"
+          ),
+          "max-tnt-per-tick": t(
+            "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_MAX_TNT_PER_TICK"
+          ),
           hunger: {
-            "jump-walk-exhaustion": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HUNGER_JUMP_WALK_EXHAUSTION"),
-            "jump-sprint-exhaustion": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HUNGER_JUMP_SPRINT_EXHAUSTION"),
-            "combat-exhaustion": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HUNGER_COMBAT_EXHAUSTION"),
-            "regen-exhaustion": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HUNGER_REGEN_EXHAUSTION"),
-            "swim-multiplier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HUNGER_SWIM_MULTIPLIER"),
-            "sprint-multiplier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HUNGER_SPRINT_MULTIPLIER"),
-            "other-multiplier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HUNGER_OTHER_MULTIPLIER")
+            "jump-walk-exhaustion": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HUNGER_JUMP_WALK_EXHAUSTION"
+            ),
+            "jump-sprint-exhaustion": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HUNGER_JUMP_SPRINT_EXHAUSTION"
+            ),
+            "combat-exhaustion": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HUNGER_COMBAT_EXHAUSTION"
+            ),
+            "regen-exhaustion": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HUNGER_REGEN_EXHAUSTION"
+            ),
+            "swim-multiplier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HUNGER_SWIM_MULTIPLIER"
+            ),
+            "sprint-multiplier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HUNGER_SPRINT_MULTIPLIER"
+            ),
+            "other-multiplier": t(
+              "TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HUNGER_OTHER_MULTIPLIER"
+            )
           },
           "max-tick-time": {
             tile: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_MAX_TICK_TIME_TILE"),
@@ -421,20 +635,38 @@ export const configData: {
     config: {
       _version: t("TXT_CODE_GAME_CONFIG_VERSION"),
       "block-updates": {
-        "disable-chorus-plant-updates": t("TXT_CODE_GAME_CONFIG_BLOCK_UPDATES_DISABLE_CHORUS_PLANT_UPDATES"),
-        "disable-mushroom-block-updates": t("TXT_CODE_GAME_CONFIG_BLOCK_UPDATES_DISABLE_MUSHROOM_BLOCK_UPDATES"),
-        "disable-noteblock-updates": t("TXT_CODE_GAME_CONFIG_BLOCK_UPDATES_DISABLE_NOTEBLOCK_UPDATES"),
+        "disable-chorus-plant-updates": t(
+          "TXT_CODE_GAME_CONFIG_BLOCK_UPDATES_DISABLE_CHORUS_PLANT_UPDATES"
+        ),
+        "disable-mushroom-block-updates": t(
+          "TXT_CODE_GAME_CONFIG_BLOCK_UPDATES_DISABLE_MUSHROOM_BLOCK_UPDATES"
+        ),
+        "disable-noteblock-updates": t(
+          "TXT_CODE_GAME_CONFIG_BLOCK_UPDATES_DISABLE_NOTEBLOCK_UPDATES"
+        ),
         "disable-tripwire-updates": t("TXT_CODE_GAME_CONFIG_BLOCK_UPDATES_DISABLE_TRIPWIRE_UPDATES")
       },
       "chunk-loading-advanced": {
-        "auto-config-send-distance": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_ADVANCED_AUTO_CONFIG_SEND_DISTANCE"),
-        "player-max-concurrent-chunk-generates": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_ADVANCED_PLAYER_MAX_CONCURRENT_CHUNK_GENERATES"),
-        "player-max-concurrent-chunk-loads": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_ADVANCED_PLAYER_MAX_CONCURRENT_CHUNK_LOADS")
+        "auto-config-send-distance": t(
+          "TXT_CODE_GAME_CONFIG_CHUNK_LOADING_ADVANCED_AUTO_CONFIG_SEND_DISTANCE"
+        ),
+        "player-max-concurrent-chunk-generates": t(
+          "TXT_CODE_GAME_CONFIG_CHUNK_LOADING_ADVANCED_PLAYER_MAX_CONCURRENT_CHUNK_GENERATES"
+        ),
+        "player-max-concurrent-chunk-loads": t(
+          "TXT_CODE_GAME_CONFIG_CHUNK_LOADING_ADVANCED_PLAYER_MAX_CONCURRENT_CHUNK_LOADS"
+        )
       },
       "chunk-loading-basic": {
-        "player-max-chunk-generate-rate": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_BASIC_PLAYER_MAX_CHUNK_GENERATE_RATE"),
-        "player-max-chunk-load-rate": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_BASIC_PLAYER_MAX_CHUNK_LOAD_RATE"),
-        "player-max-chunk-send-rate": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_BASIC_PLAYER_MAX_CHUNK_SEND_RATE")
+        "player-max-chunk-generate-rate": t(
+          "TXT_CODE_GAME_CONFIG_CHUNK_LOADING_BASIC_PLAYER_MAX_CHUNK_GENERATE_RATE"
+        ),
+        "player-max-chunk-load-rate": t(
+          "TXT_CODE_GAME_CONFIG_CHUNK_LOADING_BASIC_PLAYER_MAX_CHUNK_LOAD_RATE"
+        ),
+        "player-max-chunk-send-rate": t(
+          "TXT_CODE_GAME_CONFIG_CHUNK_LOADING_BASIC_PLAYER_MAX_CHUNK_SEND_RATE"
+        )
       },
       "chunk-system": {
         "gen-parallelism": t("TXT_CODE_GAME_CONFIG_CHUNK_SYSTEM_GEN_PARALLELISM"),
@@ -443,16 +675,28 @@ export const configData: {
       },
       collisions: {
         "enable-player-collisions": t("TXT_CODE_GAME_CONFIG_COLLISIONS_ENABLE_PLAYER_COLLISIONS"),
-        "send-full-pos-for-hard-colliding-entities": t("TXT_CODE_GAME_CONFIG_COLLISIONS_SEND_FULL_POS_FOR_HARD_COLLIDING_ENTITIES")
+        "send-full-pos-for-hard-colliding-entities": t(
+          "TXT_CODE_GAME_CONFIG_COLLISIONS_SEND_FULL_POS_FOR_HARD_COLLIDING_ENTITIES"
+        )
       },
       commands: {
-        "fix-target-selector-tag-completion": t("TXT_CODE_GAME_CONFIG_COMMANDS_FIX_TARGET_SELECTOR_TAG_COMPLETION"),
-        "suggest-player-names-when-null-tab-completions": t("TXT_CODE_GAME_CONFIG_COMMANDS_SUGGEST_PLAYER_NAMES_WHEN_NULL_TAB_COMPLETIONS"),
-        "time-command-affects-all-worlds": t("TXT_CODE_GAME_CONFIG_COMMANDS_TIME_COMMAND_AFFECTS_ALL_WORLDS")
+        "fix-target-selector-tag-completion": t(
+          "TXT_CODE_GAME_CONFIG_COMMANDS_FIX_TARGET_SELECTOR_TAG_COMPLETION"
+        ),
+        "suggest-player-names-when-null-tab-completions": t(
+          "TXT_CODE_GAME_CONFIG_COMMANDS_SUGGEST_PLAYER_NAMES_WHEN_NULL_TAB_COMPLETIONS"
+        ),
+        "time-command-affects-all-worlds": t(
+          "TXT_CODE_GAME_CONFIG_COMMANDS_TIME_COMMAND_AFFECTS_ALL_WORLDS"
+        )
       },
       console: {
-        "enable-brigadier-completions": t("TXT_CODE_GAME_CONFIG_CONSOLE_ENABLE_BRIGADIER_COMPLETIONS"),
-        "enable-brigadier-highlighting": t("TXT_CODE_GAME_CONFIG_CONSOLE_ENABLE_BRIGADIER_HIGHLIGHTING"),
+        "enable-brigadier-completions": t(
+          "TXT_CODE_GAME_CONFIG_CONSOLE_ENABLE_BRIGADIER_COMPLETIONS"
+        ),
+        "enable-brigadier-highlighting": t(
+          "TXT_CODE_GAME_CONFIG_CONSOLE_ENABLE_BRIGADIER_HIGHLIGHTING"
+        ),
         "has-all-permissions": t("TXT_CODE_GAME_CONFIG_CONSOLE_HAS_ALL_PERMISSIONS")
       },
       "item-validation": {
@@ -467,34 +711,50 @@ export const configData: {
         },
         "display-name": t("TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_DISPLAY_NAME"),
         "lore-line": t("TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_LORE_LINE"),
-        "resolve-selectors-in-books": t("TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_RESOLVE_SELECTORS_IN_BOOKS")
+        "resolve-selectors-in-books": t(
+          "TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_RESOLVE_SELECTORS_IN_BOOKS"
+        )
       },
       logging: {
         "deobfuscate-stacktraces": t("TXT_CODE_GAME_CONFIG_LOGGING_DEOBFUSCATE_STACKTRACES")
       },
       messages: {
         kick: {
-          "authentication-servers-down": t("TXT_CODE_GAME_CONFIG_MESSAGES_KICK_AUTHENTICATION_SERVERS_DOWN"),
+          "authentication-servers-down": t(
+            "TXT_CODE_GAME_CONFIG_MESSAGES_KICK_AUTHENTICATION_SERVERS_DOWN"
+          ),
           "connection-throttle": t("TXT_CODE_GAME_CONFIG_MESSAGES_KICK_CONNECTION_THROTTLE"),
           "flying-player": t("TXT_CODE_GAME_CONFIG_MESSAGES_KICK_FLYING_PLAYER"),
           "flying-vehicle": t("TXT_CODE_GAME_CONFIG_MESSAGES_KICK_FLYING_VEHICLE")
         },
         "no-permission": t("TXT_CODE_GAME_CONFIG_MESSAGES_NO_PERMISSION"),
-        "use-display-name-in-quit-message": t("TXT_CODE_GAME_CONFIG_MESSAGES_USE_DISPLAY_NAME_IN_QUIT_MESSAGE")
+        "use-display-name-in-quit-message": t(
+          "TXT_CODE_GAME_CONFIG_MESSAGES_USE_DISPLAY_NAME_IN_QUIT_MESSAGE"
+        )
       },
       misc: {
         "chat-threads": {
-          "chat-executor-core-size": t("TXT_CODE_GAME_CONFIG_MISC_CHAT_THREADS_CHAT_EXECUTOR_CORE_SIZE"),
-          "chat-executor-max-size": t("TXT_CODE_GAME_CONFIG_MISC_CHAT_THREADS_CHAT_EXECUTOR_MAX_SIZE")
+          "chat-executor-core-size": t(
+            "TXT_CODE_GAME_CONFIG_MISC_CHAT_THREADS_CHAT_EXECUTOR_CORE_SIZE"
+          ),
+          "chat-executor-max-size": t(
+            "TXT_CODE_GAME_CONFIG_MISC_CHAT_THREADS_CHAT_EXECUTOR_MAX_SIZE"
+          )
         },
         "compression-level": t("TXT_CODE_GAME_CONFIG_MISC_COMPRESSION_LEVEL"),
         "fix-entity-position-desync": t("TXT_CODE_GAME_CONFIG_MISC_FIX_ENTITY_POSITION_DESYNC"),
-        "load-permissions-yml-before-plugins": t("TXT_CODE_GAME_CONFIG_MISC_LOAD_PERMISSIONS_YML_BEFORE_PLUGINS"),
+        "load-permissions-yml-before-plugins": t(
+          "TXT_CODE_GAME_CONFIG_MISC_LOAD_PERMISSIONS_YML_BEFORE_PLUGINS"
+        ),
         "max-joins-per-tick": t("TXT_CODE_GAME_CONFIG_MISC_MAX_JOINS_PER_TICK"),
         "region-file-cache-size": t("TXT_CODE_GAME_CONFIG_MISC_REGION_FILE_CACHE_SIZE"),
-        "strict-advancement-dimension-check": t("TXT_CODE_GAME_CONFIG_MISC_STRICT_ADVANCEMENT_DIMENSION_CHECK"),
+        "strict-advancement-dimension-check": t(
+          "TXT_CODE_GAME_CONFIG_MISC_STRICT_ADVANCEMENT_DIMENSION_CHECK"
+        ),
         "use-alternative-luck-formula": t("TXT_CODE_GAME_CONFIG_MISC_USE_ALTERNATIVE_LUCK_FORMULA"),
-        "use-dimension-type-for-custom-spawners": t("TXT_CODE_GAME_CONFIG_MISC_USE_DIMENSION_TYPE_FOR_CUSTOM_SPAWNERS")
+        "use-dimension-type-for-custom-spawners": t(
+          "TXT_CODE_GAME_CONFIG_MISC_USE_DIMENSION_TYPE_FOR_CUSTOM_SPAWNERS"
+        )
       },
       "packet-limiter": {
         "all-packets": {
@@ -505,9 +765,15 @@ export const configData: {
         "kick-message": t("TXT_CODE_GAME_CONFIG_PACKET_LIMITER_KICK_MESSAGE"),
         overrides: {
           ServerboundPlaceRecipePacket: {
-            action: t("TXT_CODE_GAME_CONFIG_PACKET_LIMITER_OVERRIDES_SERVERBOUND_PLACE_RECIPE_PACKET_ACTION"),
-            interval: t("TXT_CODE_GAME_CONFIG_PACKET_LIMITER_OVERRIDES_SERVERBOUND_PLACE_RECIPE_PACKET_INTERVAL"),
-            "max-packet-rate": t("TXT_CODE_GAME_CONFIG_PACKET_LIMITER_OVERRIDES_SERVERBOUND_PLACE_RECIPE_PACKET_MAX_PACKET_RATE")
+            action: t(
+              "TXT_CODE_GAME_CONFIG_PACKET_LIMITER_OVERRIDES_SERVERBOUND_PLACE_RECIPE_PACKET_ACTION"
+            ),
+            interval: t(
+              "TXT_CODE_GAME_CONFIG_PACKET_LIMITER_OVERRIDES_SERVERBOUND_PLACE_RECIPE_PACKET_INTERVAL"
+            ),
+            "max-packet-rate": t(
+              "TXT_CODE_GAME_CONFIG_PACKET_LIMITER_OVERRIDES_SERVERBOUND_PLACE_RECIPE_PACKET_MAX_PACKET_RATE"
+            )
           }
         }
       },
@@ -527,11 +793,15 @@ export const configData: {
         }
       },
       scoreboards: {
-        "save-empty-scoreboard-teams": t("TXT_CODE_GAME_CONFIG_SCOREBOARDS_SAVE_EMPTY_SCOREBOARD_TEAMS"),
+        "save-empty-scoreboard-teams": t(
+          "TXT_CODE_GAME_CONFIG_SCOREBOARDS_SAVE_EMPTY_SCOREBOARD_TEAMS"
+        ),
         "track-plugin-scoreboards": t("TXT_CODE_GAME_CONFIG_SCOREBOARDS_TRACK_PLUGIN_SCOREBOARDS")
       },
       "spam-limiter": {
-        "incoming-packet-threshold": t("TXT_CODE_GAME_CONFIG_SPAM_LIMITER_INCOMING_PACKET_THRESHOLD"),
+        "incoming-packet-threshold": t(
+          "TXT_CODE_GAME_CONFIG_SPAM_LIMITER_INCOMING_PACKET_THRESHOLD"
+        ),
         "recipe-spam-increment": t("TXT_CODE_GAME_CONFIG_SPAM_LIMITER_RECIPE_SPAM_INCREMENT"),
         "recipe-spam-limit": t("TXT_CODE_GAME_CONFIG_SPAM_LIMITER_RECIPE_SPAM_LIMIT"),
         "tab-spam-increment": t("TXT_CODE_GAME_CONFIG_SPAM_LIMITER_TAB_SPAM_INCREMENT"),
@@ -548,12 +818,22 @@ export const configData: {
         verbose: t("TXT_CODE_GAME_CONFIG_TIMINGS_VERBOSE")
       },
       "unsupported-settings": {
-        "allow-grindstone-overstacking": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_GRINDSTONE_OVERSTACKING"),
-        "allow-headless-pistons": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_HEADLESS_PISTONS"),
-        "allow-permanent-block-break-exploits": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_PERMANENT_BLOCK_BREAK_EXPLOITS"),
-        "allow-piston-duplication": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_PISTON_DUPLICATION"),
+        "allow-grindstone-overstacking": t(
+          "TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_GRINDSTONE_OVERSTACKING"
+        ),
+        "allow-headless-pistons": t(
+          "TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_HEADLESS_PISTONS"
+        ),
+        "allow-permanent-block-break-exploits": t(
+          "TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_PERMANENT_BLOCK_BREAK_EXPLOITS"
+        ),
+        "allow-piston-duplication": t(
+          "TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_PISTON_DUPLICATION"
+        ),
         "compression-format": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_COMPRESSION_FORMAT"),
-        "perform-username-validation": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_PERFORM_USERNAME_VALIDATION")
+        "perform-username-validation": t(
+          "TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_PERFORM_USERNAME_VALIDATION"
+        )
       },
       watchdog: {
         "early-warning-delay": t("TXT_CODE_GAME_CONFIG_WATCHDOG_EARLY_WARNING_DELAY"),
@@ -569,55 +849,89 @@ export const configData: {
       settings: {
         "block-fall-multipliers": {
           "minecraft:brown_bed": {
-            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_BROWN_BED_DISTANCE")
+            distance: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_BROWN_BED_DISTANCE"
+            )
           },
           "minecraft:lime_bed": {
-            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_LIME_BED_DISTANCE")
+            distance: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_LIME_BED_DISTANCE"
+            )
           },
           "minecraft:yellow_bed": {
-            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_YELLOW_BED_DISTANCE")
+            distance: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_YELLOW_BED_DISTANCE"
+            )
           },
           "minecraft:black_bed": {
-            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_BLACK_BED_DISTANCE")
+            distance: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_BLACK_BED_DISTANCE"
+            )
           },
           "minecraft:orange_bed": {
-            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_ORANGE_BED_DISTANCE")
+            distance: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_ORANGE_BED_DISTANCE"
+            )
           },
           "minecraft:green_bed": {
-            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_GREEN_BED_DISTANCE")
+            distance: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_GREEN_BED_DISTANCE"
+            )
           },
           "minecraft:blue_bed": {
-            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_BLUE_BED_DISTANCE")
+            distance: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_BLUE_BED_DISTANCE"
+            )
           },
           "minecraft:cyan_bed": {
-            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_CYAN_BED_DISTANCE")
+            distance: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_CYAN_BED_DISTANCE"
+            )
           },
           "minecraft:gray_bed": {
-            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_GRAY_BED_DISTANCE")
+            distance: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_GRAY_BED_DISTANCE"
+            )
           },
           "minecraft:white_bed": {
-            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_WHITE_BED_DISTANCE")
+            distance: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_WHITE_BED_DISTANCE"
+            )
           },
           "minecraft:hay_block": {
-            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_HAY_BLOCK_DISTANCE")
+            distance: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_HAY_BLOCK_DISTANCE"
+            )
           },
           "minecraft:red_bed": {
-            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_RED_BED_DISTANCE")
+            distance: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_RED_BED_DISTANCE"
+            )
           },
           "minecraft:pink_bed": {
-            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_PINK_BED_DISTANCE")
+            distance: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_PINK_BED_DISTANCE"
+            )
           },
           "minecraft:light_blue_bed": {
-            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_LIGHT_BLUE_BED_DISTANCE")
+            distance: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_LIGHT_BLUE_BED_DISTANCE"
+            )
           },
           "minecraft:purple_bed": {
-            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_PURPLE_BED_DISTANCE")
+            distance: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_PURPLE_BED_DISTANCE"
+            )
           },
           "minecraft:magenta_bed": {
-            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_MAGENTA_BED_DISTANCE")
+            distance: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_MAGENTA_BED_DISTANCE"
+            )
           },
           "minecraft:light_gray_bed": {
-            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_LIGHT_GRAY_BED_DISTANCE")
+            distance: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_LIGHT_GRAY_BED_DISTANCE"
+            )
           }
         },
         command: {
@@ -633,7 +947,9 @@ export const configData: {
             seconds: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_UPTIME_SECONDS")
           },
           gamemode: {
-            "requires-specific-permission": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_GAMEMODE_REQUIRES_SPECIFIC_PERMISSION")
+            "requires-specific-permission": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_GAMEMODE_REQUIRES_SPECIFIC_PERMISSION"
+            )
           },
           tpsbar: {
             title: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_TPSBAR_TITLE"),
@@ -641,7 +957,9 @@ export const configData: {
             "fill-mode": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_TPSBAR_FILL_MODE"),
             "progress-color": {
               good: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_TPSBAR_PROGRESS_COLOR_GOOD"),
-              medium: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_TPSBAR_PROGRESS_COLOR_MEDIUM"),
+              medium: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_TPSBAR_PROGRESS_COLOR_MEDIUM"
+              ),
               low: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_TPSBAR_PROGRESS_COLOR_LOW")
             },
             "text-color": {
@@ -656,7 +974,9 @@ export const configData: {
             overlay: t("TXT_CODE_GAME_CONFIG_PURPUR_OVERLAY"),
             "progress-color": {
               good: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_RAMBAR_PROGRESS_COLOR_GOOD"),
-              medium: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_RAMBAR_PROGRESS_COLOR_MEDIUM"),
+              medium: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_RAMBAR_PROGRESS_COLOR_MEDIUM"
+              ),
               low: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_RAMBAR_PROGRESS_COLOR_LOW")
             },
             "text-color": {
@@ -669,75 +989,151 @@ export const configData: {
           compass: {
             title: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_COMPASS_TITLE"),
             overlay: t("TXT_CODE_GAME_CONFIG_PURPUR_OVERLAY"),
-            "progress-color": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_COMPASS_PROGRESS_COLOR"),
+            "progress-color": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_COMPASS_PROGRESS_COLOR"
+            ),
             percent: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_COMPASS_PERCENT"),
             "tick-interval": t("TXT_CODE_GAME_CONFIG_PURPUR_TICK_INTERVAL")
           },
-          "hide-hidden-players-from-entity-selector": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_HIDE_HIDDEN_PLAYERS_FROM_ENTITY_SELECTOR"),
-          "allow-water-placement-in-the-end": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_ALLOW_WATER_PLACEMENT_IN_THE_END"),
-          "use-alternate-keepalive": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_USE_ALTERNATE_KEEPALIVE")
+          "hide-hidden-players-from-entity-selector": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_HIDE_HIDDEN_PLAYERS_FROM_ENTITY_SELECTOR"
+          ),
+          "allow-water-placement-in-the-end": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_ALLOW_WATER_PLACEMENT_IN_THE_END"
+          ),
+          "use-alternate-keepalive": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_USE_ALTERNATE_KEEPALIVE"
+          )
         },
         "tps-catchup": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_TPS_CATCHUP"),
         "server-mod-name": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_SERVER_MOD_NAME"),
-        "fix-projectile-looting-transfer": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_FIX_PROJECTILE_LOOTING_TRANSFER"),
-        "blast-resistance-overrides": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLAST_RESISTANCE_OVERRIDES"),
+        "fix-projectile-looting-transfer": t(
+          "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_FIX_PROJECTILE_LOOTING_TRANSFER"
+        ),
+        "blast-resistance-overrides": t(
+          "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLAST_RESISTANCE_OVERRIDES"
+        ),
         "clamp-attributes": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_CLAMP_ATTRIBUTES"),
         "limit-armor": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_LIMIT_ARMOR"),
-        "username-valid-characters": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_USERNAME_VALID_CHARACTERS"),
+        "username-valid-characters": t(
+          "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_USERNAME_VALID_CHARACTERS"
+        ),
         "lagging-threshold": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_LAGGING_THRESHOLD"),
-        "fix-network-serialized-items-in-creative": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_FIX_NETWORK_SERIALIZED_ITEMS_IN_CREATIVE"),
+        "fix-network-serialized-items-in-creative": t(
+          "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_FIX_NETWORK_SERIALIZED_ITEMS_IN_CREATIVE"
+        ),
         "disable-give-dropping": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_DISABLE_GIVE_DROPPING"),
-        "player-deaths-always-show-item": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_PLAYER_DEATHS_ALWAYS_SHOW_ITEM"),
-        "register-minecraft-debug-commands": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_REGISTER_MINECRAFT_DEBUG_COMMANDS"),
+        "player-deaths-always-show-item": t(
+          "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_PLAYER_DEATHS_ALWAYS_SHOW_ITEM"
+        ),
+        "register-minecraft-debug-commands": t(
+          "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_REGISTER_MINECRAFT_DEBUG_COMMANDS"
+        ),
         "startup-commands": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_STARTUP_COMMANDS"),
         "bee-count-payload": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BEE_COUNT_PAYLOAD"),
         messages: {
-          "afk-broadcast-away": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_AFK_BROADCAST_AWAY"),
-          "afk-broadcast-back": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_AFK_BROADCAST_BACK"),
-          "afk-broadcast-use-display-name": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_AFK_BROADCAST_USE_DISPLAY_NAME"),
-          "afk-tab-list-prefix": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_AFK_TAB_LIST_PREFIX"),
-          "afk-tab-list-suffix": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_AFK_TAB_LIST_SUFFIX"),
+          "afk-broadcast-away": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_AFK_BROADCAST_AWAY"
+          ),
+          "afk-broadcast-back": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_AFK_BROADCAST_BACK"
+          ),
+          "afk-broadcast-use-display-name": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_AFK_BROADCAST_USE_DISPLAY_NAME"
+          ),
+          "afk-tab-list-prefix": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_AFK_TAB_LIST_PREFIX"
+          ),
+          "afk-tab-list-suffix": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_AFK_TAB_LIST_SUFFIX"
+          ),
           "cannot-ride-mob": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_CANNOT_RIDE_MOB"),
-          "dont-run-with-scissors": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_DONT_RUN_WITH_SCISSORS"),
-          "ping-command-output": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_PING_COMMAND_OUTPUT"),
-          "uptime-command-output": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_UPTIME_COMMAND_OUTPUT"),
-          "demo-command-output": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_DEMO_COMMAND_OUTPUT"),
-          "credits-command-output": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_CREDITS_COMMAND_OUTPUT"),
-          "tpsbar-command-output": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_TPSBAR_COMMAND_OUTPUT"),
-          "ram-command-output": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_RAM_COMMAND_OUTPUT"),
-          "rambar-command-output": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_RAMBAR_COMMAND_OUTPUT"),
-          "unverified-username": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_UNVERIFIED_USERNAME"),
-          "sleep-skipping-night": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_SLEEP_SKIPPING_NIGHT"),
-          "sleeping-players-percent": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_SLEEPING_PLAYERS_PERCENT"),
-          "sleep-not-possible": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_SLEEP_NOT_POSSIBLE"),
+          "dont-run-with-scissors": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_DONT_RUN_WITH_SCISSORS"
+          ),
+          "ping-command-output": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_PING_COMMAND_OUTPUT"
+          ),
+          "uptime-command-output": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_UPTIME_COMMAND_OUTPUT"
+          ),
+          "demo-command-output": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_DEMO_COMMAND_OUTPUT"
+          ),
+          "credits-command-output": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_CREDITS_COMMAND_OUTPUT"
+          ),
+          "tpsbar-command-output": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_TPSBAR_COMMAND_OUTPUT"
+          ),
+          "ram-command-output": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_RAM_COMMAND_OUTPUT"
+          ),
+          "rambar-command-output": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_RAMBAR_COMMAND_OUTPUT"
+          ),
+          "unverified-username": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_UNVERIFIED_USERNAME"
+          ),
+          "sleep-skipping-night": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_SLEEP_SKIPPING_NIGHT"
+          ),
+          "sleeping-players-percent": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_SLEEPING_PLAYERS_PERCENT"
+          ),
+          "sleep-not-possible": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_SLEEP_NOT_POSSIBLE"
+          ),
           "death-message": {
-            stonecutter: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_DEATH_MESSAGE_STONECUTTER"),
-            "run-with-scissors": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_DEATH_MESSAGE_RUN_WITH_SCISSORS")
+            stonecutter: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_DEATH_MESSAGE_STONECUTTER"
+            ),
+            "run-with-scissors": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_DEATH_MESSAGE_RUN_WITH_SCISSORS"
+            )
           }
         },
         network: {
-          "kick-for-out-of-order-chat": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_NETWORK_KICK_FOR_OUT_OF_ORDER_CHAT"),
-          "upnp-port-forwarding": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_NETWORK_UPNP_PORT_FORWARDING"),
-          "max-joins-per-second": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_NETWORK_MAX_JOINS_PER_SECOND")
+          "kick-for-out-of-order-chat": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_NETWORK_KICK_FOR_OUT_OF_ORDER_CHAT"
+          ),
+          "upnp-port-forwarding": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_NETWORK_UPNP_PORT_FORWARDING"
+          ),
+          "max-joins-per-second": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_NETWORK_MAX_JOINS_PER_SECOND"
+          )
         },
         blocks: {
           barrel: {
             rows: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_BARREL_ROWS")
           },
           beehive: {
-            "max-bees-inside": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_BEEHIVE_MAX_BEES_INSIDE")
+            "max-bees-inside": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_BEEHIVE_MAX_BEES_INSIDE"
+            )
           },
           grindstone: {
-            "ignored-enchants": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_GRINDSTONE_IGNORED_ENCHANTS"),
-            "remove-attributes": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_GRINDSTONE_REMOVE_ATTRIBUTES"),
-            "remove-name-and-lore": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_GRINDSTONE_REMOVE_NAME_AND_LORE")
+            "ignored-enchants": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_GRINDSTONE_IGNORED_ENCHANTS"
+            ),
+            "remove-attributes": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_GRINDSTONE_REMOVE_ATTRIBUTES"
+            ),
+            "remove-name-and-lore": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_GRINDSTONE_REMOVE_NAME_AND_LORE"
+            )
           },
           ender_chest: {
             "six-rows": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_ENDER_CHEST_SIX_ROWS"),
-            "use-permissions-for-rows": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_ENDER_CHEST_USE_PERMISSIONS_FOR_ROWS")
+            "use-permissions-for-rows": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_ENDER_CHEST_USE_PERMISSIONS_FOR_ROWS"
+            )
           },
           crying_obsidian: {
-            "valid-for-portal-frame": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_CRYING_OBSIDIAN_VALID_FOR_PORTAL_FRAME")
+            "valid-for-portal-frame": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_CRYING_OBSIDIAN_VALID_FOR_PORTAL_FRAME"
+            )
           },
           twisting_vines: {
             "max-growth-age": t("TXT_CODE_GAME_CONFIG_PURPUR_MAX_GROWTH_AGE")
@@ -752,32 +1148,52 @@ export const configData: {
             "max-growth-age": t("TXT_CODE_GAME_CONFIG_PURPUR_MAX_GROWTH_AGE")
           },
           anvil: {
-            "cumulative-cost": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_ANVIL_CUMULATIVE_COST")
+            "cumulative-cost": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_ANVIL_CUMULATIVE_COST"
+            )
           },
           lightning_rod: {
             range: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_LIGHTNING_ROD_RANGE")
           },
           "magma-block": {
-            "reverse-bubble-column-flow": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_MAGMA_BLOCK_REVERSE_BUBBLE_COLUMN_FLOW")
+            "reverse-bubble-column-flow": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_MAGMA_BLOCK_REVERSE_BUBBLE_COLUMN_FLOW"
+            )
           },
           "soul-sand": {
-            "reverse-bubble-column-flow": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_SOUL_SAND_REVERSE_BUBBLE_COLUMN_FLOW")
+            "reverse-bubble-column-flow": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_SOUL_SAND_REVERSE_BUBBLE_COLUMN_FLOW"
+            )
           }
         },
         broadcasts: {
           advancement: {
-            "only-broadcast-to-affected-player": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BROADCASTS_ADVANCEMENT_ONLY_BROADCAST_TO_AFFECTED_PLAYER")
+            "only-broadcast-to-affected-player": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BROADCASTS_ADVANCEMENT_ONLY_BROADCAST_TO_AFFECTED_PLAYER"
+            )
           },
           death: {
-            "only-broadcast-to-affected-player": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BROADCASTS_DEATH_ONLY_BROADCAST_TO_AFFECTED_PLAYER")
+            "only-broadcast-to-affected-player": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BROADCASTS_DEATH_ONLY_BROADCAST_TO_AFFECTED_PLAYER"
+            )
           }
         },
         logger: {
-          "suppress-init-legacy-material-errors": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_LOGGER_SUPPRESS_INIT_LEGACY_MATERIAL_ERRORS"),
-          "suppress-ignored-advancement-warnings": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_LOGGER_SUPPRESS_IGNORED_ADVANCEMENT_WARNINGS"),
-          "supress-unrecognized-recipe-errors": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_LOGGER_SUPRESS_UNRECOGNIZED_RECIPE_ERRORS"),
-          "suppress-setblock-in-far-chunk-errors": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_LOGGER_SUPPRESS_SETBLOCK_IN_FAR_CHUNK_ERRORS"),
-          "supress-library-loader": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_LOGGER_SUPRESS_LIBRARY_LOADER")
+          "suppress-init-legacy-material-errors": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_LOGGER_SUPPRESS_INIT_LEGACY_MATERIAL_ERRORS"
+          ),
+          "suppress-ignored-advancement-warnings": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_LOGGER_SUPPRESS_IGNORED_ADVANCEMENT_WARNINGS"
+          ),
+          "supress-unrecognized-recipe-errors": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_LOGGER_SUPRESS_UNRECOGNIZED_RECIPE_ERRORS"
+          ),
+          "suppress-setblock-in-far-chunk-errors": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_LOGGER_SUPPRESS_SETBLOCK_IN_FAR_CHUNK_ERRORS"
+          ),
+          "supress-library-loader": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_LOGGER_SUPRESS_LIBRARY_LOADER"
+          )
         },
         "food-properties": {
           default: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_FOOD_PROPERTIES_DEFAULT")
@@ -788,111 +1204,199 @@ export const configData: {
           }
         },
         enchantment: {
-          "allow-looting-on-shears": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_ENCHANTMENT_ALLOW_LOOTING_ON_SHEARS"),
-          "allow-unsafe-enchant-command": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_ENCHANTMENT_ALLOW_UNSAFE_ENCHANT_COMMAND"),
+          "allow-looting-on-shears": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_ENCHANTMENT_ALLOW_LOOTING_ON_SHEARS"
+          ),
+          "allow-unsafe-enchant-command": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_ENCHANTMENT_ALLOW_UNSAFE_ENCHANT_COMMAND"
+          ),
           "clamp-levels": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_ENCHANTMENT_CLAMP_LEVELS"),
           anvil: {
-            "allow-inapplicable-enchants": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_ENCHANTMENT_ANVIL_ALLOW_INAPPLICABLE_ENCHANTS"),
-            "allow-incompatible-enchants": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_ENCHANTMENT_ANVIL_ALLOW_INCOMPATIBLE_ENCHANTS"),
-            "allow-higher-enchants-levels": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_ENCHANTMENT_ANVIL_ALLOW_HIGHER_ENCHANTS_LEVELS"),
-            "replace-incompatible-enchants": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_ENCHANTMENT_ANVIL_REPLACE_INCOMPATIBLE_ENCHANTS")
+            "allow-inapplicable-enchants": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_ENCHANTMENT_ANVIL_ALLOW_INAPPLICABLE_ENCHANTS"
+            ),
+            "allow-incompatible-enchants": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_ENCHANTMENT_ANVIL_ALLOW_INCOMPATIBLE_ENCHANTS"
+            ),
+            "allow-higher-enchants-levels": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_ENCHANTMENT_ANVIL_ALLOW_HIGHER_ENCHANTS_LEVELS"
+            ),
+            "replace-incompatible-enchants": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_ENCHANTMENT_ANVIL_REPLACE_INCOMPATIBLE_ENCHANTS"
+            )
           }
         }
       },
       "world-settings": {
         default: {
           hunger: {
-            "starvation-damage": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_HUNGER_STARVATION_DAMAGE")
+            "starvation-damage": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_HUNGER_STARVATION_DAMAGE"
+            )
           },
           settings: {
             entity: {
-              "shared-random": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_SETTINGS_ENTITY_SHARED_RANDOM")
+              "shared-random": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_SETTINGS_ENTITY_SHARED_RANDOM"
+              )
             }
           },
           blocks: {
             anvil: {
-              "use-mini-message": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_ANVIL_USE_MINI_MESSAGE"),
-              "allow-colors": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_ANVIL_ALLOW_COLORS"),
-              "iron-ingots-used-for-repair": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_ANVIL_IRON_INGOTS_USED_FOR_REPAIR"),
-              "obsidian-used-for-damage": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_ANVIL_OBSIDIAN_USED_FOR_DAMAGE")
+              "use-mini-message": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_ANVIL_USE_MINI_MESSAGE"
+              ),
+              "allow-colors": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_ANVIL_ALLOW_COLORS"
+              ),
+              "iron-ingots-used-for-repair": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_ANVIL_IRON_INGOTS_USED_FOR_REPAIR"
+              ),
+              "obsidian-used-for-damage": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_ANVIL_OBSIDIAN_USED_FOR_DAMAGE"
+              )
             },
             azalea: {
-              "growth-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_AZALEA_GROWTH_CHANCE")
+              "growth-chance": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_AZALEA_GROWTH_CHANCE"
+              )
             },
             beacon: {
-              "allow-effects-with-tinted-glass": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_BEACON_ALLOW_EFFECTS_WITH_TINTED_GLASS"),
+              "allow-effects-with-tinted-glass": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_BEACON_ALLOW_EFFECTS_WITH_TINTED_GLASS"
+              ),
               "effect-range": {
-                "level-1": t("TXT_CODE_COMMON_AMOUNT_OF_BLOCKS_THE_EFFECT_RANGE_REACHES_FOR_THIS_LEVEL"),
-                "level-2": t("TXT_CODE_COMMON_AMOUNT_OF_BLOCKS_THE_EFFECT_RANGE_REACHES_FOR_THIS_LEVEL"),
-                "level-3": t("TXT_CODE_COMMON_AMOUNT_OF_BLOCKS_THE_EFFECT_RANGE_REACHES_FOR_THIS_LEVEL"),
-                "level-4": t("TXT_CODE_COMMON_AMOUNT_OF_BLOCKS_THE_EFFECT_RANGE_REACHES_FOR_THIS_LEVEL")
+                "level-1": t(
+                  "TXT_CODE_COMMON_AMOUNT_OF_BLOCKS_THE_EFFECT_RANGE_REACHES_FOR_THIS_LEVEL"
+                ),
+                "level-2": t(
+                  "TXT_CODE_COMMON_AMOUNT_OF_BLOCKS_THE_EFFECT_RANGE_REACHES_FOR_THIS_LEVEL"
+                ),
+                "level-3": t(
+                  "TXT_CODE_COMMON_AMOUNT_OF_BLOCKS_THE_EFFECT_RANGE_REACHES_FOR_THIS_LEVEL"
+                ),
+                "level-4": t(
+                  "TXT_CODE_COMMON_AMOUNT_OF_BLOCKS_THE_EFFECT_RANGE_REACHES_FOR_THIS_LEVEL"
+                )
               }
             },
             bed: {
               explode: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_BED_EXPLODE"),
-              "explode-on-villager-sleep": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_BED_EXPLODE_ON_VILLAGER_SLEEP"),
+              "explode-on-villager-sleep": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_BED_EXPLODE_ON_VILLAGER_SLEEP"
+              ),
               "explosion-power": t("TXT_CODE_GAME_CONFIG_PURPUR_EXPLOSION_RADIUS"),
               "explosion-fire": t("TXT_CODE_GAME_CONFIG_PURPUR_EXPLOSION_FIRE"),
               "explosion-effect": t("TXT_CODE_GAME_CONFIG_PURPUR_EXPLOSION_EFFECT")
             },
             big_dripleaf: {
               "tilt-delay": {
-                FULL: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_BIG_DRIPLEAF_TILT_DELAY_FULL"),
-                UNSTABLE: t("TXT_CODE_COMMON_HOW_LONG_THE_DELAY_OF_A_BIG_DRIPLEAF_SHOULD_UNTIL_IT_GOES_INTO_THE_NEXT_ANIMATION"),
-                PARTIAL: t("TXT_CODE_COMMON_HOW_LONG_THE_DELAY_OF_A_BIG_DRIPLEAF_SHOULD_UNTIL_IT_GOES_INTO_THE_NEXT_ANIMATION")
+                FULL: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_BIG_DRIPLEAF_TILT_DELAY_FULL"
+                ),
+                UNSTABLE: t(
+                  "TXT_CODE_COMMON_HOW_LONG_THE_DELAY_OF_A_BIG_DRIPLEAF_SHOULD_UNTIL_IT_GOES_INTO_THE_NEXT_ANIMATION"
+                ),
+                PARTIAL: t(
+                  "TXT_CODE_COMMON_HOW_LONG_THE_DELAY_OF_A_BIG_DRIPLEAF_SHOULD_UNTIL_IT_GOES_INTO_THE_NEXT_ANIMATION"
+                )
               }
             },
             blue_ice: {
-              "allow-mob-spawns": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_BLUE_ICE_ALLOW_MOB_SPAWNS"),
-              "allow-snow-formation": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_BLUE_ICE_ALLOW_SNOW_FORMATION")
+              "allow-mob-spawns": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_BLUE_ICE_ALLOW_MOB_SPAWNS"
+              ),
+              "allow-snow-formation": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_BLUE_ICE_ALLOW_SNOW_FORMATION"
+              )
             },
             cactus: {
-              "breaks-from-solid-neighbors": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CACTUS_BREAKS_FROM_SOLID_NEIGHBORS"),
-              "affected-by-bonemeal": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CACTUS_AFFECTED_BY_BONEMEAL")
+              "breaks-from-solid-neighbors": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CACTUS_BREAKS_FROM_SOLID_NEIGHBORS"
+              ),
+              "affected-by-bonemeal": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CACTUS_AFFECTED_BY_BONEMEAL"
+              )
             },
             campfire: {
-              "lit-when-placed": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CAMPFIRE_LIT_WHEN_PLACED")
+              "lit-when-placed": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CAMPFIRE_LIT_WHEN_PLACED"
+              )
             },
             cauldron: {
               "fill-chances": {
-                rain: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CAULDRON_FILL_CHANCES_RAIN"),
-                "powder-snow": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CAULDRON_FILL_CHANCES_POWDER_SNOW"),
-                "dripstone-water": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CAULDRON_FILL_CHANCES_DRIPSTONE_WATER"),
-                "dripstone-lava": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CAULDRON_FILL_CHANCES_DRIPSTONE_LAVA")
+                rain: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CAULDRON_FILL_CHANCES_RAIN"
+                ),
+                "powder-snow": t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CAULDRON_FILL_CHANCES_POWDER_SNOW"
+                ),
+                "dripstone-water": t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CAULDRON_FILL_CHANCES_DRIPSTONE_WATER"
+                ),
+                "dripstone-lava": t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CAULDRON_FILL_CHANCES_DRIPSTONE_LAVA"
+                )
               }
             },
             chest: {
-              "open-with-solid-block-on-top": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CHEST_OPEN_WITH_SOLID_BLOCK_ON_TOP")
+              "open-with-solid-block-on-top": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CHEST_OPEN_WITH_SOLID_BLOCK_ON_TOP"
+              )
             },
             composter: {
-              "sneak-to-bulk-process": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_COMPOSTER_SNEAK_TO_BULK_PROCESS")
+              "sneak-to-bulk-process": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_COMPOSTER_SNEAK_TO_BULK_PROCESS"
+              )
             },
             conduit: {
-              "valid-ring-blocks": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CONDUIT_VALID_RING_BLOCKS"),
-              "effect-distance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CONDUIT_EFFECT_DISTANCE"),
+              "valid-ring-blocks": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CONDUIT_VALID_RING_BLOCKS"
+              ),
+              "effect-distance": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CONDUIT_EFFECT_DISTANCE"
+              ),
               "mob-damage": {
-                distance: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CONDUIT_MOB_DAMAGE_DISTANCE"),
-                "damage-amount": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CONDUIT_MOB_DAMAGE_DAMAGE_AMOUNT")
+                distance: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CONDUIT_MOB_DAMAGE_DISTANCE"
+                ),
+                "damage-amount": t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CONDUIT_MOB_DAMAGE_DAMAGE_AMOUNT"
+                )
               }
             },
             coral: {
-              "die-outside-water": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CORAL_DIE_OUTSIDE_WATER")
+              "die-outside-water": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CORAL_DIE_OUTSIDE_WATER"
+              )
             },
             dispenser: {
-              "apply-cursed-to-armor-slots": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_DISPENSER_APPLY_CURSED_TO_ARMOR_SLOTS"),
-              "place-anvils": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_DISPENSER_PLACE_ANVILS")
+              "apply-cursed-to-armor-slots": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_DISPENSER_APPLY_CURSED_TO_ARMOR_SLOTS"
+              ),
+              "place-anvils": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_DISPENSER_PLACE_ANVILS"
+              )
             },
             door: {
-              "requires-redstone": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_DOOR_REQUIRES_REDSTONE")
+              "requires-redstone": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_DOOR_REQUIRES_REDSTONE"
+              )
             },
             dragon_egg: {
-              teleport: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_DRAGON_EGG_TELEPORT")
+              teleport: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_DRAGON_EGG_TELEPORT"
+              )
             },
             "enchantment-table": {
-              "lapis-persists": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_ENCHANTMENT_TABLE_LAPIS_PERSISTS")
+              "lapis-persists": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_ENCHANTMENT_TABLE_LAPIS_PERSISTS"
+              )
             },
             "end-crystal": {
-              "cramming-amount": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_END_CRYSTAL_CRAMMING_AMOUNT"),
+              "cramming-amount": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_END_CRYSTAL_CRAMMING_AMOUNT"
+              ),
               baseless: {
                 explode: t("TXT_CODE_GAME_CONFIG_PURPUR_EXPLODE"),
                 "explosion-power": t("TXT_CODE_GAME_CONFIG_PURPUR_END_CRYSTAL_EXPLOSION_POWER"),
@@ -907,103 +1411,185 @@ export const configData: {
               }
             },
             farmland: {
-              "gets-moist-from-below": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FARMLAND_GETS_MOIST_FROM_BELOW"),
-              "use-alpha-farmland:": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FARMLAND_USE_ALPHA_FARMLAND"),
-              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FARMLAND_BYPASS_MOB_GRIEFING"),
-              "only-players-trample": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FARMLAND_ONLY_PLAYERS_TRAMPLE"),
-              "disable-trampling": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FARMLAND_DISABLE_TRAMPLING"),
-              "trample-height": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FARMLAND_TRAMPLE_HEIGHT"),
-              "feather-fall-distance-affects-trampling": t("TXT_CODE_GAME_CONFIG_PURPUR_FEATHER_FALL_DISTANCE_AFFECTS_TRAMPLING")
+              "gets-moist-from-below": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FARMLAND_GETS_MOIST_FROM_BELOW"
+              ),
+              "use-alpha-farmland:": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FARMLAND_USE_ALPHA_FARMLAND"
+              ),
+              "bypass-mob-griefing": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FARMLAND_BYPASS_MOB_GRIEFING"
+              ),
+              "only-players-trample": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FARMLAND_ONLY_PLAYERS_TRAMPLE"
+              ),
+              "disable-trampling": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FARMLAND_DISABLE_TRAMPLING"
+              ),
+              "trample-height": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FARMLAND_TRAMPLE_HEIGHT"
+              ),
+              "feather-fall-distance-affects-trampling": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_FEATHER_FALL_DISTANCE_AFFECTS_TRAMPLING"
+              )
             },
             flowering_azalea: {
-              "growth-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FLOWERING_AZALEA_GROWTH_CHANCE")
+              "growth-chance": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FLOWERING_AZALEA_GROWTH_CHANCE"
+              )
             },
             furnace: {
-              "use-lava-from-underneath": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FURNACE_USE_LAVA_FROM_UNDERNEATH")
+              "use-lava-from-underneath": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FURNACE_USE_LAVA_FROM_UNDERNEATH"
+              )
             },
             lava: {
-              "infinite-required-sources": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_LAVA_INFINITE_REQUIRED_SOURCES"),
+              "infinite-required-sources": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_LAVA_INFINITE_REQUIRED_SOURCES"
+              ),
               speed: {
                 nether: t("TXT_CODE_COMMON_DELAY_IN_TICKS_BETWEEN_PHYSICS_FLOWING_LOWER_IS_FASTER"),
-                "not-nether": t("TXT_CODE_COMMON_DELAY_IN_TICKS_BETWEEN_PHYSICS_FLOWING_LOWER_IS_FASTER")
+                "not-nether": t(
+                  "TXT_CODE_COMMON_DELAY_IN_TICKS_BETWEEN_PHYSICS_FLOWING_LOWER_IS_FASTER"
+                )
               }
             },
             "magma-block": {
-              "damage-when-sneaking": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_MAGMA_BLOCK_DAMAGE_WHEN_SNEAKING"),
-              "damage-with-frost-walker": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_MAGMA_BLOCK_DAMAGE_WITH_FROST_WALKER")
+              "damage-when-sneaking": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_MAGMA_BLOCK_DAMAGE_WHEN_SNEAKING"
+              ),
+              "damage-with-frost-walker": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_MAGMA_BLOCK_DAMAGE_WITH_FROST_WALKER"
+              )
             },
             nether_wart: {
-              "affected-by-bonemeal": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_NETHER_WART_AFFECTED_BY_BONEMEAL")
+              "affected-by-bonemeal": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_NETHER_WART_AFFECTED_BY_BONEMEAL"
+              )
             },
             observer: {
-              "disable-clock": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_OBSERVER_DISABLE_CLOCK")
+              "disable-clock": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_OBSERVER_DISABLE_CLOCK"
+              )
             },
             packed_ice: {
-              "allow-mob-spawns": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_PACKED_ICE_ALLOW_MOB_SPAWNS")
+              "allow-mob-spawns": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_PACKED_ICE_ALLOW_MOB_SPAWNS"
+              )
             },
             piston: {
-              "block-push-limit": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_PISTON_BLOCK_PUSH_LIMIT")
+              "block-push-limit": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_PISTON_BLOCK_PUSH_LIMIT"
+              )
             },
             powder_snow: {
-              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_POWDER_SNOW_BYPASS_MOB_GRIEFING")
+              "bypass-mob-griefing": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_POWDER_SNOW_BYPASS_MOB_GRIEFING"
+              )
             },
             "powered-rail": {
-              "activation-range": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_POWERED_RAIL_ACTIVATION_RANGE")
+              "activation-range": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_POWERED_RAIL_ACTIVATION_RANGE"
+              )
             },
             respawn_anchor: {
-              explode: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_RESPAWN_ANCHOR_EXPLODE"),
+              explode: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_RESPAWN_ANCHOR_EXPLODE"
+              ),
               "explosion-power": t("TXT_CODE_GAME_CONFIG_PURPUR_EXPLOSION_RADIUS"),
               "explosion-fire": t("TXT_CODE_GAME_CONFIG_PURPUR_EXPLOSION_FIRE"),
               "explosion-effect": t("TXT_CODE_GAME_CONFIG_PURPUR_EXPLOSION_EFFECT")
             },
             sculk_shrieker: {
-              "can-summon-default": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SCULK_SHRIEKER_CAN_SUMMON_DEFAULT")
+              "can-summon-default": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SCULK_SHRIEKER_CAN_SUMMON_DEFAULT"
+              )
             },
             shulker_box: {
-              "allow-oversized-stacks": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SHULKER_BOX_ALLOW_OVERSIZED_STACKS")
+              "allow-oversized-stacks": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SHULKER_BOX_ALLOW_OVERSIZED_STACKS"
+              )
             },
             sign: {
-              "allow-colors": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SIGN_ALLOW_COLORS")
+              "allow-colors": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SIGN_ALLOW_COLORS"
+              )
             },
             slab: {
-              "break-individual-slabs-when-sneaking": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SLAB_BREAK_INDIVIDUAL_SLABS_WHEN_SNEAKING")
+              "break-individual-slabs-when-sneaking": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SLAB_BREAK_INDIVIDUAL_SLABS_WHEN_SNEAKING"
+              )
             },
             spawner: {
-              "deactivate-by-redstone": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SPAWNER_DEACTIVATE_BY_REDSTONE"),
-              "fix-mc-238526": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SPAWNER_FIX_MC_238526")
+              "deactivate-by-redstone": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SPAWNER_DEACTIVATE_BY_REDSTONE"
+              ),
+              "fix-mc-238526": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SPAWNER_FIX_MC_238526"
+              )
             },
             sponge: {
-              "absorbs-lava": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SPONGE_ABSORBS_LAVA"),
-              "absorbs-water-from-mud": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SPONGE_ABSORBS_WATER_FROM_MUD"),
+              "absorbs-lava": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SPONGE_ABSORBS_LAVA"
+              ),
+              "absorbs-water-from-mud": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SPONGE_ABSORBS_WATER_FROM_MUD"
+              ),
               absorption: {
-                area: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SPONGE_ABSORPTION_AREA"),
-                radius: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SPONGE_ABSORPTION_RADIUS")
+                area: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SPONGE_ABSORPTION_AREA"
+                ),
+                radius: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SPONGE_ABSORPTION_RADIUS"
+                )
               }
             },
             stonecutter: {
-              damage: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_STONECUTTER_DAMAGE")
+              damage: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_STONECUTTER_DAMAGE"
+              )
             },
             sugar_cane: {
-              "affected-by-bonemeal": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SUGAR_CANE_AFFECTED_BY_BONEMEAL")
+              "affected-by-bonemeal": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SUGAR_CANE_AFFECTED_BY_BONEMEAL"
+              )
             },
             turtle_egg: {
-              "break-from-exp-orbs": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_TURTLE_EGG_BREAK_FROM_EXP_ORBS"),
-              "break-from-items": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_TURTLE_EGG_BREAK_FROM_ITEMS"),
-              "break-from-minecarts": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_TURTLE_EGG_BREAK_FROM_MINECARTS"),
-              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_TURTLE_EGG_BYPASS_MOB_GRIEFING"),
-              "random-tick-crack-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_TURTLE_EGG_RANDOM_TICK_CRACK_CHANCE"),
-              "feather-fall-distance-affects-trampling": t("TXT_CODE_GAME_CONFIG_PURPUR_FEATHER_FALL_DISTANCE_AFFECTS_TRAMPLING")
+              "break-from-exp-orbs": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_TURTLE_EGG_BREAK_FROM_EXP_ORBS"
+              ),
+              "break-from-items": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_TURTLE_EGG_BREAK_FROM_ITEMS"
+              ),
+              "break-from-minecarts": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_TURTLE_EGG_BREAK_FROM_MINECARTS"
+              ),
+              "bypass-mob-griefing": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_TURTLE_EGG_BYPASS_MOB_GRIEFING"
+              ),
+              "random-tick-crack-chance": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_TURTLE_EGG_RANDOM_TICK_CRACK_CHANCE"
+              ),
+              "feather-fall-distance-affects-trampling": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_FEATHER_FALL_DISTANCE_AFFECTS_TRAMPLING"
+              )
             },
             water: {
-              "infinite-required-sources": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_WATER_INFINITE_REQUIRED_SOURCES")
+              "infinite-required-sources": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_WATER_INFINITE_REQUIRED_SOURCES"
+              )
             }
           },
           mobs: {
             allay: {
               ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
-              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ALLAY_RIDABLE_IN_WATER"),
-              "respect-nbt": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ALLAY_RESPECT_NBT"),
+              "ridable-in-water": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ALLAY_RIDABLE_IN_WATER"
+              ),
+              "respect-nbt": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ALLAY_RESPECT_NBT"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MAX_HEALTH"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SIZE_SCALE")
@@ -1013,7 +1599,9 @@ export const configData: {
               ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MAX_HEALTH"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SIZE_SCALE")
@@ -1023,7 +1611,9 @@ export const configData: {
               ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MAX_HEALTH"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SIZE_SCALE")
@@ -1038,12 +1628,22 @@ export const configData: {
               "ridable-max-y": t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE_MAX_Y"),
               attributes: {
                 follow_range: t("TXT_CODE_COMMON_FOLLOW_RANGE_ATTRIBUTE"),
-                knockback_resistance: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BAT_ATTRIBUTES_KNOCKBACK_RESISTANCE"),
+                knockback_resistance: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BAT_ATTRIBUTES_KNOCKBACK_RESISTANCE"
+                ),
                 movement_speed: t("TXT_CODE_COMMON_MOVEMENT_SPEED_ATTRIBUTE"),
-                flying_speed: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BAT_ATTRIBUTES_FLYING_SPEED"),
-                armor: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BAT_ATTRIBUTES_ARMOR"),
-                armor_toughness: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BAT_ATTRIBUTES_ARMOR_TOUGHNESS"),
-                attack_knockback: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BAT_ATTRIBUTES_ATTACK_KNOCKBACK"),
+                flying_speed: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BAT_ATTRIBUTES_FLYING_SPEED"
+                ),
+                armor: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BAT_ATTRIBUTES_ARMOR"
+                ),
+                armor_toughness: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BAT_ATTRIBUTES_ARMOR_TOUGHNESS"
+                ),
+                attack_knockback: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BAT_ATTRIBUTES_ATTACK_KNOCKBACK"
+                ),
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
@@ -1055,10 +1655,18 @@ export const configData: {
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               "ridable-max-y": t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE_MAX_Y"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
-              "can-work-at-night": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BEE_CAN_WORK_AT_NIGHT"),
-              "can-work-in-rain": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BEE_CAN_WORK_IN_RAIN"),
-              "dies-after-sting": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BEE_DIES_AFTER_STING"),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
+              "can-work-at-night": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BEE_CAN_WORK_AT_NIGHT"
+              ),
+              "can-work-in-rain": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BEE_CAN_WORK_IN_RAIN"
+              ),
+              "dies-after-sting": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BEE_DIES_AFTER_STING"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -1088,7 +1696,9 @@ export const configData: {
             },
             camel: {
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
               attributes: {
                 max_health: {
                   min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_HEALTH_MIN"),
@@ -1109,13 +1719,23 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "default-collar-color": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CAT_DEFAULT_COLLAR_COLOR"),
-              "spawn-delay": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CAT_SPAWN_DELAY"),
+              "default-collar-color": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CAT_DEFAULT_COLLAR_COLOR"
+              ),
+              "spawn-delay": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CAT_SPAWN_DELAY"
+              ),
               "scan-range-for-other-cats": {
-                "swamp-hut": t("TXT_CODE_COMMON_DO_NOT_SPAWN_A_CAT_IF_ANOTHER_CAT_IS_FOUND_WITHIN_THIS_RANGE_SET_TO_0"),
-                village: t("TXT_CODE_COMMON_DO_NOT_SPAWN_A_CAT_IF_ANOTHER_CAT_IS_FOUND_WITHIN_THIS_RANGE_SET_TO_0")
+                "swamp-hut": t(
+                  "TXT_CODE_COMMON_DO_NOT_SPAWN_A_CAT_IF_ANOTHER_CAT_IS_FOUND_WITHIN_THIS_RANGE_SET_TO_0"
+                ),
+                village: t(
+                  "TXT_CODE_COMMON_DO_NOT_SPAWN_A_CAT_IF_ANOTHER_CAT_IS_FOUND_WITHIN_THIS_RANGE_SET_TO_0"
+                )
               },
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -1138,8 +1758,12 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              retaliate: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CHICKEN_RETALIATE"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              retaliate: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CHICKEN_RETALIATE"
+              ),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -1161,11 +1785,19 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "feed-mushrooms-for-mooshroom": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_COW_FEED_MUSHROOMS_FOR_MOOSHROOM"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "feed-mushrooms-for-mooshroom": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_COW_FEED_MUSHROOMS_FOR_MOOSHROOM"
+              ),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
               "naturally-aggressive-to-players": {
-                chance: t("TXT_CODE_COMMON_PERCENT_CHANCE_0_0_1_0_THIS_MOB_WILL_SPAWN_AGGRESSIVE_TOWARDS_PLAYERS"),
-                damage: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_COW_NATURALLY_AGGRESSIVE_TO_PLAYERS_DAMAGE")
+                chance: t(
+                  "TXT_CODE_COMMON_PERCENT_CHANCE_0_0_1_0_THIS_MOB_WILL_SPAWN_AGGRESSIVE_TOWARDS_PLAYERS"
+                ),
+                damage: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_COW_NATURALLY_AGGRESSIVE_TO_PLAYERS_DAMAGE"
+                )
               },
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
@@ -1187,12 +1819,24 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "encircle-target": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CREEPER_ENCIRCLE_TARGET"),
-              "allow-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CREEPER_ALLOW_GRIEFING"),
-              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CREEPER_BYPASS_MOB_GRIEFING"),
-              "naturally-charged-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CREEPER_NATURALLY_CHARGED_CHANCE"),
-              "explode-when-killed": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CREEPER_EXPLODE_WHEN_KILLED"),
-              "health-impacts-explosion": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CREEPER_HEALTH_IMPACTS_EXPLOSION"),
+              "encircle-target": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CREEPER_ENCIRCLE_TARGET"
+              ),
+              "allow-griefing": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CREEPER_ALLOW_GRIEFING"
+              ),
+              "bypass-mob-griefing": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CREEPER_BYPASS_MOB_GRIEFING"
+              ),
+              "naturally-charged-chance": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CREEPER_NATURALLY_CHARGED_CHANCE"
+              ),
+              "explode-when-killed": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CREEPER_EXPLODE_WHEN_KILLED"
+              ),
+              "health-impacts-explosion": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CREEPER_HEALTH_IMPACTS_EXPLOSION"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -1204,12 +1848,22 @@ export const configData: {
               ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "naturally-aggressive-to-players-chance": t("TXT_CODE_COMMON_PERCENT_CHANCE_0_0_1_0_THIS_MOB_WILL_SPAWN_AGGRESSIVE_TOWARDS_PLAYERS"),
-              "disable-treasure-searching": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_DOLPHIN_DISABLE_TREASURE_SEARCHING"),
+              "naturally-aggressive-to-players-chance": t(
+                "TXT_CODE_COMMON_PERCENT_CHANCE_0_0_1_0_THIS_MOB_WILL_SPAWN_AGGRESSIVE_TOWARDS_PLAYERS"
+              ),
+              "disable-treasure-searching": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_DOLPHIN_DISABLE_TREASURE_SEARCHING"
+              ),
               spit: {
-                cooldown: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_DOLPHIN_SPIT_COOLDOWN"),
-                speed: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_DOLPHIN_SPIT_SPEED"),
-                damage: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_DOLPHIN_SPIT_DAMAGE")
+                cooldown: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_DOLPHIN_SPIT_COOLDOWN"
+                ),
+                speed: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_DOLPHIN_SPIT_SPEED"
+                ),
+                damage: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_DOLPHIN_SPIT_DAMAGE"
+                )
               },
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
@@ -1220,7 +1874,9 @@ export const configData: {
             donkey: {
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
               attributes: {
                 max_health: {
                   min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_HEALTH_MIN"),
@@ -1242,7 +1898,9 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "can-break-doors": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_DROWNED_CAN_BREAK_DOORS"),
+              "can-break-doors": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_DROWNED_CAN_BREAK_DOORS"
+              ),
               jockey: {
                 "only-babies": t("TXT_CODE_GAME_CONFIG_PURPUR_ONLY_BABIES"),
                 chance: t("TXT_CODE_GAME_CONFIG_PURPUR_CHANCE"),
@@ -1271,9 +1929,15 @@ export const configData: {
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
               "ridable-max-y": t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE_MAX_Y"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "always-drop-full-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDER_DRAGON_ALWAYS_DROP_FULL_EXP"),
-              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDER_DRAGON_BYPASS_MOB_GRIEFING"),
-              "can-ride-vehicles": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDER_DRAGON_CAN_RIDE_VEHICLES"),
+              "always-drop-full-exp": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDER_DRAGON_ALWAYS_DROP_FULL_EXP"
+              ),
+              "bypass-mob-griefing": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDER_DRAGON_BYPASS_MOB_GRIEFING"
+              ),
+              "can-ride-vehicles": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDER_DRAGON_CAN_RIDE_VEHICLES"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -1283,16 +1947,31 @@ export const configData: {
               ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
-              "allow-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_ALLOW_GRIEFING"),
-              "can-despawn-with-held-block": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_CAN_DESPAWN_WITH_HELD_BLOCK"),
-              "ignore-projectiles": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_IGNORE_PROJECTILES"),
-              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_BYPASS_MOB_GRIEFING"),
+              "allow-griefing": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_ALLOW_GRIEFING"
+              ),
+              "can-despawn-with-held-block": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_CAN_DESPAWN_WITH_HELD_BLOCK"
+              ),
+              "ignore-projectiles": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_IGNORE_PROJECTILES"
+              ),
+              "bypass-mob-griefing": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_BYPASS_MOB_GRIEFING"
+              ),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_DISABLED"),
-              "aggressive-towards-endermites": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_AGGRESSIVE_TOWARDS_ENDERMITES"),
-              "aggressive-towards-endermites-only-spawned-by-player-thrown-ender-pearls":
-                t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_AGGRESSIVE_TOWARDS_ENDERMITES_ONLY_SPAWNED_BY_PLAYER_THROWN_ENDER_PEARLS"),
-              "ignore-players-wearing-dragon-head": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_IGNORE_PLAYERS_WEARING_DRAGON_HEAD"),
-              "disable-player-stare-aggression": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_DISABLE_PLAYER_STARE_AGGRESSION"),
+              "aggressive-towards-endermites": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_AGGRESSIVE_TOWARDS_ENDERMITES"
+              ),
+              "aggressive-towards-endermites-only-spawned-by-player-thrown-ender-pearls": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_AGGRESSIVE_TOWARDS_ENDERMITES_ONLY_SPAWNED_BY_PLAYER_THROWN_ENDER_PEARLS"
+              ),
+              "ignore-players-wearing-dragon-head": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_IGNORE_PLAYERS_WEARING_DRAGON_HEAD"
+              ),
+              "disable-player-stare-aggression": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_DISABLE_PLAYER_STARE_AGGRESSION"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -1315,7 +1994,9 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_EVOKER_BYPASS_MOB_GRIEFING"),
+              "bypass-mob-griefing": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_EVOKER_BYPASS_MOB_GRIEFING"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -1327,9 +2008,15 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "tulip-change-type": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_FOX_TULIP_CHANGE_TYPE"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
-              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_FOX_BYPASS_MOB_GRIEFING"),
+              "tulip-change-type": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_FOX_TULIP_CHANGE_TYPE"
+              ),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
+              "bypass-mob-griefing": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_FOX_BYPASS_MOB_GRIEFING"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -1340,8 +2027,12 @@ export const configData: {
               ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
-              "ridable-jump-height": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_FROG_RIDABLE_JUMP_HEIGHT"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN")
+              "ridable-jump-height": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_FROG_RIDABLE_JUMP_HEIGHT"
+              ),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              )
             },
             ghast: {
               ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
@@ -1360,12 +2051,20 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "step-height": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_GIANT_STEP_HEIGHT"),
-              "jump-height": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_GIANT_JUMP_HEIGHT"),
+              "step-height": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_GIANT_STEP_HEIGHT"
+              ),
+              "jump-height": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_GIANT_JUMP_HEIGHT"
+              ),
               "movement-speed": t("TXT_CODE_COMMON_MOVEMENT_SPEED_ATTRIBUTE"),
-              "attack-damage": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_GIANT_ATTACK_DAMAGE"),
+              "attack-damage": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_GIANT_ATTACK_DAMAGE"
+              ),
               "have-ai": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_GIANT_HAVE_AI"),
-              "have-hostile-ai": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_GIANT_HAVE_HOSTILE_AI"),
+              "have-hostile-ai": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_GIANT_HAVE_HOSTILE_AI"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -1388,7 +2087,9 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -1410,7 +2111,9 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -1420,7 +2123,9 @@ export const configData: {
             horse: {
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
               attributes: {
                 max_health: {
                   min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_HEALTH_MIN"),
@@ -1459,7 +2164,9 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "naturally-spawn": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ILLUSIONER_NATURALLY_SPAWN"),
+              "naturally-spawn": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ILLUSIONER_NATURALLY_SPAWN"
+              ),
               "movement-speed": t("TXT_CODE_COMMON_MOVEMENT_SPEED_ATTRIBUTE"),
               "follow-range": t("TXT_CODE_COMMON_FOLLOW_RANGE_ATTRIBUTE"),
               attributes: {
@@ -1471,12 +2178,20 @@ export const configData: {
             iron_golem: {
               ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
-              "healing-calms-anger": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_IRON_GOLEM_HEALING_CALMS_ANGER"),
+              "healing-calms-anger": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_IRON_GOLEM_HEALING_CALMS_ANGER"
+              ),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "can-spawn-in-air": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_IRON_GOLEM_CAN_SPAWN_IN_AIR"),
-              "can-swim": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_IRON_GOLEM_CAN_SWIM"),
-              "poppy-calms-anger": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_IRON_GOLEM_POPPY_CALMS_ANGER"),
+              "can-spawn-in-air": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_IRON_GOLEM_CAN_SPAWN_IN_AIR"
+              ),
+              "can-swim": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_IRON_GOLEM_CAN_SWIM"
+              ),
+              "poppy-calms-anger": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_IRON_GOLEM_POPPY_CALMS_ANGER"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -1488,8 +2203,12 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
-              "join-caravans": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_LLAMA_JOIN_CARAVANS"),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
+              "join-caravans": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_LLAMA_JOIN_CARAVANS"
+              ),
               attributes: {
                 max_health: {
                   min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_HEALTH_MIN"),
@@ -1513,7 +2232,9 @@ export const configData: {
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
                 max_health: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MAX_HEALTH_EQUATION"),
-                attack_damage: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_MAGMA_CUBE_ATTRIBUTES_ATTACK_DAMAGE")
+                attack_damage: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_MAGMA_CUBE_ATTRIBUTES_ATTACK_DAMAGE"
+                )
               },
               "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
@@ -1522,7 +2243,9 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -1532,7 +2255,9 @@ export const configData: {
             mule: {
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
               attributes: {
                 max_health: {
                   min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_HEALTH_MIN"),
@@ -1554,8 +2279,12 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "spawn-below-sea-level": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_OCELOT_SPAWN_BELOW_SEA_LEVEL"),
-              "breeeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "spawn-below-sea-level": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_OCELOT_SPAWN_BELOW_SEA_LEVEL"
+              ),
+              "breeeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -1567,7 +2296,9 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -1580,7 +2311,9 @@ export const configData: {
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               "ridable-max-y": t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE_MAX_Y"),
-              "can-breed": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PARROT_CAN_BREED"),
+              "can-breed": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PARROT_CAN_BREED"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -1593,36 +2326,70 @@ export const configData: {
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "ridable-max-y": t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE_MAX_Y"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "attacked-by-crystal-range": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_ATTACKED_BY_CRYSTAL_RANGE"),
-              "attacked-by-crystal-damage": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_ATTACKED_BY_CRYSTAL_DAMAGE"),
-              "orbit-crystal-radius": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_ORBIT_CRYSTAL_RADIUS"),
-              "burn-in-light": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_BURN_IN_LIGHT"),
-              "burn-in-daylight": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_BURN_IN_DAYLIGHT"),
-              "flames-on-swoop": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_FLAMES_ON_SWOOP"),
-              "ignore-players-with-torch": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_IGNORE_PLAYERS_WITH_TORCH"),
-              "allow-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_ALLOW_GRIEFING"),
+              "attacked-by-crystal-range": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_ATTACKED_BY_CRYSTAL_RANGE"
+              ),
+              "attacked-by-crystal-damage": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_ATTACKED_BY_CRYSTAL_DAMAGE"
+              ),
+              "orbit-crystal-radius": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_ORBIT_CRYSTAL_RADIUS"
+              ),
+              "burn-in-light": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_BURN_IN_LIGHT"
+              ),
+              "burn-in-daylight": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_BURN_IN_DAYLIGHT"
+              ),
+              "flames-on-swoop": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_FLAMES_ON_SWOOP"
+              ),
+              "ignore-players-with-torch": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_IGNORE_PLAYERS_WITH_TORCH"
+              ),
+              "allow-griefing": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_ALLOW_GRIEFING"
+              ),
               flames: {
-                damage: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_FLAMES_DAMAGE"),
-                "fire-time": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_FLAMES_FIRE_TIME")
+                damage: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_FLAMES_DAMAGE"
+                ),
+                "fire-time": t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_FLAMES_FIRE_TIME"
+                )
               },
               size: {
                 min: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_SIZE_MIN"),
                 max: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_SIZE_MAX")
               },
               spawn: {
-                "min-sky-darkness": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_SPAWN_MIN_SKY_DARKNESS"),
-                "only-above-sea-level": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_SPAWN_ONLY_ABOVE_SEA_LEVEL"),
-                "only-with-visible-sky": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_SPAWN_ONLY_WITH_VISIBLE_SKY"),
-                "local-difficulty-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_SPAWN_LOCAL_DIFFICULTY_CHANCE"),
+                "min-sky-darkness": t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_SPAWN_MIN_SKY_DARKNESS"
+                ),
+                "only-above-sea-level": t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_SPAWN_ONLY_ABOVE_SEA_LEVEL"
+                ),
+                "only-with-visible-sky": t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_SPAWN_ONLY_WITH_VISIBLE_SKY"
+                ),
+                "local-difficulty-chance": t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_SPAWN_LOCAL_DIFFICULTY_CHANCE"
+                ),
                 "per-attempt": {
-                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_SPAWN_PER_ATTEMPT_MIN"),
-                  max: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_SPAWN_PER_ATTEMPT_MAX")
+                  min: t(
+                    "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_SPAWN_PER_ATTEMPT_MIN"
+                  ),
+                  max: t(
+                    "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_SPAWN_PER_ATTEMPT_MAX"
+                  )
                 }
               },
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE"),
-                attack_damage: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_ATTRIBUTES_ATTACK_DAMAGE")
+                attack_damage: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_ATTRIBUTES_ATTACK_DAMAGE"
+                )
               },
               "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
@@ -1631,8 +2398,12 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "give-saddle-back": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PIG_GIVE_SADDLE_BACK"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "give-saddle-back": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PIG_GIVE_SADDLE_BACK"
+              ),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -1644,8 +2415,12 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PIGLIN_BYPASS_MOB_GRIEFING"),
-              "portal-spawn-modifier": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PIGLIN_PORTAL_SPAWN_MODIFIER"),
+              "bypass-mob-griefing": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PIGLIN_BYPASS_MOB_GRIEFING"
+              ),
+              "portal-spawn-modifier": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PIGLIN_PORTAL_SPAWN_MODIFIER"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -1669,7 +2444,9 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PILLAGER_BYPASS_MOB_GRIEFING"),
+              "bypass-mob-griefing": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PILLAGER_BYPASS_MOB_GRIEFING"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -1681,13 +2458,19 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "breedable-item": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_POLAR_BEAR_BREEDABLE_ITEM"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "breedable-item": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_POLAR_BEAR_BREEDABLE_ITEM"
+              ),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_POLAR_BEAR_ALWAYS_DROP_EXP")
+              "always-drop-exp": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_POLAR_BEAR_ALWAYS_DROP_EXP"
+              )
             },
             pufferfish: {
               ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
@@ -1700,10 +2483,18 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "spawn-killer-rabbit-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_RABBIT_SPAWN_KILLER_RABBIT_CHANCE"),
-              "spawn-toast-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_RABBIT_SPAWN_TOAST_CHANCE"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
-              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_RABBIT_BYPASS_MOB_GRIEFING"),
+              "spawn-killer-rabbit-chance": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_RABBIT_SPAWN_KILLER_RABBIT_CHANCE"
+              ),
+              "spawn-toast-chance": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_RABBIT_SPAWN_TOAST_CHANCE"
+              ),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
+              "bypass-mob-griefing": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_RABBIT_BYPASS_MOB_GRIEFING"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -1715,14 +2506,20 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_RAVAGER_BYPASS_MOB_GRIEFING"),
-              "griefable-blocks": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_RAVAGER_GRIEFABLE_BLOCKS"),
+              "bypass-mob-griefing": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_RAVAGER_BYPASS_MOB_GRIEFING"
+              ),
+              "griefable-blocks": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_RAVAGER_GRIEFABLE_BLOCKS"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
               "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP"),
-              "avoid-rabbits": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_RAVAGER_AVOID_RABBITS")
+              "avoid-rabbits": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_RAVAGER_AVOID_RABBITS"
+              )
             },
             salmon: {
               ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
@@ -1739,8 +2536,12 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
-              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SHEEP_BYPASS_MOB_GRIEFING"),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
+              "bypass-mob-griefing": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SHEEP_BYPASS_MOB_GRIEFING"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -1752,13 +2553,25 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "change-color-with-dye": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SHULKER_CHANGE_COLOR_WITH_DYE"),
+              "change-color-with-dye": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SHULKER_CHANGE_COLOR_WITH_DYE"
+              ),
               "spawn-from-bullet": {
-                "base-cahnce": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SHULKER_SPAWN_FROM_BULLET_BASE_CAHNCE"),
-                "require-open-lid": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SHULKER_SPAWN_FROM_BULLET_REQUIRE_OPEN_LID"),
-                "nearby-range": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SHULKER_SPAWN_FROM_BULLET_NEARBY_RANGE"),
-                "nearby-equation": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SHULKER_SPAWN_FROM_BULLET_NEARBY_EQUATION"),
-                "random-color": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SHULKER_SPAWN_FROM_BULLET_RANDOM_COLOR")
+                "base-cahnce": t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SHULKER_SPAWN_FROM_BULLET_BASE_CAHNCE"
+                ),
+                "require-open-lid": t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SHULKER_SPAWN_FROM_BULLET_REQUIRE_OPEN_LID"
+                ),
+                "nearby-range": t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SHULKER_SPAWN_FROM_BULLET_NEARBY_RANGE"
+                ),
+                "nearby-equation": t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SHULKER_SPAWN_FROM_BULLET_NEARBY_EQUATION"
+                ),
+                "random-color": t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SHULKER_SPAWN_FROM_BULLET_RANDOM_COLOR"
+                )
               },
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
@@ -1771,12 +2584,16 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SILVERFISH_BYPASS_MOB_GRIEFING"),
+              "bypass-mob-griefing": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SILVERFISH_BYPASS_MOB_GRIEFING"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE"),
                 movement_speed: t("TXT_CODE_COMMON_MOVEMENT_SPEED_ATTRIBUTE"),
-                attack_damage: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SILVERFISH_ATTRIBUTES_ATTACK_DAMAGE")
+                attack_damage: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SILVERFISH_ATTRIBUTES_ATTACK_DAMAGE"
+                )
               },
               "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
@@ -1791,12 +2608,18 @@ export const configData: {
               },
               "head-visibility-percent": t("TXT_CODE_GAME_CONFIG_PURPUR_HEAD_VISIBILITY_PERCENT"),
               "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP"),
-              "feed-wither-roses": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SKELETON_FEED_WITHER_ROSES"),
-              "bow-accuracy": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SKELETON_BOW_ACCURACY")
+              "feed-wither-roses": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SKELETON_FEED_WITHER_ROSES"
+              ),
+              "bow-accuracy": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SKELETON_BOW_ACCURACY"
+              )
             },
             skeleton_horse: {
               ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
-              "can-swim": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SKELETON_HORSE_CAN_SWIM"),
+              "can-swim": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SKELETON_HORSE_CAN_SWIM"
+              ),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
@@ -1822,7 +2645,9 @@ export const configData: {
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               attributes: {
                 max_health: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MAX_HEALTH_EQUATION"),
-                attack_damage: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SLIME_ATTRIBUTES_ATTACK_DAMAGE")
+                attack_damage: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SLIME_ATTRIBUTES_ATTACK_DAMAGE"
+                )
               },
               "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
@@ -1830,7 +2655,9 @@ export const configData: {
               ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
-              "breeeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "breeeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE")
               }
@@ -1839,13 +2666,27 @@ export const configData: {
               ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
-              "leave-trail-when-ridden": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SNOW_GOLEM_LEAVE_TRAIL_WHEN_RIDDEN"),
-              "pumpkin-can-be-added-back": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SNOW_GOLEM_PUMPKIN_CAN_BE_ADDED_BACK"),
-              "min-shoot-interval-ticks": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SNOW_GOLEM_MIN_SHOOT_INTERVAL_TICKS"),
-              "max-shoot-interval-ticks": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SNOW_GOLEM_MAX_SHOOT_INTERVAL_TICKS"),
-              "snow-ball-modifier": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SNOW_GOLEM_SNOW_BALL_MODIFIER"),
-              "attack-distance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SNOW_GOLEM_ATTACK_DISTANCE"),
-              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SNOW_GOLEM_BYPASS_MOB_GRIEFING"),
+              "leave-trail-when-ridden": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SNOW_GOLEM_LEAVE_TRAIL_WHEN_RIDDEN"
+              ),
+              "pumpkin-can-be-added-back": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SNOW_GOLEM_PUMPKIN_CAN_BE_ADDED_BACK"
+              ),
+              "min-shoot-interval-ticks": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SNOW_GOLEM_MIN_SHOOT_INTERVAL_TICKS"
+              ),
+              "max-shoot-interval-ticks": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SNOW_GOLEM_MAX_SHOOT_INTERVAL_TICKS"
+              ),
+              "snow-ball-modifier": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SNOW_GOLEM_SNOW_BALL_MODIFIER"
+              ),
+              "attack-distance": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SNOW_GOLEM_ATTACK_DISTANCE"
+              ),
+              "bypass-mob-griefing": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SNOW_GOLEM_BYPASS_MOB_GRIEFING"
+              ),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
@@ -1869,8 +2710,12 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "immune-to-EAR": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SQUID_IMMUNE_TO_EAR"),
-              "water-offset-check": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SQUID_WATER_OFFSET_CHECK"),
+              "immune-to-EAR": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SQUID_IMMUNE_TO_EAR"
+              ),
+              "water-offset-check": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SQUID_WATER_OFFSET_CHECK"
+              ),
               "can-fly": t("TXT_CODE_GAME_CONFIG_PURPUR_CAN_FLY"),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
@@ -1893,8 +2738,12 @@ export const configData: {
               ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
-              "give-saddle-back": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_STRIDER_GIVE_SADDLE_BACK"),
-              "breeeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "give-saddle-back": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_STRIDER_GIVE_SADDLE_BACK"
+              ),
+              "breeeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
@@ -1909,10 +2758,14 @@ export const configData: {
             },
             trader_llama: {
               ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
-              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_TRADER_LLAMA_CONTROLLABLE"),
+              controllable: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_TRADER_LLAMA_CONTROLLABLE"
+              ),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
               attributes: {
                 max_health: {
                   min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_HEALTH_MIN"),
@@ -1944,7 +2797,9 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -1968,34 +2823,70 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_BYPASS_MOB_GRIEFING"),
-              "can-be-leashed": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_CAN_BE_LEASHED"),
-              "follow-emerald-blocks": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_FOLLOW_EMERALD_BLOCKS"),
-              "allow-trading": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_ALLOW_TRADING"),
-              "display-trade-item": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_DISPLAY_TRADE_ITEM"),
+              "bypass-mob-griefing": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_BYPASS_MOB_GRIEFING"
+              ),
+              "can-be-leashed": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_CAN_BE_LEASHED"
+              ),
+              "follow-emerald-blocks": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_FOLLOW_EMERALD_BLOCKS"
+              ),
+              "allow-trading": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_ALLOW_TRADING"
+              ),
+              "display-trade-item": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_DISPLAY_TRADE_ITEM"
+              ),
               lobotomize: {
-                enabled: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_LOBOTOMIZE_ENABLED"),
-                "check-interval": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_LOBOTOMIZE_CHECK_INTERVAL"),
-                "wait-until-trade-locked": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_LOBOTOMIZE_WAIT_UNTIL_TRADE_LOCKED")
+                enabled: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_LOBOTOMIZE_ENABLED"
+                ),
+                "check-interval": t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_LOBOTOMIZE_CHECK_INTERVAL"
+                ),
+                "wait-until-trade-locked": t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_LOBOTOMIZE_WAIT_UNTIL_TRADE_LOCKED"
+                )
               },
-              "minimum-demand": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_MINIMUM_DEMAND"),
-              "can-breed": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_CAN_BREED"),
-              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
-              "clerics-farm-warts": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_CLERICS_FARM_WARTS"),
-              "cleric-wart-farmers-thow-warts-at-villagers": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_CLERIC_WART_FARMERS_THOW_WARTS_AT_VILLAGERS"),
+              "minimum-demand": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_MINIMUM_DEMAND"
+              ),
+              "can-breed": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_CAN_BREED"
+              ),
+              "breeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
+              "clerics-farm-warts": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_CLERICS_FARM_WARTS"
+              ),
+              "cleric-wart-farmers-thow-warts-at-villagers": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_CLERIC_WART_FARMERS_THOW_WARTS_AT_VILLAGERS"
+              ),
               "spawn-iron-golem": {
-                radius: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_SPAWN_IRON_GOLEM_RADIUS"),
-                limit: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_SPAWN_IRON_GOLEM_LIMIT")
+                radius: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_SPAWN_IRON_GOLEM_RADIUS"
+                ),
+                limit: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_SPAWN_IRON_GOLEM_LIMIT"
+                )
               },
               "search-radius": {
-                "aquire-poi": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_SEARCH_RADIUS_AQUIRE_POI"),
-                "nearest-bed-sensor": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_SEARCH_RADIUS_NEAREST_BED_SENSOR")
+                "aquire-poi": t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_SEARCH_RADIUS_AQUIRE_POI"
+                ),
+                "nearest-bed-sensor": t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_SEARCH_RADIUS_NEAREST_BED_SENSOR"
+                )
               },
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_ALWAYS_DROP_EXP")
+              "always-drop-exp": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_ALWAYS_DROP_EXP"
+              )
             },
             vindicator: {
               ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
@@ -2003,7 +2894,9 @@ export const configData: {
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               johnny: {
-                "spawn-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VINDICATOR_JOHNNY_SPAWN_CHANCE")
+                "spawn-chance": t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VINDICATOR_JOHNNY_SPAWN_CHANCE"
+                )
               },
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
@@ -2016,9 +2909,15 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "can-be-leashed": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WANDERING_TRADER_CAN_BE_LEASHED"),
-              "allow-trading": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WANDERING_TRADER_ALLOW_TRADING"),
-              "follow-emerald-blocks": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WANDERING_TRADER_FOLLOW_EMERALD_BLOCKS"),
+              "can-be-leashed": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WANDERING_TRADER_CAN_BE_LEASHED"
+              ),
+              "allow-trading": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WANDERING_TRADER_ALLOW_TRADING"
+              ),
+              "follow-emerald-blocks": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WANDERING_TRADER_FOLLOW_EMERALD_BLOCKS"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -2047,12 +2946,24 @@ export const configData: {
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "ridable-max-y": t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE_MAX_Y"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "can-ride-vehicles": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WITHER_CAN_RIDE_VEHICLES"),
-              "play-spawn-sound": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WITHER_PLAY_SPAWN_SOUND"),
-              "explosion-radius": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WITHER_EXPLOSION_RADIUS"),
-              "health-regen-amount": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WITHER_HEALTH_REGEN_AMOUNT"),
-              "health-regen-delay": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WITHER_HEALTH_REGEN_DELAY"),
-              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WITHER_BYPASS_MOB_GRIEFING"),
+              "can-ride-vehicles": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WITHER_CAN_RIDE_VEHICLES"
+              ),
+              "play-spawn-sound": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WITHER_PLAY_SPAWN_SOUND"
+              ),
+              "explosion-radius": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WITHER_EXPLOSION_RADIUS"
+              ),
+              "health-regen-amount": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WITHER_HEALTH_REGEN_AMOUNT"
+              ),
+              "health-regen-delay": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WITHER_HEALTH_REGEN_DELAY"
+              ),
+              "bypass-mob-griefing": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WITHER_BYPASS_MOB_GRIEFING"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -2075,10 +2986,18 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "milk-cures-rabid-wolves": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WOLF_MILK_CURES_RABID_WOLVES"),
-              "spawn-rabid-chancs": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WOLF_SPAWN_RABID_CHANCS"),
-              "default-collar-color": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WOLF_DEFAULT_COLLAR_COLOR"),
-              "breeeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "milk-cures-rabid-wolves": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WOLF_MILK_CURES_RABID_WOLVES"
+              ),
+              "spawn-rabid-chancs": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WOLF_SPAWN_RABID_CHANCS"
+              ),
+              "default-collar-color": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WOLF_DEFAULT_COLLAR_COLOR"
+              ),
+              "breeeding-delay-ticks": t(
+                "TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
@@ -2106,8 +3025,12 @@ export const configData: {
                 chance: t("TXT_CODE_GAME_CONFIG_PURPUR_CHANCE"),
                 "try-existing-chickens": t("TXT_CODE_GAME_CONFIG_PURPUR_TRY_EXISTING_CHICKENS")
               },
-              "aggressive-towards-villager-when-lagging": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIE_AGGRESSIVE_TOWARDS_VILLAGER_WHEN_LAGGING"),
-              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIE_BYPASS_MOB_GRIEFING"),
+              "aggressive-towards-villager-when-lagging": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIE_AGGRESSIVE_TOWARDS_VILLAGER_WHEN_LAGGING"
+              ),
+              "bypass-mob-griefing": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIE_BYPASS_MOB_GRIEFING"
+              ),
               attributes: {
                 max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
                 scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE"),
@@ -2118,10 +3041,14 @@ export const configData: {
             },
             zombie_horse: {
               ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
-              "can-swim": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIE_HORSE_CAN_SWIM"),
+              "can-swim": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIE_HORSE_CAN_SWIM"
+              ),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "spawn-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIE_HORSE_SPAWN_CHANCE"),
+              "spawn-chance": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIE_HORSE_SPAWN_CHANCE"
+              ),
               attributes: {
                 max_health: {
                   min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_HEALTH_MIN"),
@@ -2143,10 +3070,16 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              cure: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIE_VILLAGER_CURE"),
+              cure: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIE_VILLAGER_CURE"
+              ),
               curing_time: {
-                min: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIE_VILLAGER_CURING_TIME_MIN"),
-                max: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIE_VILLAGER_CURING_TIME_MAX")
+                min: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIE_VILLAGER_CURING_TIME_MIN"
+                ),
+                max: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIE_VILLAGER_CURING_TIME_MAX"
+                )
               },
               jockey: {
                 "only-babies": t("TXT_CODE_GAME_CONFIG_PURPUR_ONLY_BABIES"),
@@ -2165,7 +3098,9 @@ export const configData: {
               controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
               "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
-              "count-as-player-kill-when-angry": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIFIED_PIGLIN_COUNT_AS_PLAYER_KILL_WHEN_ANGRY"),
+              "count-as-player-kill-when-angry": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIFIED_PIGLIN_COUNT_AS_PLAYER_KILL_WHEN_ANGRY"
+              ),
               jockey: {
                 "only-babies": t("TXT_CODE_GAME_CONFIG_PURPUR_ONLY_BABIES"),
                 chance: t("TXT_CODE_GAME_CONFIG_PURPUR_CHANCE"),
@@ -2181,214 +3116,498 @@ export const configData: {
           }
         },
         "gameplay-mechanics": {
-          "always-tame-in-creative": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ALWAYS_TAME_IN_CREATIVE"),
-          "animal-breeding-cooldown-seconds": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ANIMAL_BREEDING_COOLDOWN_SECONDS"),
+          "always-tame-in-creative": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ALWAYS_TAME_IN_CREATIVE"
+          ),
+          "animal-breeding-cooldown-seconds": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ANIMAL_BREEDING_COOLDOWN_SECONDS"
+          ),
           armorstand: {
-            "step-height": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_STEP_HEIGHT"),
-            "set-name-visible-when-placing-with-custom-name": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_SET_NAME_VISIBLE_WHEN_PLACING_WITH_CUSTOM_NAME"),
-            "fix-nametags": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_FIX_NAMETAGS"),
-            "place-with-arms-visible": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_PLACE_WITH_ARMS_VISIBLE"),
-            "can-movement-tick": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_CAN_MOVEMENT_TICK"),
-            "can-move-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_CAN_MOVE_IN_WATER"),
-            "can-move-in-water-over-fence": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_CAN_MOVE_IN_WATER_OVER_FENCE")
+            "step-height": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_STEP_HEIGHT"
+            ),
+            "set-name-visible-when-placing-with-custom-name": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_SET_NAME_VISIBLE_WHEN_PLACING_WITH_CUSTOM_NAME"
+            ),
+            "fix-nametags": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_FIX_NAMETAGS"
+            ),
+            "place-with-arms-visible": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_PLACE_WITH_ARMS_VISIBLE"
+            ),
+            "can-movement-tick": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_CAN_MOVEMENT_TICK"
+            ),
+            "can-move-in-water": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_CAN_MOVE_IN_WATER"
+            ),
+            "can-move-in-water-over-fence": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_CAN_MOVE_IN_WATER_OVER_FENCE"
+            )
           },
           arrow: {
-            "movement-resets-despawn-counter": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARROW_MOVEMENT_RESETS_DESPAWN_COUNTER")
+            "movement-resets-despawn-counter": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARROW_MOVEMENT_RESETS_DESPAWN_COUNTER"
+            )
           },
           boat: {
-            "eject-players-on-land": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_BOAT_EJECT_PLAYERS_ON_LAND"),
-            "do-fall-damage": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_BOAT_DO_FALL_DAMAGE")
+            "eject-players-on-land": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_BOAT_EJECT_PLAYERS_ON_LAND"
+            ),
+            "do-fall-damage": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_BOAT_DO_FALL_DAMAGE"
+            )
           },
-          "clamp-explosion-radius": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_CLAMP_EXPLOSION_RADIUS"),
+          "clamp-explosion-radius": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_CLAMP_EXPLOSION_RADIUS"
+          ),
           "daylight-cycle-ticks": {
-            daytime: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_DAYLIGHT_CYCLE_TICKS_DAYTIME"),
-            nighttime: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_DAYLIGHT_CYCLE_TICKS_NIGHTTIME")
+            daytime: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_DAYLIGHT_CYCLE_TICKS_DAYTIME"
+            ),
+            nighttime: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_DAYLIGHT_CYCLE_TICKS_NIGHTTIME"
+            )
           },
-          "disable-drops-on-cramming-death": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_DISABLE_DROPS_ON_CRAMMING_DEATH"),
-          "disable-oxidation-proximity-penalty": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_DISABLE_OXIDATION_PROXIMITY_PENALTY"),
+          "disable-drops-on-cramming-death": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_DISABLE_DROPS_ON_CRAMMING_DEATH"
+          ),
+          "disable-oxidation-proximity-penalty": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_DISABLE_OXIDATION_PROXIMITY_PENALTY"
+          ),
           drowning: {
-            "air-ticks": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_DROWNING_AIR_TICKS"),
-            "ticks-per-damage": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_DROWNING_TICKS_PER_DAMAGE"),
-            "damage-from-drowning": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_DROWNING_DAMAGE_FROM_DROWNING")
+            "air-ticks": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_DROWNING_AIR_TICKS"
+            ),
+            "ticks-per-damage": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_DROWNING_TICKS_PER_DAMAGE"
+            ),
+            "damage-from-drowning": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_DROWNING_DAMAGE_FROM_DROWNING"
+            )
           },
           elytra: {
-            "damage-per-second": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ELYTRA_DAMAGE_PER_SECOND"),
-            "damage-multiplied-by-speed": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ELYTRA_DAMAGE_MULTIPLIED_BY_SPEED"),
-            "kinetic-damage": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ELYTRA_KINETIC_DAMAGE"),
-            "ignore-unbreaking": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ELYTRA_IGNORE_UNBREAKING"),
+            "damage-per-second": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ELYTRA_DAMAGE_PER_SECOND"
+            ),
+            "damage-multiplied-by-speed": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ELYTRA_DAMAGE_MULTIPLIED_BY_SPEED"
+            ),
+            "kinetic-damage": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ELYTRA_KINETIC_DAMAGE"
+            ),
+            "ignore-unbreaking": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ELYTRA_IGNORE_UNBREAKING"
+            ),
             "damage-per-boost": {
-              firework: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ELYTRA_DAMAGE_PER_BOOST_FIREWORK"),
-              trident: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ELYTRA_DAMAGE_PER_BOOST_TRIDENT")
+              firework: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ELYTRA_DAMAGE_PER_BOOST_FIREWORK"
+              ),
+              trident: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ELYTRA_DAMAGE_PER_BOOST_TRIDENT"
+              )
             }
           },
-          "entities-can-use-portals": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ENTITIES_CAN_USE_PORTALS"),
-          "entities-pick-up-loot-bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ENTITIES_PICK_UP_LOOT_BYPASS_MOB_GRIEFING"),
-          "entity-blindness-multiplier": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ENTITY_BLINDNESS_MULTIPLIER"),
-          "entity-left-handed-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ENTITY_LEFT_HANDED_CHANCE"),
-          "entity-lifespan": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ENTITY_LIFESPAN"),
-          "fireballs-bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_FIREBALLS_BYPASS_MOB_GRIEFING"),
+          "entities-can-use-portals": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ENTITIES_CAN_USE_PORTALS"
+          ),
+          "entities-pick-up-loot-bypass-mob-griefing": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ENTITIES_PICK_UP_LOOT_BYPASS_MOB_GRIEFING"
+          ),
+          "entity-blindness-multiplier": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ENTITY_BLINDNESS_MULTIPLIER"
+          ),
+          "entity-left-handed-chance": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ENTITY_LEFT_HANDED_CHANCE"
+          ),
+          "entity-lifespan": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ENTITY_LIFESPAN"
+          ),
+          "fireballs-bypass-mob-griefing": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_FIREBALLS_BYPASS_MOB_GRIEFING"
+          ),
           halloween: {
-            force: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_HALLOWEEN_FORCE"),
-            "head-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_HALLOWEEN_HEAD_CHANCE")
+            force: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_HALLOWEEN_FORCE"
+            ),
+            "head-chance": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_HALLOWEEN_HEAD_CHANCE"
+            )
           },
-          "impose-teleport-restrictions-on-end-portals": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_IMPOSE_TELEPORT_RESTRICTIONS_ON_END_PORTALS"),
-          "impose-teleport-restrictions-on-gateways": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_IMPOSE_TELEPORT_RESTRICTIONS_ON_GATEWAYS"),
-          "impose-teleport-restrictions-on-nether-portals": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_IMPOSE_TELEPORT_RESTRICTIONS_ON_NETHER_PORTALS"),
+          "impose-teleport-restrictions-on-end-portals": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_IMPOSE_TELEPORT_RESTRICTIONS_ON_END_PORTALS"
+          ),
+          "impose-teleport-restrictions-on-gateways": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_IMPOSE_TELEPORT_RESTRICTIONS_ON_GATEWAYS"
+          ),
+          "impose-teleport-restrictions-on-nether-portals": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_IMPOSE_TELEPORT_RESTRICTIONS_ON_NETHER_PORTALS"
+          ),
           "infinity-bow": {
-            "works-without-arrows": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_INFINITY_BOW_WORKS_WITHOUT_ARROWS")
+            "works-without-arrows": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_INFINITY_BOW_WORKS_WITHOUT_ARROWS"
+            )
           },
           item: {
             "end-crystal": {
-              "place-anywhere": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_END_CRYSTAL_PLACE_ANYWHERE")
+              "place-anywhere": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_END_CRYSTAL_PLACE_ANYWHERE"
+              )
             },
             shears: {
-              "damage-if-sprinting": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SHEARS_DAMAGE_IF_SPRINTING"),
-              "ignore-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SHEARS_IGNORE_IN_WATER"),
-              "ignore-in-lava": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SHEARS_IGNORE_IN_LAVA"),
-              "sprinting-damage": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SHEARS_SPRINTING_DAMAGE"),
-              "defuse-tnt-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SHEARS_DEFUSE_TNT_CHANCE")
+              "damage-if-sprinting": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SHEARS_DAMAGE_IF_SPRINTING"
+              ),
+              "ignore-in-water": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SHEARS_IGNORE_IN_WATER"
+              ),
+              "ignore-in-lava": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SHEARS_IGNORE_IN_LAVA"
+              ),
+              "sprinting-damage": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SHEARS_SPRINTING_DAMAGE"
+              ),
+              "defuse-tnt-chance": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SHEARS_DEFUSE_TNT_CHANCE"
+              )
             },
             snowball: {
               extinguish: {
-                fire: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SNOWBALL_EXTINGUISH_FIRE"),
-                candles: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SNOWBALL_EXTINGUISH_CANDLES"),
-                campfires: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SNOWBALL_EXTINGUISH_CAMPFIRES")
+                fire: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SNOWBALL_EXTINGUISH_FIRE"
+                ),
+                candles: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SNOWBALL_EXTINGUISH_CANDLES"
+                ),
+                campfires: t(
+                  "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SNOWBALL_EXTINGUISH_CAMPFIRES"
+                )
               }
             },
             shulker_box: {
-              "drop-contents-when-destroyed": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SHULKER_BOX_DROP_CONTENTS_WHEN_DESTROYED")
+              "drop-contents-when-destroyed": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SHULKER_BOX_DROP_CONTENTS_WHEN_DESTROYED"
+              )
             },
             compass: {
-              "holding-shows-bossbar": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_COMPASS_HOLDING_SHOWS_BOSSBAR")
+              "holding-shows-bossbar": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_COMPASS_HOLDING_SHOWS_BOSSBAR"
+              )
             },
             glow_berries: {
-              "eat-glow-duration": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_GLOW_BERRIES_EAT_GLOW_DURATION")
+              "eat-glow-duration": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_GLOW_BERRIES_EAT_GLOW_DURATION"
+              )
             },
             "ender-pearl": {
-              damage: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_ENDER_PEARL_DAMAGE"),
-              cooldown: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_ENDER_PEARL_COOLDOWN"),
-              "creative-cooldown": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_ENDER_PEARL_CREATIVE_COOLDOWN"),
-              "endermite-spawn-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_ENDER_PEARL_ENDERMITE_SPAWN_CHANCE")
+              damage: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_ENDER_PEARL_DAMAGE"
+              ),
+              cooldown: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_ENDER_PEARL_COOLDOWN"
+              ),
+              "creative-cooldown": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_ENDER_PEARL_CREATIVE_COOLDOWN"
+              ),
+              "endermite-spawn-chance": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_ENDER_PEARL_ENDERMITE_SPAWN_CHANCE"
+              )
             },
             immune: {
-              explosion: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_IMMUNE_EXPLOSION"),
-              fire: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_IMMUNE_FIRE"),
-              lightning: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_IMMUNE_LIGHTNING"),
-              cactus: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_IMMUNE_CACTUS")
+              explosion: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_IMMUNE_EXPLOSION"
+              ),
+              fire: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_IMMUNE_FIRE"
+              ),
+              lightning: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_IMMUNE_LIGHTNING"
+              ),
+              cactus: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_IMMUNE_CACTUS"
+              )
             }
           },
-          "mending-multiplier": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MENDING_MULTIPLIER"),
-          "milk-clears-beneficial-effects": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MILK_CLEARS_BENEFICIAL_EFFECTS"),
-          "milk-cures-bad-omen": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MILK_CURES_BAD_OMEN"),
+          "mending-multiplier": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MENDING_MULTIPLIER"
+          ),
+          "milk-clears-beneficial-effects": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MILK_CLEARS_BENEFICIAL_EFFECTS"
+          ),
+          "milk-cures-bad-omen": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MILK_CURES_BAD_OMEN"
+          ),
           minecart: {
-            "max-speed": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_MAX_SPEED"),
-            "place-anywhere": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_PLACE_ANYWHERE"),
+            "max-speed": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_MAX_SPEED"
+            ),
+            "place-anywhere": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_PLACE_ANYWHERE"
+            ),
             "powered-rail": {
-              "boost-modifier": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_POWERED_RAIL_BOOST_MODIFIER")
+              "boost-modifier": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_POWERED_RAIL_BOOST_MODIFIER"
+              )
             },
             controllable: {
-              enabled: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_CONTROLLABLE_ENABLED"),
-              "fall-damage": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_CONTROLLABLE_FALL_DAMAGE"),
-              "step-height": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_CONTROLLABLE_STEP_HEIGHT"),
-              "hop-boost": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_CONTROLLABLE_HOP_BOOST"),
-              "base-speed": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_CONTROLLABLE_BASE_SPEED"),
-              "block-speed": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_CONTROLLABLE_BLOCK_SPEED")
+              enabled: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_CONTROLLABLE_ENABLED"
+              ),
+              "fall-damage": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_CONTROLLABLE_FALL_DAMAGE"
+              ),
+              "step-height": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_CONTROLLABLE_STEP_HEIGHT"
+              ),
+              "hop-boost": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_CONTROLLABLE_HOP_BOOST"
+              ),
+              "base-speed": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_CONTROLLABLE_BASE_SPEED"
+              ),
+              "block-speed": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_CONTROLLABLE_BLOCK_SPEED"
+              )
             }
           },
           "mob-effects": {
-            "health-regen-amount": t("TXT_CODE_COMMON_THE_AMOUNT_AT_WHICH_THIS_EFFECT_AFFECTS_ENTITIES"),
-            "minimal-health-poison-amount": t("TXT_CODE_COMMON_THE_AMOUNT_AT_WHICH_THIS_EFFECT_AFFECTS_ENTITIES"),
-            "poison-degeneration-amount": t("TXT_CODE_COMMON_THE_AMOUNT_AT_WHICH_THIS_EFFECT_AFFECTS_ENTITIES"),
-            "wither-degeneration-amount": t("TXT_CODE_COMMON_THE_AMOUNT_AT_WHICH_THIS_EFFECT_AFFECTS_ENTITIES"),
-            "hunger-exhaustion-amount": t("TXT_CODE_COMMON_THE_AMOUNT_AT_WHICH_THIS_EFFECT_AFFECTS_ENTITIES"),
-            "saturation-regen-amount": t("TXT_CODE_COMMON_THE_AMOUNT_AT_WHICH_THIS_EFFECT_AFFECTS_ENTITIES")
+            "health-regen-amount": t(
+              "TXT_CODE_COMMON_THE_AMOUNT_AT_WHICH_THIS_EFFECT_AFFECTS_ENTITIES"
+            ),
+            "minimal-health-poison-amount": t(
+              "TXT_CODE_COMMON_THE_AMOUNT_AT_WHICH_THIS_EFFECT_AFFECTS_ENTITIES"
+            ),
+            "poison-degeneration-amount": t(
+              "TXT_CODE_COMMON_THE_AMOUNT_AT_WHICH_THIS_EFFECT_AFFECTS_ENTITIES"
+            ),
+            "wither-degeneration-amount": t(
+              "TXT_CODE_COMMON_THE_AMOUNT_AT_WHICH_THIS_EFFECT_AFFECTS_ENTITIES"
+            ),
+            "hunger-exhaustion-amount": t(
+              "TXT_CODE_COMMON_THE_AMOUNT_AT_WHICH_THIS_EFFECT_AFFECTS_ENTITIES"
+            ),
+            "saturation-regen-amount": t(
+              "TXT_CODE_COMMON_THE_AMOUNT_AT_WHICH_THIS_EFFECT_AFFECTS_ENTITIES"
+            )
           },
-          "mob-last-hurt-by-player-time": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MOB_LAST_HURT_BY_PLAYER_TIME"),
+          "mob-last-hurt-by-player-time": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MOB_LAST_HURT_BY_PLAYER_TIME"
+          ),
           "mob-spawning": {
-            "village-cats": t("TXT_CODE_COMMON_SET_TO_TRUE_TO_SPAWN_IN_THE_WORLD_THAT_THIS_OPTION_IS_A_PART_OF"),
-            "raid-patrols:": t("TXT_CODE_COMMON_SET_TO_TRUE_TO_SPAWN_IN_THE_WORLD_THAT_THIS_OPTION_IS_A_PART_OF"),
-            phantoms: t("TXT_CODE_COMMON_SET_TO_TRUE_TO_SPAWN_IN_THE_WORLD_THAT_THIS_OPTION_IS_A_PART_OF"),
-            "wandering-traders": t("TXT_CODE_COMMON_SET_TO_TRUE_TO_SPAWN_IN_THE_WORLD_THAT_THIS_OPTION_IS_A_PART_OF"),
-            "village-sieges": t("TXT_CODE_COMMON_SET_TO_TRUE_TO_SPAWN_IN_THE_WORLD_THAT_THIS_OPTION_IS_A_PART_OF"),
-            "ignore-creative-players": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MOB_SPAWNING_IGNORE_CREATIVE_PLAYERS")
+            "village-cats": t(
+              "TXT_CODE_COMMON_SET_TO_TRUE_TO_SPAWN_IN_THE_WORLD_THAT_THIS_OPTION_IS_A_PART_OF"
+            ),
+            "raid-patrols:": t(
+              "TXT_CODE_COMMON_SET_TO_TRUE_TO_SPAWN_IN_THE_WORLD_THAT_THIS_OPTION_IS_A_PART_OF"
+            ),
+            phantoms: t(
+              "TXT_CODE_COMMON_SET_TO_TRUE_TO_SPAWN_IN_THE_WORLD_THAT_THIS_OPTION_IS_A_PART_OF"
+            ),
+            "wandering-traders": t(
+              "TXT_CODE_COMMON_SET_TO_TRUE_TO_SPAWN_IN_THE_WORLD_THAT_THIS_OPTION_IS_A_PART_OF"
+            ),
+            "village-sieges": t(
+              "TXT_CODE_COMMON_SET_TO_TRUE_TO_SPAWN_IN_THE_WORLD_THAT_THIS_OPTION_IS_A_PART_OF"
+            ),
+            "ignore-creative-players": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MOB_SPAWNING_IGNORE_CREATIVE_PLAYERS"
+            )
           },
-          "mobs-ignore-rails": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MOBS_IGNORE_RAILS"),
-          "note-block-ignore-above": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_NOTE_BLOCK_IGNORE_ABOVE"),
-          "persistent-droppable-entity-display-names": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PERSISTENT_DROPPABLE_ENTITY_DISPLAY_NAMES"),
-          "persistent-tileentity-display-name": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PERSISTENT_TILEENTITY_DISPLAY_NAME"),
-          "persistent-tileentity-lore": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PERSISTENT_TILEENTITY_LORE"),
+          "mobs-ignore-rails": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MOBS_IGNORE_RAILS"
+          ),
+          "note-block-ignore-above": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_NOTE_BLOCK_IGNORE_ABOVE"
+          ),
+          "persistent-droppable-entity-display-names": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PERSISTENT_DROPPABLE_ENTITY_DISPLAY_NAMES"
+          ),
+          "persistent-tileentity-display-name": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PERSISTENT_TILEENTITY_DISPLAY_NAME"
+          ),
+          "persistent-tileentity-lore": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PERSISTENT_TILEENTITY_LORE"
+          ),
           player: {
-            "exp-pickup-delay-ticks": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_EXP_PICKUP_DELAY_TICKS"),
-            "shift-right-click-repairs-mending-points": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_SHIFT_RIGHT_CLICK_REPAIRS_MENDING_POINTS"),
-            "spawn-invulnerable-ticks": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_SPAWN_INVULNERABLE_TICKS"),
-            "invulnerable-while-accepting-resource-pack": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_INVULNERABLE_WHILE_ACCEPTING_RESOURCE_PACK"),
-            "teleport-if-outside-border": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_TELEPORT_IF_OUTSIDE_BORDER"),
-            "teleport-on-nether-ceiling-damage": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_TELEPORT_ON_NETHER_CEILING_DAMAGE"),
-            "allow-void-trading": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_ALLOW_VOID_TRADING"),
-            "totem-of-undying-works-in-inventory": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_TOTEM_OF_UNDYING_WORKS_IN_INVENTORY"),
-            "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_RIDABLE_IN_WATER"),
-            "fix-stuck-in-portal": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_FIX_STUCK_IN_PORTAL"),
-            "one-punch-in-creative": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_ONE_PUNCH_IN_CREATIVE"),
-            "sleep-ignore-nearby-mobs": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_SLEEP_IGNORE_NEARBY_MOBS"),
-            "can-skip-night": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_CAN_SKIP_NIGHT"),
-            "critical-damage-multiplier": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_CRITICAL_DAMAGE_MULTIPLIER"),
-            "burp-when-full": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_BURP_WHEN_FULL"),
-            "burp-delay": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_BURP_DELAY"),
+            "exp-pickup-delay-ticks": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_EXP_PICKUP_DELAY_TICKS"
+            ),
+            "shift-right-click-repairs-mending-points": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_SHIFT_RIGHT_CLICK_REPAIRS_MENDING_POINTS"
+            ),
+            "spawn-invulnerable-ticks": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_SPAWN_INVULNERABLE_TICKS"
+            ),
+            "invulnerable-while-accepting-resource-pack": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_INVULNERABLE_WHILE_ACCEPTING_RESOURCE_PACK"
+            ),
+            "teleport-if-outside-border": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_TELEPORT_IF_OUTSIDE_BORDER"
+            ),
+            "teleport-on-nether-ceiling-damage": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_TELEPORT_ON_NETHER_CEILING_DAMAGE"
+            ),
+            "allow-void-trading": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_ALLOW_VOID_TRADING"
+            ),
+            "totem-of-undying-works-in-inventory": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_TOTEM_OF_UNDYING_WORKS_IN_INVENTORY"
+            ),
+            "ridable-in-water": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_RIDABLE_IN_WATER"
+            ),
+            "fix-stuck-in-portal": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_FIX_STUCK_IN_PORTAL"
+            ),
+            "one-punch-in-creative": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_ONE_PUNCH_IN_CREATIVE"
+            ),
+            "sleep-ignore-nearby-mobs": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_SLEEP_IGNORE_NEARBY_MOBS"
+            ),
+            "can-skip-night": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_CAN_SKIP_NIGHT"
+            ),
+            "critical-damage-multiplier": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_CRITICAL_DAMAGE_MULTIPLIER"
+            ),
+            "burp-when-full": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_BURP_WHEN_FULL"
+            ),
+            "burp-delay": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_BURP_DELAY"
+            ),
             "curse-of-binding": {
-              "remove-with-weakness": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_CURSE_OF_BINDING_REMOVE_WITH_WEAKNESS")
+              "remove-with-weakness": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_CURSE_OF_BINDING_REMOVE_WITH_WEAKNESS"
+              )
             },
             "idle-timeout": {
-              "kick-if-idle": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_IDLE_TIMEOUT_KICK_IF_IDLE"),
-              "tick-nearby-entities": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_IDLE_TIMEOUT_TICK_NEARBY_ENTITIES"),
-              "mobs-target": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_IDLE_TIMEOUT_MOBS_TARGET"),
-              "count-as-sleeping": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_IDLE_TIMEOUT_COUNT_AS_SLEEPING"),
-              "update-tab-list": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_IDLE_TIMEOUT_UPDATE_TAB_LIST")
+              "kick-if-idle": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_IDLE_TIMEOUT_KICK_IF_IDLE"
+              ),
+              "tick-nearby-entities": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_IDLE_TIMEOUT_TICK_NEARBY_ENTITIES"
+              ),
+              "mobs-target": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_IDLE_TIMEOUT_MOBS_TARGET"
+              ),
+              "count-as-sleeping": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_IDLE_TIMEOUT_COUNT_AS_SLEEPING"
+              ),
+              "update-tab-list": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_IDLE_TIMEOUT_UPDATE_TAB_LIST"
+              )
             },
             "exp-dropped-on-death": {
-              equation: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_EXP_DROPPED_ON_DEATH_EQUATION"),
-              maximum: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_EXP_DROPPED_ON_DEATH_MAXIMUM")
+              equation: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_EXP_DROPPED_ON_DEATH_EQUATION"
+              ),
+              maximum: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_EXP_DROPPED_ON_DEATH_MAXIMUM"
+              )
             },
             "netherite-fire-resistance": {
-              duration: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_NETHERITE_FIRE_RESISTANCE_DURATION"),
-              amplifier: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_NETHERITE_FIRE_RESISTANCE_AMPLIFIER"),
-              ambient: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_NETHERITE_FIRE_RESISTANCE_AMBIENT"),
-              "show-particles": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_NETHERITE_FIRE_RESISTANCE_SHOW_PARTICLES"),
-              "show-icon": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_NETHERITE_FIRE_RESISTANCE_SHOW_ICON")
+              duration: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_NETHERITE_FIRE_RESISTANCE_DURATION"
+              ),
+              amplifier: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_NETHERITE_FIRE_RESISTANCE_AMPLIFIER"
+              ),
+              ambient: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_NETHERITE_FIRE_RESISTANCE_AMBIENT"
+              ),
+              "show-particles": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_NETHERITE_FIRE_RESISTANCE_SHOW_PARTICLES"
+              ),
+              "show-icon": t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_NETHERITE_FIRE_RESISTANCE_SHOW_ICON"
+              )
             },
             "projectile-damage": {
-              snowball: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_PROJECTILE_DAMAGE_SNOWBALL")
+              snowball: t(
+                "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_PROJECTILE_DAMAGE_SNOWBALL"
+              )
             }
           },
           "projectile-offset": {
-            bow: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILE_OFFSET_BOW"),
-            crossbow: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILE_OFFSET_CROSSBOW"),
-            egg: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILE_OFFSET_EGG"),
-            "ender-pearl": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILE_OFFSET_ENDER_PEARL"),
-            "throwable-potion": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILE_OFFSET_THROWABLE_POTION"),
-            trident: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILE_OFFSET_TRIDENT"),
-            snowball: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILE_OFFSET_SNOWBALL")
+            bow: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILE_OFFSET_BOW"
+            ),
+            crossbow: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILE_OFFSET_CROSSBOW"
+            ),
+            egg: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILE_OFFSET_EGG"
+            ),
+            "ender-pearl": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILE_OFFSET_ENDER_PEARL"
+            ),
+            "throwable-potion": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILE_OFFSET_THROWABLE_POTION"
+            ),
+            trident: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILE_OFFSET_TRIDENT"
+            ),
+            snowball: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILE_OFFSET_SNOWBALL"
+            )
           },
-          "projectiles-bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILES_BYPASS_MOB_GRIEFING"),
-          "raid-cooldown-seconds": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_RAID_COOLDOWN_SECONDS"),
-          "rain-stops-after-sleep": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_RAIN_STOPS_AFTER_SLEEP"),
-          "shovel-turns-block-to-grass-path": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_SHOVEL_TURNS_BLOCK_TO_GRASS_PATH"),
+          "projectiles-bypass-mob-griefing": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILES_BYPASS_MOB_GRIEFING"
+          ),
+          "raid-cooldown-seconds": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_RAID_COOLDOWN_SECONDS"
+          ),
+          "rain-stops-after-sleep": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_RAIN_STOPS_AFTER_SLEEP"
+          ),
+          "shovel-turns-block-to-grass-path": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_SHOVEL_TURNS_BLOCK_TO_GRASS_PATH"
+          ),
           "silk-touch": {
-            enabled: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_SILK_TOUCH_ENABLED"),
-            "minimal-level": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_SILK_TOUCH_MINIMAL_LEVEL"),
-            tools: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_SILK_TOUCH_TOOLS"),
-            "spawner-name": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_SILK_TOUCH_SPAWNER_NAME"),
-            "spawner-lore": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_SILK_TOUCH_SPAWNER_LORE")
+            enabled: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_SILK_TOUCH_ENABLED"
+            ),
+            "minimal-level": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_SILK_TOUCH_MINIMAL_LEVEL"
+            ),
+            tools: t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_SILK_TOUCH_TOOLS"
+            ),
+            "spawner-name": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_SILK_TOUCH_SPAWNER_NAME"
+            ),
+            "spawner-lore": t(
+              "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_SILK_TOUCH_SPAWNER_LORE"
+            )
           },
-          "thunder-stops-after-sleep": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_THUNDER_STOPS_AFTER_SLEEP"),
-          "tick-fluids": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_TICK_FLUIDS"),
-          "trident-loyalty-void-return-height": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_TRIDENT_LOYALTY_VOID_RETURN_HEIGHT"),
-          "use-better-mending": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_USE_BETTER_MENDING")
+          "thunder-stops-after-sleep": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_THUNDER_STOPS_AFTER_SLEEP"
+          ),
+          "tick-fluids": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_TICK_FLUIDS"
+          ),
+          "trident-loyalty-void-return-height": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_TRIDENT_LOYALTY_VOID_RETURN_HEIGHT"
+          ),
+          "use-better-mending": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_USE_BETTER_MENDING"
+          )
         },
         "ridable-settings": {
-          "babies-are-ridable": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_RIDABLE_SETTINGS_BABIES_ARE_RIDABLE"),
-          "untamed-tamables-are-ridable": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_RIDABLE_SETTINGS_UNTAMED_TAMABLES_ARE_RIDABLE"),
-          "use-dismounts-underwater-tag": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_RIDABLE_SETTINGS_USE_DISMOUNTS_UNDERWATER_TAG"),
-          "use-night-vision": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_RIDABLE_SETTINGS_USE_NIGHT_VISION")
+          "babies-are-ridable": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_RIDABLE_SETTINGS_BABIES_ARE_RIDABLE"
+          ),
+          "untamed-tamables-are-ridable": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_RIDABLE_SETTINGS_UNTAMED_TAMABLES_ARE_RIDABLE"
+          ),
+          "use-dismounts-underwater-tag": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_RIDABLE_SETTINGS_USE_DISMOUNTS_UNDERWATER_TAG"
+          ),
+          "use-night-vision": t(
+            "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_RIDABLE_SETTINGS_USE_NIGHT_VISION"
+          )
         }
       }
     }
@@ -2398,20 +3617,38 @@ export const configData: {
     config: {
       _version: t("TXT_CODE_GAME_CONFIG_VERSION"),
       "block-updates": {
-        "disable-chorus-plant-updates": t("TXT_CODE_GAME_CONFIG_BLOCK_UPDATES_DISABLE_CHORUS_PLANT_UPDATES"),
-        "disable-mushroom-block-updates": t("TXT_CODE_GAME_CONFIG_BLOCK_UPDATES_DISABLE_MUSHROOM_BLOCK_UPDATES"),
-        "disable-noteblock-updates": t("TXT_CODE_GAME_CONFIG_BLOCK_UPDATES_DISABLE_NOTEBLOCK_UPDATES"),
+        "disable-chorus-plant-updates": t(
+          "TXT_CODE_GAME_CONFIG_BLOCK_UPDATES_DISABLE_CHORUS_PLANT_UPDATES"
+        ),
+        "disable-mushroom-block-updates": t(
+          "TXT_CODE_GAME_CONFIG_BLOCK_UPDATES_DISABLE_MUSHROOM_BLOCK_UPDATES"
+        ),
+        "disable-noteblock-updates": t(
+          "TXT_CODE_GAME_CONFIG_BLOCK_UPDATES_DISABLE_NOTEBLOCK_UPDATES"
+        ),
         "disable-tripwire-updates": t("TXT_CODE_GAME_CONFIG_BLOCK_UPDATES_DISABLE_TRIPWIRE_UPDATES")
       },
       "chunk-loading-advanced": {
-        "auto-config-send-distance": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_ADVANCED_AUTO_CONFIG_SEND_DISTANCE"),
-        "player-max-concurrent-chunk-generates": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_ADVANCED_PLAYER_MAX_CONCURRENT_CHUNK_GENERATES"),
-        "player-max-concurrent-chunk-loads": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_ADVANCED_PLAYER_MAX_CONCURRENT_CHUNK_LOADS")
+        "auto-config-send-distance": t(
+          "TXT_CODE_GAME_CONFIG_CHUNK_LOADING_ADVANCED_AUTO_CONFIG_SEND_DISTANCE"
+        ),
+        "player-max-concurrent-chunk-generates": t(
+          "TXT_CODE_GAME_CONFIG_CHUNK_LOADING_ADVANCED_PLAYER_MAX_CONCURRENT_CHUNK_GENERATES"
+        ),
+        "player-max-concurrent-chunk-loads": t(
+          "TXT_CODE_GAME_CONFIG_CHUNK_LOADING_ADVANCED_PLAYER_MAX_CONCURRENT_CHUNK_LOADS"
+        )
       },
       "chunk-loading-basic": {
-        "player-max-chunk-generate-rate": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_BASIC_PLAYER_MAX_CHUNK_GENERATE_RATE"),
-        "player-max-chunk-load-rate": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_BASIC_PLAYER_MAX_CHUNK_LOAD_RATE"),
-        "player-max-chunk-send-rate": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_BASIC_PLAYER_MAX_CHUNK_SEND_RATE")
+        "player-max-chunk-generate-rate": t(
+          "TXT_CODE_GAME_CONFIG_CHUNK_LOADING_BASIC_PLAYER_MAX_CHUNK_GENERATE_RATE"
+        ),
+        "player-max-chunk-load-rate": t(
+          "TXT_CODE_GAME_CONFIG_CHUNK_LOADING_BASIC_PLAYER_MAX_CHUNK_LOAD_RATE"
+        ),
+        "player-max-chunk-send-rate": t(
+          "TXT_CODE_GAME_CONFIG_CHUNK_LOADING_BASIC_PLAYER_MAX_CHUNK_SEND_RATE"
+        )
       },
       "chunk-system": {
         "gen-parallelism": t("TXT_CODE_GAME_CONFIG_CHUNK_SYSTEM_GEN_PARALLELISM"),
@@ -2420,16 +3657,28 @@ export const configData: {
       },
       collisions: {
         "enable-player-collisions": t("TXT_CODE_GAME_CONFIG_COLLISIONS_ENABLE_PLAYER_COLLISIONS"),
-        "send-full-pos-for-hard-colliding-entities": t("TXT_CODE_GAME_CONFIG_COLLISIONS_SEND_FULL_POS_FOR_HARD_COLLIDING_ENTITIES")
+        "send-full-pos-for-hard-colliding-entities": t(
+          "TXT_CODE_GAME_CONFIG_COLLISIONS_SEND_FULL_POS_FOR_HARD_COLLIDING_ENTITIES"
+        )
       },
       commands: {
-        "fix-target-selector-tag-completion": t("TXT_CODE_GAME_CONFIG_COMMANDS_FIX_TARGET_SELECTOR_TAG_COMPLETION"),
-        "suggest-player-names-when-null-tab-completions": t("TXT_CODE_GAME_CONFIG_COMMANDS_SUGGEST_PLAYER_NAMES_WHEN_NULL_TAB_COMPLETIONS"),
-        "time-command-affects-all-worlds": t("TXT_CODE_GAME_CONFIG_COMMANDS_TIME_COMMAND_AFFECTS_ALL_WORLDS")
+        "fix-target-selector-tag-completion": t(
+          "TXT_CODE_GAME_CONFIG_COMMANDS_FIX_TARGET_SELECTOR_TAG_COMPLETION"
+        ),
+        "suggest-player-names-when-null-tab-completions": t(
+          "TXT_CODE_GAME_CONFIG_COMMANDS_SUGGEST_PLAYER_NAMES_WHEN_NULL_TAB_COMPLETIONS"
+        ),
+        "time-command-affects-all-worlds": t(
+          "TXT_CODE_GAME_CONFIG_COMMANDS_TIME_COMMAND_AFFECTS_ALL_WORLDS"
+        )
       },
       console: {
-        "enable-brigadier-completions": t("TXT_CODE_GAME_CONFIG_CONSOLE_ENABLE_BRIGADIER_COMPLETIONS"),
-        "enable-brigadier-highlighting": t("TXT_CODE_GAME_CONFIG_CONSOLE_ENABLE_BRIGADIER_HIGHLIGHTING"),
+        "enable-brigadier-completions": t(
+          "TXT_CODE_GAME_CONFIG_CONSOLE_ENABLE_BRIGADIER_COMPLETIONS"
+        ),
+        "enable-brigadier-highlighting": t(
+          "TXT_CODE_GAME_CONFIG_CONSOLE_ENABLE_BRIGADIER_HIGHLIGHTING"
+        ),
         "has-all-permissions": t("TXT_CODE_GAME_CONFIG_CONSOLE_HAS_ALL_PERMISSIONS")
       },
       "item-validation": {
@@ -2444,34 +3693,50 @@ export const configData: {
         },
         "display-name": t("TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_DISPLAY_NAME"),
         "lore-line": t("TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_LORE_LINE"),
-        "resolve-selectors-in-books": t("TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_RESOLVE_SELECTORS_IN_BOOKS")
+        "resolve-selectors-in-books": t(
+          "TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_RESOLVE_SELECTORS_IN_BOOKS"
+        )
       },
       logging: {
         "deobfuscate-stacktraces": t("TXT_CODE_GAME_CONFIG_LOGGING_DEOBFUSCATE_STACKTRACES")
       },
       messages: {
         kick: {
-          "authentication-servers-down": t("TXT_CODE_GAME_CONFIG_MESSAGES_KICK_AUTHENTICATION_SERVERS_DOWN"),
+          "authentication-servers-down": t(
+            "TXT_CODE_GAME_CONFIG_MESSAGES_KICK_AUTHENTICATION_SERVERS_DOWN"
+          ),
           "connection-throttle": t("TXT_CODE_GAME_CONFIG_MESSAGES_KICK_CONNECTION_THROTTLE"),
           "flying-player": t("TXT_CODE_GAME_CONFIG_MESSAGES_KICK_FLYING_PLAYER"),
           "flying-vehicle": t("TXT_CODE_GAME_CONFIG_MESSAGES_KICK_FLYING_VEHICLE")
         },
         "no-permission": t("TXT_CODE_GAME_CONFIG_MESSAGES_NO_PERMISSION"),
-        "use-display-name-in-quit-message": t("TXT_CODE_GAME_CONFIG_MESSAGES_USE_DISPLAY_NAME_IN_QUIT_MESSAGE")
+        "use-display-name-in-quit-message": t(
+          "TXT_CODE_GAME_CONFIG_MESSAGES_USE_DISPLAY_NAME_IN_QUIT_MESSAGE"
+        )
       },
       misc: {
         "chat-threads": {
-          "chat-executor-core-size": t("TXT_CODE_GAME_CONFIG_MISC_CHAT_THREADS_CHAT_EXECUTOR_CORE_SIZE"),
-          "chat-executor-max-size": t("TXT_CODE_GAME_CONFIG_MISC_CHAT_THREADS_CHAT_EXECUTOR_MAX_SIZE")
+          "chat-executor-core-size": t(
+            "TXT_CODE_GAME_CONFIG_MISC_CHAT_THREADS_CHAT_EXECUTOR_CORE_SIZE"
+          ),
+          "chat-executor-max-size": t(
+            "TXT_CODE_GAME_CONFIG_MISC_CHAT_THREADS_CHAT_EXECUTOR_MAX_SIZE"
+          )
         },
         "compression-level": t("TXT_CODE_GAME_CONFIG_MISC_COMPRESSION_LEVEL"),
         "fix-entity-position-desync": t("TXT_CODE_GAME_CONFIG_MISC_FIX_ENTITY_POSITION_DESYNC"),
-        "load-permissions-yml-before-plugins": t("TXT_CODE_GAME_CONFIG_MISC_LOAD_PERMISSIONS_YML_BEFORE_PLUGINS"),
+        "load-permissions-yml-before-plugins": t(
+          "TXT_CODE_GAME_CONFIG_MISC_LOAD_PERMISSIONS_YML_BEFORE_PLUGINS"
+        ),
         "max-joins-per-tick": t("TXT_CODE_GAME_CONFIG_MISC_MAX_JOINS_PER_TICK"),
         "region-file-cache-size": t("TXT_CODE_GAME_CONFIG_MISC_REGION_FILE_CACHE_SIZE"),
-        "strict-advancement-dimension-check": t("TXT_CODE_GAME_CONFIG_MISC_STRICT_ADVANCEMENT_DIMENSION_CHECK"),
+        "strict-advancement-dimension-check": t(
+          "TXT_CODE_GAME_CONFIG_MISC_STRICT_ADVANCEMENT_DIMENSION_CHECK"
+        ),
         "use-alternative-luck-formula": t("TXT_CODE_GAME_CONFIG_MISC_USE_ALTERNATIVE_LUCK_FORMULA"),
-        "use-dimension-type-for-custom-spawners": t("TXT_CODE_GAME_CONFIG_MISC_USE_DIMENSION_TYPE_FOR_CUSTOM_SPAWNERS")
+        "use-dimension-type-for-custom-spawners": t(
+          "TXT_CODE_GAME_CONFIG_MISC_USE_DIMENSION_TYPE_FOR_CUSTOM_SPAWNERS"
+        )
       },
       "packet-limiter": {
         "all-packets": {
@@ -2482,9 +3747,15 @@ export const configData: {
         "kick-message": t("TXT_CODE_GAME_CONFIG_PACKET_LIMITER_KICK_MESSAGE"),
         overrides: {
           ServerboundPlaceRecipePacket: {
-            action: t("TXT_CODE_GAME_CONFIG_PACKET_LIMITER_OVERRIDES_SERVERBOUND_PLACE_RECIPE_PACKET_ACTION"),
-            interval: t("TXT_CODE_GAME_CONFIG_PACKET_LIMITER_OVERRIDES_SERVERBOUND_PLACE_RECIPE_PACKET_INTERVAL"),
-            "max-packet-rate": t("TXT_CODE_GAME_CONFIG_PACKET_LIMITER_OVERRIDES_SERVERBOUND_PLACE_RECIPE_PACKET_MAX_PACKET_RATE")
+            action: t(
+              "TXT_CODE_GAME_CONFIG_PACKET_LIMITER_OVERRIDES_SERVERBOUND_PLACE_RECIPE_PACKET_ACTION"
+            ),
+            interval: t(
+              "TXT_CODE_GAME_CONFIG_PACKET_LIMITER_OVERRIDES_SERVERBOUND_PLACE_RECIPE_PACKET_INTERVAL"
+            ),
+            "max-packet-rate": t(
+              "TXT_CODE_GAME_CONFIG_PACKET_LIMITER_OVERRIDES_SERVERBOUND_PLACE_RECIPE_PACKET_MAX_PACKET_RATE"
+            )
           }
         }
       },
@@ -2504,11 +3775,15 @@ export const configData: {
         }
       },
       scoreboards: {
-        "save-empty-scoreboard-teams": t("TXT_CODE_GAME_CONFIG_SCOREBOARDS_SAVE_EMPTY_SCOREBOARD_TEAMS"),
+        "save-empty-scoreboard-teams": t(
+          "TXT_CODE_GAME_CONFIG_SCOREBOARDS_SAVE_EMPTY_SCOREBOARD_TEAMS"
+        ),
         "track-plugin-scoreboards": t("TXT_CODE_GAME_CONFIG_SCOREBOARDS_TRACK_PLUGIN_SCOREBOARDS")
       },
       "spam-limiter": {
-        "incoming-packet-threshold": t("TXT_CODE_GAME_CONFIG_SPAM_LIMITER_INCOMING_PACKET_THRESHOLD"),
+        "incoming-packet-threshold": t(
+          "TXT_CODE_GAME_CONFIG_SPAM_LIMITER_INCOMING_PACKET_THRESHOLD"
+        ),
         "recipe-spam-increment": t("TXT_CODE_GAME_CONFIG_SPAM_LIMITER_RECIPE_SPAM_INCREMENT"),
         "recipe-spam-limit": t("TXT_CODE_GAME_CONFIG_SPAM_LIMITER_RECIPE_SPAM_LIMIT"),
         "tab-spam-increment": t("TXT_CODE_GAME_CONFIG_SPAM_LIMITER_TAB_SPAM_INCREMENT"),
@@ -2525,12 +3800,22 @@ export const configData: {
         verbose: t("TXT_CODE_GAME_CONFIG_TIMINGS_VERBOSE")
       },
       "unsupported-settings": {
-        "allow-grindstone-overstacking": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_GRINDSTONE_OVERSTACKING"),
-        "allow-headless-pistons": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_HEADLESS_PISTONS"),
-        "allow-permanent-block-break-exploits": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_PERMANENT_BLOCK_BREAK_EXPLOITS"),
-        "allow-piston-duplication": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_PISTON_DUPLICATION"),
+        "allow-grindstone-overstacking": t(
+          "TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_GRINDSTONE_OVERSTACKING"
+        ),
+        "allow-headless-pistons": t(
+          "TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_HEADLESS_PISTONS"
+        ),
+        "allow-permanent-block-break-exploits": t(
+          "TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_PERMANENT_BLOCK_BREAK_EXPLOITS"
+        ),
+        "allow-piston-duplication": t(
+          "TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_PISTON_DUPLICATION"
+        ),
         "compression-format": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_COMPRESSION_FORMAT"),
-        "perform-username-validation": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_PERFORM_USERNAME_VALIDATION")
+        "perform-username-validation": t(
+          "TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_PERFORM_USERNAME_VALIDATION"
+        )
       },
       watchdog: {
         "early-warning-delay": t("TXT_CODE_GAME_CONFIG_WATCHDOG_EARLY_WARNING_DELAY"),
@@ -2545,125 +3830,269 @@ export const configData: {
       anticheat: {
         "anti-xray": {
           enabled: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_ENABLED"),
-          "engine-mode": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_ENGINE_MODE"),
-          "hidden-blocks": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_HIDDEN_BLOCKS"),
-          "lava-obscures": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_LAVA_OBSCURES"),
-          "max-block-height": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_MAX_BLOCK_HEIGHT"),
-          "replacement-blocks": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_REPLACEMENT_BLOCKS"),
-          "update-radius": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_UPDATE_RADIUS"),
-          "use-permission": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_USE_PERMISSION")
+          "engine-mode": t(
+            "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_ENGINE_MODE"
+          ),
+          "hidden-blocks": t(
+            "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_HIDDEN_BLOCKS"
+          ),
+          "lava-obscures": t(
+            "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_LAVA_OBSCURES"
+          ),
+          "max-block-height": t(
+            "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_MAX_BLOCK_HEIGHT"
+          ),
+          "replacement-blocks": t(
+            "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_REPLACEMENT_BLOCKS"
+          ),
+          "update-radius": t(
+            "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_UPDATE_RADIUS"
+          ),
+          "use-permission": t(
+            "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_USE_PERMISSION"
+          )
         },
         obfuscation: {
           items: {
-            "hide-durability": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_OBFUSCATION_ITEMS_HIDE_DURABILITY"),
-            "hide-itemmeta": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_OBFUSCATION_ITEMS_HIDE_ITEMMETA"),
-            "hide-itemmeta-with-visual-effects": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_OBFUSCATION_ITEMS_HIDE_ITEMMETA_WITH_VISUAL_EFFECTS")
+            "hide-durability": t(
+              "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_OBFUSCATION_ITEMS_HIDE_DURABILITY"
+            ),
+            "hide-itemmeta": t(
+              "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_OBFUSCATION_ITEMS_HIDE_ITEMMETA"
+            ),
+            "hide-itemmeta-with-visual-effects": t(
+              "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_OBFUSCATION_ITEMS_HIDE_ITEMMETA_WITH_VISUAL_EFFECTS"
+            )
           }
         }
       },
       chunks: {
-        "auto-save-interval": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_CHUNKS_AUTO_SAVE_INTERVAL"),
-        "delay-chunk-unloads-by": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_CHUNKS_DELAY_CHUNK_UNLOADS_BY"),
-        "entity-per-chunk-save-limit": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_CHUNKS_ENTITY_PER_CHUNK_SAVE_LIMIT"),
-        "fixed-chunk-inhabited-time": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_CHUNKS_FIXED_CHUNK_INHABITED_TIME"),
-        "flush-regions-on-save": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_CHUNKS_FLUSH_REGIONS_ON_SAVE"),
-        "max-auto-save-chunks-per-tick": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_CHUNKS_MAX_AUTO_SAVE_CHUNKS_PER_TICK"),
-        "prevent-moving-into-unloaded-chunks": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_CHUNKS_PREVENT_MOVING_INTO_UNLOADED_CHUNKS")
+        "auto-save-interval": t(
+          "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_CHUNKS_AUTO_SAVE_INTERVAL"
+        ),
+        "delay-chunk-unloads-by": t(
+          "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_CHUNKS_DELAY_CHUNK_UNLOADS_BY"
+        ),
+        "entity-per-chunk-save-limit": t(
+          "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_CHUNKS_ENTITY_PER_CHUNK_SAVE_LIMIT"
+        ),
+        "fixed-chunk-inhabited-time": t(
+          "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_CHUNKS_FIXED_CHUNK_INHABITED_TIME"
+        ),
+        "flush-regions-on-save": t(
+          "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_CHUNKS_FLUSH_REGIONS_ON_SAVE"
+        ),
+        "max-auto-save-chunks-per-tick": t(
+          "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_CHUNKS_MAX_AUTO_SAVE_CHUNKS_PER_TICK"
+        ),
+        "prevent-moving-into-unloaded-chunks": t(
+          "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_CHUNKS_PREVENT_MOVING_INTO_UNLOADED_CHUNKS"
+        )
       },
       collisions: {
-        "allow-player-cramming-damage": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_COLLISIONS_ALLOW_PLAYER_CRAMMING_DAMAGE"),
-        "allow-vehicle-collisions": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_COLLISIONS_ALLOW_VEHICLE_COLLISIONS"),
-        "fix-climbing-bypassing-cramming-rule": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_COLLISIONS_FIX_CLIMBING_BYPASSING_CRAMMING_RULE"),
-        "max-entity-collisions": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_COLLISIONS_MAX_ENTITY_COLLISIONS"),
-        "only-players-collide": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_COLLISIONS_ONLY_PLAYERS_COLLIDE")
+        "allow-player-cramming-damage": t(
+          "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_COLLISIONS_ALLOW_PLAYER_CRAMMING_DAMAGE"
+        ),
+        "allow-vehicle-collisions": t(
+          "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_COLLISIONS_ALLOW_VEHICLE_COLLISIONS"
+        ),
+        "fix-climbing-bypassing-cramming-rule": t(
+          "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_COLLISIONS_FIX_CLIMBING_BYPASSING_CRAMMING_RULE"
+        ),
+        "max-entity-collisions": t(
+          "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_COLLISIONS_MAX_ENTITY_COLLISIONS"
+        ),
+        "only-players-collide": t(
+          "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_COLLISIONS_ONLY_PLAYERS_COLLIDE"
+        )
       },
       entities: {
         "armor-stands": {
-          "do-collision-entity-lookups": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_ARMOR_STANDS_DO_COLLISION_ENTITY_LOOKUPS"),
+          "do-collision-entity-lookups": t(
+            "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_ARMOR_STANDS_DO_COLLISION_ENTITY_LOOKUPS"
+          ),
           tick: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_ARMOR_STANDS_TICK")
         },
         behavior: {
-          "allow-spider-world-border-climbing": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_ALLOW_SPIDER_WORLD_BORDER_CLIMBING"),
-          "baby-zombie-movement-modifier": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BABY_ZOMBIE_MOVEMENT_MODIFIER"),
-          "disable-chest-cat-detection": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_DISABLE_CHEST_CAT_DETECTION"),
-          "disable-creeper-lingering-effect": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_DISABLE_CREEPER_LINGERING_EFFECT"),
-          "disable-player-crits": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_DISABLE_PLAYER_CRITS"),
+          "allow-spider-world-border-climbing": t(
+            "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_ALLOW_SPIDER_WORLD_BORDER_CLIMBING"
+          ),
+          "baby-zombie-movement-modifier": t(
+            "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BABY_ZOMBIE_MOVEMENT_MODIFIER"
+          ),
+          "disable-chest-cat-detection": t(
+            "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_DISABLE_CHEST_CAT_DETECTION"
+          ),
+          "disable-creeper-lingering-effect": t(
+            "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_DISABLE_CREEPER_LINGERING_EFFECT"
+          ),
+          "disable-player-crits": t(
+            "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_DISABLE_PLAYER_CRITS"
+          ),
           behavior: {
             "door-breaking-difficulty": {
-              husk: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_DOOR_BREAKING_DIFFICULTY_HUSK"),
-              vindicator: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_DOOR_BREAKING_DIFFICULTY_VINDICATOR"),
-              zombie: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_DOOR_BREAKING_DIFFICULTY_ZOMBIE"),
-              zombie_villager: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_DOOR_BREAKING_DIFFICULTY_ZOMBIE_VILLAGER"),
-              zombified_piglin: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_DOOR_BREAKING_DIFFICULTY_ZOMBIFIED_PIGLIN")
+              husk: t(
+                "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_DOOR_BREAKING_DIFFICULTY_HUSK"
+              ),
+              vindicator: t(
+                "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_DOOR_BREAKING_DIFFICULTY_VINDICATOR"
+              ),
+              zombie: t(
+                "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_DOOR_BREAKING_DIFFICULTY_ZOMBIE"
+              ),
+              zombie_villager: t(
+                "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_DOOR_BREAKING_DIFFICULTY_ZOMBIE_VILLAGER"
+              ),
+              zombified_piglin: t(
+                "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_DOOR_BREAKING_DIFFICULTY_ZOMBIFIED_PIGLIN"
+              )
             },
-            "ender-dragons-death-always-places-dragon-egg": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENDER_DRAGONS_DEATH_ALWAYS_PLACES_DRAGON_EGG"),
-            "experience-merge-max-value": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_EXPERIENCE_MERGE_MAX_VALUE"),
+            "ender-dragons-death-always-places-dragon-egg": t(
+              "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENDER_DRAGONS_DEATH_ALWAYS_PLACES_DRAGON_EGG"
+            ),
+            "experience-merge-max-value": t(
+              "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_EXPERIENCE_MERGE_MAX_VALUE"
+            ),
             "mobs-can-always-pick-up-loot": {
-              skeletons: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_MOBS_CAN_ALWAYS_PICK_UP_LOOT_SKELETONS"),
-              zombies: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_MOBS_CAN_ALWAYS_PICK_UP_LOOT_ZOMBIES")
+              skeletons: t(
+                "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_MOBS_CAN_ALWAYS_PICK_UP_LOOT_SKELETONS"
+              ),
+              zombies: t(
+                "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_MOBS_CAN_ALWAYS_PICK_UP_LOOT_ZOMBIES"
+              )
             },
-            "nerf-pigmen-from-nether-portals": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_NERF_PIGMEN_FROM_NETHER_PORTALS"),
-            "parrots-are-unaffected-by-player-movement": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PARROTS_ARE_UNAFFECTED_BY_PLAYER_MOVEMENT"),
-            "phantoms-do-not-spawn-on-creative-players": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PHANTOMS_DO_NOT_SPAWN_ON_CREATIVE_PLAYERS"),
-            "phantoms-only-attack-insomniacs": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PHANTOMS_ONLY_ATTACK_INSOMNIACS"),
-            "phantoms-spawn-attempt-max-seconds": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PHANTOMS_SPAWN_ATTEMPT_MAX_SECONDS"),
-            "phantoms-spawn-attempt-min-seconds": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PHANTOMS_SPAWN_ATTEMPT_MIN_SECONDS"),
-            "piglins-guard-chests": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PIGLINS_GUARD_CHESTS"),
+            "nerf-pigmen-from-nether-portals": t(
+              "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_NERF_PIGMEN_FROM_NETHER_PORTALS"
+            ),
+            "parrots-are-unaffected-by-player-movement": t(
+              "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PARROTS_ARE_UNAFFECTED_BY_PLAYER_MOVEMENT"
+            ),
+            "phantoms-do-not-spawn-on-creative-players": t(
+              "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PHANTOMS_DO_NOT_SPAWN_ON_CREATIVE_PLAYERS"
+            ),
+            "phantoms-only-attack-insomniacs": t(
+              "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PHANTOMS_ONLY_ATTACK_INSOMNIACS"
+            ),
+            "phantoms-spawn-attempt-max-seconds": t(
+              "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PHANTOMS_SPAWN_ATTEMPT_MAX_SECONDS"
+            ),
+            "phantoms-spawn-attempt-min-seconds": t(
+              "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PHANTOMS_SPAWN_ATTEMPT_MIN_SECONDS"
+            ),
+            "piglins-guard-chests": t(
+              "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PIGLINS_GUARD_CHESTS"
+            ),
             "pillager-patrols": {
-              disable: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PILLAGER_PATROLS_DISABLE"),
-              "spawn-chance": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PILLAGER_PATROLS_SPAWN_CHANCE"),
+              disable: t(
+                "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PILLAGER_PATROLS_DISABLE"
+              ),
+              "spawn-chance": t(
+                "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PILLAGER_PATROLS_SPAWN_CHANCE"
+              ),
               "spawn-delay": {
-                "per-player": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PILLAGER_PATROLS_SPAWN_DELAY_PER_PLAYER"),
-                ticks: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PILLAGER_PATROLS_SPAWN_DELAY_TICKS")
+                "per-player": t(
+                  "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PILLAGER_PATROLS_SPAWN_DELAY_PER_PLAYER"
+                ),
+                ticks: t(
+                  "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PILLAGER_PATROLS_SPAWN_DELAY_TICKS"
+                )
               },
               start: {
-                day: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PILLAGER_PATROLS_START_DAY"),
-                "per-player": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PILLAGER_PATROLS_START_PER_PLAYER")
+                day: t(
+                  "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PILLAGER_PATROLS_START_DAY"
+                ),
+                "per-player": t(
+                  "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PILLAGER_PATROLS_START_PER_PLAYER"
+                )
               }
             },
-            "player-insomnia-start-ticks": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PLAYER_INSOMNIA_START_TICKS"),
-            "should-remove-dragon": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_SHOULD_REMOVE_DRAGON"),
-            "spawner-nerfed-mobs-should-jump": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_SPAWNER_NERFED_MOBS_SHOULD_JUMP"),
-            "zombie-villager-infection-chance": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ZOMBIE_VILLAGER_INFECTION_CHANCE"),
-            "zombies-target-turtle-eggs": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ZOMBIES_TARGET_TURTLE_EGGS"),
+            "player-insomnia-start-ticks": t(
+              "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PLAYER_INSOMNIA_START_TICKS"
+            ),
+            "should-remove-dragon": t(
+              "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_SHOULD_REMOVE_DRAGON"
+            ),
+            "spawner-nerfed-mobs-should-jump": t(
+              "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_SPAWNER_NERFED_MOBS_SHOULD_JUMP"
+            ),
+            "zombie-villager-infection-chance": t(
+              "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ZOMBIE_VILLAGER_INFECTION_CHANCE"
+            ),
+            "zombies-target-turtle-eggs": t(
+              "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ZOMBIES_TARGET_TURTLE_EGGS"
+            ),
             entities: {
               "armor-stands": {
-                "do-collision-entity-lookups": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_ARMOR_STANDS_DO_COLLISION_ENTITY_LOOKUPS"),
+                "do-collision-entity-lookups": t(
+                  "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_ARMOR_STANDS_DO_COLLISION_ENTITY_LOOKUPS"
+                ),
                 tick: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_TICK")
               },
               behavior: {
-                "allow-spider-world-border-climbing": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_BEHAVIOR_ALLOW_SPIDER_WORLD_BORDER_CLIMBING"),
-                "baby-zombie-movement-modifier": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_BEHAVIOR_BABY_ZOMBIE_MOVEMENT_MODIFIER"),
-                "disable-chest-cat-detection": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_BEHAVIOR_DISABLE_CHEST_CAT_DETECTION"),
-                "disable-creeper-lingering-effect": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_BEHAVIOR_DISABLE_CREEPER_LINGERING_EFFECT"),
-                "disable-player-crits": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_DISABLE_PLAYER_CRITS")
+                "allow-spider-world-border-climbing": t(
+                  "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_BEHAVIOR_ALLOW_SPIDER_WORLD_BORDER_CLIMBING"
+                ),
+                "baby-zombie-movement-modifier": t(
+                  "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_BEHAVIOR_BABY_ZOMBIE_MOVEMENT_MODIFIER"
+                ),
+                "disable-chest-cat-detection": t(
+                  "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_BEHAVIOR_DISABLE_CHEST_CAT_DETECTION"
+                ),
+                "disable-creeper-lingering-effect": t(
+                  "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_BEHAVIOR_DISABLE_CREEPER_LINGERING_EFFECT"
+                ),
+                "disable-player-crits": t(
+                  "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_DISABLE_PLAYER_CRITS"
+                )
               },
-              "entities-target-with-follow-range": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_ENTITIES_TARGET_WITH_FOLLOW_RANGE"),
+              "entities-target-with-follow-range": t(
+                "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_ENTITIES_TARGET_WITH_FOLLOW_RANGE"
+              ),
               markers: {
                 tick: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_TICK")
               },
               "mob-effects": {
                 "immune-to-wither-effect": {
-                  wither: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_MOB_EFFECTS_IMMUNE_TO_WITHER_EFFECT_WITHER"),
-                  "wither-skeleton": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_MOB_EFFECTS_IMMUNE_TO_WITHER_EFFECT_WITHER_SKELETON")
+                  wither: t(
+                    "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_MOB_EFFECTS_IMMUNE_TO_WITHER_EFFECT_WITHER"
+                  ),
+                  "wither-skeleton": t(
+                    "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_MOB_EFFECTS_IMMUNE_TO_WITHER_EFFECT_WITHER_SKELETON"
+                  )
                 },
-                "spiders-immune-to-poison-effect": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_MOB_EFFECTS_SPIDERS_IMMUNE_TO_POISON_EFFECT"),
-                "undead-immune-to-certain-effects": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_MOB_EFFECTS_UNDEAD_IMMUNE_TO_CERTAIN_EFFECTS")
+                "spiders-immune-to-poison-effect": t(
+                  "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_MOB_EFFECTS_SPIDERS_IMMUNE_TO_POISON_EFFECT"
+                ),
+                "undead-immune-to-certain-effects": t(
+                  "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_MOB_EFFECTS_UNDEAD_IMMUNE_TO_CERTAIN_EFFECTS"
+                )
               },
               sniffer: {
-                "boosted-hatch-time": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_SNIFFER_BOOSTED_HATCH_TIME"),
-                "hatch-time": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_SNIFFER_HATCH_TIME")
+                "boosted-hatch-time": t(
+                  "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_SNIFFER_BOOSTED_HATCH_TIME"
+                ),
+                "hatch-time": t(
+                  "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_SNIFFER_HATCH_TIME"
+                )
               },
               spawning: {
-                "all-chunks-are-slime-chunks": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_SPAWNING_ALL_CHUNKS_ARE_SLIME_CHUNKS"),
+                "all-chunks-are-slime-chunks": t(
+                  "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_SPAWNING_ALL_CHUNKS_ARE_SLIME_CHUNKS"
+                ),
                 "alt-item-despawn-rate": {
                   enabled: t("TXT_CODE_COMMON_ENABLE"),
                   items: {
-                    cobblestone: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_SPAWNING_ALT_ITEM_DESPAWN_RATE_ITEMS_COBBLESTONE")
+                    cobblestone: t(
+                      "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_SPAWNING_ALT_ITEM_DESPAWN_RATE_ITEMS_COBBLESTONE"
+                    )
                   }
                 },
-                "count-all-mobs-for-spawning": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_SPAWNING_COUNT_ALL_MOBS_FOR_SPAWNING"),
-                "creative-arrow-despawn-rate": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_SPAWNING_CREATIVE_ARROW_DESPAWN_RATE"),
+                "count-all-mobs-for-spawning": t(
+                  "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_SPAWNING_COUNT_ALL_MOBS_FOR_SPAWNING"
+                ),
+                "creative-arrow-despawn-rate": t(
+                  "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_SPAWNING_CREATIVE_ARROW_DESPAWN_RATE"
+                ),
                 "despawn-ranges": {
                   ambient: {
                     hard: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_HARD"),
@@ -2680,47 +4109,77 @@ export const configData: {
                 }
               },
               "tracking-range-y": {
-                animal: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_TRACKING_RANGE_Y_ANIMAL"),
-                display: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_TRACKING_RANGE_Y_DISPLAY"),
+                animal: t(
+                  "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_TRACKING_RANGE_Y_ANIMAL"
+                ),
+                display: t(
+                  "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_TRACKING_RANGE_Y_DISPLAY"
+                ),
                 enabled: t("TXT_CODE_COMMON_ENABLE"),
                 misc: t("TXT_CODE_COMMON_GENERAL"),
-                monster: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_TRACKING_RANGE_Y_MONSTER"),
+                monster: t(
+                  "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_TRACKING_RANGE_Y_MONSTER"
+                ),
                 other: t("TXT_CODE_COMMON_GENERAL"),
-                player: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_TRACKING_RANGE_Y_PLAYER")
+                player: t(
+                  "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_TRACKING_RANGE_Y_PLAYER"
+                )
               }
             }
           }
         },
-        "entities-target-with-follow-range": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_ENTITIES_TARGET_WITH_FOLLOW_RANGE")
+        "entities-target-with-follow-range": t(
+          "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_ENTITIES_TARGET_WITH_FOLLOW_RANGE"
+        )
       },
       environment: {
-        "disable-explosion-knockback": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENVIRONMENT_DISABLE_EXPLOSION_KNOCKBACK"),
-        "disable-ice-and-snow": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENVIRONMENT_DISABLE_ICE_AND_SNOW"),
-        "disable-teleportation-suffocation-check": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENVIRONMENT_DISABLE_TELEPORTATION_SUFFOCATION_CHECK")
+        "disable-explosion-knockback": t(
+          "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENVIRONMENT_DISABLE_EXPLOSION_KNOCKBACK"
+        ),
+        "disable-ice-and-snow": t(
+          "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENVIRONMENT_DISABLE_ICE_AND_SNOW"
+        ),
+        "disable-teleportation-suffocation-check": t(
+          "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENVIRONMENT_DISABLE_TELEPORTATION_SUFFOCATION_CHECK"
+        )
       },
       scoreboards: {
-        "allow-non-player-entities-on-scoreboards": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_SCOREBOARDS_ALLOW_NON_PLAYER_ENTITIES_ON_SCOREBOARDS"),
-        "use-vanilla-world-scoreboard-name-coloring": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_SCOREBOARDS_USE_VANILLA_WORLD_SCOREBOARD_NAME_COLORING")
+        "allow-non-player-entities-on-scoreboards": t(
+          "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_SCOREBOARDS_ALLOW_NON_PLAYER_ENTITIES_ON_SCOREBOARDS"
+        ),
+        "use-vanilla-world-scoreboard-name-coloring": t(
+          "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_SCOREBOARDS_USE_VANILLA_WORLD_SCOREBOARD_NAME_COLORING"
+        )
       },
       spawn: {
-        "allow-using-signs-inside-spawn-protection": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_SPAWN_ALLOW_USING_SIGNS_INSIDE_SPAWN_PROTECTION"),
+        "allow-using-signs-inside-spawn-protection": t(
+          "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_SPAWN_ALLOW_USING_SIGNS_INSIDE_SPAWN_PROTECTION"
+        ),
         "keep-spawn-loaded": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_SPAWN_KEEP_SPAWN_LOADED"),
-        "keep-spawn-loaded-range": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_SPAWN_KEEP_SPAWN_LOADED_RANGE")
+        "keep-spawn-loaded-range": t(
+          "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_SPAWN_KEEP_SPAWN_LOADED_RANGE"
+        )
       },
       "tick-rates": {
         behavior: {
           villager: {
-            validatenearbypoi: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_TICK_RATES_BEHAVIOR_VILLAGER_VALIDATENEARBYPOI")
+            validatenearbypoi: t(
+              "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_TICK_RATES_BEHAVIOR_VILLAGER_VALIDATENEARBYPOI"
+            )
           }
         }
       },
       "unsupported-settings": {
-        "fix-invulnerable-end-crystal-exploit": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_UNSUPPORTED_SETTINGS_FIX_INVULNERABLE_END_CRYSTAL_EXPLOIT")
+        "fix-invulnerable-end-crystal-exploit": t(
+          "TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_UNSUPPORTED_SETTINGS_FIX_INVULNERABLE_END_CRYSTAL_EXPLOIT"
+        )
       }
     }
   },
   "pufferfish/pufferfish.yml": {
-    desc: t("TXT_CODE_COMMON_CONFIGURATION_FILE_FOR_PUFFERFISH_IT_ALLOWS_FOR_FURTHER_CONFIGURATION_OF_A_PAPER_SERVER"),
+    desc: t(
+      "TXT_CODE_COMMON_CONFIGURATION_FILE_FOR_PUFFERFISH_IT_ALLOWS_FOR_FURTHER_CONFIGURATION_OF_A_PAPER_SERVER"
+    ),
     config: {
       info: {
         version: t("TXT_CODE_GAME_CONFIG_PUFFERFISH_INFO_VERSION")
@@ -2728,7 +4187,9 @@ export const configData: {
       "sentry-dsn": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_SENTRY_DSN"),
       projectile: {
         "max-loads-per-tick": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_PROJECTILE_MAX_LOADS_PER_TICK"),
-        "max-loads-per-projectile": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_PROJECTILE_MAX_LOADS_PER_PROJECTILE")
+        "max-loads-per-projectile": t(
+          "TXT_CODE_GAME_CONFIG_PUFFERFISH_PROJECTILE_MAX_LOADS_PER_PROJECTILE"
+        )
       },
       misc: {
         "disable-method-profiler": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_MISC_DISABLE_METHOD_PROFILER")
@@ -2738,7 +4199,9 @@ export const configData: {
       },
       "enable-async-mob-spawning": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_ENABLE_ASYNC_MOB_SPAWNING"),
       "tps-catchup": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_TPS_CATCHUP"),
-      "inactive-goal-selector-throttle": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_INACTIVE_GOAL_SELECTOR_THROTTLE"),
+      "inactive-goal-selector-throttle": t(
+        "TXT_CODE_GAME_CONFIG_PUFFERFISH_INACTIVE_GOAL_SELECTOR_THROTTLE"
+      ),
       "enable-books": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_ENABLE_BOOKS"),
       "allow-end-crystal-respawn": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_ALLOW_END_CRYSTAL_RESPAWN"),
       dab: {
@@ -2751,7 +4214,9 @@ export const configData: {
       "web-services": {
         token: t("TXT_CODE_GAME_CONFIG_PUFFERFISH_WEB_SERVICES_TOKEN")
       },
-      "enable-suffocation-optimization": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_ENABLE_SUFFOCATION_OPTIMIZATION")
+      "enable-suffocation-optimization": t(
+        "TXT_CODE_GAME_CONFIG_PUFFERFISH_ENABLE_SUFFOCATION_OPTIMIZATION"
+      )
     }
   },
   "mohist/mohist.yml": {
@@ -2777,13 +4242,17 @@ export const configData: {
       "show-max-players": t("TXT_CODE_GAME_CONFIG_VELOCITY_SHOW_MAX_PLAYERS"),
       "online-mode": t("TXT_CODE_GAME_CONFIG_VELOCITY_ONLINE_MODE"),
       "force-key-authentication": t("TXT_CODE_GAME_CONFIG_VELOCITY_FORCE_KEY_AUTHENTICATION"),
-      "prevent-client-proxy-connections": t("TXT_CODE_GAME_CONFIG_VELOCITY_PREVENT_CLIENT_PROXY_CONNECTIONS"),
+      "prevent-client-proxy-connections": t(
+        "TXT_CODE_GAME_CONFIG_VELOCITY_PREVENT_CLIENT_PROXY_CONNECTIONS"
+      ),
       "player-info-forwarding-mode": t("TXT_CODE_GAME_CONFIG_VELOCITY_PLAYER_INFO_FORWARDING_MODE"),
       "forwarding-secret-file": t("TXT_CODE_GAME_CONFIG_VELOCITY_FORWARDING_SECRET_FILE"),
       "announce-forge": t("TXT_CODE_GAME_CONFIG_VELOCITY_ANNOUNCE_FORGE"),
       "kick-existing-players": t("TXT_CODE_GAME_CONFIG_VELOCITY_KICK_EXISTING_PLAYERS"),
       "ping-passthrough": t("TXT_CODE_GAME_CONFIG_VELOCITY_PING_PASSTHROUGH"),
-      "enable-player-address-logging": t("TXT_CODE_GAME_CONFIG_VELOCITY_ENABLE_PLAYER_ADDRESS_LOGGING"),
+      "enable-player-address-logging": t(
+        "TXT_CODE_GAME_CONFIG_VELOCITY_ENABLE_PLAYER_ADDRESS_LOGGING"
+      ),
       servers: t("TXT_CODE_GAME_CONFIG_VELOCITY_SERVERS"),
       try: t("TXT_CODE_GAME_CONFIG_VELOCITY_TRY"),
       "forced-hosts": t("TXT_CODE_GAME_CONFIG_VELOCITY_FORCED_HOSTS"),
@@ -2795,9 +4264,13 @@ export const configData: {
       "read-timeout": t("TXT_CODE_GAME_CONFIG_VELOCITY_READ_TIMEOUT"),
       "haproxy-protocol": t("TXT_CODE_GAME_CONFIG_VELOCITY_HAPROXY_PROTOCOL"),
       "tcp-fast-open": t("TXT_CODE_GAME_CONFIG_VELOCITY_TCP_FAST_OPEN"),
-      "bungee-plugin-message-channel": t("TXT_CODE_GAME_CONFIG_VELOCITY_BUNGEE_PLUGIN_MESSAGE_CHANNEL"),
+      "bungee-plugin-message-channel": t(
+        "TXT_CODE_GAME_CONFIG_VELOCITY_BUNGEE_PLUGIN_MESSAGE_CHANNEL"
+      ),
       "show-ping-requests": t("TXT_CODE_GAME_CONFIG_VELOCITY_SHOW_PING_REQUESTS"),
-      "failover-on-unexpected-server-disconnect": t("TXT_CODE_GAME_CONFIG_VELOCITY_FAILOVER_ON_UNEXPECTED_SERVER_DISCONNECT"),
+      "failover-on-unexpected-server-disconnect": t(
+        "TXT_CODE_GAME_CONFIG_VELOCITY_FAILOVER_ON_UNEXPECTED_SERVER_DISCONNECT"
+      ),
       "announce-proxy-commands": t("TXT_CODE_GAME_CONFIG_VELOCITY_ANNOUNCE_PROXY_COMMANDS"),
       "log-command-executions": t("TXT_CODE_GAME_CONFIG_VELOCITY_LOG_COMMAND_EXECUTIONS"),
       "log-player-connections": t("TXT_CODE_GAME_CONFIG_VELOCITY_LOG_PLAYER_CONNECTIONS"),
@@ -2825,14 +4298,18 @@ export const configData: {
         address: t("TXT_CODE_GAME_CONFIG_GEYSER_REMOTE_ADDRESS"),
         port: t("TXT_CODE_GAME_CONFIG_GEYSER_REMOTE_PORT"),
         "auth-type": t("TXT_CODE_GAME_CONFIG_GEYSER_REMOTE_AUTH_TYPE"),
-        "allow-password-authentication": t("TXT_CODE_GAME_CONFIG_GEYSER_REMOTE_ALLOW_PASSWORD_AUTHENTICATION"),
+        "allow-password-authentication": t(
+          "TXT_CODE_GAME_CONFIG_GEYSER_REMOTE_ALLOW_PASSWORD_AUTHENTICATION"
+        ),
         "use-proxy-protocol": t("TXT_CODE_GAME_CONFIG_GEYSER_REMOTE_USE_PROXY_PROTOCOL"),
         "forward-hostname": t("TXT_CODE_GAME_CONFIG_GEYSER_REMOTE_FORWARD_HOSTNAME")
       },
 
       "floodgate-key-file": t("TXT_CODE_GAME_CONFIG_GEYSER_FLOODGATE_KEY_FILE"),
       "saved-user-logins": t("TXT_CODE_GAME_CONFIG_GEYSER_SAVED_USER_LOGINS"),
-      "pending-authentication-timeout": t("TXT_CODE_GAME_CONFIG_GEYSER_PENDING_AUTHENTICATION_TIMEOUT"),
+      "pending-authentication-timeout": t(
+        "TXT_CODE_GAME_CONFIG_GEYSER_PENDING_AUTHENTICATION_TIMEOUT"
+      ),
       "command-suggestions": t("TXT_CODE_GAME_CONFIG_GEYSER_COMMAND_SUGGESTIONS"),
       "passthrough-motd": t("TXT_CODE_GAME_CONFIG_GEYSER_PASSTHROUGH_MOTD"),
       "passthrough-protocol-name": t("TXT_CODE_GAME_CONFIG_GEYSER_PASSTHROUGH_PROTOCOL_NAME"),
@@ -2854,7 +4331,9 @@ export const configData: {
       "max-visible-custom-skulls": t("TXT_CODE_GAME_CONFIG_GEYSER_MAX_VISIBLE_CUSTOM_SKULLS"),
       "custom-skull-render-distance": t("TXT_CODE_GAME_CONFIG_GEYSER_CUSTOM_SKULL_RENDER_DISTANCE"),
       "add-non-bedrock-items": t("TXT_CODE_GAME_CONFIG_GEYSER_ADD_NON_BEDROCK_ITEMS"),
-      "above-bedrock-nether-building": t("TXT_CODE_GAME_CONFIG_GEYSER_ABOVE_BEDROCK_NETHER_BUILDING"),
+      "above-bedrock-nether-building": t(
+        "TXT_CODE_GAME_CONFIG_GEYSER_ABOVE_BEDROCK_NETHER_BUILDING"
+      ),
       "force-resource-packs": t("TXT_CODE_GAME_CONFIG_GEYSER_FORCE_RESOURCE_PACKS"),
       "xbox-achievements-enabled": t("TXT_CODE_GAME_CONFIG_GEYSER_XBOX_ACHIEVEMENTS_ENABLED"),
       "log-player-ip-addresses": t("TXT_CODE_GAME_CONFIG_GEYSER_LOG_PLAYER_IP_ADDRESSES"),
@@ -2894,19 +4373,27 @@ export const configData: {
   "neoforge/neoforge-server.toml": {
     desc: t("TXT_CODE_COMMON_SERVER_CONFIGURATION_FILE_OF_A_NEO_FORGE_SERVER"),
     config: {
-      removeErroringBlockEntities: t("TXT_CODE_GAME_CONFIG_NEOFORGE_SERVER_REMOVE_ERRORING_BLOCK_ENTITIES"),
+      removeErroringBlockEntities: t(
+        "TXT_CODE_GAME_CONFIG_NEOFORGE_SERVER_REMOVE_ERRORING_BLOCK_ENTITIES"
+      ),
       removeErroringEntities: t("TXT_CODE_GAME_CONFIG_NEOFORGE_SERVER_REMOVE_ERRORING_ENTITIES"),
       fullBoundingBoxLadders: t("TXT_CODE_GAME_CONFIG_NEOFORGE_SERVER_FULL_BOUNDING_BOX_LADDERS"),
       permissionHandler: t("TXT_CODE_GAME_CONFIG_NEOFORGE_SERVER_PERMISSION_HANDLER"),
-      advertiseDedicatedServerToLan: t("TXT_CODE_GAME_CONFIG_NEOFORGE_SERVER_ADVERTISE_DEDICATED_SERVER_TO_LAN")
+      advertiseDedicatedServerToLan: t(
+        "TXT_CODE_GAME_CONFIG_NEOFORGE_SERVER_ADVERTISE_DEDICATED_SERVER_TO_LAN"
+      )
     }
   },
   "neoforge/neoforge-common.toml": {
     desc: t("TXT_CODE_COMMON_COMMON_CONFIGURATION_FILE_OF_A_NEO_FORGE_SERVER"),
     config: {
-      logUntranslatedItemTagWarnings: t("TXT_CODE_GAME_CONFIG_NEOFORGE_COMMON_LOG_UNTRANSLATED_ITEM_TAG_WARNINGS"),
+      logUntranslatedItemTagWarnings: t(
+        "TXT_CODE_GAME_CONFIG_NEOFORGE_COMMON_LOG_UNTRANSLATED_ITEM_TAG_WARNINGS"
+      ),
       logLegacyTagWarnings: t("TXT_CODE_GAME_CONFIG_NEOFORGE_COMMON_LOG_LEGACY_TAG_WARNINGS"),
-      attributeAdvancedTooltipDebugInfo: t("TXT_CODE_GAME_CONFIG_NEOFORGE_COMMON_ATTRIBUTE_ADVANCED_TOOLTIP_DEBUG_INFO")
+      attributeAdvancedTooltipDebugInfo: t(
+        "TXT_CODE_GAME_CONFIG_NEOFORGE_COMMON_ATTRIBUTE_ADVANCED_TOOLTIP_DEBUG_INFO"
+      )
     }
   },
   "tshock/config.json": {
@@ -2922,15 +4409,21 @@ export const configData: {
         LogPath: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_LOG_PATH"),
         DebugLogs: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DEBUG_LOGS"),
         DisableLoginBeforeJoin: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_LOGIN_BEFORE_JOIN"),
-        IgnoreChestStacksOnLoad: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_IGNORE_CHEST_STACKS_ON_LOAD"),
+        IgnoreChestStacksOnLoad: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_IGNORE_CHEST_STACKS_ON_LOAD"
+        ),
         WorldTileProvider: "",
         AutoSave: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_AUTO_SAVE"),
         AnnounceSave: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ANNOUNCE_SAVE"),
-        ShowBackupAutosaveMessages: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SHOW_BACKUP_AUTOSAVE_MESSAGES"),
+        ShowBackupAutosaveMessages: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SHOW_BACKUP_AUTOSAVE_MESSAGES"
+        ),
         BackupInterval: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_BACKUP_INTERVAL"),
         BackupKeepFor: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_BACKUP_KEEP_FOR"),
         SaveWorldOnCrash: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SAVE_WORLD_ON_CRASH"),
-        SaveWorldOnLastPlayerExit: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SAVE_WORLD_ON_LAST_PLAYER_EXIT"),
+        SaveWorldOnLastPlayerExit: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SAVE_WORLD_ON_LAST_PLAYER_EXIT"
+        ),
         InvasionMultiplier: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_INVASION_MULTIPLIER"),
         DefaultMaximumSpawns: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DEFAULT_MAXIMUM_SPAWNS"),
         DefaultSpawnRate: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DEFAULT_SPAWN_RATE"),
@@ -2956,7 +4449,9 @@ export const configData: {
         RegionProtectGemLocks: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_REGION_PROTECT_GEM_LOCKS"),
         IgnoreProjUpdate: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_IGNORE_PROJ_UPDATE"),
         IgnoreProjKill: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_IGNORE_PROJ_KILL"),
-        AllowCutTilesAndBreakables: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ALLOW_CUT_TILES_AND_BREAKABLES"),
+        AllowCutTilesAndBreakables: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ALLOW_CUT_TILES_AND_BREAKABLES"
+        ),
         AllowIce: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ALLOW_ICE"),
         AllowCrimsonCreep: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ALLOW_CRIMSON_CREEP"),
         AllowCorruptionCreep: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ALLOW_CORRUPTION_CREEP"),
@@ -2965,11 +4460,17 @@ export const configData: {
         StatueSpawn600: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_STATUE_SPAWN600"),
         StatueSpawnWorld: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_STATUE_SPAWN_WORLD"),
         PreventBannedItemSpawn: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_PREVENT_BANNED_ITEM_SPAWN"),
-        PreventDeadModification: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_PREVENT_DEAD_MODIFICATION"),
-        PreventInvalidPlaceStyle: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_PREVENT_INVALID_PLACE_STYLE"),
+        PreventDeadModification: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_PREVENT_DEAD_MODIFICATION"
+        ),
+        PreventInvalidPlaceStyle: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_PREVENT_INVALID_PLACE_STYLE"
+        ),
         ForceXmas: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_FORCE_XMAS"),
         ForceHalloween: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_FORCE_HALLOWEEN"),
-        AllowAllowedGroupsToSpawnBannedItems: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ALLOW_ALLOWED_GROUPS_TO_SPAWN_BANNED_ITEMS"),
+        AllowAllowedGroupsToSpawnBannedItems: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ALLOW_ALLOWED_GROUPS_TO_SPAWN_BANNED_ITEMS"
+        ),
         RespawnSeconds: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_RESPAWN_SECONDS"),
         RespawnBossSeconds: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_RESPAWN_BOSS_SECONDS"),
         AnonymousBossInvasions: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ANONYMOUS_BOSS_INVASIONS"),
@@ -2977,7 +4478,9 @@ export const configData: {
         MaxMP: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_MAX_MP"),
         BombExplosionRadius: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_BOMB_EXPLOSION_RADIUS"),
         GiveItemsDirectly: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_GIVE_ITEMS_DIRECTLY"),
-        DefaultRegistrationGroupName: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DEFAULT_REGISTRATION_GROUP_NAME"),
+        DefaultRegistrationGroupName: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DEFAULT_REGISTRATION_GROUP_NAME"
+        ),
         DefaultGuestGroupName: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DEFAULT_GUEST_GROUP_NAME"),
         RememberLeavePos: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_REMEMBER_LEAVE_POS"),
         MaximumLoginAttempts: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_MAXIMUM_LOGIN_ATTEMPTS"),
@@ -2989,7 +4492,9 @@ export const configData: {
         EnableWhitelist: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ENABLE_WHITELIST"),
         WhitelistKickReason: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_WHITELIST_KICK_REASON"),
         ServerFullReason: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SERVER_FULL_REASON"),
-        ServerFullNoReservedReason: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SERVER_FULL_NO_RESERVED_REASON"),
+        ServerFullNoReservedReason: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SERVER_FULL_NO_RESERVED_REASON"
+        ),
         KickOnHardcoreDeath: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_HARDCORE_DEATH"),
         HardcoreKickReason: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_HARDCORE_KICK_REASON"),
         BanOnHardcoreDeath: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_BAN_ON_HARDCORE_DEATH"),
@@ -2997,34 +4502,56 @@ export const configData: {
         KickProxyUsers: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_PROXY_USERS"),
         RequireLogin: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_REQUIRE_LOGIN"),
         AllowLoginAnyUsername: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ALLOW_LOGIN_ANY_USERNAME"),
-        AllowRegisterAnyUsername: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ALLOW_REGISTER_ANY_USERNAME"),
+        AllowRegisterAnyUsername: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ALLOW_REGISTER_ANY_USERNAME"
+        ),
         MinimumPasswordLength: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_MINIMUM_PASSWORD_LENGTH"),
         BCryptWorkFactor: "",
         DisableUUIDLogin: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_UUID_LOGIN"),
         KickEmptyUUID: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_EMPTY_UUID"),
         TilePaintThreshold: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_TILE_PAINT_THRESHOLD"),
-        KickOnTilePaintThresholdBroken: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_TILE_PAINT_THRESHOLD_BROKEN"),
+        KickOnTilePaintThresholdBroken: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_TILE_PAINT_THRESHOLD_BROKEN"
+        ),
         MaxDamage: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_MAX_DAMAGE"),
         MaxProjDamage: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_MAX_PROJ_DAMAGE"),
-        KickOnDamageThresholdBroken: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_DAMAGE_THRESHOLD_BROKEN"),
+        KickOnDamageThresholdBroken: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_DAMAGE_THRESHOLD_BROKEN"
+        ),
         TileKillThreshold: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_TILE_KILL_THRESHOLD"),
-        KickOnTileKillThresholdBroken: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_TILE_KILL_THRESHOLD_BROKEN"),
+        KickOnTileKillThresholdBroken: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_TILE_KILL_THRESHOLD_BROKEN"
+        ),
         TilePlaceThreshold: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_TILE_PLACE_THRESHOLD"),
-        KickOnTilePlaceThresholdBroken: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_TILE_PLACE_THRESHOLD_BROKEN"),
+        KickOnTilePlaceThresholdBroken: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_TILE_PLACE_THRESHOLD_BROKEN"
+        ),
         TileLiquidThreshold: "",
-        KickOnTileLiquidThresholdBroken: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_TILE_LIQUID_THRESHOLD_BROKEN"),
+        KickOnTileLiquidThresholdBroken: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_TILE_LIQUID_THRESHOLD_BROKEN"
+        ),
         ProjIgnoreShrapnel: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_PROJ_IGNORE_SHRAPNEL"),
         ProjectileThreshold: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_PROJECTILE_THRESHOLD"),
-        KickOnProjectileThresholdBroken: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_PROJECTILE_THRESHOLD_BROKEN"),
+        KickOnProjectileThresholdBroken: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_PROJECTILE_THRESHOLD_BROKEN"
+        ),
         HealOtherThreshold: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_HEAL_OTHER_THRESHOLD"),
-        KickOnHealOtherThresholdBroken: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_HEAL_OTHER_THRESHOLD_BROKEN"),
-        SuppressPermissionFailureNotices: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SUPPRESS_PERMISSION_FAILURE_NOTICES"),
+        KickOnHealOtherThresholdBroken: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_HEAL_OTHER_THRESHOLD_BROKEN"
+        ),
+        SuppressPermissionFailureNotices: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SUPPRESS_PERMISSION_FAILURE_NOTICES"
+        ),
         DisableModifiedZenith: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_MODIFIED_ZENITH"),
-        DisableCustomDeathMessages: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_CUSTOM_DEATH_MESSAGES"),
+        DisableCustomDeathMessages: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_CUSTOM_DEATH_MESSAGES"
+        ),
         CommandSpecifier: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_COMMAND_SPECIFIER"),
         CommandSilentSpecifier: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_COMMAND_SILENT_SPECIFIER"),
         DisableSpewLogs: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_SPEW_LOGS"),
-        DisableSecondUpdateLogs: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_SECOND_UPDATE_LOGS"),
+        DisableSecondUpdateLogs: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_SECOND_UPDATE_LOGS"
+        ),
         SuperAdminChatRGB: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SUPER_ADMIN_CHAT_RGB"),
         SuperAdminChatPrefix: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SUPER_ADMIN_CHAT_PREFIX"),
         SuperAdminChatSuffix: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SUPER_ADMIN_CHAT_SUFFIX"),
@@ -3041,13 +4568,21 @@ export const configData: {
         MySqlUsername: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_MY_SQL_USERNAME"),
         MySqlPassword: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_MY_SQL_PASSWORD"),
         UseSqlLogs: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_USE_SQL_LOGS"),
-        RevertToTextLogsOnSqlFailures: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_REVERT_TO_TEXT_LOGS_ON_SQL_FAILURES"),
+        RevertToTextLogsOnSqlFailures: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_REVERT_TO_TEXT_LOGS_ON_SQL_FAILURES"
+        ),
         RestApiEnabled: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_REST_API_ENABLED"),
         RestApiPort: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_REST_API_PORT"),
         LogRest: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_LOG_REST"),
-        EnableTokenEndpointAuthentication: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ENABLE_TOKEN_ENDPOINT_AUTHENTICATION"),
-        RESTMaximumRequestsPerInterval: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_REST_MAXIMUM_REQUESTS_PER_INTERVAL"),
-        RESTRequestBucketDecreaseIntervalMinutes: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_REST_REQUEST_BUCKET_DECREASE_INTERVAL_MINUTES"),
+        EnableTokenEndpointAuthentication: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ENABLE_TOKEN_ENDPOINT_AUTHENTICATION"
+        ),
+        RESTMaximumRequestsPerInterval: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_REST_MAXIMUM_REQUESTS_PER_INTERVAL"
+        ),
+        RESTRequestBucketDecreaseIntervalMinutes: t(
+          "TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_REST_REQUEST_BUCKET_DECREASE_INTERVAL_MINUTES"
+        ),
         ApplicationRestTokens: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_APPLICATION_REST_TOKENS")
       }
     }

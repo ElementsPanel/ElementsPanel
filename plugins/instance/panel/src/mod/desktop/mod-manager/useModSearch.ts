@@ -357,7 +357,8 @@ export function useModSearch(
 
         const targetTab =
           currentProjectType === "plugin" ? t("TXT_CODE_PLUGIN_LIST") : t("TXT_CODE_MOD_LIST");
-        if (isDesktop) notifyDesktop(`${t("TXT_CODE_MOD_DOWNLOAD_STARTED")} -> ${targetTab}`, "success");
+        if (isDesktop)
+          notifyDesktop(`${t("TXT_CODE_MOD_DOWNLOAD_STARTED")} -> ${targetTab}`, "success");
         else message.success(`${t("TXT_CODE_MOD_DOWNLOAD_STARTED")} -> ${targetTab}`);
         showVersionModal.value = false;
         await loadMods();

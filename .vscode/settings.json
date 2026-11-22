@@ -30,9 +30,7 @@
     "plugins/*/daemon/src/i18n"
   ],
   "i18n-ally.keystyle": "flat",
-  "i18n-ally.enabledFrameworks": [
-    "vue"
-  ],
+  "i18n-ally.enabledFrameworks": ["vue"],
   "editor.wordSeparators": "`~!@#$%^&*()=+[{]}\\|;:'\",.<>/?",
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "always",

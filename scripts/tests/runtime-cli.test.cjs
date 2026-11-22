@@ -18,7 +18,10 @@ test("worker output receives a side prefix across split stdout chunks", () => {
     source.end(" line\nlast line");
     flush();
 
-    assert.equal(output.join(""), "[daemon] first line\n[daemon] second line\n[daemon] last line\n");
+    assert.equal(
+      output.join(""),
+      "[daemon] first line\n[daemon] second line\n[daemon] last line\n"
+    );
   } finally {
     if (originalForceColor === undefined) delete process.env.FORCE_COLOR;
     else process.env.FORCE_COLOR = originalForceColor;
@@ -36,7 +39,11 @@ test("worker prefixes use cyan for daemon and green for panel on terminals", () 
     const render = (side) => {
       const source = new PassThrough();
       const output = [];
-      const flush = pipeWorkerOutput(source, { isTTY: true, write: (value) => output.push(value) }, side);
+      const flush = pipeWorkerOutput(
+        source,
+        { isTTY: true, write: (value) => output.push(value) },
+        side
+      );
       source.end("line\n");
       flush();
       return output.join("");
@@ -72,9 +79,17 @@ test("worker environments preserve explicit color settings and propagate termina
     assert.equal(workerEnvironment(plan, { side: "daemon" }).FORCE_COLOR, undefined);
   } finally {
     if (originalStdoutTTY === undefined) delete process.stdout.isTTY;
-    else Object.defineProperty(process.stdout, "isTTY", { configurable: true, value: originalStdoutTTY });
+    else
+      Object.defineProperty(process.stdout, "isTTY", {
+        configurable: true,
+        value: originalStdoutTTY
+      });
     if (originalStderrTTY === undefined) delete process.stderr.isTTY;
-    else Object.defineProperty(process.stderr, "isTTY", { configurable: true, value: originalStderrTTY });
+    else
+      Object.defineProperty(process.stderr, "isTTY", {
+        configurable: true,
+        value: originalStderrTTY
+      });
     if (originalForceColor === undefined) delete process.env.FORCE_COLOR;
     else process.env.FORCE_COLOR = originalForceColor;
     if (originalNoColor === undefined) delete process.env.NO_COLOR;

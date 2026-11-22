@@ -6,7 +6,7 @@ import Instance from "../../instance/instance";
 import InstanceCommand from "../base/command";
 
 export function checkDockerName(name: string) {
-  const asciiRegex = /^[\x00-\x7F]+$/;
+  const asciiRegex = /^[^\u0080-\uFFFF]+$/;
   return asciiRegex.test(name);
 }
 
@@ -92,7 +92,10 @@ export default class DockerPullCommand extends InstanceCommand {
 
     try {
       const docker = new DefaultDocker();
-      instance.println("CONTAINER", $t("TXT_CODE_COMMON_DOWNLOADING_IMAGE_FILE_IMAGE_NAME") + imageName);
+      instance.println(
+        "CONTAINER",
+        $t("TXT_CODE_COMMON_DOWNLOADING_IMAGE_FILE_IMAGE_NAME") + imageName
+      );
       instance.asynchronousTask = this;
 
       logger.info(`Starting Docker pull for image: ${imageName}`);

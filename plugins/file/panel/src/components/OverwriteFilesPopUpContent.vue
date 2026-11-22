@@ -29,7 +29,12 @@ const allRef = computed({
   <div class="flex-column">
     {{ t("TXT_CODE_COMMON_THE_FILE_ALREADY_EXISTS_IN_THIS_FOLDER", { name: props.fileName }) }}
     <div style="margin-top: 16px; margin-bottom: -8px">
-      <VCheckbox v-model="overwriteRef" :label="t('TXT_CODE_COMMON_OVERWRITE')" density="compact" hide-details />
+      <VCheckbox
+        v-model="overwriteRef"
+        :label="t('TXT_CODE_COMMON_OVERWRITE')"
+        density="compact"
+        hide-details
+      />
       <VCheckbox
         v-if="props.count && props.count > 1"
         v-model="allRef"

@@ -31,7 +31,7 @@ import {
 
 const props = withDefaults(
   defineProps<{ keyword?: string | null; daemonId?: string; page?: number; pageSize?: number }>(),
-  { page: 1, pageSize: 20 }
+  { keyword: undefined, daemonId: undefined, page: 1, pageSize: 20 }
 );
 const emit = defineEmits<{ loading: [value: boolean] }>();
 const loading = ref(false);
@@ -105,7 +105,8 @@ function updateAll() {
 }
 
 async function confirmUpdateNotice() {
-  if (disposed || !updateNoticeShown.value || preparingTargets.value || applyingChanges.value) return;
+  if (disposed || !updateNoticeShown.value || preparingTargets.value || applyingChanges.value)
+    return;
   const query = (props.keyword ?? "").trim().toLowerCase();
   preparingTargets.value = true;
   updateNoticeShown.value = false;
@@ -216,7 +217,8 @@ defineExpose({ refresh, updateAll, canUpdate, preparingTargets, totalUpdates });
           :loading="loading"
           :disabled="blocked || updatingPlugins"
           @click="refresh"
-        >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn>
+          >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn
+        >
       </template>
     </Empty>
     <VAlert

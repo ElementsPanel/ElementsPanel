@@ -52,9 +52,9 @@ const formatNetworkSpeed = (bytes?: number) =>
   useByteUnit.value
     ? prettyBytes(bytes ?? 0, { ...prettyBytesConfig, binary: false }) + "/s"
     : prettyBytes((bytes ?? 0) * 8, { ...prettyBytesConfig, bits: true, binary: false }).replace(
-      /bit$/,
-      "b"
-    ) + "ps";
+        /bit$/,
+        "b"
+      ) + "ps";
 
 const formatTrafficUsage = (bytes?: number) =>
   prettyBytes(bytes ?? 0, { ...prettyBytesConfig, binary: false });
@@ -80,8 +80,8 @@ const cards = computed<PerfCardItem[]>(() => {
     cpuUsage != null && cpuUsage > 600
       ? "error"
       : cpuUsage != null && cpuUsage > 200
-        ? "warning"
-        : "normal";
+      ? "warning"
+      : "normal";
   const cpuPercent = Math.min(parseInt(String(cpuUsage ?? 0)), 100);
   const memPercent = Math.min(memoryUsagePercent ?? 0, 100);
   const storagePercent =
@@ -90,60 +90,60 @@ const cards = computed<PerfCardItem[]>(() => {
   const items: (PerfCardItem | null)[] = [
     cpuUsage != null
       ? {
-        key: "cpu",
-        label: t("TXT_CODE_COMMON_CPU_USAGE"),
-        value: `${parseInt(String(cpuUsage))}%`,
-        icon: "mdi-cube-outline",
-        theme: `perf-card--cpu-${cpuStatus}`,
-        barPercent: cpuPercent
-      }
+          key: "cpu",
+          label: t("TXT_CODE_COMMON_CPU_USAGE"),
+          value: `${parseInt(String(cpuUsage))}%`,
+          icon: "mdi-cube-outline",
+          theme: `perf-card--cpu-${cpuStatus}`,
+          barPercent: cpuPercent
+        }
       : null,
 
     memoryUsage != null
       ? {
-        key: "memory",
-        label: t("TXT_CODE_COMMON_MEMORY"),
-        value: formatMemoryUsage(memoryUsage, memoryLimit),
-        icon: "mdi-view-dashboard-outline",
-        theme: "perf-card--memory",
-        barPercent: memPercent
-      }
+          key: "memory",
+          label: t("TXT_CODE_COMMON_MEMORY"),
+          value: formatMemoryUsage(memoryUsage, memoryLimit),
+          icon: "mdi-view-dashboard-outline",
+          theme: "perf-card--memory",
+          barPercent: memPercent
+        }
       : null,
 
     storageUsage
       ? {
-        key: "disk",
-        label: t("TXT_CODE_DISK_USAGE"),
-        value: formatMemoryUsage(storageUsage || 0, storageLimit || 0),
-        icon: "mdi-harddisk",
-        theme: "perf-card--disk",
-        barPercent: storagePercent
-      }
+          key: "disk",
+          label: t("TXT_CODE_DISK_USAGE"),
+          value: formatMemoryUsage(storageUsage || 0, storageLimit || 0),
+          icon: "mdi-harddisk",
+          theme: "perf-card--disk",
+          barPercent: storagePercent
+        }
       : null,
 
     rxRate != null || txRate != null
       ? {
-        key: "network-bandwidth",
-        label: `${t("TXT_CODE_COMMON_NETWORK")} · 带宽`,
-        value: `↓${formatNetworkSpeed(rxRate)} ↑${formatNetworkSpeed(txRate)}`,
-        icon: "mdi-lan-connect",
-        theme: "perf-card--network",
-        barPercent: 0,
-        onClick: () => {
-          useByteUnit.value = !useByteUnit.value;
+          key: "network-bandwidth",
+          label: `${t("TXT_CODE_COMMON_NETWORK")} · 带宽`,
+          value: `↓${formatNetworkSpeed(rxRate)} ↑${formatNetworkSpeed(txRate)}`,
+          icon: "mdi-lan-connect",
+          theme: "perf-card--network",
+          barPercent: 0,
+          onClick: () => {
+            useByteUnit.value = !useByteUnit.value;
+          }
         }
-      }
       : null,
 
     rxBytes != null || txBytes != null
       ? {
-        key: "network-traffic",
-        label: `${t("TXT_CODE_COMMON_NETWORK")} · 流量`,
-        value: `↓${formatTrafficUsage(rxBytes)} ↑${formatTrafficUsage(txBytes)}`,
-        icon: "mdi-lan-connect",
-        theme: "perf-card--network",
-        barPercent: 0
-      }
+          key: "network-traffic",
+          label: `${t("TXT_CODE_COMMON_NETWORK")} · 流量`,
+          value: `↓${formatTrafficUsage(rxBytes)} ↑${formatTrafficUsage(txBytes)}`,
+          icon: "mdi-lan-connect",
+          theme: "perf-card--network",
+          barPercent: 0
+        }
       : null
   ];
 
@@ -153,7 +153,13 @@ const cards = computed<PerfCardItem[]>(() => {
 
 <template>
   <div v-if="cards.length > 0" class="perf-cards">
-    <div v-for="card in cards" :key="card.key" class="perf-card" :class="card.theme" @click="card.onClick?.()">
+    <div
+      v-for="card in cards"
+      :key="card.key"
+      class="perf-card"
+      :class="card.theme"
+      @click="card.onClick?.()"
+    >
       <div class="perf-card__body">
         <div class="perf-card__icon">
           <VIcon :icon="card.icon" />

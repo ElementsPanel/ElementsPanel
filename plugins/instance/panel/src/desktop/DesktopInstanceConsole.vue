@@ -1,26 +1,39 @@
 <script setup lang="ts">
-import { ctx, usePluginService, type FrontendDesktopService, type FrontendTerminalService } from "@elements-panel/sdk";
+import {
+  ctx,
+  usePluginService,
+  type FrontendDesktopService,
+  type FrontendTerminalService
+} from "@elements-panel/sdk";
 import { GLOBAL_INSTANCE_NAME } from "@elementspanel/epanel-plugin-console/config/const";
-import { INSTANCE_TYPE_TRANSLATION, verifyEULA } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
+import {
+  INSTANCE_TYPE_TRANSLATION,
+  verifyEULA
+} from "@elementspanel/epanel-plugin-console/hooks/useInstance";
 import { useOverviewInfo } from "@elementspanel/epanel-plugin-console/hooks/useOverviewInfo";
 import {
-    killInstance,
-    openInstance,
-    restartInstance,
-    stopInstance,
-    updateInstance
+  killInstance,
+  openInstance,
+  restartInstance,
+  stopInstance,
+  updateInstance
 } from "@elementspanel/epanel-plugin-console/services/apis/instance";
 import { arrayFilter } from "@elementspanel/epanel-plugin-console/tools/array";
 import { sleep } from "@elementspanel/epanel-plugin-console/tools/common";
 import { notifyDesktopError } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
-import { INSTANCE_CRASH_TIMEOUT, INSTANCE_STATUS } from "@elementspanel/epanel-plugin-console/types/const";
+import {
+  INSTANCE_CRASH_TIMEOUT,
+  INSTANCE_STATUS
+} from "@elementspanel/epanel-plugin-console/types/const";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import prettyBytes from "pretty-bytes";
 import { computed, onUnmounted, ref } from "vue";
 import { VBtn, VCard, VCardActions, VCardText, VDialog, VIcon, VTooltip } from "vuetify/components";
 import DesktopManagerBtns from "./DesktopManagerBtns.vue";
 
-const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
+const ConfirmDialog = computed(
+  () => usePluginService<FrontendDesktopService>("desktop")?.confirmation
+);
 
 const PlayCircleOutlined = "mdi-play-circle-outline";
 const PauseCircleOutlined = "mdi-pause-circle-outline";
@@ -28,21 +41,21 @@ const RedoOutlined = "mdi-redo";
 const CloseOutlined = "mdi-close";
 const CloudDownloadOutlined = "mdi-cloud-download-outline";
 const getTerminalActionIcon = (item: { icon?: unknown; mdiIcon?: string }) =>
-    item.mdiIcon || (typeof item.icon === "string" ? item.icon : "mdi-lightning-bolt-outline");
+  item.mdiIcon || (typeof item.icon === "string" ? item.icon : "mdi-lightning-bolt-outline");
 
 type DialogPanel = "none" | "file-manager" | "schedule" | "server-config";
 
 const props = defineProps<{
-    instanceId: string;
-    daemonId: string;
+  instanceId: string;
+  daemonId: string;
 }>();
 
 const emit = defineEmits<{
-    (e: "open-server-config", instanceId: string, daemonId: string, type: string): void;
-    (e: "open-schedule", instanceId: string, daemonId: string): void;
-    (e: "open-event-config", instanceId: string, daemonId: string): void;
-    (e: "open-instance-settings", instanceId: string, daemonId: string): void;
-    (e: "open-instance-action", actionId: string, instanceId: string, daemonId: string): void;
+  (e: "open-server-config", instanceId: string, daemonId: string, type: string): void;
+  (e: "open-schedule", instanceId: string, daemonId: string): void;
+  (e: "open-event-config", instanceId: string, daemonId: string): void;
+  (e: "open-instance-settings", instanceId: string, daemonId: string): void;
+  (e: "open-instance-action", actionId: string, instanceId: string, daemonId: string): void;
 }>();
 
 const terminalService = usePluginService<FrontendTerminalService>("terminal");
@@ -50,20 +63,20 @@ if (!terminalService) throw new Error("The terminal plugin is required by the in
 const TerminalCore = terminalService.TerminalCore;
 const terminalHook = terminalService.useTerminal();
 const {
-    state: instanceInfo,
-    isStopped,
-    isRunning,
-    isBuys,
-    isGlobalTerminal,
-    isDockerMode,
-    clearTerminal
+  state: instanceInfo,
+  isStopped,
+  isRunning,
+  isBuys,
+  isGlobalTerminal,
+  isDockerMode,
+  clearTerminal
 } = terminalHook;
 
 const { state: overviewState } = useOverviewInfo();
 
 const nodeInfo = computed(() => {
-    if (!overviewState.value?.remote) return null;
-    return overviewState.value.remote.find((node: any) => node.uuid === props.daemonId);
+  if (!overviewState.value?.remote) return null;
+  return overviewState.value.remote.find((node: any) => node.uuid === props.daemonId);
 });
 
 const activeDialog = ref<DialogPanel>("none");
@@ -74,752 +87,846 @@ const pendingActionMessage = ref("");
 const pendingActionDanger = ref(false);
 
 const requestAction = (item: {
-    title: string;
-    noConfirm?: boolean;
-    confirmMessage?: string;
-    type?: string;
-    props?: Record<string, unknown>;
-    click: () => unknown;
+  title: string;
+  noConfirm?: boolean;
+  confirmMessage?: string;
+  type?: string;
+  props?: Record<string, unknown>;
+  click: () => unknown;
 }) => {
-    if (item.noConfirm) {
-        void item.click();
-        return;
-    }
-    pendingAction.value = async () => { await item.click(); };
-    pendingActionMessage.value = item.confirmMessage || `${t("TXT_CODE_COMMON_CONFIRM_ACTION")}: ${item.title}`;
-    pendingActionDanger.value = item.type === "danger" || !!item.props?.danger;
-    confirmDialog.value = true;
+  if (item.noConfirm) {
+    void item.click();
+    return;
+  }
+  pendingAction.value = async () => {
+    await item.click();
+  };
+  pendingActionMessage.value =
+    item.confirmMessage || `${t("TXT_CODE_COMMON_CONFIRM_ACTION")}: ${item.title}`;
+  pendingActionDanger.value = item.type === "danger" || !!item.props?.danger;
+  confirmDialog.value = true;
 };
 
 const confirmPendingAction = async () => {
-    const action = pendingAction.value;
-    confirmDialog.value = false;
-    pendingAction.value = null;
-    if (action) await action();
-};
-
-const openDialog = (panel: DialogPanel) => {
-    activeDialog.value = panel;
+  const action = pendingAction.value;
+  confirmDialog.value = false;
+  pendingAction.value = null;
+  if (action) await action();
 };
 
 const closeDialog = () => {
-    activeDialog.value = "none";
+  activeDialog.value = "none";
 };
 
 const instanceTypeText = computed(
-    () => INSTANCE_TYPE_TRANSLATION[instanceInfo.value?.config.type ?? -1]
+  () => INSTANCE_TYPE_TRANSLATION[instanceInfo.value?.config.type ?? -1]
 );
 
 const { execute: requestOpenInstance, isLoading: isOpenInstanceLoading } = openInstance();
 
 let checkRunningTimer: NodeJS.Timeout;
 const toOpenInstance = async () => {
-    if (checkRunningTimer) clearTimeout(checkRunningTimer);
-    clearTerminal();
-    try {
-        if (instanceInfo.value?.config?.type?.startsWith("minecraft/java")) {
-            const flag = await verifyEULA(props.instanceId, props.daemonId);
-            if (!flag) return;
-            await sleep(1000);
-        }
-
-        await requestOpenInstance({
-            params: {
-                uuid: props.instanceId,
-                daemonId: props.daemonId
-            }
-        });
-
-        checkRunningTimer = setTimeout(() => {
-            if (terminalHook.isStopped.value) {
-                errorDialog.value = {
-                    show: true,
-                    lines: [
-                        t("TXT_CODE_COMMON_PROCESS_STARTUP_FAILED_PLEASE_CHECK_THE_INSTANCE_LOG_FOR_MORE_INFORMATION"),
-                        `${t("TXT_CODE_COMMON_CURRENT_START_COMMAND")}: ${instanceInfo.value?.config.startCommand || ""}`,
-                        ...(isDockerMode.value ? [`${t("TXT_CODE_COMMON_CURRENT_IMAGE_IN_USE")}: ${instanceInfo.value?.config.docker.image || ""}`] : [])
-                    ]
-                };
-            }
-        }, INSTANCE_CRASH_TIMEOUT);
-    } catch (error: any) {
-        notifyDesktopError(error);
+  if (checkRunningTimer) clearTimeout(checkRunningTimer);
+  clearTerminal();
+  try {
+    if (instanceInfo.value?.config?.type?.startsWith("minecraft/java")) {
+      const flag = await verifyEULA(props.instanceId, props.daemonId);
+      if (!flag) return;
+      await sleep(1000);
     }
+
+    await requestOpenInstance({
+      params: {
+        uuid: props.instanceId,
+        daemonId: props.daemonId
+      }
+    });
+
+    checkRunningTimer = setTimeout(() => {
+      if (terminalHook.isStopped.value) {
+        errorDialog.value = {
+          show: true,
+          lines: [
+            t(
+              "TXT_CODE_COMMON_PROCESS_STARTUP_FAILED_PLEASE_CHECK_THE_INSTANCE_LOG_FOR_MORE_INFORMATION"
+            ),
+            `${t("TXT_CODE_COMMON_CURRENT_START_COMMAND")}: ${
+              instanceInfo.value?.config.startCommand || ""
+            }`,
+            ...(isDockerMode.value
+              ? [
+                  `${t("TXT_CODE_COMMON_CURRENT_IMAGE_IN_USE")}: ${
+                    instanceInfo.value?.config.docker.image || ""
+                  }`
+                ]
+              : [])
+          ]
+        };
+      }
+    }, INSTANCE_CRASH_TIMEOUT);
+  } catch (error: any) {
+    notifyDesktopError(error);
+  }
 };
 
 const updateCmd = computed(() => (instanceInfo.value?.config.updateCommand ? true : false));
 const instanceStatusText = computed(() => {
-    const status = Number(instanceInfo.value?.status ?? -1) as keyof typeof INSTANCE_STATUS;
-    return INSTANCE_STATUS[status];
+  const status = Number(instanceInfo.value?.status ?? -1) as keyof typeof INSTANCE_STATUS;
+  return INSTANCE_STATUS[status];
 });
 
 const quickOperations = computed(() =>
-    arrayFilter([
-        {
-            title: t("TXT_CODE_COMMON_START"),
-            icon: PlayCircleOutlined,
-            noConfirm: true,
-            type: "primary",
-            click: toOpenInstance,
-            props: {},
-            condition: () => isStopped.value
-        },
-        {
-            title: t("TXT_CODE_COMMON_STOP"),
-            confirmMessage: t("TXT_CODE_COMMON_ARE_YOU_SURE_YOU_WANT_TO_SEND_A_SHUTDOWN_COMMAND_TO_THE_INSTANCE"),
-            icon: PauseCircleOutlined,
-            type: "default",
-            click: async (): Promise<void> => {
-                try {
-                    await stopInstance().execute({
-                        params: {
-                            uuid: props.instanceId,
-                            daemonId: props.daemonId
-                        }
-                    });
-                } catch (error: any) {
-                    notifyDesktopError(error);
-                }
-            },
-            props: {
-                danger: true
-            },
-            condition: () => isRunning.value
+  arrayFilter([
+    {
+      title: t("TXT_CODE_COMMON_START"),
+      icon: PlayCircleOutlined,
+      noConfirm: true,
+      type: "primary",
+      click: toOpenInstance,
+      props: {},
+      condition: () => isStopped.value
+    },
+    {
+      title: t("TXT_CODE_COMMON_STOP"),
+      confirmMessage: t(
+        "TXT_CODE_COMMON_ARE_YOU_SURE_YOU_WANT_TO_SEND_A_SHUTDOWN_COMMAND_TO_THE_INSTANCE"
+      ),
+      icon: PauseCircleOutlined,
+      type: "default",
+      click: async (): Promise<void> => {
+        try {
+          await stopInstance().execute({
+            params: {
+              uuid: props.instanceId,
+              daemonId: props.daemonId
+            }
+          });
+        } catch (error: any) {
+          notifyDesktopError(error);
         }
-    ])
+      },
+      props: {
+        danger: true
+      },
+      condition: () => isRunning.value
+    }
+  ])
 );
 
 const instanceOperations = computed(() =>
-    arrayFilter([
-        {
-            title: t("TXT_CODE_COMMON_RESTART"),
-            confirmMessage: t("TXT_CODE_COMMON_ARE_YOU_SURE_YOU_WANT_TO_RESTART_THE_INSTANCE"),
-            icon: RedoOutlined,
-            type: "default",
-            noConfirm: false,
-            click: async (): Promise<void> => {
-                try {
-                    await restartInstance().execute({
-                        params: {
-                            uuid: props.instanceId,
-                            daemonId: props.daemonId
-                        }
-                    });
-                } catch (error: any) {
-                    notifyDesktopError(error);
-                }
+  arrayFilter([
+    {
+      title: t("TXT_CODE_COMMON_RESTART"),
+      confirmMessage: t("TXT_CODE_COMMON_ARE_YOU_SURE_YOU_WANT_TO_RESTART_THE_INSTANCE"),
+      icon: RedoOutlined,
+      type: "default",
+      noConfirm: false,
+      click: async (): Promise<void> => {
+        try {
+          await restartInstance().execute({
+            params: {
+              uuid: props.instanceId,
+              daemonId: props.daemonId
+            }
+          });
+        } catch (error: any) {
+          notifyDesktopError(error);
+        }
+      },
+      condition: () => isRunning.value
+    },
+    {
+      title: t("TXT_CODE_COMMON_TERMINATE"),
+      confirmMessage: t("TXT_CODE_INSTANCE_FORCE_STOP_DATA_LOSS_WARNING"),
+      icon: CloseOutlined,
+      type: "danger",
+      click: async (): Promise<void> => {
+        try {
+          await killInstance().execute({
+            params: {
+              uuid: props.instanceId,
+              daemonId: props.daemonId
+            }
+          });
+        } catch (error: any) {
+          notifyDesktopError(error);
+        }
+      },
+      condition: () => !isStopped.value
+    },
+    {
+      title: t("TXT_CODE_COMMON_UPDATE"),
+      type: "default",
+      icon: CloudDownloadOutlined,
+      click: async (): Promise<void> => {
+        try {
+          clearTerminal();
+          await updateInstance().execute({
+            params: {
+              uuid: props.instanceId,
+              daemonId: props.daemonId,
+              task_name: "update"
             },
-            condition: () => isRunning.value
-        },
-        {
-            title: t("TXT_CODE_COMMON_TERMINATE"),
-            confirmMessage: t("TXT_CODE_INSTANCE_FORCE_STOP_DATA_LOSS_WARNING"),
-            icon: CloseOutlined,
-            type: "danger",
-            click: async (): Promise<void> => {
-                try {
-                    await killInstance().execute({
-                        params: {
-                            uuid: props.instanceId,
-                            daemonId: props.daemonId
-                        }
-                    });
-                } catch (error: any) {
-                    notifyDesktopError(error);
-                }
-            },
-            condition: () => !isStopped.value
-        },
-        {
-            title: t("TXT_CODE_COMMON_UPDATE"),
-            type: "default",
-            icon: CloudDownloadOutlined,
-            click: async (): Promise<void> => {
-                try {
-                    clearTerminal();
-                    await updateInstance().execute({
-                        params: {
-                            uuid: props.instanceId,
-                            daemonId: props.daemonId,
-                            task_name: "update"
-                        },
-                        data: {
-                            time: new Date().getTime()
-                        }
-                    });
-                } catch (error: any) {
-                    notifyDesktopError(error);
-                }
-            },
-            condition: () => isStopped.value && updateCmd.value
-        },
-        // Plugin-supplied terminal buttons, e.g. the market's reinstall tool.
-        ...ctx.actions.terminalButtons({
-            mode: "desktop",
-            instanceId: props.instanceId,
-            daemonId: props.daemonId,
-            instanceInfo: instanceInfo.value,
-            isStopped: isStopped.value,
-            isRunning: isRunning.value,
-            isGlobalTerminal: isGlobalTerminal.value,
-            isDockerMode: isDockerMode.value,
-            clearTerminal
-        })
-    ])
+            data: {
+              time: new Date().getTime()
+            }
+          });
+        } catch (error: any) {
+          notifyDesktopError(error);
+        }
+      },
+      condition: () => isStopped.value && updateCmd.value
+    },
+    // Plugin-supplied terminal buttons, e.g. the market's reinstall tool.
+    ...ctx.actions.terminalButtons({
+      mode: "desktop",
+      instanceId: props.instanceId,
+      daemonId: props.daemonId,
+      instanceInfo: instanceInfo.value,
+      isStopped: isStopped.value,
+      isRunning: isRunning.value,
+      isGlobalTerminal: isGlobalTerminal.value,
+      isDockerMode: isDockerMode.value,
+      clearTerminal
+    })
+  ])
 );
 
 const getInstanceName = computed(() => {
-    if (instanceInfo.value?.config.nickname === GLOBAL_INSTANCE_NAME) {
-        return t("TXT_CODE_COMMON_DAEMON_TERMINAL");
-    } else {
-        return instanceInfo.value?.config.nickname;
-    }
+  if (instanceInfo.value?.config.nickname === GLOBAL_INSTANCE_NAME) {
+    return t("TXT_CODE_COMMON_DAEMON_TERMINAL");
+  } else {
+    return instanceInfo.value?.config.nickname;
+  }
 });
 
 const formatBytes = (bytes: number): string => {
-    if (bytes == null || isNaN(bytes)) return "0 B/s";
-    const units = ["B/s", "KB/s", "MB/s", "GB/s", "TB/s"];
-    let value = bytes;
-    let unitIndex = 0;
-    while (value >= 1024 && unitIndex < units.length - 1) {
-        value /= 1024;
-        unitIndex++;
-    }
-    return `${value.toFixed(unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
+  if (bytes == null || isNaN(bytes)) return "0 B/s";
+  const units = ["B/s", "KB/s", "MB/s", "GB/s", "TB/s"];
+  let value = bytes;
+  let unitIndex = 0;
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex++;
+  }
+  return `${value.toFixed(unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
 };
 
 const formatToGB = (bytes: number): string => {
-    if (bytes == null || isNaN(bytes)) return "0.0G";
-    return `${(bytes / 1024 / 1024 / 1024).toFixed(1)}G`;
+  if (bytes == null || isNaN(bytes)) return "0.0G";
+  return `${(bytes / 1024 / 1024 / 1024).toFixed(1)}G`;
 };
 
 const formatDiskUsage = (usage: number, limit?: number): string => {
-    const options = { minimumFractionDigits: 2, maximumFractionDigits: 2, binary: true };
-    const used = prettyBytes(usage, options);
-    return limit ? `${used} / ${prettyBytes(limit, options)}` : used;
+  const options = { minimumFractionDigits: 2, maximumFractionDigits: 2, binary: true };
+  const used = prettyBytes(usage, options);
+  return limit ? `${used} / ${prettyBytes(limit, options)}` : used;
 };
 
 const perfInfo = computed(() => {
-    const info = instanceInfo.value?.info;
-    if (!info) return null;
-    const disk = info.storageUsage != null && info.storageUsage > 0
-        ? formatDiskUsage(info.storageUsage, info.storageLimit)
-        : null;
+  const info = instanceInfo.value?.info;
+  if (!info) return null;
+  const disk =
+    info.storageUsage != null && info.storageUsage > 0
+      ? formatDiskUsage(info.storageUsage, info.storageLimit)
+      : null;
 
-    if (isDockerMode.value) {
-        const cpu = info.cpuUsage != null ? Math.min(Math.round(info.cpuUsage), 100) : null;
-        const mem = info.memoryUsagePercent != null ? Math.min(Math.round(info.memoryUsagePercent), 100) : null;
-        const memUsed = info.memoryUsage != null ? formatToGB(info.memoryUsage) : null;
-        const memTotal = info.memoryLimit != null ? formatToGB(info.memoryLimit) : null;
-        const net = info.rxRate != null || info.txRate != null
-            ? { rx: formatBytes(info.rxRate ?? 0), tx: formatBytes(info.txRate ?? 0) }
-            : null;
-        return { cpu, mem, memUsed, memTotal, disk, net };
-    }
-
-    if (nodeInfo.value?.system) {
-        const system = nodeInfo.value.system;
-        const memoryUsage = system.totalmem - system.freemem;
-        const cpu = system.cpuUsage != null ? Math.min(Math.round(system.cpuUsage * 100), 100) : null;
-        const mem = system.totalmem > 0 ? Math.min(Math.round((memoryUsage / system.totalmem) * 100), 100) : null;
-        const memUsed = formatToGB(memoryUsage);
-        const memTotal = formatToGB(system.totalmem);
-        const net = info.rxRate != null || info.txRate != null
-            ? { rx: formatBytes(info.rxRate ?? 0), tx: formatBytes(info.txRate ?? 0) }
-            : null;
-        return { cpu, mem, memUsed, memTotal, disk, net };
-    }
-
+  if (isDockerMode.value) {
     const cpu = info.cpuUsage != null ? Math.min(Math.round(info.cpuUsage), 100) : null;
-    const mem = info.memoryUsagePercent != null ? Math.min(Math.round(info.memoryUsagePercent), 100) : null;
+    const mem =
+      info.memoryUsagePercent != null ? Math.min(Math.round(info.memoryUsagePercent), 100) : null;
     const memUsed = info.memoryUsage != null ? formatToGB(info.memoryUsage) : null;
     const memTotal = info.memoryLimit != null ? formatToGB(info.memoryLimit) : null;
-    const net = info.rxRate != null || info.txRate != null
+    const net =
+      info.rxRate != null || info.txRate != null
         ? { rx: formatBytes(info.rxRate ?? 0), tx: formatBytes(info.txRate ?? 0) }
         : null;
     return { cpu, mem, memUsed, memTotal, disk, net };
+  }
+
+  if (nodeInfo.value?.system) {
+    const system = nodeInfo.value.system;
+    const memoryUsage = system.totalmem - system.freemem;
+    const cpu = system.cpuUsage != null ? Math.min(Math.round(system.cpuUsage * 100), 100) : null;
+    const mem =
+      system.totalmem > 0 ? Math.min(Math.round((memoryUsage / system.totalmem) * 100), 100) : null;
+    const memUsed = formatToGB(memoryUsage);
+    const memTotal = formatToGB(system.totalmem);
+    const net =
+      info.rxRate != null || info.txRate != null
+        ? { rx: formatBytes(info.rxRate ?? 0), tx: formatBytes(info.txRate ?? 0) }
+        : null;
+    return { cpu, mem, memUsed, memTotal, disk, net };
+  }
+
+  const cpu = info.cpuUsage != null ? Math.min(Math.round(info.cpuUsage), 100) : null;
+  const mem =
+    info.memoryUsagePercent != null ? Math.min(Math.round(info.memoryUsagePercent), 100) : null;
+  const memUsed = info.memoryUsage != null ? formatToGB(info.memoryUsage) : null;
+  const memTotal = info.memoryLimit != null ? formatToGB(info.memoryLimit) : null;
+  const net =
+    info.rxRate != null || info.txRate != null
+      ? { rx: formatBytes(info.rxRate ?? 0), tx: formatBytes(info.txRate ?? 0) }
+      : null;
+  return { cpu, mem, memUsed, memTotal, disk, net };
 });
 
 onUnmounted(() => {
-    if (checkRunningTimer) clearTimeout(checkRunningTimer);
+  if (checkRunningTimer) clearTimeout(checkRunningTimer);
 });
 </script>
 
 <template>
-    <div class="dim">
-        <div class="dim-toolbar">
-            <div class="dim-toolbar__left">
-                <div class="dim-instance__header">
-                    <span class="dim-instance__status" :class="{
-                        'status--running': isRunning,
-                        'status--busy': isBuys,
-                        'status--stopped': isStopped
-                    }">
-                        <VIcon icon="mdi-check-circle-outline" v-if="isRunning"  />
-                        <VIcon icon="mdi-clock-outline" v-else-if="isBuys"  />
-                        <VIcon icon="mdi-information-outline" v-else  />
-                    </span>
-                    <span class="dim-instance__name">{{ getInstanceName }}</span>
-                    <span class="dim-instance__badge" :class="{
-                        'status--running': isRunning,
-                        'status--busy': isBuys,
-                        'status--stopped': isStopped
-                    }">
-                        {{ instanceStatusText }}
-                    </span>
-                    <span v-if="instanceTypeText" class="dim-instance__type">{{ instanceTypeText }}</span>
-                    <VTooltip
-                        v-if="instanceInfo?.watcher && instanceInfo.watcher > 1"
-                        :text="t('TXT_CODE_TERMINAL_CONNECTED_PAGES_HINT')"
-                        location="bottom"
-                    >
-                        <template #activator="{ props: tooltipProps }">
-                            <span v-bind="tooltipProps" class="dim-instance__players">
-                                <VIcon icon="mdi-laptop" /> {{ instanceInfo?.watcher }}
-                            </span>
-                        </template>
-                    </VTooltip>
-                </div>
-            </div>
-            <div class="dim-toolbar__right">
-                <div v-if="perfInfo" class="dim-perf">
-                    <span v-if="perfInfo.cpu != null" class="dim-perf__item"
-                        :class="`dim-perf__cpu--${perfInfo.cpu > 80 ? 'high' : perfInfo.cpu > 50 ? 'mid' : 'low'}`">
-                        <VIcon icon="mdi-cube-outline" size="1em" /> {{ perfInfo.cpu }}%
-                        <VTooltip activator="parent" :text="t('TXT_CODE_COMMON_CPU_USAGE')" location="bottom" />
-                    </span>
-                    <span v-if="perfInfo.mem != null && perfInfo.memUsed && perfInfo.memTotal" class="dim-perf__item"
-                        :class="`dim-perf__mem--${perfInfo.mem > 80 ? 'high' : perfInfo.mem > 50 ? 'mid' : 'low'}`">
-                        <VIcon icon="mdi-view-dashboard-outline" size="1em" /> {{ perfInfo.memUsed }}/{{ perfInfo.memTotal }}
-                        <VTooltip activator="parent" :text="t('TXT_CODE_COMMON_MEMORY')" location="bottom" />
-                    </span>
-                    <span v-if="perfInfo.disk" class="dim-perf__item dim-perf__disk">
-                        <VIcon icon="mdi-harddisk" size="1em" /> {{ perfInfo.disk }}
-                        <VTooltip activator="parent" :text="t('TXT_CODE_DISK_USAGE')" location="bottom" />
-                    </span>
-                    <span v-if="perfInfo.net" class="dim-perf__item dim-perf__net">
-                        <VIcon icon="mdi-lan" size="1em" /> ↓{{ perfInfo.net.rx }}/s ↑{{ perfInfo.net.tx }}/s
-                        <VTooltip activator="parent" :text="t('TXT_CODE_COMMON_NETWORK')" location="bottom" />
-                    </span>
-                </div>
-                <template v-for="item in [...quickOperations, ...instanceOperations]" :key="item.title">
-                    <VBtn v-if="item.noConfirm" type="button" variant="text" height="auto" min-width="0" class="dim-btn dim-btn--sm text-none" :class="{
-                        'dim-btn--primary': item.type === 'primary',
-                        'dim-btn--danger': item.type === 'danger'
-                    }" :disabled="isOpenInstanceLoading" @click="item.click" :title="item.title">
-                        <VIcon :icon="getTerminalActionIcon(item)" size="1em" />
-                        {{ item.title }}
-                    </VBtn>
-                    <VBtn v-else type="button" variant="text" height="auto" min-width="0" class="dim-btn dim-btn--sm text-none" :class="{
-                            'dim-btn--primary': item.type === 'primary',
-                            'dim-btn--danger': item.type === 'danger'
-                        }" :title="item.title" @click="requestAction(item)">
-                            <VIcon :icon="getTerminalActionIcon(item)" size="1em" />
-                            {{ item.title }}
-                    </VBtn>
-                </template>
-            </div>
+  <div class="dim">
+    <div class="dim-toolbar">
+      <div class="dim-toolbar__left">
+        <div class="dim-instance__header">
+          <span
+            class="dim-instance__status"
+            :class="{
+              'status--running': isRunning,
+              'status--busy': isBuys,
+              'status--stopped': isStopped
+            }"
+          >
+            <VIcon v-if="isRunning" icon="mdi-check-circle-outline" />
+            <VIcon v-else-if="isBuys" icon="mdi-clock-outline" />
+            <VIcon v-else icon="mdi-information-outline" />
+          </span>
+          <span class="dim-instance__name">{{ getInstanceName }}</span>
+          <span
+            class="dim-instance__badge"
+            :class="{
+              'status--running': isRunning,
+              'status--busy': isBuys,
+              'status--stopped': isStopped
+            }"
+          >
+            {{ instanceStatusText }}
+          </span>
+          <span v-if="instanceTypeText" class="dim-instance__type">{{ instanceTypeText }}</span>
+          <VTooltip
+            v-if="instanceInfo?.watcher && instanceInfo.watcher > 1"
+            :text="t('TXT_CODE_TERMINAL_CONNECTED_PAGES_HINT')"
+            location="bottom"
+          >
+            <template #activator="{ props: tooltipProps }">
+              <span v-bind="tooltipProps" class="dim-instance__players">
+                <VIcon icon="mdi-laptop" /> {{ instanceInfo?.watcher }}
+              </span>
+            </template>
+          </VTooltip>
         </div>
-
-        <div class="dim-body">
-            <div v-if="activeDialog === 'none'" class="dim-list">
-                <component :is="TerminalCore" :use-terminal-hook="terminalHook" :instance-id="instanceId" :daemon-id="daemonId"
-                    height="100%" />
-            </div>
-
-            <div v-else-if="activeDialog === 'file-manager'" class="dim-dialog">
-                <div class="dim-dialog__header">
-                    <VBtn icon variant="text" class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_COMMON_GO')">
-                        <VIcon icon="mdi-arrow-left"  />
-                    </VBtn>
-                    <span class="dim-dialog__title">
-                        <VIcon icon="mdi-folder-open-outline"  /> {{ t("TXT_CODE_COMMON_FILE_MANAGEMENT") }}
-                    </span>
-                </div>
-                <div class="dim-dialog__body">
-                    <div class="dim-placeholder">
-                        <VIcon icon="mdi-folder-open-outline" class="dim-placeholder__icon"  />
-                        <p class="dim-placeholder__text">{{ t("TXT_CODE_COMMON_FILE_MANAGEMENT") }}</p>
-                        <p class="dim-placeholder__hint">{{ t("TXT_CODE_COMMON_GO") }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div v-else-if="activeDialog === 'schedule'" class="dim-dialog">
-                <div class="dim-dialog__header">
-                    <VBtn icon variant="text" class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_COMMON_GO')">
-                        <VIcon icon="mdi-arrow-left"  />
-                    </VBtn>
-                    <span class="dim-dialog__title">
-                        <VIcon icon="mdi-clock-outline"  /> {{ t("TXT_CODE_COMMON_SCHEDULED_TASKS") }}
-                    </span>
-                </div>
-                <div class="dim-dialog__body">
-                    <div class="dim-placeholder">
-                        <VIcon icon="mdi-clock-outline" class="dim-placeholder__icon"  />
-                        <p class="dim-placeholder__text">{{ t("TXT_CODE_COMMON_SCHEDULED_TASKS") }}</p>
-                        <p class="dim-placeholder__hint">{{ t("TXT_CODE_COMMON_GO") }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div v-else-if="activeDialog === 'server-config'" class="dim-dialog">
-                <div class="dim-dialog__header">
-                    <VBtn icon variant="text" class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_COMMON_GO')">
-                        <VIcon icon="mdi-arrow-left"  />
-                    </VBtn>
-                    <span class="dim-dialog__title">
-                        <VIcon icon="mdi-tune-variant"  /> {{ t("TXT_CODE_COMMON_CONFIGURATION_FILES") }}
-                    </span>
-                </div>
-                <div class="dim-dialog__body">
-                    <div class="dim-placeholder">
-                        <VIcon icon="mdi-tune-variant" class="dim-placeholder__icon"  />
-                        <p class="dim-placeholder__text">{{ t("TXT_CODE_COMMON_CONFIGURATION_FILES") }}</p>
-                        <p class="dim-placeholder__hint">{{ t("TXT_CODE_COMMON_GO") }}</p>
-                    </div>
-                </div>
-            </div>
+      </div>
+      <div class="dim-toolbar__right">
+        <div v-if="perfInfo" class="dim-perf">
+          <span
+            v-if="perfInfo.cpu != null"
+            class="dim-perf__item"
+            :class="`dim-perf__cpu--${
+              perfInfo.cpu > 80 ? 'high' : perfInfo.cpu > 50 ? 'mid' : 'low'
+            }`"
+          >
+            <VIcon icon="mdi-cube-outline" size="1em" /> {{ perfInfo.cpu }}%
+            <VTooltip activator="parent" :text="t('TXT_CODE_COMMON_CPU_USAGE')" location="bottom" />
+          </span>
+          <span
+            v-if="perfInfo.mem != null && perfInfo.memUsed && perfInfo.memTotal"
+            class="dim-perf__item"
+            :class="`dim-perf__mem--${
+              perfInfo.mem > 80 ? 'high' : perfInfo.mem > 50 ? 'mid' : 'low'
+            }`"
+          >
+            <VIcon icon="mdi-view-dashboard-outline" size="1em" /> {{ perfInfo.memUsed }}/{{
+              perfInfo.memTotal
+            }}
+            <VTooltip activator="parent" :text="t('TXT_CODE_COMMON_MEMORY')" location="bottom" />
+          </span>
+          <span v-if="perfInfo.disk" class="dim-perf__item dim-perf__disk">
+            <VIcon icon="mdi-harddisk" size="1em" /> {{ perfInfo.disk }}
+            <VTooltip activator="parent" :text="t('TXT_CODE_DISK_USAGE')" location="bottom" />
+          </span>
+          <span v-if="perfInfo.net" class="dim-perf__item dim-perf__net">
+            <VIcon icon="mdi-lan" size="1em" /> ↓{{ perfInfo.net.rx }}/s ↑{{ perfInfo.net.tx }}/s
+            <VTooltip activator="parent" :text="t('TXT_CODE_COMMON_NETWORK')" location="bottom" />
+          </span>
         </div>
-
-        <DesktopManagerBtns :instance-id="instanceId" :daemon-id="daemonId"
-            @open-server-config="(type: string) => emit('open-server-config', instanceId, daemonId, type)"
-            @open-schedule="emit('open-schedule', instanceId, daemonId)"
-            @open-event-config="emit('open-event-config', instanceId, daemonId)"
-            @open-instance-settings="emit('open-instance-settings', instanceId, daemonId)"
-            @open-instance-action="(actionId: string) => emit('open-instance-action', actionId, instanceId, daemonId)" />
-
-        <VDialog v-model="errorDialog.show" class="desktop-dialog" max-width="460" scrollable>
-            <VCard :title="t('TXT_CODE_COMMON_ERROR')" rounded="xl">
-                <VCardText>
-                    <p v-for="line in errorDialog.lines" :key="line" class="dim-error-line">{{ line }}</p>
-                </VCardText>
-                <VCardActions class="d-flex justify-end">
-                    <VBtn variant="text" @click="errorDialog.show = false">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn>
-                </VCardActions>
-            </VCard>
-        </VDialog>
-
-        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="confirmDialog"
-            :title="t('TXT_CODE_INSTANCE_SECONDARY_CONFIRMATION')" :height="260"
-            :message="pendingActionMessage" :danger="pendingActionDanger"
-            @cancel="pendingAction = null" @confirm="confirmPendingAction" />
+        <template v-for="item in [...quickOperations, ...instanceOperations]" :key="item.title">
+          <VBtn
+            v-if="item.noConfirm"
+            type="button"
+            variant="text"
+            height="auto"
+            min-width="0"
+            class="dim-btn dim-btn--sm text-none"
+            :class="{
+              'dim-btn--primary': item.type === 'primary',
+              'dim-btn--danger': item.type === 'danger'
+            }"
+            :disabled="isOpenInstanceLoading"
+            :title="item.title"
+            @click="item.click"
+          >
+            <VIcon :icon="getTerminalActionIcon(item)" size="1em" />
+            {{ item.title }}
+          </VBtn>
+          <VBtn
+            v-else
+            type="button"
+            variant="text"
+            height="auto"
+            min-width="0"
+            class="dim-btn dim-btn--sm text-none"
+            :class="{
+              'dim-btn--primary': item.type === 'primary',
+              'dim-btn--danger': item.type === 'danger'
+            }"
+            :title="item.title"
+            @click="requestAction(item)"
+          >
+            <VIcon :icon="getTerminalActionIcon(item)" size="1em" />
+            {{ item.title }}
+          </VBtn>
+        </template>
+      </div>
     </div>
+
+    <div class="dim-body">
+      <div v-if="activeDialog === 'none'" class="dim-list">
+        <component
+          :is="TerminalCore"
+          :use-terminal-hook="terminalHook"
+          :instance-id="instanceId"
+          :daemon-id="daemonId"
+          height="100%"
+        />
+      </div>
+
+      <div v-else-if="activeDialog === 'file-manager'" class="dim-dialog">
+        <div class="dim-dialog__header">
+          <VBtn
+            icon
+            variant="text"
+            class="dim-btn dim-btn--icon"
+            :title="t('TXT_CODE_COMMON_GO')"
+            @click="closeDialog"
+          >
+            <VIcon icon="mdi-arrow-left" />
+          </VBtn>
+          <span class="dim-dialog__title">
+            <VIcon icon="mdi-folder-open-outline" /> {{ t("TXT_CODE_COMMON_FILE_MANAGEMENT") }}
+          </span>
+        </div>
+        <div class="dim-dialog__body">
+          <div class="dim-placeholder">
+            <VIcon icon="mdi-folder-open-outline" class="dim-placeholder__icon" />
+            <p class="dim-placeholder__text">{{ t("TXT_CODE_COMMON_FILE_MANAGEMENT") }}</p>
+            <p class="dim-placeholder__hint">{{ t("TXT_CODE_COMMON_GO") }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div v-else-if="activeDialog === 'schedule'" class="dim-dialog">
+        <div class="dim-dialog__header">
+          <VBtn
+            icon
+            variant="text"
+            class="dim-btn dim-btn--icon"
+            :title="t('TXT_CODE_COMMON_GO')"
+            @click="closeDialog"
+          >
+            <VIcon icon="mdi-arrow-left" />
+          </VBtn>
+          <span class="dim-dialog__title">
+            <VIcon icon="mdi-clock-outline" /> {{ t("TXT_CODE_COMMON_SCHEDULED_TASKS") }}
+          </span>
+        </div>
+        <div class="dim-dialog__body">
+          <div class="dim-placeholder">
+            <VIcon icon="mdi-clock-outline" class="dim-placeholder__icon" />
+            <p class="dim-placeholder__text">{{ t("TXT_CODE_COMMON_SCHEDULED_TASKS") }}</p>
+            <p class="dim-placeholder__hint">{{ t("TXT_CODE_COMMON_GO") }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div v-else-if="activeDialog === 'server-config'" class="dim-dialog">
+        <div class="dim-dialog__header">
+          <VBtn
+            icon
+            variant="text"
+            class="dim-btn dim-btn--icon"
+            :title="t('TXT_CODE_COMMON_GO')"
+            @click="closeDialog"
+          >
+            <VIcon icon="mdi-arrow-left" />
+          </VBtn>
+          <span class="dim-dialog__title">
+            <VIcon icon="mdi-tune-variant" /> {{ t("TXT_CODE_COMMON_CONFIGURATION_FILES") }}
+          </span>
+        </div>
+        <div class="dim-dialog__body">
+          <div class="dim-placeholder">
+            <VIcon icon="mdi-tune-variant" class="dim-placeholder__icon" />
+            <p class="dim-placeholder__text">{{ t("TXT_CODE_COMMON_CONFIGURATION_FILES") }}</p>
+            <p class="dim-placeholder__hint">{{ t("TXT_CODE_COMMON_GO") }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <DesktopManagerBtns
+      :instance-id="instanceId"
+      :daemon-id="daemonId"
+      @open-server-config="(type: string) => emit('open-server-config', instanceId, daemonId, type)"
+      @open-schedule="emit('open-schedule', instanceId, daemonId)"
+      @open-event-config="emit('open-event-config', instanceId, daemonId)"
+      @open-instance-settings="emit('open-instance-settings', instanceId, daemonId)"
+      @open-instance-action="
+        (actionId: string) => emit('open-instance-action', actionId, instanceId, daemonId)
+      "
+    />
+
+    <VDialog v-model="errorDialog.show" class="desktop-dialog" max-width="460" scrollable>
+      <VCard :title="t('TXT_CODE_COMMON_ERROR')" rounded="xl">
+        <VCardText>
+          <p v-for="line in errorDialog.lines" :key="line" class="dim-error-line">{{ line }}</p>
+        </VCardText>
+        <VCardActions class="d-flex justify-end">
+          <VBtn variant="text" @click="errorDialog.show = false">{{
+            t("TXT_CODE_COMMON_CANCEL")
+          }}</VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <component
+      :is="ConfirmDialog"
+      v-if="ConfirmDialog"
+      v-model="confirmDialog"
+      :title="t('TXT_CODE_INSTANCE_SECONDARY_CONFIRMATION')"
+      :height="260"
+      :message="pendingActionMessage"
+      :danger="pendingActionDanger"
+      @cancel="pendingAction = null"
+      @confirm="confirmPendingAction"
+    />
+  </div>
 </template>
 
 <style lang="scss" scoped>
 .dim {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    color: var(--desktop-window-text);
-    font-size: 13px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  color: var(--desktop-window-text);
+  font-size: 13px;
 }
 
 .dim-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 12px 16px;
-    border-bottom: 0;
-    flex-wrap: wrap;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 0;
+  flex-wrap: wrap;
 
-    &__left,
-    &__right {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    &__right {
-        flex-wrap: wrap;
-        min-width: 0;
-        max-width: 100%;
-    }
-}
-
-.dim-btn {
-    background: var(--desktop-window-titlebar-bg);
-    border: 0;
-    border-radius: 6px;
-    color: var(--desktop-window-text);
-    padding: 6px 12px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-
-    &:hover:not(:disabled) {
-        background: var(--desktop-window-control-hover);
-    }
-
-    &:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    }
-
-    &--sm {
-        padding: 4px 10px;
-        font-size: 11px;
-    }
-
-    &--icon {
-        padding: 4px 8px;
-        font-size: 14px;
-    }
-
-    &--primary {
-        color: #52c41a;
-        border-color: transparent;
-        background: rgba(82, 196, 26, 0.1);
-
-        &:hover:not(:disabled) {
-            background: rgba(82, 196, 26, 0.2);
-        }
-    }
-
-    &--danger {
-        color: #ff4d4f;
-        border-color: transparent;
-        background: rgba(255, 77, 79, 0.1);
-
-        &:hover:not(:disabled) {
-            background: rgba(255, 77, 79, 0.2);
-        }
-    }
-}
-
-.dim-error-line {
-    margin: 0 0 8px;
-    color: var(--desktop-window-text-secondary);
-    white-space: pre-wrap;
-}
-
-.dim-instance__header {
+  &__left,
+  &__right {
     display: flex;
     align-items: center;
     gap: 8px;
+  }
+
+  &__right {
+    flex-wrap: wrap;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+.dim-btn {
+  background: var(--desktop-window-titlebar-bg);
+  border: 0;
+  border-radius: 6px;
+  color: var(--desktop-window-text);
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  &:hover:not(:disabled) {
+    background: var(--desktop-window-control-hover);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &--sm {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+
+  &--icon {
+    padding: 4px 8px;
+    font-size: 14px;
+  }
+
+  &--primary {
+    color: #52c41a;
+    border-color: transparent;
+    background: rgba(82, 196, 26, 0.1);
+
+    &:hover:not(:disabled) {
+      background: rgba(82, 196, 26, 0.2);
+    }
+  }
+
+  &--danger {
+    color: #ff4d4f;
+    border-color: transparent;
+    background: rgba(255, 77, 79, 0.1);
+
+    &:hover:not(:disabled) {
+      background: rgba(255, 77, 79, 0.2);
+    }
+  }
+}
+
+.dim-error-line {
+  margin: 0 0 8px;
+  color: var(--desktop-window-text-secondary);
+  white-space: pre-wrap;
+}
+
+.dim-instance__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .dim-instance__status {
-    font-size: 14px;
-    line-height: 1;
-    display: flex;
-    align-items: center;
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
 
-    &.status--running {
-        color: #52c41a;
-    }
+  &.status--running {
+    color: #52c41a;
+  }
 
-    &.status--stopped {
-        color: #8c8c8c;
-    }
+  &.status--stopped {
+    color: #8c8c8c;
+  }
 
-    &.status--busy {
-        color: #ff4d4f;
-    }
+  &.status--busy {
+    color: #ff4d4f;
+  }
 }
 
 .dim-instance__name {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--desktop-window-text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 300px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--desktop-window-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
 }
 
 .dim-instance__badge {
-    font-size: 10px;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-weight: 500;
-    white-space: nowrap;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 500;
+  white-space: nowrap;
 
-    &.status--running {
-        background: rgba(82, 196, 26, 0.15);
-        color: #52c41a;
-    }
+  &.status--running {
+    background: rgba(82, 196, 26, 0.15);
+    color: #52c41a;
+  }
 
-    &.status--stopped {
-        background: rgba(140, 140, 140, 0.15);
-        color: #8c8c8c;
-    }
+  &.status--stopped {
+    background: rgba(140, 140, 140, 0.15);
+    color: #8c8c8c;
+  }
 
-    &.status--busy {
-        background: rgba(255, 77, 79, 0.15);
-        color: #ff4d4f;
-    }
+  &.status--busy {
+    background: rgba(255, 77, 79, 0.15);
+    color: #ff4d4f;
+  }
 }
 
 .dim-instance__type {
-    background: var(--desktop-window-titlebar-bg);
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-size: 10px;
-    color: var(--desktop-window-text-secondary);
+  background: var(--desktop-window-titlebar-bg);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  color: var(--desktop-window-text-secondary);
 }
 
 .dim-instance__players {
-    font-size: 11px;
-    color: var(--desktop-window-text-secondary);
-    display: flex;
-    align-items: center;
-    gap: 4px;
+  font-size: 11px;
+  color: var(--desktop-window-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .dim-perf {
-    position: relative;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    max-width: 100%;
-    gap: 6px;
-    padding: 0 12px;
-    margin-right: 5px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  max-width: 100%;
+  gap: 6px;
+  padding: 0 12px;
+  margin-right: 5px;
 
-    // Paint this group separator independently of the desktop's hidden borders.
-    &::after {
-        content: "";
-        position: absolute;
-        inset-block: 2px;
-        inset-inline-end: 0;
-        width: 1px;
-        background-color: var(--desktop-window-text-muted);
-    }
+  // Paint this group separator independently of the desktop's hidden borders.
+  &::after {
+    content: "";
+    position: absolute;
+    inset-block: 2px;
+    inset-inline-end: 0;
+    width: 1px;
+    background-color: var(--desktop-window-text-muted);
+  }
 }
 
 .dim-perf__item {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    font-size: 11px;
-    font-weight: 500;
-    white-space: nowrap;
-    padding: 2px 6px;
-    border-radius: 4px;
-    background: var(--desktop-window-titlebar-bg);
-    cursor: default;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--desktop-window-titlebar-bg);
+  cursor: default;
 
-    &.dim-perf__cpu--low {
-        color: var(--color-blue-5, #1677ff);
-    }
+  &.dim-perf__cpu--low {
+    color: var(--color-blue-5, #1677ff);
+  }
 
-    &.dim-perf__cpu--mid {
-        color: var(--color-gold-6, #faad14);
-    }
+  &.dim-perf__cpu--mid {
+    color: var(--color-gold-6, #faad14);
+  }
 
-    &.dim-perf__cpu--high {
-        color: var(--color-red-5, #ff4d4f);
-    }
+  &.dim-perf__cpu--high {
+    color: var(--color-red-5, #ff4d4f);
+  }
 
-    &.dim-perf__mem--low {
-        color: var(--color-purple-5, #722ed1);
-    }
+  &.dim-perf__mem--low {
+    color: var(--color-purple-5, #722ed1);
+  }
 
-    &.dim-perf__mem--mid {
-        color: var(--color-gold-6, #faad14);
-    }
+  &.dim-perf__mem--mid {
+    color: var(--color-gold-6, #faad14);
+  }
 
-    &.dim-perf__mem--high {
-        color: var(--color-red-5, #ff4d4f);
-    }
+  &.dim-perf__mem--high {
+    color: var(--color-red-5, #ff4d4f);
+  }
 
-    &.dim-perf__net {
-        color: var(--color-green-6, #52c41a);
-    }
+  &.dim-perf__net {
+    color: var(--color-green-6, #52c41a);
+  }
 
-    &.dim-perf__disk {
-        color: var(--color-cyan-6);
-    }
+  &.dim-perf__disk {
+    color: var(--color-cyan-6);
+  }
 }
 
 .dim-body {
-    flex: 1;
-    overflow: hidden;
-    position: relative;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
 }
 
 .dim-list {
-    height: 100%;
-    padding: 8px;
-    overflow: hidden;
-    position: relative;
+  height: 100%;
+  padding: 8px;
+  overflow: hidden;
+  position: relative;
 }
 
 :deep(.console-wrapper) {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 :deep(.terminal-wrapper) {
-    flex: 1;
-    margin-bottom: 12px;
+  flex: 1;
+  margin-bottom: 12px;
 }
 
 :deep(.command-input) {
-    flex-shrink: 0;
+  flex-shrink: 0;
 }
 
 .dim-dialog {
-    height: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  &__header {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--desktop-window-border);
+    flex-shrink: 0;
+  }
 
-    &__header {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 12px;
-        border-bottom: 1px solid var(--desktop-window-border);
-        flex-shrink: 0;
-    }
+  &__title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--desktop-window-text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
 
-    &__title {
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--desktop-window-text);
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    &__body {
-        flex: 1;
-        overflow: auto;
-        padding: 16px;
-    }
+  &__body {
+    flex: 1;
+    overflow: auto;
+    padding: 16px;
+  }
 }
 
 .dim-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    gap: 12px;
-    color: var(--desktop-window-text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 12px;
+  color: var(--desktop-window-text-muted);
 
-    &__icon {
-        font-size: 48px;
-        opacity: 0.4;
-    }
+  &__icon {
+    font-size: 48px;
+    opacity: 0.4;
+  }
 
-    &__text {
-        font-size: 16px;
-        font-weight: 500;
-        margin: 0;
-    }
+  &__text {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+  }
 
-    &__hint {
-        font-size: 12px;
-        margin: 0;
-        opacity: 0.6;
-    }
+  &__hint {
+    font-size: 12px;
+    margin: 0;
+    opacity: 0.6;
+  }
 }
 </style>

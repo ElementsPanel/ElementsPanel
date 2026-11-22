@@ -148,11 +148,13 @@ const {
         <div class="plugin-detail-body">
           <section class="plugin-detail-content">
             <template v-if="activeTab === 'readme'">
+              <!-- eslint-disable vue/no-v-html -- markdownToHTML sanitizes this content. -->
               <div
                 v-if="plugin.readme || plugin.description"
                 class="global-markdown-html plugin-detail-markdown"
                 v-html="readme"
               />
+              <!-- eslint-enable vue/no-v-html -->
               <Empty
                 v-else
                 icon="mdi-file-document-outline"
@@ -215,11 +217,13 @@ const {
                     {{ formatDate(entry.version.submittedAt) }}
                   </span>
                 </h2>
+                <!-- eslint-disable vue/no-v-html -- markdownToHTML sanitizes this content. -->
                 <div
                   v-if="entry.html"
                   class="global-markdown-html plugin-detail-markdown"
                   v-html="entry.html"
                 />
+                <!-- eslint-enable vue/no-v-html -->
                 <Empty
                   v-else
                   icon="mdi-text-box-outline"

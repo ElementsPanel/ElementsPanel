@@ -75,11 +75,7 @@ export interface RequestGuard {
   /** Decides whether a request may reach a route that declared requirements. */
   guardRoute(route: GuardedRoute): Koa.Middleware;
   identify(ctx: Koa.ParameterizedContext): RequestIdentity;
-  canAccessInstance(
-    ctx: Koa.ParameterizedContext,
-    daemonId: string,
-    instanceUuid: string
-  ): boolean;
+  canAccessInstance(ctx: Koa.ParameterizedContext, daemonId: string, instanceUuid: string): boolean;
   canUpload(ctx: Koa.ParameterizedContext): boolean;
   accessPolicy(): UserAccessPolicy;
   stats(): AuthStats;

@@ -59,7 +59,9 @@ onMounted(async () => {
       <VCardActions>
         <VSpacer />
         <VBtn variant="text" @click="onClose">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn>
-        <VBtn color="primary" :loading="downloadBtnLoading" @click="onDownload">{{ t("TXT_CODE_COMMON_DOWNLOAD") }}</VBtn>
+        <VBtn color="primary" :loading="downloadBtnLoading" @click="onDownload">{{
+          t("TXT_CODE_COMMON_DOWNLOAD")
+        }}</VBtn>
       </VCardActions>
     </VCard>
   </VDialog>

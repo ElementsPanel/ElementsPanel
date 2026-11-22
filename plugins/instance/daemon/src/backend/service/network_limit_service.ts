@@ -51,7 +51,9 @@ export class NetworkLimitService {
     const missing = await this.getMissingCommands();
     if (missing.length > 0) {
       throw new Error(
-        `Network limit requires the following commands to be installed: ${REQUIRED_COMMANDS.join(", ")}. Missing: ${missing.join(", ")}.`
+        `Network limit requires the following commands to be installed: ${REQUIRED_COMMANDS.join(
+          ", "
+        )}. Missing: ${missing.join(", ")}.`
       );
     }
   }
@@ -168,6 +170,7 @@ export class NetworkLimitService {
         });
       }
     } catch {
+      // Try the fallback network interface paths.
     }
     for (const iface of tryPaths) {
       const procPath = `/proc/${pid}/root/sys/class/net/${iface}/iflink`;
@@ -175,6 +178,7 @@ export class NetworkLimitService {
         const value = fs.readFileSync(procPath, "utf8").trim();
         if (value) return value;
       } catch {
+        // Try the remaining interface paths.
       }
     }
     for (const iface of tryPaths) {
@@ -187,6 +191,7 @@ export class NetworkLimitService {
         const value = (stdout || "").trim().replace(/\r/g, "");
         if (value) return value;
       } catch {
+        // Try the remaining container interfaces.
       }
     }
     logger.warn(
@@ -216,6 +221,7 @@ export class NetworkLimitService {
         const veth = (stdout || "").trim();
         return veth || null;
       } catch {
+        // Return no interface when the fallback lookup fails.
       }
     }
     return null;

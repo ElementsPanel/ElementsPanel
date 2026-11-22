@@ -4,7 +4,8 @@ import { getCommonHeaders, logger } from "../runtime";
 import axios from "axios";
 import fs from "fs-extra";
 import path from "path";
-import { pipeline, Readable } from "stream";
+import type { Readable } from "stream";
+import { pipeline } from "stream/promises";
 
 export async function initSteamCmd(ctx: DaemonPluginContext) {
   try {
@@ -22,37 +23,30 @@ export async function downloadSteam(url: string): Promise<string> {
   const tmpPath = path.normalize(path.join(process.cwd(), "lib", "tmp_steamcmd.zip"));
   logger.info(`Starting Steam command line tool download: ${url} --> ${tmpPath}`);
 
-  return new Promise(async (resolve, reject) => {
-    try {
-      const targetDir = path.dirname(tmpPath);
-      if (!fs.existsSync(targetDir)) {
-        fs.mkdirsSync(targetDir);
-      }
-
-      if (fs.existsSync(tmpPath)) {
-        fs.removeSync(tmpPath);
-      }
-
-      const response = await axios<Readable>({
-        url: url,
-        responseType: "stream",
-        timeout: 1000 * 60 * 10,
-        headers: getCommonHeaders(url)
-      });
-
-      const writeStream = fs.createWriteStream(path.normalize(tmpPath));
-
-      pipeline(response.data, writeStream, async (err) => {
-        if (err) {
-          fs.remove(tmpPath, () => {});
-          reject(err);
-        } else {
-          fs.chmod(tmpPath, 0o755, () => {});
-          resolve(tmpPath);
-        }
-      });
-    } catch (error: any) {
-      reject(error.message || error);
+  try {
+    const targetDir = path.dirname(tmpPath);
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirsSync(targetDir);
     }
-  });
+
+    if (fs.existsSync(tmpPath)) {
+      fs.removeSync(tmpPath);
+    }
+
+    const response = await axios<Readable>({
+      url: url,
+      responseType: "stream",
+      timeout: 1000 * 60 * 10,
+      headers: getCommonHeaders(url)
+    });
+
+    const writeStream = fs.createWriteStream(path.normalize(tmpPath));
+
+    await pipeline(response.data, writeStream);
+    await fs.chmod(tmpPath, 0o755);
+    return tmpPath;
+  } catch (error) {
+    await fs.remove(tmpPath).catch(() => {});
+    throw error;
+  }
 }

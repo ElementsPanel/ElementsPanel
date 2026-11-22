@@ -1,5 +1,8 @@
 import { Service, type Context } from "cordis";
-import type { PanelOverviewProvider, PanelOverviewService } from "../../../../../../core/panel/src/app/plugin";
+import type {
+  PanelOverviewProvider,
+  PanelOverviewService
+} from "../../../../../../core/panel/src/app/plugin";
 
 /** Runtime overview extensions; monitoring is one optional contributor. */
 export class OverviewService extends Service implements PanelOverviewService {

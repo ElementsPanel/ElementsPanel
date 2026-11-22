@@ -165,19 +165,17 @@ export default class FileWriter {
       }
     } catch (error) {
       failure = error;
-      throw error;
-    } finally {
-      try {
-        // Keep the upload lock until removal or extraction completes.
-        await this.unlock();
-      } catch (error) {
-        failure ||= error;
-        throw error;
-      } finally {
-        if (this.id != null) uploadManager.delete(this.id);
-        this.onFinish?.(failure, cancelled);
-      }
     }
+    try {
+      // Keep the upload lock until removal or extraction completes.
+      await this.unlock();
+    } catch (error) {
+      failure ||= error;
+    } finally {
+      if (this.id != null) uploadManager.delete(this.id);
+      this.onFinish?.(failure, cancelled);
+    }
+    if (failure) throw failure;
   }
 
   private addWrittenRange(start: number, end: number): void {

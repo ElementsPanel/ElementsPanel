@@ -1,6 +1,12 @@
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import type { PanelFrontendInstanceActionContext, PanelFrontendPluginContext } from "@elements-panel/sdk";
-import { hasNodeFeature, isScopedInstance } from "@elementspanel/epanel-plugin-console/hooks/useInstanceActionAvailability";
+import type {
+  PanelFrontendInstanceActionContext,
+  PanelFrontendPluginContext
+} from "@elements-panel/sdk";
+import {
+  hasNodeFeature,
+  isScopedInstance
+} from "@elementspanel/epanel-plugin-console/hooks/useInstanceActionAvailability";
 import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
 import {
   TYPE_MINECRAFT_JAVA,

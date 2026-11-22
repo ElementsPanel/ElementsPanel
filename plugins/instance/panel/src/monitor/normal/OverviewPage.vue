@@ -41,7 +41,9 @@ const remoteCount = computed(() => state.value?.remoteCount ?? { available: 0, t
 const remoteNodes = computed(() => state.value?.remote ?? []);
 
 const chartHistory = computed(() => state.value?.chart?.request ?? []);
-const chartLabels = computed(() => chartHistory.value.map((_, index) => `${chartHistory.value.length - index - 1}s`));
+const chartLabels = computed(() =>
+  chartHistory.value.map((_, index) => `${chartHistory.value.length - index - 1}s`)
+);
 const requestChartData = computed(() => {
   const values = chartHistory.value.map((item) => Number(item.value) || 0);
   return { labels: chartLabels.value, values, max: Math.max(1, ...values) };
@@ -53,11 +55,15 @@ const instanceChartData = computed(() => {
 const requestChart = useOverviewChart(requestChartCanvas, () => requestChartData.value);
 const instanceChart = useOverviewChart(instanceChartCanvas, () => instanceChartData.value);
 
-watch(() => Boolean(state.value), (ready) => {
-  if (!ready) return;
-  requestChart.instance.value?.resize();
-  instanceChart.instance.value?.resize();
-}, { flush: "post" });
+watch(
+  () => Boolean(state.value),
+  (ready) => {
+    if (!ready) return;
+    requestChart.instance.value?.resize();
+    instanceChart.instance.value?.resize();
+  },
+  { flush: "post" }
+);
 
 const formatBytes = (bytes: number): string => {
   if (!bytes) return "0 B";
@@ -88,26 +94,56 @@ const overviewItems = computed(() => {
       value: current.system.node,
       icon: "mdi-code-tags"
     },
-    { title: t("TXT_CODE_COMMON_PANEL_VERSION"), value: current.version, icon: "mdi-view-grid-outline" },
-    { title: t("TXT_CODE_COMMON_MATCHED_DAEMON_VERSION"), value: current.specifiedDaemonVersion, icon: "mdi-api" },
-    { title: t("TXT_CODE_COMMON_USER_TO_RUN_THE_PROCESS_WITH"), value: current.system.user.username, icon: "mdi-account-outline" },
+    {
+      title: t("TXT_CODE_COMMON_PANEL_VERSION"),
+      value: current.version,
+      icon: "mdi-view-grid-outline"
+    },
+    {
+      title: t("TXT_CODE_COMMON_MATCHED_DAEMON_VERSION"),
+      value: current.specifiedDaemonVersion,
+      icon: "mdi-api"
+    },
+    {
+      title: t("TXT_CODE_COMMON_USER_TO_RUN_THE_PROCESS_WITH"),
+      value: current.system.user.username,
+      icon: "mdi-account-outline"
+    },
     {
       title: t("TXT_CODE_COMMON_PANEL_TIME"),
       value: new Date(current.system.time).toLocaleString(),
       icon: "mdi-clock-outline"
     },
-    { title: t("TXT_CODE_COMMON_BROWSER_TIME"), value: new Date().toLocaleString(), icon: "mdi-earth" },
-    { title: t("TXT_CODE_COMMON_TEMPORARY_BANNED_I_PS"), value: String(current.record.banips), icon: "mdi-shield-check-outline" },
-    { title: t("TXT_CODE_COMMON_BLOCKED_ACCESSES"), value: String(current.record.illegalAccess), icon: "mdi-lock-outline" },
+    {
+      title: t("TXT_CODE_COMMON_BROWSER_TIME"),
+      value: new Date().toLocaleString(),
+      icon: "mdi-earth"
+    },
+    {
+      title: t("TXT_CODE_COMMON_TEMPORARY_BANNED_I_PS"),
+      value: String(current.record.banips),
+      icon: "mdi-shield-check-outline"
+    },
+    {
+      title: t("TXT_CODE_COMMON_BLOCKED_ACCESSES"),
+      value: String(current.record.illegalAccess),
+      icon: "mdi-lock-outline"
+    },
     {
       title: t("TXT_CODE_COMMON_PANEL_MEMORY_USAGE"),
       value: formatBytes(current.process.memory),
       icon: "mdi-memory"
     },
-    { title: t("TXT_CODE_COMMON_HOSTNAME"), value: current.system.hostname, icon: "mdi-server-outline" },
+    {
+      title: t("TXT_CODE_COMMON_HOSTNAME"),
+      value: current.system.hostname,
+      icon: "mdi-server-outline"
+    },
     {
       title: t("TXT_CODE_COMMON_OS_VERSION"),
-      value: `${current.system.version.slice(0, 16)}${current.system.version.length > 16 ? "..." : ""} ${current.system.release}`,
+      value: `${current.system.version.slice(0, 16)}${
+        current.system.version.length > 16 ? "..." : ""
+      } ${current.system.release}`,
       icon: "mdi-console-line"
     },
     {
@@ -153,10 +189,20 @@ onMounted(fetchData);
               <div class="monitor-stat-value">{{ totalInstances }}</div>
               <div class="monitor-stat-label">{{ t("TXT_CODE_COMMON_RUNNING_TOTAL") }}</div>
               <div class="monitor-stat-meta">
-                <VChip size="small" color="success" variant="tonal" prepend-icon="mdi-play-circle-outline">
+                <VChip
+                  size="small"
+                  color="success"
+                  variant="tonal"
+                  prepend-icon="mdi-play-circle-outline"
+                >
                   {{ runningInstances }}
                 </VChip>
-                <VChip size="small" color="secondary" variant="tonal" prepend-icon="mdi-stop-circle-outline">
+                <VChip
+                  size="small"
+                  color="secondary"
+                  variant="tonal"
+                  prepend-icon="mdi-stop-circle-outline"
+                >
                   {{ stoppedInstances }}
                 </VChip>
               </div>
@@ -168,13 +214,25 @@ onMounted(fetchData);
           <VCard class="monitor-card monitor-stat-card" flat>
             <VCardText>
               <VIcon icon="mdi-lan-connect" color="primary" size="28" />
-              <div class="monitor-stat-value">{{ remoteCount.available }} / {{ remoteCount.total }}</div>
+              <div class="monitor-stat-value">
+                {{ remoteCount.available }} / {{ remoteCount.total }}
+              </div>
               <div class="monitor-stat-label">{{ t("TXT_CODE_COMMON_ONLINE_TOTAL") }}</div>
               <div class="monitor-stat-meta">
-                <VChip size="small" color="success" variant="tonal" prepend-icon="mdi-check-circle-outline">
+                <VChip
+                  size="small"
+                  color="success"
+                  variant="tonal"
+                  prepend-icon="mdi-check-circle-outline"
+                >
                   {{ remoteCount.available }}
                 </VChip>
-                <VChip size="small" color="secondary" variant="tonal" prepend-icon="mdi-close-circle-outline">
+                <VChip
+                  size="small"
+                  color="secondary"
+                  variant="tonal"
+                  prepend-icon="mdi-close-circle-outline"
+                >
                   {{ remoteCount.total - remoteCount.available }}
                 </VChip>
               </div>
@@ -188,7 +246,12 @@ onMounted(fetchData);
               <VIcon icon="mdi-chip" color="primary" size="28" />
               <div class="monitor-stat-value">{{ panelCpu }}%</div>
               <div class="monitor-stat-label">CPU</div>
-              <VProgressLinear :model-value="panelCpu" :color="progressColor(panelCpu)" height="6" rounded="xl" />
+              <VProgressLinear
+                :model-value="panelCpu"
+                :color="progressColor(panelCpu)"
+                height="6"
+                rounded="xl"
+              />
             </VCardText>
           </VCard>
         </VCol>
@@ -199,7 +262,12 @@ onMounted(fetchData);
               <VIcon icon="mdi-memory" color="primary" size="28" />
               <div class="monitor-stat-value">{{ panelMemory }}%</div>
               <div class="monitor-stat-label">{{ t("TXT_CODE_COMMON_MEMORY") }}</div>
-              <VProgressLinear :model-value="panelMemory" :color="progressColor(panelMemory)" height="6" rounded="xl" />
+              <VProgressLinear
+                :model-value="panelMemory"
+                :color="progressColor(panelMemory)"
+                height="6"
+                rounded="xl"
+              />
             </VCardText>
           </VCard>
         </VCol>
@@ -214,7 +282,14 @@ onMounted(fetchData);
             </VCardTitle>
             <VCardText>
               <VRow class="overview-grid" density="comfortable">
-                <VCol v-for="item in overviewItems" :key="item.title" cols="12" sm="6" md="4" lg="3">
+                <VCol
+                  v-for="item in overviewItems"
+                  :key="item.title"
+                  cols="12"
+                  sm="6"
+                  md="4"
+                  lg="3"
+                >
                   <div class="overview-item">
                     <div class="overview-item-title">
                       <VIcon :icon="item.icon" size="18" color="primary" />
@@ -246,7 +321,11 @@ onMounted(fetchData);
             </VCardTitle>
             <VCardText>
               <div class="monitor-chart">
-                <canvas ref="requestChartCanvas" role="img" :aria-label="t('TXT_CODE_COMMON_INTERFACE_REQUESTS')" />
+                <canvas
+                  ref="requestChartCanvas"
+                  role="img"
+                  :aria-label="t('TXT_CODE_COMMON_INTERFACE_REQUESTS')"
+                />
               </div>
             </VCardText>
           </VCard>
@@ -259,7 +338,11 @@ onMounted(fetchData);
             </VCardTitle>
             <VCardText>
               <div class="monitor-chart">
-                <canvas ref="instanceChartCanvas" role="img" :aria-label="t('TXT_CODE_COMMON_RUNNING_INSTANCES')" />
+                <canvas
+                  ref="instanceChartCanvas"
+                  role="img"
+                  :aria-label="t('TXT_CODE_COMMON_RUNNING_INSTANCES')"
+                />
               </div>
             </VCardText>
           </VCard>
@@ -280,7 +363,13 @@ onMounted(fetchData);
                 :title="t('TXT_CODE_COMMON_NO_OPERATION_LOGS_AVAILABLE_YET')"
                 compact
               />
-              <VTimeline v-else density="compact" side="end" truncate-line="both" class="monitor-timeline">
+              <VTimeline
+                v-else
+                density="compact"
+                side="end"
+                truncate-line="both"
+                class="monitor-timeline"
+              >
                 <VTimelineItem
                   v-for="item in formattedLogs"
                   :key="item.operation_id"
@@ -288,7 +377,9 @@ onMounted(fetchData);
                   size="small"
                 >
                   <div class="log-content">{{ item.text }}</div>
-                  <div class="log-time">{{ dayjs(Number(item.operation_time)).format("YYYY-MM-DD HH:mm:ss") }}</div>
+                  <div class="log-time">
+                    {{ dayjs(Number(item.operation_time)).format("YYYY-MM-DD HH:mm:ss") }}
+                  </div>
                 </VTimelineItem>
               </VTimeline>
             </VCardText>
@@ -312,14 +403,21 @@ onMounted(fetchData);
                 <template v-for="(node, index) in remoteNodes" :key="node.uuid">
                   <VListItem>
                     <template #prepend>
-                      <VIcon :icon="node.available ? 'mdi-check-circle' : 'mdi-close-circle'" :color="node.available ? 'success' : 'secondary'" />
+                      <VIcon
+                        :icon="node.available ? 'mdi-check-circle' : 'mdi-close-circle'"
+                        :color="node.available ? 'success' : 'secondary'"
+                      />
                     </template>
                     <VListItemTitle>{{ node.remarks || node.ip }}</VListItemTitle>
                     <VListItemSubtitle>{{ node.ip }}:{{ node.port }}</VListItemSubtitle>
                     <template #append>
                       <div v-if="node.instance || node.system" class="node-metrics">
-                        <VChip v-if="node.instance" size="small" variant="tonal">{{ node.instance.running }}/{{ node.instance.total }}</VChip>
-                        <VChip v-if="node.system" size="small" color="info" variant="tonal">{{ (node.system.cpuUsage * 100).toFixed(0) }}%</VChip>
+                        <VChip v-if="node.instance" size="small" variant="tonal"
+                          >{{ node.instance.running }}/{{ node.instance.total }}</VChip
+                        >
+                        <VChip v-if="node.system" size="small" color="info" variant="tonal"
+                          >{{ (node.system.cpuUsage * 100).toFixed(0) }}%</VChip
+                        >
                       </div>
                     </template>
                   </VListItem>

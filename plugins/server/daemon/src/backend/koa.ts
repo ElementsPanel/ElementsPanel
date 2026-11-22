@@ -10,7 +10,10 @@ export class KoaService extends Service implements DaemonKoaService {
   private readonly middlewares: Koa.Middleware[] = [];
   private readonly routers: Koa.Middleware[] = [];
 
-  constructor(ctx: Context, public readonly app: Koa) {
+  constructor(
+    ctx: Context,
+    public readonly app: Koa
+  ) {
     super(ctx, "koa", true);
     // Compose middleware per request so plugin reloads take effect immediately.
     app.use((requestCtx, next) => compose([...this.middlewares])(requestCtx, next));

@@ -344,11 +344,7 @@ export interface PanelFrontendPluginDiagnostic {
   error?: string;
 }
 
-export type FrontendConnectionStatus =
-  | "connecting"
-  | "connected"
-  | "degraded"
-  | "disconnected";
+export type FrontendConnectionStatus = "connecting" | "connected" | "degraded" | "disconnected";
 
 export interface FrontendConnectionState {
   status: FrontendConnectionStatus;

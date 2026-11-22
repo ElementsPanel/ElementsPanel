@@ -47,7 +47,8 @@ const handleKeydown = (event: KeyboardEvent) => {
     !(event.ctrlKey || event.metaKey) ||
     event.altKey ||
     event.key.toLowerCase() !== "s"
-  ) return;
+  )
+    return;
   event.preventDefault();
   void save(false);
 };
@@ -122,7 +123,9 @@ const save = async (closeAfterSave: boolean) => {
       data: { target: path.value, text }
     });
     if (request !== session || signal.aborted) return;
-    message.success(t(closeAfterSave ? "TXT_CODE_COMMON_SAVED" : "TXT_CODE_COMMON_SAVED_VIA_SHORTCUT_KEYS"));
+    message.success(
+      t(closeAfterSave ? "TXT_CODE_COMMON_SAVED" : "TXT_CODE_COMMON_SAVED_VIA_SHORTCUT_KEYS")
+    );
     emit("save");
     if (closeAfterSave) closeDialog(text);
   } catch (error) {
@@ -146,23 +149,53 @@ defineExpose({
 </script>
 
 <template>
-  <VDialog v-model="open" class="file-editor-dialog app-dialog" :class="{ 'file-editor-dialog--full': fullScreen }"
-    :max-width="fullScreen ? undefined : '1600px'" :fullscreen="fullScreen" persistent scrollable>
-    <VCard :title="t('TXT_CODE_COMMON_EDIT_SOURCE_FILE')" :subtitle="fileName" rounded="xl" class="file-editor-card">
+  <VDialog
+    v-model="open"
+    class="file-editor-dialog app-dialog"
+    :class="{ 'file-editor-dialog--full': fullScreen }"
+    :max-width="fullScreen ? undefined : '1600px'"
+    :fullscreen="fullScreen"
+    persistent
+    scrollable
+  >
+    <VCard
+      :title="t('TXT_CODE_COMMON_EDIT_SOURCE_FILE')"
+      :subtitle="fileName"
+      rounded="xl"
+      class="file-editor-card"
+    >
       <template v-if="!isPhone" #append>
-        <VBtn icon size="small" variant="text" :aria-label="fileName" @click="fullScreen = !fullScreen">
+        <VBtn
+          icon
+          size="small"
+          variant="text"
+          :aria-label="fileName"
+          @click="fullScreen = !fullScreen"
+        >
           <VIcon :icon="fullScreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" />
         </VBtn>
       </template>
       <VCardText class="file-editor-content">
-        <Editor v-if="openEditor" :key="editorKey" v-model:text="editorText" :filename="fileName"
-          :height="fullScreen ? '100%' : '60vh'" />
+        <Editor
+          v-if="openEditor"
+          :key="editorKey"
+          v-model:text="editorText"
+          :filename="fileName"
+          :height="fullScreen ? '100%' : '60vh'"
+        />
         <div v-else class="file-editor-loading"><VProgressCircular indeterminate /></div>
       </VCardText>
       <VCardActions>
         <VSpacer />
-        <VBtn variant="text" :disabled="isSaving" @click="cancel">{{ t("TXT_CODE_COMMON_DISCARD") }}</VBtn>
-        <VBtn color="primary" :disabled="!openEditor || isLoading" :loading="isSaving" @click="submit">
+        <VBtn variant="text" :disabled="isSaving" @click="cancel">{{
+          t("TXT_CODE_COMMON_DISCARD")
+        }}</VBtn>
+        <VBtn
+          color="primary"
+          :disabled="!openEditor || isLoading"
+          :loading="isSaving"
+          @click="submit"
+        >
           {{ t("TXT_CODE_COMMON_SAVE") }}
         </VBtn>
       </VCardActions>

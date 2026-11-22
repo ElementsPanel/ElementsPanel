@@ -170,7 +170,9 @@ export function apply(ctx: PanelPluginContext) {
             page: networkPage,
             type: "number",
             title: $t("TXT_CODE_COMMON_PANEL_PORT"),
-            description: `${$t("TXT_CODE_COMMON_ENTER_AN_INTEGER_PORT_NUMBER_DEFAULT_23333")} ${$t("TXT_CODE_SERVER_RESTART_TIP")}`,
+            description: `${$t("TXT_CODE_COMMON_ENTER_AN_INTEGER_PORT_NUMBER_DEFAULT_23333")} ${$t(
+              "TXT_CODE_SERVER_RESTART_TIP"
+            )}`,
             min: 1,
             max: 65535
           },
@@ -179,7 +181,9 @@ export function apply(ctx: PanelPluginContext) {
             page: networkPage,
             type: "string",
             title: $t("TXT_CODE_COMMON_PANEL_BINDING_IP"),
-            description: $t("TXT_CODE_COMMON_ENTER_ITS_IP_ADDRESS_TO_BIND_TO_A_SPECIFIC_NETWORK_INTERFACE")
+            description: $t(
+              "TXT_CODE_COMMON_ENTER_ITS_IP_ADDRESS_TO_BIND_TO_A_SPECIFIC_NETWORK_INTERFACE"
+            )
           },
           {
             key: "prefix",
@@ -223,14 +227,18 @@ export function apply(ctx: PanelPluginContext) {
             page: networkPage,
             type: "boolean",
             title: $t("TXT_CODE_COMMON_REVERSE_PROXY_MODE"),
-            description: $t("TXT_CODE_COMMON_ENABLE_WHEN_USING_A_REVERSE_PROXY_TO_READ_THE_CLIENTS_REAL_IP")
+            description: $t(
+              "TXT_CODE_COMMON_ENABLE_WHEN_USING_A_REVERSE_PROXY_TO_READ_THE_CLIENTS_REAL_IP"
+            )
           },
           {
             key: "reverseProxyHeader",
             page: networkPage,
             type: "string",
             title: $t("TXT_CODE_COMMON_REVERSE_PROXY_REQUEST_HEADER"),
-            description: $t("TXT_CODE_COMMON_NAME_OF_THE_REQUEST_HEADER_CONTAINING_THE_CLIENTS_REAL_IP"),
+            description: $t(
+              "TXT_CODE_COMMON_NAME_OF_THE_REQUEST_HEADER_CONTAINING_THE_CLIENTS_REAL_IP"
+            ),
             visibleWhen: "reverseProxyMode"
           }
         ];

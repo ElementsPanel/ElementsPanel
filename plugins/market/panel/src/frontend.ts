@@ -57,5 +57,4 @@ export function apply(ctx: PanelFrontendPluginContext) {
     initialWidth: 1100,
     initialHeight: 720
   });
-
 }

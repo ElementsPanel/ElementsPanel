@@ -46,7 +46,12 @@ export default class GeneralStartCommand extends AbsStartCommand {
     logger.info("----------------");
 
     if (runAsConfig.isEnableRunAs) {
-      instance.println("INFO", $t("TXT_CODE_COMMON_TRYING_TO_START_CHILD_PROCESS_AS_LINUX_USER", { name: runAsConfig.runAsName }));
+      instance.println(
+        "INFO",
+        $t("TXT_CODE_COMMON_TRYING_TO_START_CHILD_PROCESS_AS_LINUX_USER", {
+          name: runAsConfig.runAsName
+        })
+      );
     }
 
     const subProcess = spawnInstanceProcess(instance, spawn, commandExeFile, commandParameters, {

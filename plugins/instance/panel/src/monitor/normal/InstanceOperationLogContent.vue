@@ -2,11 +2,7 @@
 import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import dayjs from "dayjs";
-import {
-  VProgressCircular,
-  VTimeline,
-  VTimelineItem
-} from "vuetify/components";
+import { VProgressCircular, VTimeline, VTimelineItem } from "vuetify/components";
 import type { FormattedOperationLog } from "../hooks/useOperationLog";
 
 withDefaults(

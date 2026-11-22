@@ -3,8 +3,18 @@ import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import _ from "lodash";
 import { computed, onMounted, ref } from "vue";
-import { VBtn, VCard, VCardActions, VCardText, VDataTable, VDialog, VIcon, VSpacer, VTextField } from "vuetify/components";
-import { emptyValueValidator, reportValidatorError } from "@elementspanel/epanel-plugin-console/tools/validator";
+import {
+  VBtn,
+  VCard,
+  VCardActions,
+  VCardText,
+  VDataTable,
+  VDialog,
+  VIcon,
+  VSpacer,
+  VTextField
+} from "vuetify/components";
+import { reportValidatorError } from "@elementspanel/epanel-plugin-console/tools/validator";
 
 interface DockerDeviceItem {
   PathOnHost: string;
@@ -75,7 +85,8 @@ const cancel = async () => {
 };
 
 const submit = async () => {
-  if (dataSource.value.some((item) => !String(item.PathOnHost || "").trim())) return reportValidatorError(new Error(t("TXT_CODE_COMMON_EXAMPLE_DEV_TTY_USB0")));
+  if (dataSource.value.some((item) => !String(item.PathOnHost || "").trim()))
+    return reportValidatorError(new Error(t("TXT_CODE_COMMON_EXAMPLE_DEV_TTY_USB0")));
 
   const result: DockerDeviceItem[] = dataSource.value.map((item) => ({
     PathOnHost: item.PathOnHost,
@@ -103,25 +114,63 @@ onMounted(() => {
   <VDialog v-model="open" max-width="1300" persistent>
     <VCard :title="props.title || t('TXT_CODE_COMMON_DEVICES')">
       <VCardText class="docker-device-content overflow-x-hidden overflow-y-auto">
-      <div v-if="props.subTitle" class="text-body-medium text-medium-emphasis mb-1">
-        <!-- eslint-disable-next-line vue/no-v-html -->
-        <span v-html="props.subTitle"></span>
-      </div>
+        <div v-if="props.subTitle" class="text-body-medium text-medium-emphasis mb-1">
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <span v-html="props.subTitle"></span>
+        </div>
 
-      <div class="d-flex justify-end mb-1">
-        <VBtn variant="tonal" @click="operation('add')"><VIcon start icon="mdi-plus-circle-outline" />
-          {{ t("TXT_CODE_COMMON_ADD_CONFIGURATION") }}
-        </VBtn>
-      </div>
-      <VDataTable :headers="columns.map((column) => ({ title: column.title, key: String(column.dataIndex), align: 'center' as const, sortable: false }))" :items="dataSource" :items-per-page="-1" hide-default-footer density="comfortable">
-        <template #no-data><Empty icon="mdi-format-list-bulleted" compact /></template>
-        <template #item="{ item, index }"><tr><td v-for="column in columns" :key="String(column.dataIndex)">
-          <VBtn v-if="column.dataIndex === 'operation'" icon variant="text" color="error" size="small" @click="operation('del', index)"><VIcon icon="mdi-minus-circle-outline" /></VBtn>
-          <VTextField v-else :model-value="getRecord(item)[String(column.dataIndex)]" :placeholder="(column as any).placeholder" hide-details="auto" @update:model-value="(value) => (getRecord(item)[String(column.dataIndex)] = value)" />
-        </td></tr></template>
-      </VDataTable>
+        <div class="d-flex justify-end mb-1">
+          <VBtn variant="tonal" @click="operation('add')"
+            ><VIcon start icon="mdi-plus-circle-outline" />
+            {{ t("TXT_CODE_COMMON_ADD_CONFIGURATION") }}
+          </VBtn>
+        </div>
+        <VDataTable
+          :headers="
+            columns.map((column) => ({
+              title: column.title,
+              key: String(column.dataIndex),
+              align: 'center' as const,
+              sortable: false
+            }))
+          "
+          :items="dataSource"
+          :items-per-page="-1"
+          hide-default-footer
+          density="comfortable"
+        >
+          <template #no-data><Empty icon="mdi-format-list-bulleted" compact /></template>
+          <template #item="{ item, index }"
+            ><tr>
+              <td v-for="column in columns" :key="String(column.dataIndex)">
+                <VBtn
+                  v-if="column.dataIndex === 'operation'"
+                  icon
+                  variant="text"
+                  color="error"
+                  size="small"
+                  @click="operation('del', index)"
+                  ><VIcon icon="mdi-minus-circle-outline"
+                /></VBtn>
+                <VTextField
+                  v-else
+                  :model-value="getRecord(item)[String(column.dataIndex)]"
+                  :placeholder="(column as any).placeholder"
+                  hide-details="auto"
+                  @update:model-value="
+                    (value) => (getRecord(item)[String(column.dataIndex)] = value)
+                  "
+                />
+              </td></tr
+          ></template>
+        </VDataTable>
       </VCardText>
-      <VCardActions><VSpacer /><VBtn variant="text" @click="cancel">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn><VBtn color="primary" @click="submit">{{ t("TXT_CODE_COMMON_CONFIRM") }}</VBtn></VCardActions>
+      <VCardActions
+        ><VSpacer /><VBtn variant="text" @click="cancel">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn
+        ><VBtn color="primary" @click="submit">{{
+          t("TXT_CODE_COMMON_CONFIRM")
+        }}</VBtn></VCardActions
+      >
     </VCard>
   </VDialog>
 </template>
@@ -130,5 +179,4 @@ onMounted(() => {
 .docker-device-content {
   max-height: 600px;
 }
-
 </style>

@@ -19,7 +19,11 @@ export function useRightClickMenu() {
     destroyFc: () => void;
   };
 
-  const openRightClickMenu = async (mouseX: number, mouseY: number, options: RightClickMenuItem[]) => {
+  const openRightClickMenu = async (
+    mouseX: number,
+    mouseY: number,
+    options: RightClickMenuItem[]
+  ) => {
     if (loadedMenu) {
       loadedMenu.destroyFc();
     }

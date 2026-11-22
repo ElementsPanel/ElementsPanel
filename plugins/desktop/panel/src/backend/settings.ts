@@ -128,8 +128,12 @@ export async function registerDesktopSettings(ctx: PanelPluginContext) {
       write: async (values) => {
         const candidate = { ...settings, ...values };
         for (const key of [
-          "wallpaperImage", "wallpaperImageLight", "wallpaperImageDark",
-          "startButtonIcon", "startButtonIconLight", "startButtonIconDark"
+          "wallpaperImage",
+          "wallpaperImageLight",
+          "wallpaperImageDark",
+          "startButtonIcon",
+          "startButtonIconLight",
+          "startButtonIconDark"
         ] as const) {
           if (candidate[key] === null) candidate[key] = "";
         }

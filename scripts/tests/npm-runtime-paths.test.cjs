@@ -57,7 +57,8 @@ test("npm resources and binary paths are independent of the user's data director
         .packagePluginRoots(side)
         .some(
           (root) =>
-            root.directory === legacyPlugins || root.directory.startsWith(`${legacyPlugins}${path.sep}`)
+            root.directory === legacyPlugins ||
+            root.directory.startsWith(`${legacyPlugins}${path.sep}`)
         ),
       false,
       `${side} must not discover data/plugins`
@@ -136,14 +137,8 @@ test("project-level npm plugins are resolved alongside bundled plugins", (t) => 
   fs.writeFileSync(customManifestFile, JSON.stringify(customManifest));
   const { resolveNpmPlugins } = require("../runtime/npm-plugins.cjs");
   const records = resolveNpmPlugins(packageRoot, "panel");
-  assert.deepEqual(
-    records.map((record) => record.id).sort(),
-    ["custom", "runtime"]
-  );
-  assert.equal(
-    records.find((record) => record.id === "custom").packageRoot,
-    project.packageRoot
-  );
+  assert.deepEqual(records.map((record) => record.id).sort(), ["custom", "runtime"]);
+  assert.equal(records.find((record) => record.id === "custom").packageRoot, project.packageRoot);
   assert.equal(records.find((record) => record.id === "runtime").source, "bundled");
   assert.equal(records.find((record) => record.id === "custom").source, "project");
   assert.equal(records.find((record) => record.id === "runtime").defaultEnabled, true);
@@ -151,18 +146,12 @@ test("project-level npm plugins are resolved alongside bundled plugins", (t) => 
 
   const { listNpmPlugins } = load("core/common/src/plugin_npm.ts");
   const listed = listNpmPlugins("panel", { packageRoot, projectRoot: work });
-  assert.deepEqual(
-    listed.map((record) => [record.pluginId, record.source]).sort(),
-    [
-      ["custom", "project"],
-      ["runtime", "bundled"]
-    ]
-  );
+  assert.deepEqual(listed.map((record) => [record.pluginId, record.source]).sort(), [
+    ["custom", "project"],
+    ["runtime", "bundled"]
+  ]);
   assert.deepEqual(listed.find((record) => record.pluginId === "custom").sides, ["panel"]);
-  assert.equal(
-    bundled.directory,
-    records.find((record) => record.id === "runtime").directory
-  );
+  assert.equal(bundled.directory, records.find((record) => record.id === "runtime").directory);
 
   const { discoverPluginsFromRoots } = load("core/common/src/plugin_manifest.ts");
   const roots = load("core/common/src/runtime_paths.ts").packagePluginRoots("panel");
@@ -172,8 +161,14 @@ test("project-level npm plugins are resolved alongside bundled plugins", (t) => 
     entryCandidates: [],
     includeDisabled: true
   });
-  assert.equal(discovered.find((plugin) => plugin.manifest.id === "runtime").manifest.enabled, undefined);
-  assert.equal(discovered.find((plugin) => plugin.manifest.id === "custom").manifest.enabled, false);
+  assert.equal(
+    discovered.find((plugin) => plugin.manifest.id === "runtime").manifest.enabled,
+    undefined
+  );
+  assert.equal(
+    discovered.find((plugin) => plugin.manifest.id === "custom").manifest.enabled,
+    false
+  );
 });
 
 for (const side of ["panel", "daemon"]) {
@@ -214,7 +209,10 @@ test("missing optional npm plugins do not abort runtime discovery", (t) => {
   fs.writeFileSync(manifestFile, JSON.stringify(manifest));
   const { resolveNpmPlugins } = require("../runtime/npm-plugins.cjs");
   const records = resolveNpmPlugins(host, "panel", { skipInvalid: true });
-  assert.deepEqual(records.map((record) => record.id), ["runtime"]);
+  assert.deepEqual(
+    records.map((record) => record.id),
+    ["runtime"]
+  );
   assert.equal(records[0].directory, runtime.directory);
 });
 
@@ -244,10 +242,11 @@ test("daemon tools download once into the installation lib directory", async (t)
       fs.writeFileSync(target, "fixture binary");
     }
   });
-  assert.deepEqual(
-    downloads.map((item) => path.basename(item.target)).sort(),
-    ["7z_linux_x64", "file_zip_linux_x64", "pty_linux_x64"]
-  );
+  assert.deepEqual(downloads.map((item) => path.basename(item.target)).sort(), [
+    "7z_linux_x64",
+    "file_zip_linux_x64",
+    "pty_linux_x64"
+  ]);
   assert.ok(downloads.every((item) => item.target.startsWith(path.join(root, "lib"))));
   await ensureRuntimeTools(root, {
     platform: "linux",

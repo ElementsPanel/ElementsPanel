@@ -24,7 +24,9 @@ const SUPPORTED_LANGUAGES = [
 const SUPPORTED_LANGUAGE_VALUES = new Set<string>(SUPPORTED_LANGUAGES.map((item) => item.value));
 
 function normalizeLanguage(value: unknown, fallback = "en_us") {
-  const normalized = String(value ?? "").replace(/-/g, "_").toLowerCase();
+  const normalized = String(value ?? "")
+    .replace(/-/g, "_")
+    .toLowerCase();
   return SUPPORTED_LANGUAGE_VALUES.has(normalized) ? normalized : fallback;
 }
 

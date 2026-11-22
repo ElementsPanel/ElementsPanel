@@ -1,16 +1,8 @@
 <script setup lang="ts">
-import {
-  useHeaderMenus,
-  type SidebarRouteEntry
-} from "@/hooks/useHeaderMenus";
+import { useHeaderMenus, type SidebarRouteEntry } from "@/hooks/useHeaderMenus";
 import { computed } from "vue";
 import { useRoute } from "vue-router";
-import {
-  VList,
-  VListItem,
-  VSheet,
-  VTooltip
-} from "vuetify/components";
+import { VList, VListItem, VSheet, VTooltip } from "vuetify/components";
 
 withDefaults(defineProps<{ collapsed?: boolean }>(), { collapsed: false });
 
@@ -84,11 +76,11 @@ const getMdiIcon = (icon: unknown, fallback?: string): string => {
   if (typeof icon === "string" && icon.startsWith("mdi-")) return icon;
   const component = icon as
     | {
-      name?: string;
-      displayName?: string;
-      __name?: string;
-      type?: { name?: string; __name?: string };
-    }
+        name?: string;
+        displayName?: string;
+        __name?: string;
+        type?: { name?: string; __name?: string };
+      }
     | undefined;
   const iconName =
     component?.name ??
@@ -134,7 +126,13 @@ const getSidebarIcon = (entry: SidebarRouteEntry): string => {
 </script>
 
 <template>
-  <VSheet tag="aside" class="left-sidebar" :class="{ 'left-sidebar--collapsed': collapsed }" elevation="0" rounded="0">
+  <VSheet
+    tag="aside"
+    class="left-sidebar"
+    :class="{ 'left-sidebar--collapsed': collapsed }"
+    elevation="0"
+    rounded="0"
+  >
     <VList class="sidebar-menu" data-app-surface="transparent" density="comfortable" nav>
       <VTooltip
         v-for="entry in sidebarItems"
@@ -217,7 +215,9 @@ const getSidebarIcon = (entry: SidebarRouteEntry): string => {
   :deep(.v-list-item__content) {
     opacity: 1;
     transform: translateX(0);
-    transition: opacity 160ms ease, transform 240ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition:
+      opacity 160ms ease,
+      transform 240ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   :deep(.v-list-item-title) {
@@ -267,5 +267,4 @@ const getSidebarIcon = (entry: SidebarRouteEntry): string => {
   background-color: rgba(64, 156, 216, 0.16) !important;
   color: inherit;
 }
-
 </style>

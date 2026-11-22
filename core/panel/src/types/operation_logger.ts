@@ -191,5 +191,5 @@ export type OperationLoggerItem =
   | SystemConfigChangeOptions;
 
 export type OperationLoggerItemPayload = {
-  [T in OperationLoggerItem["type"]]: Omit<Extract<OperationLoggerItem, { type: T }>, "type">
+  [T in OperationLoggerItem["type"]]: Omit<Extract<OperationLoggerItem, { type: T }>, "type">;
 };

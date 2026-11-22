@@ -130,22 +130,78 @@ const columns = computed(() => {
   return isPhone.value ? base.filter((c) => ["name", "action"].includes(c.key!)) : base;
 });
 
-const headers = computed(() => columns.value.map((column) => ({ title: column.title, key: column.key, value: column.dataIndex || column.key, sortable: false })));
+const headers = computed(() =>
+  columns.value.map((column) => ({
+    title: column.title,
+    key: column.key,
+    value: column.dataIndex || column.key,
+    sortable: false
+  }))
+);
 </script>
 
 <template>
-  <AppDialog :visible="visible" :title="t('TXT_CODE_VERSION_SELECT')" :footer="null"
-    :width="isPhone ? '100%' : '900px'" @update:visible="(val) => emit('update:visible', val)">
+  <AppDialog
+    :visible="visible"
+    :title="t('TXT_CODE_VERSION_SELECT')"
+    :footer="null"
+    :width="isPhone ? '100%' : '900px'"
+    @update:visible="(val) => emit('update:visible', val)"
+  >
     <div class="mb-1 text-body-medium text-medium-emphasis">
-        <VIcon start icon="mdi-alert-outline" />
-        {{ $t("TXT_CODE_COMMON_IF_DOWNLOADING_FAILS_SWITCH_SOURCES_OR_DOWNLOAD_FROM_THE_ORIGINAL_SITE") }}
+      <VIcon start icon="mdi-alert-outline" />
+      {{
+        $t("TXT_CODE_COMMON_IF_DOWNLOADING_FAILS_SWITCH_SOURCES_OR_DOWNLOAD_FROM_THE_ORIGINAL_SITE")
+      }}
     </div>
-    <VDataTable :loading="versionsLoading" :headers="headers" :items="sortedVersions" item-value="id" :items-per-page="10" density="comfortable">
+    <VDataTable
+      :loading="versionsLoading"
+      :headers="headers"
+      :items="sortedVersions"
+      item-value="id"
+      :items-per-page="10"
+      density="comfortable"
+    >
       <template #no-data><Empty icon="mdi-puzzle-outline" compact /></template>
       <template #loading><VProgressCircular indeterminate size="24" width="2" /></template>
-      <template #item.game_versions="{ item }"><VChip v-for="v in item.game_versions?.slice(0, 3)" :key="v" size="small" variant="tonal" :color="v === searchFilters?.version ? 'primary' : undefined">{{ v }}</VChip></template>
-      <template #item.loaders="{ item }"><VChip v-for="l in item.loaders" :key="l" size="small" variant="tonal" :color="l.toLowerCase() === searchFilters?.loader?.toLowerCase() ? 'success' : 'warning'">{{ l }}</VChip></template>
-      <template #item.action="{ item }"><VBtn icon variant="text" size="small" :disabled="isInstalled(item) || downloadingVersionId === item.id" :title="isInstalled(item) ? t('TXT_CODE_INSTALLED') : t('TXT_CODE_DOWNLOAD')" @click="handleDownload(item)"><VIcon :icon="downloadingVersionId === item.id ? 'mdi-loading' : isInstalled(item) ? 'mdi-check-circle-outline' : 'mdi-cloud-download-outline'" :class="{ 'loading-icon': downloadingVersionId === item.id }" /></VBtn></template>
+      <template #item.game_versions="{ item }"
+        ><VChip
+          v-for="v in item.game_versions?.slice(0, 3)"
+          :key="v"
+          size="small"
+          variant="tonal"
+          :color="v === searchFilters?.version ? 'primary' : undefined"
+          >{{ v }}</VChip
+        ></template
+      >
+      <template #item.loaders="{ item }"
+        ><VChip
+          v-for="l in item.loaders"
+          :key="l"
+          size="small"
+          variant="tonal"
+          :color="l.toLowerCase() === searchFilters?.loader?.toLowerCase() ? 'success' : 'warning'"
+          >{{ l }}</VChip
+        ></template
+      >
+      <template #item.action="{ item }"
+        ><VBtn
+          icon
+          variant="text"
+          size="small"
+          :disabled="isInstalled(item) || downloadingVersionId === item.id"
+          :title="isInstalled(item) ? t('TXT_CODE_INSTALLED') : t('TXT_CODE_DOWNLOAD')"
+          @click="handleDownload(item)"
+          ><VIcon
+            :icon="
+              downloadingVersionId === item.id
+                ? 'mdi-loading'
+                : isInstalled(item)
+                ? 'mdi-check-circle-outline'
+                : 'mdi-cloud-download-outline'
+            "
+            :class="{ 'loading-icon': downloadingVersionId === item.id }" /></VBtn
+      ></template>
     </VDataTable>
   </AppDialog>
 </template>

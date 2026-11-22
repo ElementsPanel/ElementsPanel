@@ -1,4 +1,3 @@
-
 import SystemConfig from "./entity/setting";
 import type { PanelStorageService } from "../../../../../core/panel/src/app/plugin/context";
 import { i18next } from "./i18n";
@@ -27,9 +26,7 @@ function normalizeSystemLocale(locale: string): string | null {
   const parts = normalized.split("_");
   const language = parts[0];
   if (language === "zh") {
-    return parts.some((part) => ["tw", "hk", "mo", "hant"].includes(part))
-      ? "zh_tw"
-      : "zh_cn";
+    return parts.some((part) => ["tw", "hk", "mo", "hant"].includes(part)) ? "zh_tw" : "zh_cn";
   }
   if (language === "pt") return "pt_br";
 

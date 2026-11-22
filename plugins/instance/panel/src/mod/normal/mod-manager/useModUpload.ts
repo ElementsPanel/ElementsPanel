@@ -41,7 +41,7 @@ export function useModUpload(
     if (!files || files.length === 0) return;
 
     // Skip zero-byte entries, including empty files, when filtering upload candidates.
-    const validFiles = Array.from(files).filter(f => f.size > 0);
+    const validFiles = Array.from(files).filter((f) => f.size > 0);
     if (validFiles.length === 0) {
       return message.warning(t("TXT_CODE_MOD_UPLOAD_NO_FOLDER"));
     }
@@ -62,7 +62,10 @@ export function useModUpload(
 
   const handleDragleave = (e: DragEvent) => {
     e.preventDefault();
-    if (e.relatedTarget === null || !((e.currentTarget as HTMLElement).contains(e.relatedTarget as Node))) {
+    if (
+      e.relatedTarget === null ||
+      !(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)
+    ) {
       opacity.value = false;
     }
   };
@@ -75,7 +78,7 @@ export function useModUpload(
     const files = e.dataTransfer?.files;
     if (!files || files.length === 0) return;
 
-    const validFiles = Array.from(files).filter(f => f.size > 0);
+    const validFiles = Array.from(files).filter((f) => f.size > 0);
     if (validFiles.length === 0) {
       return message.warning(t("TXT_CODE_MOD_UPLOAD_NO_FOLDER"));
     }

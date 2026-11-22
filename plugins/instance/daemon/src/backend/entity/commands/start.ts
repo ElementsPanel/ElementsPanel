@@ -58,7 +58,10 @@ export default abstract class AbsStartCommand extends InstanceCommand {
       await this.sleep();
 
       if (instance.config.docker?.maxSpace && instance.config.docker.maxSpace > 0) {
-        instance.println("INFO", $t("TXT_CODE_COMMON_CALCULATING_USED_STORAGE_SPACE_PLEASE_WAIT_PATIENTLY"));
+        instance.println(
+          "INFO",
+          $t("TXT_CODE_COMMON_CALCULATING_USED_STORAGE_SPACE_PLEASE_WAIT_PATIENTLY")
+        );
         const result = await disk_limit_service.checkDiskNow(
           {
             instance,
@@ -69,10 +72,13 @@ export default abstract class AbsStartCommand extends InstanceCommand {
         );
         if (result?.isFull) {
           throw new StartupError(
-            $t("TXT_CODE_COMMON_UNABLE_TO_START_INSUFFICIENT_STORAGE_SPACE_YOUR_STORAGE_QUOTA_IS_GB_CURRENTLY_USED_GB", {
-              storageLimit: result?.storageLimit,
-              storageUsage: result?.storageUsage
-            })
+            $t(
+              "TXT_CODE_COMMON_UNABLE_TO_START_INSUFFICIENT_STORAGE_SPACE_YOUR_STORAGE_QUOTA_IS_GB_CURRENTLY_USED_GB",
+              {
+                storageLimit: result?.storageLimit,
+                storageUsage: result?.storageUsage
+              }
+            )
           );
         } else {
           instance.println(

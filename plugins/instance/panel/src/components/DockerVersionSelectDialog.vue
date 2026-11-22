@@ -28,31 +28,39 @@ defineExpose({
   <VDialog v-model="isVisible" max-width="860" persistent>
     <VCard :title="t('TXT_CODE_DOCKER_VERSION_SELECT_TITLE')">
       <VCardText>
-    <div class="cards">
-      <VCard :title="t('TXT_CODE_DOCKER_VERSION_SELECT_DOCKER_TITLE')" prepend-icon="mdi-docker"
-        class="choose-card docker-card" @click="selectDockerVersion">
-        <VCardText class="text-medium-emphasis">
-          {{ t("TXT_CODE_DOCKER_VERSION_SELECT_DOCKER_SUBTITLE") }}
-        </VCardText>
-        <div class="card-action">
-          <VBtn color="primary">
-            {{ t("TXT_CODE_DOCKER_VERSION_SELECT_DOCKER_BTN") }}
-          </VBtn>
-        </div>
-      </VCard>
+        <div class="cards">
+          <VCard
+            :title="t('TXT_CODE_DOCKER_VERSION_SELECT_DOCKER_TITLE')"
+            prepend-icon="mdi-docker"
+            class="choose-card docker-card"
+            @click="selectDockerVersion"
+          >
+            <VCardText class="text-medium-emphasis">
+              {{ t("TXT_CODE_DOCKER_VERSION_SELECT_DOCKER_SUBTITLE") }}
+            </VCardText>
+            <div class="card-action">
+              <VBtn color="primary">
+                {{ t("TXT_CODE_DOCKER_VERSION_SELECT_DOCKER_BTN") }}
+              </VBtn>
+            </div>
+          </VCard>
 
-      <VCard :title="t('TXT_CODE_DOCKER_VERSION_SELECT_NORMAL_TITLE')" prepend-icon="mdi-apps"
-        class="choose-card normal-card" @click="selectNormalVersion">
-        <VCardText class="text-medium-emphasis">
-          {{ t("TXT_CODE_DOCKER_VERSION_SELECT_NORMAL_SUBTITLE") }}
-        </VCardText>
-        <div class="card-action">
-          <VBtn variant="tonal">
-            {{ t("TXT_CODE_DOCKER_VERSION_SELECT_NORMAL_BTN") }}
-          </VBtn>
+          <VCard
+            :title="t('TXT_CODE_DOCKER_VERSION_SELECT_NORMAL_TITLE')"
+            prepend-icon="mdi-apps"
+            class="choose-card normal-card"
+            @click="selectNormalVersion"
+          >
+            <VCardText class="text-medium-emphasis">
+              {{ t("TXT_CODE_DOCKER_VERSION_SELECT_NORMAL_SUBTITLE") }}
+            </VCardText>
+            <div class="card-action">
+              <VBtn variant="tonal">
+                {{ t("TXT_CODE_DOCKER_VERSION_SELECT_NORMAL_BTN") }}
+              </VBtn>
+            </div>
+          </VCard>
         </div>
-      </VCard>
-    </div>
       </VCardText>
     </VCard>
   </VDialog>
@@ -73,5 +81,4 @@ defineExpose({
   margin-top: 16px;
   text-align: right;
 }
-
 </style>

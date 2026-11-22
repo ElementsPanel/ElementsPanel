@@ -7,7 +7,6 @@ const { EventEmitter, once } = require("node:events");
 const { PassThrough } = require("node:stream");
 const { test } = require("node:test");
 
-const root = path.resolve(__dirname, "../..");
 const commonRequire = from("common");
 const ts = commonRequire("typescript");
 

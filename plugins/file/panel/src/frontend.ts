@@ -1,4 +1,7 @@
-import type { PanelFrontendInstanceActionContext, PanelFrontendPluginContext } from "@elements-panel/sdk";
+import type {
+  PanelFrontendInstanceActionContext,
+  PanelFrontendPluginContext
+} from "@elements-panel/sdk";
 import { hasInstanceContext } from "@elementspanel/epanel-plugin-console/hooks/useInstanceActionAvailability";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
@@ -85,5 +88,4 @@ export function apply(ctx: PanelFrontendPluginContext) {
     desktopInitialWidth: 900,
     desktopInitialHeight: 600
   });
-
 }

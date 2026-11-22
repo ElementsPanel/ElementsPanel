@@ -76,9 +76,12 @@ export class OperationLogger {
     if (!Number.isSafeInteger(limit) || limit < 1) return [];
     if (!this.flush()) {
       return Array.from(this.#buffer.values())
-        .filter((entry) =>
-          "instance_id" in entry && "daemon_id" in entry &&
-          entry.instance_id === instanceId && entry.daemon_id === daemonId
+        .filter(
+          (entry) =>
+            "instance_id" in entry &&
+            "daemon_id" in entry &&
+            entry.instance_id === instanceId &&
+            entry.daemon_id === daemonId
         )
         .slice(-limit);
     }

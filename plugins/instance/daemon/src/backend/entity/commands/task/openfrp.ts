@@ -38,7 +38,9 @@ export class OpenFrp {
         this.processWrapper?.kill();
       }
       this.processWrapper = undefined;
-    } catch (error: any) {}
+    } catch (error: any) {
+      // The helper may have already exited.
+    }
   }
 }
 
@@ -54,7 +56,7 @@ export default class OpenFrpTask implements ILifeCycleTask {
   public static readonly FRP_DOWNLOAD_ADDR = "https://mcsmanager.oss-cn-guangzhou.aliyuncs.com/";
 
   async start(instance: Instance) {
-    const { openFrpToken, openFrpTunnelId } = instance.config?.extraServiceConfig;
+    const { openFrpToken, openFrpTunnelId } = instance.config?.extraServiceConfig ?? {};
     if (!openFrpToken || !openFrpTunnelId) return;
 
     if (!fs.existsSync(OpenFrpTask.FRP_EXE_PATH)) {

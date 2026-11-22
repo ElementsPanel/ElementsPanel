@@ -115,7 +115,9 @@ export class ModService {
             description: mod.description,
             type: "mod"
           };
-        } catch (e) {}
+        } catch (e) {
+          // Try the remaining metadata formats.
+        }
       }
 
       if (entries["quilt.mod.json"]) {
@@ -185,7 +187,6 @@ export class ModService {
     page = Number.isSafeInteger(page) && page > 0 ? page : 1;
 
     const fileManager = this.ctx.files.getFileManager(instanceUuid);
-
 
     const result: ModInfo[] = [];
     const folders: string[] = [];

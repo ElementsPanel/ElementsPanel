@@ -1,5 +1,11 @@
 <template>
-  <AppDialog v-model:visible="visible" width="80%" :footer="null" class="iframe-modal" @cancel="handleCancel">
+  <AppDialog
+    v-model:visible="visible"
+    width="80%"
+    :footer="null"
+    class="iframe-modal"
+    @cancel="handleCancel"
+  >
     <div class="iframe-modal-content">
       <IframeBox :src="src" width="100%" height="100%" />
     </div>
@@ -15,7 +21,7 @@ interface IframeModalProps {
   src: string;
 }
 
-const props = defineProps<IframeModalProps>();
+defineProps<IframeModalProps>();
 
 const visible = ref(false);
 
@@ -51,5 +57,4 @@ defineExpose({
   display: flex;
   flex-direction: column;
 }
-
 </style>

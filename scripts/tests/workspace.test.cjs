@@ -48,7 +48,10 @@ test("initialized projects create npm plugin workspaces outside the runtime sour
   assert.equal(plugin.description, "ElementsPanel example plugin");
   assert.deepEqual(plugin.elementspanel.panel.frontendInject, ["console", "i18n"]);
   assert.equal(plugin.scripts.build, "node scripts/build.cjs");
-  const buildSource = fs.readFileSync(path.join(project, "external/example/scripts/build.cjs"), "utf8");
+  const buildSource = fs.readFileSync(
+    path.join(project, "external/example/scripts/build.cjs"),
+    "utf8"
+  );
   assert.doesNotThrow(() => new vm.Script(buildSource));
   assert.equal(plugin.scripts.prepack, "npm run build");
   for (const tool of ["esbuild", "vite", "@vitejs/plugin-vue", "@vitejs/plugin-vue-jsx", "vue"])
@@ -165,7 +168,10 @@ test("workspace wizard follows the system language and retries invalid or existi
       }
     }
   });
-  assert.deepEqual(marks.map(([status]) => status), ["error", "error", "error", "done"]);
+  assert.deepEqual(
+    marks.map(([status]) => status),
+    ["error", "error", "error", "done"]
+  );
   assert.equal(errors.mock.callCount(), 0, "Marked errors must not also print a duplicate message");
   assert.match(marks[0][1], /请输入名称/);
   assert.match(marks[2][1], /工作区已存在/);
@@ -271,7 +277,9 @@ test("project installation installs each side in its own npm directory", async (
   const npmCLI = path.join(project, "npm-cli.cjs");
   fs.writeFileSync(
     npmCLI,
-    `require("node:fs").appendFileSync(${JSON.stringify(log)}, JSON.stringify({ cwd: process.cwd(), args: process.argv.slice(2) }) + "\\n");`
+    `require("node:fs").appendFileSync(${JSON.stringify(
+      log
+    )}, JSON.stringify({ cwd: process.cwd(), args: process.argv.slice(2) }) + "\\n");`
   );
   process.env.npm_execpath = npmCLI;
   await installCommand(project);
@@ -284,7 +292,9 @@ test("project installation installs each side in its own npm directory", async (
   await setupWorkspace(project, ["shared", "--both", "--no-install"]);
   assert.equal(fs.existsSync(path.join(project, "daemon")), false);
   assert.equal(
-    JSON.parse(fs.readFileSync(path.join(project, "panel/package.json"))).dependencies["epanel-plugin-shared"],
+    JSON.parse(fs.readFileSync(path.join(project, "panel/package.json"))).dependencies[
+      "epanel-plugin-shared"
+    ],
     "file:../external/shared"
   );
   await installCommand(project, ["--ignore-scripts"]);
@@ -335,11 +345,19 @@ test("plugin packages own their build commands and workspace commands only invok
     require: (id) =>
       id === "esbuild" ? { build: async (options) => compileCalls.push(options) } : require(id),
     process: simulatedProcess,
-    console: { log() {}, error(error) { throw error; } }
+    console: {
+      log() {},
+      error(error) {
+        throw error;
+      }
+    }
   });
   assert.equal(simulatedProcess.exitCode, undefined);
   assert.equal(compileCalls.length, 1);
-  assert.equal(compileCalls[0].entryPoints[0], path.join(entry.root, "daemon/src/backend/index.ts"));
+  assert.equal(
+    compileCalls[0].entryPoints[0],
+    path.join(entry.root, "daemon/src/backend/index.ts")
+  );
   assert.equal(compileCalls[0].outfile, path.join(entry.root, "daemon/backend/index.cjs"));
   assert.equal(fs.existsSync(compileCalls[0].outfile), false);
 

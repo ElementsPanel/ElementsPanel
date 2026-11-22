@@ -32,7 +32,7 @@ function assertSemanticKey(key, location) {
 }
 
 function keyFromEnglishText(text) {
-  if (/[^\x00-\x7f]/.test(text)) {
+  if (/[\u0080-\uFFFF]/.test(text)) {
     throw new Error("Provide an explicit meaningful TXT_CODE_ key for non-English text.");
   }
   const name = text
@@ -126,7 +126,9 @@ function assertUniqueTranslations(catalogues, location) {
     const signature = JSON.stringify(catalogues.map((messages) => messages[key]));
     const existing = values.get(signature);
     if (existing !== undefined) {
-      throw new Error(`${location}: duplicate translations for ${existing} and ${key}; reuse one key.`);
+      throw new Error(
+        `${location}: duplicate translations for ${existing} and ${key}; reuse one key.`
+      );
     }
     values.set(signature, key);
   }

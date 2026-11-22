@@ -13,24 +13,43 @@ const i18n = { t: (key) => key, getCurrentLang: () => "zh_cn" };
 const load = createLoader({ compiler: ts, host: "frontend" });
 
 function setupSfc(filename, overrides = {}, props = {}) {
-  return load(
-    filename,
-    {
-      vue: { ...vue, onMounted() {}, onUnmounted() {}, watch() {} },
-      "@/lang/i18n": i18n,
-      "@/components/Empty.vue": {},
-      "@/components/TargetSelectionList.vue": {},
-      "@/components/DesktopDialog.vue": {},
-      "./PluginConfigTargetSelector.vue": {},
-      "./PluginConfigList.vue": {},
-      "./PluginActionDialogs.vue": {},
-      "@/hooks/useScreen": { useScreen: () => ({ isPhone: vue.ref(false) }) },
-      "@/hooks/usePolling": { usePolling() {} },
-      "vuetify/components": {},
-      ...overrides
-    },
-    compileSfc(filename)
-  ).default.setup(props, { expose() {} });
+  const options = {
+    vue: { ...vue, onMounted() {}, onUnmounted() {}, watch() {} },
+    "@/lang/i18n": i18n,
+    "@/components/Empty.vue": {},
+    "@/components/TargetSelectionList.vue": {},
+    "@/components/DesktopDialog.vue": {},
+    "./PluginConfigTargetSelector.vue": {},
+    "./PluginConfigList.vue": {},
+    "./PluginActionDialogs.vue": {},
+    "@/hooks/useScreen": { useScreen: () => ({ isPhone: vue.ref(false) }) },
+    "@/hooks/usePolling": { usePolling() {} },
+    "vuetify/components": {},
+    ...overrides
+  };
+  const hookBindings = {};
+  const hooks = filename.endsWith("/components/ConfigPage.vue")
+    ? ["usePluginGroups", "usePluginRemarks", "usePluginActions", "usePluginInventory"].map(
+        (name) => [name, `plugins/config/panel/src/hooks/${name}.ts`]
+      )
+    : filename.endsWith("/desktop/DesktopNodeManager.vue")
+    ? [["useNodeList", "plugins/node/panel/src/hooks/useNodeList.ts"]]
+    : [];
+  // Exercise composable APIs without requiring unused bindings in their consumer.
+  for (const [name, source] of hooks) {
+    const id = `../hooks/${name}`;
+    const module = options[id] ?? load(source, options);
+    options[id] = {
+      ...module,
+      [name]: (...args) => {
+        const bindings = module[name](...args);
+        Object.assign(hookBindings, bindings);
+        return bindings;
+      }
+    };
+  }
+  const state = load(filename, options, compileSfc(filename)).default.setup(props, { expose() {} });
+  return { ...hookBindings, ...state };
 }
 
 function apiFixture(handler = async () => ({ ok: true })) {
@@ -172,9 +191,14 @@ test("overview derives used memory consistently and leaves the API response unto
   assert.equal(state.value.mem, undefined);
   state.value.system.totalmem = 0;
   assert.equal(overview.state.value.mem, 0);
-  state.value.remote = [{ uuid: "node", features: { instanceBackup: true },
-    system: { platform: "linux", totalmem: 2 ** 30, freemem: 2 ** 29, cpuUsage: 0.25 },
-    instance: { total: 2, running: 1 } }];
+  state.value.remote = [
+    {
+      uuid: "node",
+      features: { instanceBackup: true },
+      system: { platform: "linux", totalmem: 2 ** 30, freemem: 2 ** 29, cpuUsage: 0.25 },
+      instance: { total: 2, running: 1 }
+    }
+  ];
   const node = overview.state.value.remote[0];
   assert.equal(node.platformText, "linux");
   assert.equal(node.cpuInfo, "25.0%");
@@ -368,11 +392,13 @@ test("file lists ignore stale responses while cancelled dialogs settle without c
 test("closing the last folder leaves a persistent empty workspace and ignores late requests", async (t) => {
   const pending = [];
   const fixture = fileManagerFixture({
-    fileList: () => ({ execute() {
-      const wait = deferred();
-      pending.push(wait);
-      return wait.promise;
-    } })
+    fileList: () => ({
+      execute() {
+        const wait = deferred();
+        pending.push(wait);
+        return wait.promise;
+      }
+    })
   });
   t.after(fixture.dispose);
   const { manager } = fixture;
@@ -427,15 +453,26 @@ test("closing inactive folders preserves selection of the active tab and closing
 
 test("reordering folder tabs persists their order without changing the active directory or reloading files", async (t) => {
   let requests = 0;
-  const savedTabs = { instancenode: ["a", "b", "c"].map((key, index) => ({
-    key, name: key, path: `/${key}/`, closable: index > 0, pushedTime: 0
-  })) };
-  const fixture = fileManagerFixture({
-    fileList: () => ({ execute: async () => {
-      requests++;
-      return { value: { items: [{ name: "report.txt" }], total: 1 } };
-    } })
-  }, savedTabs);
+  const savedTabs = {
+    instancenode: ["a", "b", "c"].map((key, index) => ({
+      key,
+      name: key,
+      path: `/${key}/`,
+      closable: index > 0,
+      pushedTime: 0
+    }))
+  };
+  const fixture = fileManagerFixture(
+    {
+      fileList: () => ({
+        execute: async () => {
+          requests++;
+          return { value: { items: [{ name: "report.txt" }], total: 1 } };
+        }
+      })
+    },
+    savedTabs
+  );
   t.after(fixture.dispose);
   const { manager } = fixture;
   await manager.handleChangeTab("b");
@@ -447,7 +484,10 @@ test("reordering folder tabs persists their order without changing the active di
   const form = { ...manager.operationForm.value };
 
   manager.handleReorderTabs(["c", "a", "b"]);
-  assert.deepEqual(manager.currentTabs.value.map((tab) => tab.key), ["c", "a", "b"]);
+  assert.deepEqual(
+    manager.currentTabs.value.map((tab) => tab.key),
+    ["c", "a", "b"]
+  );
   assert.equal(manager.currentTabs.value[0], originalTabs[2]);
   assert.equal(manager.activeTab.value, "b");
   assert.equal(manager.currentPath.value, "/b/");
@@ -456,13 +496,23 @@ test("reordering folder tabs persists their order without changing the active di
   assert.deepEqual(manager.operationForm.value, form);
   assert.equal(requests, 1);
 
-  for (const keys of [["a", "b"], ["a", "a", "c"], ["a", "b", "missing"]]) {
+  for (const keys of [
+    ["a", "b"],
+    ["a", "a", "c"],
+    ["a", "b", "missing"]
+  ]) {
     manager.handleReorderTabs(keys);
-    assert.deepEqual(manager.currentTabs.value.map((tab) => tab.key), ["c", "a", "b"]);
+    assert.deepEqual(
+      manager.currentTabs.value.map((tab) => tab.key),
+      ["c", "a", "b"]
+    );
   }
   const restored = fileManagerFixture({}, JSON.parse(JSON.stringify(manager.tabList.value)));
   t.after(restored.dispose);
-  assert.deepEqual(restored.manager.currentTabs.value.map((tab) => tab.key), ["c", "a", "b"]);
+  assert.deepEqual(
+    restored.manager.currentTabs.value.map((tab) => tab.key),
+    ["c", "a", "b"]
+  );
 });
 
 test("download links encode reserved filename characters and do not turn them into query/fragment syntax", async (t) => {
@@ -534,7 +584,7 @@ test("switching node/plugin configuration cannot display or save a stale schema"
       })
     }
   });
-  state.scope.value = "node";
+  state.selectedScope.value = "node";
   state.nodeSelectedId.value = "config";
   state.selectedNodeId.value = "old-node";
   const old = state.loadSchema();
@@ -559,10 +609,16 @@ function pluginActionFixture(t, inventories = {}, nodeOverrides = {}, pluginMark
   t.mock.method(console, "error", () => {});
   const plugin = { id: "sample", enabled: true, running: true, removable: true };
   const panelPlugins = [plugin, { id: "node", enabled: true, running: true, removable: true }];
-  const calls = [], notices = [];
+  const calls = [],
+    notices = [];
   const frontendPlugins = [];
   const nodes = Object.keys(inventories).map((uuid) => ({
-    uuid, remarks: uuid, ip: uuid, port: 24444, available: true, ...nodeOverrides[uuid]
+    uuid,
+    remarks: uuid,
+    ip: uuid,
+    port: 24444,
+    available: true,
+    ...nodeOverrides[uuid]
   }));
   const handlers = {
     pluginList: async () => panelPlugins,
@@ -576,36 +632,64 @@ function pluginActionFixture(t, inventories = {}, nodeOverrides = {}, pluginMark
     removeNodePlugin: async () => ({}),
     resetPluginSettings: async () => ({ saved: true, application: "applied" }),
     resetNodePluginSettings: async () => ({ saved: true, application: "applied" }),
-    pluginSettings: async ({ params }) => ({ id: params.id, fields: [], values: { label: "default" } }),
-    nodePluginSettings: async ({ params }) => ({ id: params.id, fields: [], values: { label: "node default" } })
+    pluginSettings: async ({ params }) => ({
+      id: params.id,
+      fields: [],
+      values: { label: "default" }
+    }),
+    nodePluginSettings: async ({ params }) => ({
+      id: params.id,
+      fields: [],
+      values: { label: "node default" }
+    })
   };
-  const api = Object.fromEntries(Object.keys(handlers).map((name) => [name, () => ({
-    execute: async (config) => {
-      calls.push({ name, config });
-      return { value: await handlers[name](config) };
-    }
-  })]));
+  const api = Object.fromEntries(
+    Object.keys(handlers).map((name) => [
+      name,
+      () => ({
+        execute: async (config) => {
+          calls.push({ name, config });
+          return { value: await handlers[name](config) };
+        }
+      })
+    ])
+  );
   const state = setupSfc("plugins/config/panel/src/components/ConfigPage.vue", {
     "vue-router": {
       useRoute: () => ({ path: "/desktop", query: {} }),
       useRouter: () => ({}),
       onBeforeRouteLeave() {}
     },
-    "@/lang/i18n": { t: (key, params) => params ? `${key}: ${Object.values(params).join(", ")}` : key },
-    "@/plugin/context": { usePluginService: () => pluginMarket, ctx: { plugins: {
-      loaded: frontendPlugins, refresh: async () => calls.push({ name: "refresh" })
-    } } },
+    "@/lang/i18n": {
+      t: (key, params) => (params ? `${key}: ${Object.values(params).join(", ")}` : key)
+    },
+    "@/plugin/context": {
+      usePluginService: () => pluginMarket,
+      ctx: {
+        plugins: {
+          loaded: frontendPlugins,
+          refresh: async () => calls.push({ name: "refresh" })
+        }
+      }
+    },
     "@/tools/validator": { getValidatorErrorMsg: (error) => error.message },
-    "@/tools/vuetifyToast": { message: {
-      success: (text) => notices.push({ color: "success", text }),
-      error: (text) => notices.push({ color: "error", text })
-    } },
+    "@/tools/vuetifyToast": {
+      message: {
+        success: (text) => notices.push({ color: "success", text }),
+        error: (text) => notices.push({ color: "error", text })
+      }
+    },
     "./SettingsPages.vue": {},
     "../api": api
   });
   state.plugins.value = panelPlugins;
   return {
-    state, plugin, handlers, calls, notices, frontendPlugins,
+    state,
+    plugin,
+    handlers,
+    calls,
+    notices,
+    frontendPlugins,
     writes: () => calls.filter(({ name }) => /^(set|remove)/.test(name))
   };
 }
@@ -627,7 +711,8 @@ test("plugin warnings and dependency details follow backend, frontend and node s
   plugin.missingDependencies = [];
   const frontend = {
     metadata: { id: plugin.id, frontendInject: ["node"] },
-    state: "pending", missingServices: ["node"]
+    state: "pending",
+    missingServices: ["node"]
   };
   frontendPlugins.push(frontend);
   assert.equal(state.pluginWarning(plugin), true);
@@ -639,7 +724,7 @@ test("plugin warnings and dependency details follow backend, frontend and node s
   frontend.state = "failed";
   frontend.error = new Error("browser plugin failed");
   assert.equal(state.pluginWarning(plugin), true);
-  state.scope.value = "node";
+  state.selectedScope.value = "node";
   state.nodeSelectedId.value = plugin.id;
   state.nodePlugins.value = [plugin];
   assert.equal(state.pluginWarning(plugin), false, "a node ignores browser-only failures");
@@ -658,27 +743,42 @@ test("restoring plugin defaults targets the context menu plugin and isolates in-
     second: [{ id: "sample", canResetSettings: true }]
   });
   const { state } = f;
-  const open = () => { state.pluginContextMenu.value = { open: true, x: 10, y: 20, pluginId: "sample" }; };
+  const open = () => {
+    state.pluginContextMenu.value = { open: true, x: 10, y: 20, pluginId: "sample" };
+  };
   const events = [];
   const previousWindow = global.window;
   const previousCustomEvent = global.CustomEvent;
-  global.window = { dispatchEvent: event => events.push(event) };
-  global.CustomEvent = class { constructor(type, options) { this.type = type; this.detail = options.detail; } };
-  t.after(() => { global.window = previousWindow; global.CustomEvent = previousCustomEvent; });
+  global.window = { dispatchEvent: (event) => events.push(event) };
+  global.CustomEvent = class {
+    constructor(type, options) {
+      this.type = type;
+      this.detail = options.detail;
+    }
+  };
+  t.after(() => {
+    global.window = previousWindow;
+    global.CustomEvent = previousCustomEvent;
+  });
   f.plugin.canResetSettings = true;
   state.selectedId.value = "node";
   open();
   state.requestResetContextPluginSettings();
   assert.equal(state.resetConfirmOpen.value, true);
   assert.equal(state.resetCandidate.value.id, "sample");
-  assert.equal(f.calls.some(call => call.name === "resetPluginSettings"), false);
+  assert.equal(
+    f.calls.some((call) => call.name === "resetPluginSettings"),
+    false
+  );
   state.resetConfirmOpen.value = false;
   assert.equal(state.resetCandidate.value, null);
   assert.equal(f.calls.length, 0);
   open();
   state.requestResetContextPluginSettings();
   await state.confirmResetSettings();
-  assert.deepEqual(f.calls.find(call => call.name === "resetPluginSettings").config, { params: { id: "sample" } });
+  assert.deepEqual(f.calls.find((call) => call.name === "resetPluginSettings").config, {
+    params: { id: "sample" }
+  });
   assert.equal(state.selectedId.value, "node");
   assert.equal(state.pluginContextMenu.value.open, false);
   assert.equal(state.resetConfirmOpen.value, false);
@@ -692,7 +792,7 @@ test("restoring plugin defaults targets the context menu plugin and isolates in-
 
   const waiting = deferred();
   f.handlers.resetNodePluginSettings = () => waiting.promise;
-  state.scope.value = "node";
+  state.selectedScope.value = "node";
   state.selectedNodeId.value = "first";
   state.nodeSelectedId.value = "sample";
   state.nodePlugins.value = [{ id: "sample", canResetSettings: true }];
@@ -701,18 +801,20 @@ test("restoring plugin defaults targets the context menu plugin and isolates in-
   const resetting = state.confirmResetSettings();
   assert.equal(state.actionBusy.value, true);
   await state.confirmResetSettings();
-  assert.equal(f.calls.filter(call => call.name === "resetNodePluginSettings").length, 1);
+  assert.equal(f.calls.filter((call) => call.name === "resetNodePluginSettings").length, 1);
   state.selectedNodeId.value = "second";
   state.schema.value = { id: "sample", fields: [], values: { label: "second node" } };
   waiting.resolve({ saved: true, application: "applied" });
   await resetting;
-  assert.deepEqual(f.calls.find(call => call.name === "resetNodePluginSettings").config, {
+  assert.deepEqual(f.calls.find((call) => call.name === "resetNodePluginSettings").config, {
     params: { daemonId: "first", id: "sample" }
   });
   assert.equal(state.schema.value.values.label, "second node");
   assert.equal(state.savingSettings.value, false);
 
-  f.handlers.resetNodePluginSettings = async () => { throw new Error("reset failed"); };
+  f.handlers.resetNodePluginSettings = async () => {
+    throw new Error("reset failed");
+  };
   open();
   state.requestResetContextPluginSettings();
   await state.confirmResetSettings();
@@ -724,7 +826,9 @@ test("restoring plugin defaults targets the context menu plugin and isolates in-
 test("plugin context actions target the clicked plugin and keep remarks isolated across node changes", async (t) => {
   const f = pluginActionFixture(t);
   const { state } = f;
-  const open = () => { state.pluginContextMenu.value = { open: true, x: 10, y: 20, pluginId: "sample" }; };
+  const open = () => {
+    state.pluginContextMenu.value = { open: true, x: 10, y: 20, pluginId: "sample" };
+  };
   state.selectedId.value = "node";
   open();
   state.toggleContextPlugin();
@@ -736,9 +840,12 @@ test("plugin context actions target the clicked plugin and keep remarks isolated
   f.plugin.enabled = false;
   open();
   await state.toggleContextPlugin();
-  assert.deepEqual(f.writes()[0], { name: "setPluginEnabled", config: {
-    data: { id: "sample", enabled: true }
-  } });
+  assert.deepEqual(f.writes()[0], {
+    name: "setPluginEnabled",
+    config: {
+      data: { id: "sample", enabled: true }
+    }
+  });
 
   state.pluginRemarks.value.set("sample", "Saved note");
   open();
@@ -747,7 +854,9 @@ test("plugin context actions target the clicked plugin and keep remarks isolated
   assert.equal(state.remarkDialog.value.remarks, "Saved note");
   assert.equal(state.selectedId.value, "node");
   state.remarkDialog.value.remarks = " New\r\nnote ";
-  f.handlers.updatePluginRemark = async () => { throw new Error("save failed"); };
+  f.handlers.updatePluginRemark = async () => {
+    throw new Error("save failed");
+  };
   await state.savePluginRemark();
   assert.equal(state.remarkDialog.value.open, true);
   assert.equal(state.pluginRemarks.value.get("sample"), "Saved note");
@@ -770,13 +879,13 @@ test("plugin context actions target the clicked plugin and keep remarks isolated
   assert.equal(state.pluginRemarks.value.get("sample"), longRemarks);
 
   const reads = [];
-  f.handlers.pluginRemarkList = config => {
+  f.handlers.pluginRemarkList = (config) => {
     const wait = deferred();
     reads.push({ ...wait, config });
     return wait.promise;
   };
   const old = state.loadPluginRemarks();
-  state.scope.value = "node";
+  state.selectedScope.value = "node";
   state.selectedNodeId.value = "one";
   state.nodePlugins.value = [{ ...f.plugin }];
   const current = state.loadPluginRemarks();
@@ -797,117 +906,183 @@ test("plugin context actions target the clicked plugin and keep remarks isolated
   pending.resolve({ id: "sample", remarks: "Updated node note" });
   await saving;
   assert.equal(state.pluginRemarks.value.get("sample"), "Other node note");
-  assert.deepEqual(f.calls.filter(call => call.name === "updatePluginRemark").at(-1).config, {
-    params: { daemonId: "one" }, data: { id: "sample", remarks: "Updated node note" }
+  assert.deepEqual(f.calls.filter((call) => call.name === "updatePluginRemark").at(-1).config, {
+    params: { daemonId: "one" },
+    data: { id: "sample", remarks: "Updated node note" }
   });
 });
 
 test("panel plugin actions select matching nodes before writing either side", async (t) => {
-  for (const action of ["enable", "disable", "remove"]) await t.test(action, async (t) => {
-    const record = { id: "sample", enabled: action !== "enable", removable: true };
-    const f = pluginActionFixture(t, {
-      one: [record], two: [record], unrelated: [{ ...record, id: "other" }],
-      unchanged: [{ ...record, enabled: !record.enabled }]
-    });
-    const { state } = f;
-    const confirm = () => state.confirmAction();
-    let preparing;
-    if (action === "enable") {
-      f.plugin.enabled = false;
-      preparing = state.toggle(f.plugin, true);
-      assert.equal(state.actionConfirmOpen.value, false, "enabling goes directly to node selection");
-    } else {
-      state.requestAction(f.plugin, action);
-      assert.equal(state.actionConfirmOpen.value, true);
-      assert.equal(state.nodePickerOpen.value, false);
-      assert.equal(state.actionCandidate.value.checkingNodes, false);
-      assert.deepEqual(f.calls, [], "opening the initial confirmation must not check nodes");
-      preparing = confirm();
-    }
-    assert.equal(state.actionCandidate.value.checkingNodes, true);
-    await confirm();
-    assert.deepEqual(f.writes(), [], "confirmation must wait for the inventory checks");
-    await preparing;
-    assert.equal(state.actionConfirmOpen.value, false);
-    assert.equal(state.nodePickerOpen.value, true);
-    const matchingNodes = action === "remove" ? ["one", "two", "unchanged"] : ["one", "two"];
-    assert.deepEqual(state.actionCandidate.value.nodeTargets.map(({ node }) => node.uuid),
-      matchingNodes);
-    assert.deepEqual(state.actionCandidate.value.selectedNodeIds, matchingNodes,
-      "all eligible nodes must be selected by default");
-    assert.deepEqual(f.writes(), [], "the node picker needs a separate confirmation before any writes");
-    state.actionConfirmOpen.value = false;
-    assert.equal(state.nodePickerOpen.value, true, "closing the first dialog must not cancel the node picker");
+  for (const action of ["enable", "disable", "remove"])
+    await t.test(action, async (t) => {
+      const record = { id: "sample", enabled: action !== "enable", removable: true };
+      const f = pluginActionFixture(t, {
+        one: [record],
+        two: [record],
+        unrelated: [{ ...record, id: "other" }],
+        unchanged: [{ ...record, enabled: !record.enabled }]
+      });
+      const { state } = f;
+      const confirm = () => state.confirmAction();
+      let preparing;
+      if (action === "enable") {
+        f.plugin.enabled = false;
+        preparing = state.toggle(f.plugin, true);
+        assert.equal(
+          state.actionConfirmOpen.value,
+          false,
+          "enabling goes directly to node selection"
+        );
+      } else {
+        state.requestAction(f.plugin, action);
+        assert.equal(state.actionConfirmOpen.value, true);
+        assert.equal(state.nodePickerOpen.value, false);
+        assert.equal(state.actionCandidate.value.checkingNodes, false);
+        assert.deepEqual(f.calls, [], "opening the initial confirmation must not check nodes");
+        preparing = confirm();
+      }
+      assert.equal(state.actionCandidate.value.checkingNodes, true);
+      await confirm();
+      assert.deepEqual(f.writes(), [], "confirmation must wait for the inventory checks");
+      await preparing;
+      assert.equal(state.actionConfirmOpen.value, false);
+      assert.equal(state.nodePickerOpen.value, true);
+      const matchingNodes = action === "remove" ? ["one", "two", "unchanged"] : ["one", "two"];
+      assert.deepEqual(
+        state.actionCandidate.value.nodeTargets.map(({ node }) => node.uuid),
+        matchingNodes
+      );
+      assert.deepEqual(
+        state.actionCandidate.value.selectedNodeIds,
+        matchingNodes,
+        "all eligible nodes must be selected by default"
+      );
+      assert.deepEqual(
+        f.writes(),
+        [],
+        "the node picker needs a separate confirmation before any writes"
+      );
+      state.actionConfirmOpen.value = false;
+      assert.equal(
+        state.nodePickerOpen.value,
+        true,
+        "closing the first dialog must not cancel the node picker"
+      );
 
-    const wait = deferred();
-    f.handlers[action === "remove" ? "removeNodePlugin" : "setNodePluginEnabled"] = () => wait.promise;
-    state.actionCandidate.value.selectedNodeIds = ["one"];
-    const saving = confirm();
-    state.nodePickerOpen.value = false;
-    assert.equal(state.nodePickerOpen.value, true, "a running action cannot be dismissed");
-    await confirm();
-    assert.equal(f.writes().length, 1, "repeated confirmation must not repeat the node write");
-    state.scope.value = "node";
-    state.selectedNodeId.value = "unrelated";
-    state.requestAction({ ...f.plugin, id: "other" }, action);
-    assert.equal(state.actionCandidate.value.plugin.id, "sample");
-    wait.resolve({ result: { application: "applied" } });
-    await saving;
-    assert.deepEqual(f.writes(), action !== "remove" ? [
-      { name: "setNodePluginEnabled", config: { params: { daemonId: "one" }, data: { id: "sample", enabled: action === "enable" } } },
-      { name: "setPluginEnabled", config: { data: { id: "sample", enabled: action === "enable" } } }
-    ] : [
-      { name: "removeNodePlugin", config: { params: { daemonId: "one", id: "sample" }, timeout: 11 * 60 * 1000 } },
-      { name: "removePlugin", config: { params: { id: "sample" }, timeout: 11 * 60 * 1000 } }
-    ]);
-    assert.equal(state.actionConfirmOpen.value, false);
-    assert.equal(state.nodePickerOpen.value, false);
-  });
+      const wait = deferred();
+      f.handlers[action === "remove" ? "removeNodePlugin" : "setNodePluginEnabled"] = () =>
+        wait.promise;
+      state.actionCandidate.value.selectedNodeIds = ["one"];
+      const saving = confirm();
+      state.nodePickerOpen.value = false;
+      assert.equal(state.nodePickerOpen.value, true, "a running action cannot be dismissed");
+      await confirm();
+      assert.equal(f.writes().length, 1, "repeated confirmation must not repeat the node write");
+      state.selectedScope.value = "node";
+      state.selectedNodeId.value = "unrelated";
+      state.requestAction({ ...f.plugin, id: "other" }, action);
+      assert.equal(state.actionCandidate.value.plugin.id, "sample");
+      wait.resolve({ result: { application: "applied" } });
+      await saving;
+      assert.deepEqual(
+        f.writes(),
+        action !== "remove"
+          ? [
+              {
+                name: "setNodePluginEnabled",
+                config: {
+                  params: { daemonId: "one" },
+                  data: { id: "sample", enabled: action === "enable" }
+                }
+              },
+              {
+                name: "setPluginEnabled",
+                config: { data: { id: "sample", enabled: action === "enable" } }
+              }
+            ]
+          : [
+              {
+                name: "removeNodePlugin",
+                config: { params: { daemonId: "one", id: "sample" }, timeout: 11 * 60 * 1000 }
+              },
+              {
+                name: "removePlugin",
+                config: { params: { id: "sample" }, timeout: 11 * 60 * 1000 }
+              }
+            ]
+      );
+      assert.equal(state.actionConfirmOpen.value, false);
+      assert.equal(state.nodePickerOpen.value, false);
+    });
 });
 
 test("plugin removals forward the config choice and share market dependency loading", async (t) => {
-  for (const scope of ["panel", "node"]) for (const removeConfig of [false, true]) {
-    await t.test(`${scope}, clear config: ${removeConfig}`, async (t) => {
-      const operations = load("plugins/market/panel/src/operations.ts", {
-        vue, "./api": {}, "@/plugin/context": { ctx: {} }
+  for (const scope of ["panel", "node"])
+    for (const removeConfig of [false, true]) {
+      await t.test(`${scope}, clear config: ${removeConfig}`, async (t) => {
+        const operations = load("plugins/market/panel/src/operations.ts", {
+          vue,
+          "./api": {},
+          "@/plugin/context": { ctx: {} }
+        });
+        const record = { id: "sample", enabled: true, removable: true };
+        const f = pluginActionFixture(t, { one: [record], two: [record] }, {}, operations);
+        f.state.selectedScope.value = scope;
+        f.state.selectedNodeId.value = "one";
+        f.state.requestAction(f.plugin, "remove");
+        assert.equal(f.state.actionCandidate.value.removeConfig, false);
+        f.state.actionCandidate.value.removeConfig = removeConfig;
+        if (scope === "panel") {
+          await f.state.confirmAction();
+          f.state.actionCandidate.value.selectedNodeIds = ["one"];
+        }
+        assert.equal(
+          operations.changingDependencies.value,
+          0,
+          "target selection does not open loading"
+        );
+        const wait = deferred();
+        f.handlers.removeNodePlugin = () => wait.promise;
+        const removal = f.state.confirmAction();
+        await settle();
+        assert.equal(operations.changingDependencies.value, 1);
+        assert.equal(operations.activeOperations.value, 1);
+        wait.resolve({});
+        await removal;
+        assert.deepEqual(
+          f.writes().map(({ name, config }) => [name, config.params]),
+          [
+            [
+              "removeNodePlugin",
+              { daemonId: "one", id: "sample", ...(removeConfig ? { removeConfig: true } : {}) }
+            ],
+            ...(scope === "panel"
+              ? [
+                  [
+                    "removePlugin",
+                    { id: "sample", ...(removeConfig ? { removeConfig: true } : {}) }
+                  ]
+                ]
+              : [])
+          ]
+        );
+        assert.equal(operations.changingDependencies.value, 0);
+        assert.equal(operations.activeOperations.value, 0);
+        assert.equal(f.state.actionCandidate.value, null);
       });
-      const record = { id: "sample", enabled: true, removable: true };
-      const f = pluginActionFixture(t, { one: [record], two: [record] }, {}, operations);
-      f.state.scope.value = scope;
-      f.state.selectedNodeId.value = "one";
-      f.state.requestAction(f.plugin, "remove");
-      assert.equal(f.state.actionCandidate.value.removeConfig, false);
-      f.state.actionCandidate.value.removeConfig = removeConfig;
-      if (scope === "panel") {
-        await f.state.confirmAction();
-        f.state.actionCandidate.value.selectedNodeIds = ["one"];
-      }
-      assert.equal(operations.changingDependencies.value, 0, "target selection does not open loading");
-      const wait = deferred();
-      f.handlers.removeNodePlugin = () => wait.promise;
-      const removal = f.state.confirmAction();
-      await settle();
-      assert.equal(operations.changingDependencies.value, 1);
-      assert.equal(operations.activeOperations.value, 1);
-      wait.resolve({});
-      await removal;
-      assert.deepEqual(f.writes().map(({ name, config }) => [name, config.params]), [
-        ["removeNodePlugin", { daemonId: "one", id: "sample", ...(removeConfig ? { removeConfig: true } : {}) }],
-        ...(scope === "panel" ? [["removePlugin", { id: "sample", ...(removeConfig ? { removeConfig: true } : {}) }]] : [])
-      ]);
-      assert.equal(operations.changingDependencies.value, 0);
-      assert.equal(operations.activeOperations.value, 0);
-      assert.equal(f.state.actionCandidate.value, null);
-    });
-  }
+    }
 });
 
 test("failed removals close dependency loading and keep the config choice for retry", async (t) => {
   const operations = load("plugins/market/panel/src/operations.ts", {
-    vue, "./api": {}, "@/plugin/context": { ctx: {} }
+    vue,
+    "./api": {},
+    "@/plugin/context": { ctx: {} }
   });
   const f = pluginActionFixture(t, {}, {}, operations);
-  f.handlers.removePlugin = async () => { throw new Error("removal failed"); };
+  f.handlers.removePlugin = async () => {
+    throw new Error("removal failed");
+  };
   f.state.requestAction(f.plugin, "remove");
   f.state.actionCandidate.value.removeConfig = true;
   await f.state.confirmAction();
@@ -921,16 +1096,21 @@ test("failed removals close dependency loading and keep the config choice for re
 });
 
 test("users can deselect every node to apply a plugin action only to the panel", async (t) => {
-  for (const action of ["enable", "disable", "remove"]) await t.test(action, async (t) => {
-    const f = pluginActionFixture(t, { one: [{ id: "sample", enabled: action !== "enable", removable: true }] });
-    f.state.requestAction(f.plugin, action);
-    await f.state.confirmAction();
-    assert.equal(f.state.nodePickerOpen.value, true);
-    f.state.actionCandidate.value.selectedNodeIds = [];
-    await f.state.confirmAction();
-    assert.deepEqual(f.writes().map(({ name }) => name),
-      [action === "remove" ? "removePlugin" : "setPluginEnabled"]);
-  });
+  for (const action of ["enable", "disable", "remove"])
+    await t.test(action, async (t) => {
+      const f = pluginActionFixture(t, {
+        one: [{ id: "sample", enabled: action !== "enable", removable: true }]
+      });
+      f.state.requestAction(f.plugin, action);
+      await f.state.confirmAction();
+      assert.equal(f.state.nodePickerOpen.value, true);
+      f.state.actionCandidate.value.selectedNodeIds = [];
+      await f.state.confirmAction();
+      assert.deepEqual(
+        f.writes().map(({ name }) => name),
+        [action === "remove" ? "removePlugin" : "setPluginEnabled"]
+      );
+    });
 });
 
 test("cancelling a plugin action discards its node scan and selection", async (t) => {
@@ -954,7 +1134,10 @@ test("cancelling a plugin action discards its node scan and selection", async (t
   reads[0].resolve([{ id: "sample", enabled: true }]);
   await old;
   assert.equal(f.state.actionCandidate.value.plugin.id, "other");
-  assert.deepEqual(f.state.actionCandidate.value.nodeTargets.map(({ plugin }) => plugin.id), ["other"]);
+  assert.deepEqual(
+    f.state.actionCandidate.value.nodeTargets.map(({ plugin }) => plugin.id),
+    ["other"]
+  );
   assert.equal(f.state.actionCandidate.value.checkingNodes, false);
   assert.deepEqual(f.state.actionCandidate.value.selectedNodeIds, []);
   f.state.nodePickerOpen.value = false;
@@ -979,10 +1162,18 @@ test("cancelling a plugin action discards its node scan and selection", async (t
 
 test("node removal reports unavailable and failed nodes, respects removability, and continues other actions", async (t) => {
   const record = { id: "sample", enabled: true, removable: true };
-  const f = pluginActionFixture(t, {
-    good: [record], failed: [record], disabled: [{ ...record, enabled: false }],
-    source: [{ ...record, removable: false }], offline: [record], broken: []
-  }, { offline: { available: false } });
+  const f = pluginActionFixture(
+    t,
+    {
+      good: [record],
+      failed: [record],
+      disabled: [{ ...record, enabled: false }],
+      source: [{ ...record, removable: false }],
+      offline: [record],
+      broken: []
+    },
+    { offline: { available: false } }
+  );
   const inventory = f.handlers.nodePluginList;
   f.handlers.nodePluginList = (config) => {
     if (config.params.daemonId === "broken") throw new Error("inventory unavailable");
@@ -994,43 +1185,77 @@ test("node removal reports unavailable and failed nodes, respects removability, 
   f.state.requestAction(f.plugin, "remove");
   await f.state.confirmAction();
   assert.match(f.state.actionCandidate.value.nodeCheckError, /offline.*broken/);
-  assert.deepEqual(f.state.actionCandidate.value.selectedNodeIds, ["good", "failed", "disabled"],
-    "protected source plugins cannot be selected by default");
-  assert.deepEqual(f.state.nodeTargetItems.value.filter((item) => item.disabled).map((item) => item.value),
-    ["source"], "the selection list must keep protected nodes disabled during select all");
-  assert.equal(f.calls.some(({ name, config }) => name === "nodePluginList" && config.params.daemonId === "offline"), false);
+  assert.deepEqual(
+    f.state.actionCandidate.value.selectedNodeIds,
+    ["good", "failed", "disabled"],
+    "protected source plugins cannot be selected by default"
+  );
+  assert.deepEqual(
+    f.state.nodeTargetItems.value.filter((item) => item.disabled).map((item) => item.value),
+    ["source"],
+    "the selection list must keep protected nodes disabled during select all"
+  );
+  assert.equal(
+    f.calls.some(
+      ({ name, config }) => name === "nodePluginList" && config.params.daemonId === "offline"
+    ),
+    false
+  );
   f.state.actionCandidate.value.selectedNodeIds = ["good", "failed", "disabled", "source"];
   await f.state.confirmAction();
-  assert.deepEqual(f.writes().map(({ name, config }) => [name, config.params.daemonId]), [
-    ["removeNodePlugin", "good"], ["removeNodePlugin", "failed"],
-    ["removeNodePlugin", "disabled"], ["removePlugin", undefined]
-  ]);
-  assert.equal(f.notices.some(({ color }) => color === "success"), false);
-  assert.match(f.notices.find(({ color }) => color === "error").text, /failed.*node removal failed/);
+  assert.deepEqual(
+    f.writes().map(({ name, config }) => [name, config.params.daemonId]),
+    [
+      ["removeNodePlugin", "good"],
+      ["removeNodePlugin", "failed"],
+      ["removeNodePlugin", "disabled"],
+      ["removePlugin", undefined]
+    ]
+  );
+  assert.equal(
+    f.notices.some(({ color }) => color === "success"),
+    false
+  );
+  assert.match(
+    f.notices.find(({ color }) => color === "error").text,
+    /failed.*node removal failed/
+  );
 });
 
 test("failed node toggle results are reported without blocking the other nodes or the panel", async (t) => {
-  for (const enabled of [true, false]) await t.test(String(enabled), async (t) => {
-    const record = { id: "sample", enabled: !enabled, removable: true };
-    const f = pluginActionFixture(t, { failed: [record], good: [record] });
-    f.handlers.setNodePluginEnabled = async ({ params }) => ({ result: {
-      application: params.daemonId === "failed" ? "failed" : "applied", error: "dispose failed"
-    } });
-    if (enabled) await f.state.toggle(f.plugin, true);
-    else {
-      f.state.toggle(f.plugin, false);
+  for (const enabled of [true, false])
+    await t.test(String(enabled), async (t) => {
+      const record = { id: "sample", enabled: !enabled, removable: true };
+      const f = pluginActionFixture(t, { failed: [record], good: [record] });
+      f.handlers.setNodePluginEnabled = async ({ params }) => ({
+        result: {
+          application: params.daemonId === "failed" ? "failed" : "applied",
+          error: "dispose failed"
+        }
+      });
+      if (enabled) await f.state.toggle(f.plugin, true);
+      else {
+        f.state.toggle(f.plugin, false);
+        await f.state.confirmAction();
+      }
       await f.state.confirmAction();
-    }
-    await f.state.confirmAction();
-    assert.deepEqual(f.writes().map(({ name }) => name), ["setNodePluginEnabled", "setNodePluginEnabled", "setPluginEnabled"]);
-    assert.equal(f.notices.some(({ color }) => color === "success"), false);
-    assert.match(f.notices.find(({ color }) => color === "error").text, /failed.*dispose failed/);
-  });
+      assert.deepEqual(
+        f.writes().map(({ name }) => name),
+        ["setNodePluginEnabled", "setNodePluginEnabled", "setPluginEnabled"]
+      );
+      assert.equal(
+        f.notices.some(({ color }) => color === "success"),
+        false
+      );
+      assert.match(f.notices.find(({ color }) => color === "error").text, /failed.*dispose failed/);
+    });
 });
 
 test("retrying a panel removal does not repeat successful node removals", async (t) => {
   const f = pluginActionFixture(t, { one: [{ id: "sample", enabled: true, removable: true }] });
-  f.handlers.removePlugin = async () => { throw new Error("panel removal failed"); };
+  f.handlers.removePlugin = async () => {
+    throw new Error("panel removal failed");
+  };
   f.state.requestAction(f.plugin, "remove");
   await f.state.confirmAction();
   await f.state.confirmAction();
@@ -1039,26 +1264,34 @@ test("retrying a panel removal does not repeat successful node removals", async 
   assert.equal(f.state.deletingPlugin.value, false);
   f.handlers.removePlugin = async () => ({});
   await f.state.confirmAction();
-  assert.deepEqual(f.writes().map(({ name }) => name), ["removeNodePlugin", "removePlugin", "removePlugin"]);
+  assert.deepEqual(
+    f.writes().map(({ name }) => name),
+    ["removeNodePlugin", "removePlugin", "removePlugin"]
+  );
   assert.equal(f.state.actionConfirmOpen.value, false);
   assert.equal(f.state.nodePickerOpen.value, false);
 });
 
 test("panel actions without a matching node plugin execute after the initial confirmation", async (t) => {
-  for (const action of ["disable", "remove"]) await t.test(action, async (t) => {
-    const f = pluginActionFixture(t, { one: [{ id: "other", enabled: true, removable: true }] });
-    f.state.requestAction(f.plugin, action);
-    assert.deepEqual(f.writes(), []);
-    await f.state.confirmAction();
-    assert.equal(f.state.actionConfirmOpen.value, false);
-    assert.equal(f.state.nodePickerOpen.value, false);
-    assert.deepEqual(f.writes().map(({ name }) => name),
-      [action === "disable" ? "setPluginEnabled" : "removePlugin"]);
-  });
+  for (const action of ["disable", "remove"])
+    await t.test(action, async (t) => {
+      const f = pluginActionFixture(t, { one: [{ id: "other", enabled: true, removable: true }] });
+      f.state.requestAction(f.plugin, action);
+      assert.deepEqual(f.writes(), []);
+      await f.state.confirmAction();
+      assert.equal(f.state.actionConfirmOpen.value, false);
+      assert.equal(f.state.nodePickerOpen.value, false);
+      assert.deepEqual(
+        f.writes().map(({ name }) => name),
+        [action === "disable" ? "setPluginEnabled" : "removePlugin"]
+      );
+    });
   const f = pluginActionFixture(t, { one: [{ id: "sample", enabled: true }] });
   await f.state.toggle(f.plugin, true);
   assert.equal(f.state.actionCandidate.value, null);
-  assert.deepEqual(f.writes(), [{ name: "setPluginEnabled", config: { data: { id: "sample", enabled: true } } }]);
+  assert.deepEqual(f.writes(), [
+    { name: "setPluginEnabled", config: { data: { id: "sample", enabled: true } } }
+  ]);
 });
 
 test("panels without node management and actions in the node scope do not scan other nodes", async (t) => {
@@ -1067,21 +1300,33 @@ test("panels without node management and actions in the node scope do not scan o
   f.state.toggle(f.plugin, false);
   assert.equal(f.state.actionCandidate.value.checkingNodes, false);
   await f.state.confirmAction();
-  assert.equal(f.calls.some(({ name }) => name === "nodeList"), false);
+  assert.equal(
+    f.calls.some(({ name }) => name === "nodeList"),
+    false
+  );
   await f.state.toggle(f.plugin, true);
   assert.equal(f.state.actionConfirmOpen.value, false, "enabling remains immediate");
   assert.equal(f.state.nodePickerOpen.value, false);
 
   f.calls.length = 0;
-  f.state.scope.value = "node";
+  f.state.selectedScope.value = "node";
   f.state.selectedNodeId.value = "one";
   f.state.toggle(f.plugin, false);
   f.state.selectedNodeId.value = "other";
   await f.state.confirmAction();
-  assert.equal(f.calls.some(({ name }) => name === "nodeList"), false);
-  assert.deepEqual(f.writes(), [{ name: "setNodePluginEnabled", config: {
-    params: { daemonId: "one" }, data: { id: "sample", enabled: false }
-  } }]);
+  assert.equal(
+    f.calls.some(({ name }) => name === "nodeList"),
+    false
+  );
+  assert.deepEqual(f.writes(), [
+    {
+      name: "setNodePluginEnabled",
+      config: {
+        params: { daemonId: "one" },
+        data: { id: "sample", enabled: false }
+      }
+    }
+  ]);
 });
 
 test("plugin configuration defaults follow grouped order after loading and preserve explicit selections", async (t) => {
@@ -1093,31 +1338,402 @@ test("plugin configuration defaults follow grouped order after loading and prese
           location: { pathname: "/", search: "" },
           history: { state: null, replaceState() {} }
         };
-        t.after(() => { global.window = originalWindow; });
+        t.after(() => {
+          global.window = originalWindow;
+        });
         const effect = vue.effectScope();
         t.after(() => effect.stop());
         const inventory = deferred();
         const groups = deferred();
-        const records = ["first", "third", "second"].map(id => ({ id, enabled: true }));
+        const records = ["first", "third", "second"].map((id) => ({ id, enabled: true }));
         const grouped = [
           { id: "empty", name: "Empty", pluginIds: ["missing"] },
           { id: "top", name: "Top", pluginIds: ["second", "third"] },
           { id: "bottom", name: "Bottom", pluginIds: ["first"] }
         ];
-        const readSchema = async ({ params }) => ({ value: {
-          id: params.id, fields: [], values: {}
-        } });
+        const readSchema = async ({ params }) => ({
+          value: {
+            id: params.id,
+            fields: [],
+            values: {}
+          }
+        });
         const pluginId = scenario === "preferred-plugin" ? "second" : undefined;
-        const state = effect.run(() => setupSfc("plugins/config/panel/src/components/ConfigPage.vue", {
+        const state = effect.run(() =>
+          setupSfc("plugins/config/panel/src/components/ConfigPage.vue", {
+            vue: { ...vue, onMounted() {}, onUnmounted() {} },
+            "vue-router": {
+              useRoute: () => ({
+                path: "/plugins/config",
+                query: {
+                  scope: targetScope,
+                  daemonId: targetScope === "node" ? "node" : undefined,
+                  plugin: pluginId
+                }
+              }),
+              useRouter: () => ({
+                resolve: ({ query }) => ({
+                  fullPath: `/plugins/config?${new URLSearchParams(query)}`
+                })
+              }),
+              onBeforeRouteLeave() {}
+            },
+            "@/plugin/context": { ctx: { plugins: { loaded: [] } } },
+            "@/tools/validator": { getValidatorErrorMsg: String },
+            "@/tools/vuetifyToast": { message: { success() {}, error: assert.fail } },
+            "./SettingsPages.vue": {},
+            "../api": {
+              pluginRemarkList: () => ({ execute: async () => ({ value: [] }) }),
+              pluginGroupList: () => ({
+                execute: () =>
+                  targetScope === "panel" ? groups.promise : Promise.resolve({ value: [] })
+              }),
+              nodePluginGroupList: () => ({ execute: () => groups.promise }),
+              pluginList: () => ({ execute: () => inventory.promise }),
+              nodeList: () => ({
+                execute: async () => ({ value: [{ uuid: "node", available: true }] })
+              }),
+              nodePluginList: () => ({ execute: () => inventory.promise }),
+              pluginSettings: () => ({ execute: readSchema }),
+              nodePluginSettings: () => ({ execute: readSchema })
+            }
+          })
+        );
+        const pendingLoad = targetScope === "panel" ? state.load() : undefined;
+        await vue.nextTick();
+        if (scenario === "groups-first") groups.resolve({ value: grouped });
+        else inventory.resolve({ value: records });
+        await settle();
+        assert.equal(
+          state.currentId.value,
+          "",
+          "the default must wait for both groups and inventory"
+        );
+        groups.resolve({ value: grouped });
+        inventory.resolve({ value: records });
+        await pendingLoad;
+        await settle();
+        assert.equal(
+          state.pluginGroups.value.find((group) => group.plugins.length).plugins[0].id,
+          "third"
+        );
+        assert.equal(state.currentId.value, pluginId || "third");
+        assert.equal(state.schema.value.id, pluginId || "third");
+
+        state.selectPlugin("first");
+        state.pluginGroupsState.value = [{ id: "top", name: "Top", pluginIds: ["second"] }];
+        await settle();
+        assert.equal(
+          state.currentId.value,
+          "first",
+          "regrouping must preserve a valid user selection"
+        );
+        const list = targetScope === "panel" ? state.plugins : state.nodePlugins;
+        list.value = records.filter((plugin) => plugin.id !== "first");
+        await settle();
+        assert.equal(
+          state.currentId.value,
+          "second",
+          "a removed selection must fall back to the first visible plugin"
+        );
+        list.value = [];
+        state.pluginGroupsState.value = [];
+        await settle();
+        assert.equal(state.currentId.value, "");
+        list.value = [records[0]];
+        await settle();
+        assert.equal(
+          state.currentId.value,
+          "first",
+          "ungrouped plugins must also supply the default"
+        );
+      });
+    }
+  }
+});
+
+test("plugin configuration opens its save tooltip for unsaved edits and preserves edits across saves", async (t) => {
+  for (const targetScope of ["panel", "node"])
+    await t.test(targetScope, async (t) => {
+      const originalWindow = global.window;
+      const originalCustomEvent = global.CustomEvent;
+      const settingsEvents = [];
+      global.window = {
+        dispatchEvent: (event) => {
+          settingsEvents.push(event.detail.id);
+          return true;
+        }
+      };
+      global.CustomEvent = class {
+        constructor(type, { detail }) {
+          this.type = type;
+          this.detail = detail;
+        }
+      };
+      t.after(() => {
+        global.window = originalWindow;
+        global.CustomEvent = originalCustomEvent;
+      });
+      const effect = vue.effectScope();
+      const isPhone = vue.ref(false);
+      t.after(() => effect.stop());
+      t.mock.method(console, "error", () => {});
+      const errors = [];
+      const writes = [];
+      let stored = { name: "original", entries: [{ name: "first" }] };
+      let failSave = false;
+      let pendingSave;
+      const inventory = [
+        { id: "settings", enabled: true },
+        { id: "other", enabled: true }
+      ];
+      const read = async ({ params }) => ({
+        value: {
+          id: params.id,
+          fields: [{ key: "name", type: "string", title: "Name" }],
+          values: JSON.parse(JSON.stringify(stored))
+        }
+      });
+      const write = async (config) => {
+        writes.push(config);
+        if (failSave) throw new Error("save failed");
+        if (pendingSave) await pendingSave.promise;
+        stored = JSON.parse(JSON.stringify(config.data));
+        return { value: { saved: true, application: "applied" } };
+      };
+      const state = effect.run(() =>
+        setupSfc(
+          "plugins/config/panel/src/components/ConfigPage.vue",
+          {
+            vue: { ...vue, onMounted() {}, onUnmounted() {} },
+            "@/hooks/useScreen": { useScreen: () => ({ isPhone }) },
+            "vue-router": {
+              useRoute: () => ({ path: "/desktop", query: {} }),
+              useRouter: () => ({}),
+              onBeforeRouteLeave() {}
+            },
+            "@/plugin/context": { ctx: { plugins: { loaded: [] } } },
+            "@/tools/validator": { getValidatorErrorMsg: (error) => error.message },
+            "@/tools/vuetifyToast": {
+              message: {
+                success() {},
+                error: (text) => errors.push(text),
+                warning: () => assert.fail("the save reminder must use the button tooltip")
+              }
+            },
+            "./SettingsPages.vue": {},
+            "../api": {
+              pluginRemarkList: () => ({ execute: async () => ({ value: [] }) }),
+              pluginGroupList: () => ({ execute: async () => ({ value: [] }) }),
+              nodePluginGroupList: () => ({ execute: async () => ({ value: [] }) }),
+              nodeList: () => ({
+                execute: async () => ({ value: [{ uuid: "node", available: true }] })
+              }),
+              nodePluginList: () => ({ execute: async () => ({ value: inventory }) }),
+              pluginSettings: () => ({ execute: read }),
+              nodePluginSettings: () => ({ execute: read }),
+              updatePluginSettings: () => ({ execute: write }),
+              updateNodePluginSettings: () => ({ execute: write })
+            }
+          },
+          { scope: targetScope, daemonId: targetScope === "node" ? "node" : undefined }
+        )
+      );
+      state.plugins.value = inventory;
+      await settle();
+      assert.equal(state.schema.value.id, "settings");
+      const fields = [
+        { key: "name", type: "string", title: "Name" },
+        { key: "entries", type: "list", title: "Entries" }
+      ];
+      const form = setupSfc(
+        "plugins/config/panel/src/components/SchemaForm.vue",
+        {
+          "@/plugin/context": { usePluginService: () => undefined },
+          "@/config/router": { router: {} }
+        },
+        {
+          fields,
+          get values() {
+            return state.schema.value?.values || {};
+          },
+          get savedValues() {
+            return state.savedValues.value;
+          }
+        }
+      );
+      const modified = () => fields.map((field) => form.fieldModified(field));
+      assert.deepEqual(modified(), [false, false]);
+      assert.equal(state.settingsDirty.value, false);
+      assert.equal(
+        state.saveTooltipOpen.value,
+        false,
+        "loading the form must not show a save reminder"
+      );
+      state.saveTooltipOpen.value = true;
+      assert.equal(
+        state.saveTooltipOpen.value,
+        true,
+        "the regular hover/focus tooltip must still open"
+      );
+      state.saveTooltipOpen.value = false;
+      assert.equal(state.saveTooltipOpen.value, false);
+
+      state.schema.value.values.entries[0].name = "edited";
+      await vue.nextTick();
+      assert.deepEqual(modified(), [false, true]);
+      assert.equal(
+        state.savedValues.value.entries[0].name,
+        "first",
+        "nested edits must not mutate the saved baseline"
+      );
+      assert.equal(state.settingsDirty.value, true);
+      assert.equal(
+        state.saveTooltipOpen.value,
+        true,
+        "editing must open the tooltip without hovering"
+      );
+      state.saveTooltipOpen.value = false;
+      assert.equal(
+        state.saveTooltipOpen.value,
+        true,
+        "mouseleave must not hide the unsaved reminder"
+      );
+      isPhone.value = true;
+      state.sidebarOpen.value = true;
+      await vue.nextTick();
+      assert.equal(
+        state.saveTooltipOpen.value,
+        false,
+        "the reminder must not overlay the mobile sidebar"
+      );
+      state.selectPlugin("settings");
+      assert.equal(
+        state.sidebarOpen.value,
+        false,
+        "selecting the current plugin must also close the sidebar"
+      );
+      assert.equal(
+        state.settingsDirty.value,
+        true,
+        "reselecting the plugin must preserve its edits"
+      );
+      assert.equal(state.saveTooltipOpen.value, true);
+      state.sidebarOpen.value = true;
+      isPhone.value = false;
+      await vue.nextTick();
+      assert.equal(
+        state.sidebarOpen.value,
+        false,
+        "switching to the desktop layout must reset the drawer"
+      );
+      state.toggleTooltipOpen.value = true;
+      assert.equal(state.saveTooltipOpen.value, false, "the toggle tooltip must take priority");
+      state.deleteTooltipOpen.value = true;
+      state.toggleTooltipOpen.value = false;
+      assert.equal(
+        state.saveTooltipOpen.value,
+        false,
+        "the delete tooltip must keep the reminder hidden"
+      );
+      state.deleteTooltipOpen.value = false;
+      assert.equal(
+        state.saveTooltipOpen.value,
+        true,
+        "the reminder must return after other tooltips close"
+      );
+      state.schema.value.values.entries.push({ name: "second" });
+      await vue.nextTick();
+      assert.equal(state.saveTooltipOpen.value, true);
+      state.schema.value.values.entries = [{ name: "first" }];
+      await vue.nextTick();
+      assert.deepEqual(modified(), [false, false]);
+      assert.equal(state.settingsDirty.value, false);
+      assert.equal(state.saveTooltipOpen.value, false);
+
+      state.schema.value.values.name = "saved";
+      await vue.nextTick();
+      failSave = true;
+      await state.saveSettings();
+      assert.deepEqual(errors, ["save failed"]);
+      assert.deepEqual(modified(), [true, false]);
+      assert.deepEqual(settingsEvents, []);
+      assert.equal(state.settingsDirty.value, true, "a failed save must retain the unsaved state");
+      assert.equal(state.saveTooltipOpen.value, true);
+      failSave = false;
+      await state.saveSettings();
+      await vue.nextTick();
+      assert.deepEqual(settingsEvents, targetScope === "panel" ? ["settings"] : []);
+      assert.deepEqual(modified(), [false, false]);
+      assert.equal(state.settingsDirty.value, false);
+      assert.equal(state.saveTooltipOpen.value, false, "saving must close the reminder");
+
+      state.schema.value.values.name = "submitted";
+      await vue.nextTick();
+      pendingSave = deferred();
+      const saving = state.saveSettings();
+      state.schema.value.values.name = "newer edit";
+      pendingSave.resolve();
+      await saving;
+      await vue.nextTick();
+      assert.equal(
+        writes.at(-1).data.name,
+        "submitted",
+        "the request must use the submitted snapshot"
+      );
+      assert.equal(state.schema.value.values.name, "newer edit");
+      assert.equal(state.savedValues.value.name, "submitted");
+      assert.deepEqual(modified(), [true, false]);
+      assert.equal(state.settingsDirty.value, true, "edits made during a save must remain unsaved");
+      assert.equal(state.saveTooltipOpen.value, true);
+      pendingSave = undefined;
+      await state.saveSettings();
+      await vue.nextTick();
+      assert.equal(state.settingsDirty.value, false);
+
+      state.schema.value.values.name = "discarded";
+      await vue.nextTick();
+      state.toggleTooltipOpen.value = true;
+      state.deleteTooltipOpen.value = true;
+      isPhone.value = true;
+      state.sidebarOpen.value = true;
+      state.selectPlugin("other");
+      await settle();
+      assert.equal(state.currentId.value, "other");
+      assert.deepEqual(modified(), [false, false]);
+      assert.equal(
+        state.sidebarOpen.value,
+        false,
+        "choosing another plugin must close the sidebar"
+      );
+      assert.equal(
+        state.settingsDirty.value,
+        false,
+        "another plugin must receive a fresh baseline"
+      );
+      assert.equal(state.saveTooltipOpen.value, false);
+      assert.equal(state.toggleTooltipOpen.value, false);
+      assert.equal(state.deleteTooltipOpen.value, false);
+    });
+});
+
+test("desktop plugin configuration loads each window's node without changing the desktop route", async (t) => {
+  const route = vue.reactive({
+    path: "/desktop",
+    query: { scope: "node", daemonId: "route-node" }
+  });
+  const requests = [];
+  const createPage = (props) => {
+    const scope = vue.effectScope();
+    t.after(() => scope.stop());
+    return scope.run(() =>
+      setupSfc(
+        "plugins/config/panel/src/components/ConfigPage.vue",
+        {
           vue: { ...vue, onMounted() {}, onUnmounted() {} },
           "vue-router": {
-            useRoute: () => ({ path: "/plugins/config", query: {
-              scope: targetScope, daemonId: targetScope === "node" ? "node" : undefined,
-              plugin: pluginId
-            } }),
-            useRouter: () => ({ resolve: ({ query }) => ({
-              fullPath: `/plugins/config?${new URLSearchParams(query)}`
-            }) }),
+            useRoute: () => route,
+            useRouter: () => ({ resolve: () => assert.fail("desktop route must stay unchanged") }),
             onBeforeRouteLeave() {}
           },
           "@/plugin/context": { ctx: { plugins: { loaded: [] } } },
@@ -1126,260 +1742,29 @@ test("plugin configuration defaults follow grouped order after loading and prese
           "./SettingsPages.vue": {},
           "../api": {
             pluginRemarkList: () => ({ execute: async () => ({ value: [] }) }),
-            pluginGroupList: () => ({ execute: () => targetScope === "panel"
-              ? groups.promise : Promise.resolve({ value: [] }) }),
-            nodePluginGroupList: () => ({ execute: () => groups.promise }),
-            pluginList: () => ({ execute: () => inventory.promise }),
-            nodeList: () => ({ execute: async () => ({ value: [{ uuid: "node", available: true }] }) }),
-            nodePluginList: () => ({ execute: () => inventory.promise }),
-            pluginSettings: () => ({ execute: readSchema }),
-            nodePluginSettings: () => ({ execute: readSchema })
+            pluginGroupList: () => ({ execute: async () => ({ value: [] }) }),
+            nodePluginGroupList: () => ({ execute: async () => ({ value: [] }) }),
+            nodeList: () => ({
+              execute: async () => ({
+                value: ["one", "two", "route-node"].map((uuid) => ({ uuid, available: true }))
+              })
+            }),
+            nodePluginList: () => ({
+              execute: async ({ params }) => {
+                requests.push(params.daemonId);
+                return { value: [{ id: "settings" }] };
+              }
+            }),
+            nodePluginSettings: () => ({
+              execute: async ({ params }) => ({
+                value: { id: params.id, fields: [], values: { daemonId: params.daemonId } }
+              })
+            })
           }
-        }));
-        const pendingLoad = targetScope === "panel" ? state.load() : undefined;
-        await vue.nextTick();
-        if (scenario === "groups-first") groups.resolve({ value: grouped });
-        else inventory.resolve({ value: records });
-        await settle();
-        assert.equal(state.currentId.value, "", "the default must wait for both groups and inventory");
-        groups.resolve({ value: grouped });
-        inventory.resolve({ value: records });
-        await pendingLoad;
-        await settle();
-        assert.equal(state.pluginGroups.value.find(group => group.plugins.length).plugins[0].id, "third");
-        assert.equal(state.currentId.value, pluginId || "third");
-        assert.equal(state.schema.value.id, pluginId || "third");
-
-        state.selectPlugin("first");
-        state.pluginGroupsState.value = [{ id: "top", name: "Top", pluginIds: ["second"] }];
-        await settle();
-        assert.equal(state.currentId.value, "first", "regrouping must preserve a valid user selection");
-        const list = targetScope === "panel" ? state.plugins : state.nodePlugins;
-        list.value = records.filter(plugin => plugin.id !== "first");
-        await settle();
-        assert.equal(state.currentId.value, "second", "a removed selection must fall back to the first visible plugin");
-        list.value = [];
-        state.pluginGroupsState.value = [];
-        await settle();
-        assert.equal(state.currentId.value, "");
-        list.value = [records[0]];
-        await settle();
-        assert.equal(state.currentId.value, "first", "ungrouped plugins must also supply the default");
-      });
-    }
-  }
-});
-
-test("plugin configuration opens its save tooltip for unsaved edits and preserves edits across saves", async (t) => {
-  for (const targetScope of ["panel", "node"]) await t.test(targetScope, async (t) => {
-    const originalWindow = global.window;
-    const originalCustomEvent = global.CustomEvent;
-    const settingsEvents = [];
-    global.window = { dispatchEvent: event => { settingsEvents.push(event.detail.id); return true; } };
-    global.CustomEvent = class {
-      constructor(type, { detail }) { this.type = type; this.detail = detail; }
-    };
-    t.after(() => {
-      global.window = originalWindow;
-      global.CustomEvent = originalCustomEvent;
-    });
-    const effect = vue.effectScope();
-    const isPhone = vue.ref(false);
-    t.after(() => effect.stop());
-    t.mock.method(console, "error", () => {});
-    const errors = [];
-    const writes = [];
-    let stored = { name: "original", entries: [{ name: "first" }] };
-    let failSave = false;
-    let pendingSave;
-    const inventory = [{ id: "settings", enabled: true }, { id: "other", enabled: true }];
-    const read = async ({ params }) => ({ value: {
-      id: params.id,
-      fields: [{ key: "name", type: "string", title: "Name" }],
-      values: JSON.parse(JSON.stringify(stored))
-    } });
-    const write = async (config) => {
-      writes.push(config);
-      if (failSave) throw new Error("save failed");
-      if (pendingSave) await pendingSave.promise;
-      stored = JSON.parse(JSON.stringify(config.data));
-      return { value: { saved: true, application: "applied" } };
-    };
-    const state = effect.run(() => setupSfc("plugins/config/panel/src/components/ConfigPage.vue", {
-      vue: { ...vue, onMounted() {}, onUnmounted() {} },
-      "@/hooks/useScreen": { useScreen: () => ({ isPhone }) },
-      "vue-router": {
-        useRoute: () => ({ path: "/desktop", query: {} }),
-        useRouter: () => ({}),
-        onBeforeRouteLeave() {}
-      },
-      "@/plugin/context": { ctx: { plugins: { loaded: [] } } },
-      "@/tools/validator": { getValidatorErrorMsg: (error) => error.message },
-      "@/tools/vuetifyToast": { message: {
-        success() {},
-        error: (text) => errors.push(text),
-        warning: () => assert.fail("the save reminder must use the button tooltip")
-      } },
-      "./SettingsPages.vue": {},
-      "../api": {
-        pluginRemarkList: () => ({ execute: async () => ({ value: [] }) }),
-        pluginGroupList: () => ({ execute: async () => ({ value: [] }) }),
-        nodePluginGroupList: () => ({ execute: async () => ({ value: [] }) }),
-        nodeList: () => ({ execute: async () => ({ value: [{ uuid: "node", available: true }] }) }),
-        nodePluginList: () => ({ execute: async () => ({ value: inventory }) }),
-        pluginSettings: () => ({ execute: read }),
-        nodePluginSettings: () => ({ execute: read }),
-        updatePluginSettings: () => ({ execute: write }),
-        updateNodePluginSettings: () => ({ execute: write })
-      }
-    }, { scope: targetScope, daemonId: targetScope === "node" ? "node" : undefined }));
-    state.plugins.value = inventory;
-    await settle();
-    assert.equal(state.schema.value.id, "settings");
-    const fields = [
-      { key: "name", type: "string", title: "Name" },
-      { key: "entries", type: "list", title: "Entries" }
-    ];
-    const form = setupSfc("plugins/config/panel/src/components/SchemaForm.vue", {
-      "@/plugin/context": { usePluginService: () => undefined },
-      "@/config/router": { router: {} }
-    }, {
-      fields,
-      get values() { return state.schema.value?.values || {}; },
-      get savedValues() { return state.savedValues.value; }
-    });
-    const modified = () => fields.map(field => form.fieldModified(field));
-    assert.deepEqual(modified(), [false, false]);
-    assert.equal(state.settingsDirty.value, false);
-    assert.equal(state.saveTooltipOpen.value, false, "loading the form must not show a save reminder");
-    state.saveTooltipOpen.value = true;
-    assert.equal(state.saveTooltipOpen.value, true, "the regular hover/focus tooltip must still open");
-    state.saveTooltipOpen.value = false;
-    assert.equal(state.saveTooltipOpen.value, false);
-
-    state.schema.value.values.entries[0].name = "edited";
-    await vue.nextTick();
-    assert.deepEqual(modified(), [false, true]);
-    assert.equal(state.savedValues.value.entries[0].name, "first", "nested edits must not mutate the saved baseline");
-    assert.equal(state.settingsDirty.value, true);
-    assert.equal(state.saveTooltipOpen.value, true, "editing must open the tooltip without hovering");
-    state.saveTooltipOpen.value = false;
-    assert.equal(state.saveTooltipOpen.value, true, "mouseleave must not hide the unsaved reminder");
-    isPhone.value = true;
-    state.sidebarOpen.value = true;
-    await vue.nextTick();
-    assert.equal(state.saveTooltipOpen.value, false, "the reminder must not overlay the mobile sidebar");
-    state.selectPlugin("settings");
-    assert.equal(state.sidebarOpen.value, false, "selecting the current plugin must also close the sidebar");
-    assert.equal(state.settingsDirty.value, true, "reselecting the plugin must preserve its edits");
-    assert.equal(state.saveTooltipOpen.value, true);
-    state.sidebarOpen.value = true;
-    isPhone.value = false;
-    await vue.nextTick();
-    assert.equal(state.sidebarOpen.value, false, "switching to the desktop layout must reset the drawer");
-    state.toggleTooltipOpen.value = true;
-    assert.equal(state.saveTooltipOpen.value, false, "the toggle tooltip must take priority");
-    state.deleteTooltipOpen.value = true;
-    state.toggleTooltipOpen.value = false;
-    assert.equal(state.saveTooltipOpen.value, false, "the delete tooltip must keep the reminder hidden");
-    state.deleteTooltipOpen.value = false;
-    assert.equal(state.saveTooltipOpen.value, true, "the reminder must return after other tooltips close");
-    state.schema.value.values.entries.push({ name: "second" });
-    await vue.nextTick();
-    assert.equal(state.saveTooltipOpen.value, true);
-    state.schema.value.values.entries = [{ name: "first" }];
-    await vue.nextTick();
-    assert.deepEqual(modified(), [false, false]);
-    assert.equal(state.settingsDirty.value, false);
-    assert.equal(state.saveTooltipOpen.value, false);
-
-    state.schema.value.values.name = "saved";
-    await vue.nextTick();
-    failSave = true;
-    await state.saveSettings();
-    assert.deepEqual(errors, ["save failed"]);
-    assert.deepEqual(modified(), [true, false]);
-    assert.deepEqual(settingsEvents, []);
-    assert.equal(state.settingsDirty.value, true, "a failed save must retain the unsaved state");
-    assert.equal(state.saveTooltipOpen.value, true);
-    failSave = false;
-    await state.saveSettings();
-    await vue.nextTick();
-    assert.deepEqual(settingsEvents, targetScope === "panel" ? ["settings"] : []);
-    assert.deepEqual(modified(), [false, false]);
-    assert.equal(state.settingsDirty.value, false);
-    assert.equal(state.saveTooltipOpen.value, false, "saving must close the reminder");
-
-    state.schema.value.values.name = "submitted";
-    await vue.nextTick();
-    pendingSave = deferred();
-    const saving = state.saveSettings();
-    state.schema.value.values.name = "newer edit";
-    pendingSave.resolve();
-    await saving;
-    await vue.nextTick();
-    assert.equal(writes.at(-1).data.name, "submitted", "the request must use the submitted snapshot");
-    assert.equal(state.schema.value.values.name, "newer edit");
-    assert.equal(state.savedValues.value.name, "submitted");
-    assert.deepEqual(modified(), [true, false]);
-    assert.equal(state.settingsDirty.value, true, "edits made during a save must remain unsaved");
-    assert.equal(state.saveTooltipOpen.value, true);
-    pendingSave = undefined;
-    await state.saveSettings();
-    await vue.nextTick();
-    assert.equal(state.settingsDirty.value, false);
-
-    state.schema.value.values.name = "discarded";
-    await vue.nextTick();
-    state.toggleTooltipOpen.value = true;
-    state.deleteTooltipOpen.value = true;
-    isPhone.value = true;
-    state.sidebarOpen.value = true;
-    state.selectPlugin("other");
-    await settle();
-    assert.equal(state.currentId.value, "other");
-    assert.deepEqual(modified(), [false, false]);
-    assert.equal(state.sidebarOpen.value, false, "choosing another plugin must close the sidebar");
-    assert.equal(state.settingsDirty.value, false, "another plugin must receive a fresh baseline");
-    assert.equal(state.saveTooltipOpen.value, false);
-    assert.equal(state.toggleTooltipOpen.value, false);
-    assert.equal(state.deleteTooltipOpen.value, false);
-  });
-});
-
-test("desktop plugin configuration loads each window's node without changing the desktop route", async (t) => {
-  const route = vue.reactive({ path: "/desktop", query: { scope: "node", daemonId: "route-node" } });
-  const requests = [];
-  const createPage = (props) => {
-    const scope = vue.effectScope();
-    t.after(() => scope.stop());
-    return scope.run(() => setupSfc("plugins/config/panel/src/components/ConfigPage.vue", {
-      vue: { ...vue, onMounted() {}, onUnmounted() {} },
-      "vue-router": {
-        useRoute: () => route,
-        useRouter: () => ({ resolve: () => assert.fail("desktop route must stay unchanged") }),
-        onBeforeRouteLeave() {}
-      },
-      "@/plugin/context": { ctx: { plugins: { loaded: [] } } },
-      "@/tools/validator": { getValidatorErrorMsg: String },
-      "@/tools/vuetifyToast": { message: { success() {}, error: assert.fail } },
-      "./SettingsPages.vue": {},
-      "../api": {
-        pluginRemarkList: () => ({ execute: async () => ({ value: [] }) }),
-        pluginGroupList: () => ({ execute: async () => ({ value: [] }) }),
-        nodePluginGroupList: () => ({ execute: async () => ({ value: [] }) }),
-        nodeList: () => ({ execute: async () => ({ value: ["one", "two", "route-node"].map(
-          (uuid) => ({ uuid, available: true })
-        ) }) }),
-        nodePluginList: () => ({ execute: async ({ params }) => {
-          requests.push(params.daemonId);
-          return { value: [{ id: "settings" }] };
-        } }),
-        nodePluginSettings: () => ({ execute: async ({ params }) => ({
-          value: { id: params.id, fields: [], values: { daemonId: params.daemonId } }
-        }) })
-      }
-    }, props));
+        },
+        props
+      )
+    );
   };
   const first = createPage({ scope: "node", daemonId: "one" });
   const second = createPage({ scope: "node", daemonId: "two" });
@@ -1529,7 +1914,9 @@ test("terminal setup is shared and an unmounted terminal cannot create a late so
       })
     },
     "@/stores/useAppConfigStore": { useAppConfigStore: () => ({ hasBgImage: vue.ref(false) }) },
-    "@elementspanel/epanel-plugin-console/hooks/useDesktopWindowActivity": { useDesktopWindowActivity: () => ({ visible: vue.ref(true), interacting: vue.ref(false) }) },
+    "@elementspanel/epanel-plugin-console/hooks/useDesktopWindowActivity": {
+      useDesktopWindowActivity: () => ({ visible: vue.ref(true), interacting: vue.ref(false) })
+    },
     "@/tools/protocol": {},
     "@/types/const": { INSTANCE_STATUS_CODE: {} },
     "@xterm/addon-canvas": {},
@@ -1639,7 +2026,10 @@ test("desktop node refresh ignores stale results, validates ports and reports fa
   Object.assign(state.form, { ip: "example.com", port: 70000, apiKey: "key" });
   await state.saveNode();
   assert.equal(writes.length, 0);
-  assert.equal(state.formError.value, "TXT_CODE_COMMON_THE_PORT_NUMBER_MUST_BE_WITHIN_THE_RANGE_OF_0_65535");
+  assert.equal(
+    state.formError.value,
+    "TXT_CODE_COMMON_THE_PORT_NUMBER_MUST_BE_WITHIN_THE_RANGE_OF_0_65535"
+  );
   state.confirmDelete(node);
   await state.executeDelete();
   assert.equal(state.showDeleteConfirm.value, true);
@@ -1650,18 +2040,35 @@ test("desktop node refresh ignores stale results, validates ports and reports fa
 for (const layout of ["normal", "desktop"]) {
   test(`${layout} mod downloads keep the selected file's MCIM fallback for queued and immediate downloads`, async () => {
     const requests = [];
-    const { useModSearch } = load(`plugins/instance/panel/src/mod/${layout}/mod-manager/useModSearch.ts`, {
-      "@/lang/i18n": i18n,
-      "@vueuse/core": { useLocalStorage: (_key, value) => vue.ref(value) },
-      "@/tools/vuetifyToast": { message: { success() {}, error(error) { assert.fail(error); } } },
-      "@/tools/vuetifyModal": { Modal: {} },
-      "vuetify/components": {},
-      "../notice": { notifyDesktop() {} },
-      "../../api": {
-        downloadModApi: () => ({ execute: async (config) => requests.push(config) })
+    const { useModSearch } = load(
+      `plugins/instance/panel/src/mod/${layout}/mod-manager/useModSearch.ts`,
+      {
+        "@/lang/i18n": i18n,
+        "@vueuse/core": { useLocalStorage: (_key, value) => vue.ref(value) },
+        "@/tools/vuetifyToast": {
+          message: {
+            success() {},
+            error(error) {
+              assert.fail(error);
+            }
+          }
+        },
+        "@/tools/vuetifyModal": { Modal: {} },
+        "vuetify/components": {},
+        "../notice": { notifyDesktop() {} },
+        "../../api": {
+          downloadModApi: () => ({ execute: async (config) => requests.push(config) })
+        }
       }
-    });
-    const state = useModSearch("instance", "node", () => [], async () => {}, vue.ref(["mods"]), layout === "desktop");
+    );
+    const state = useModSearch(
+      "instance",
+      "node",
+      () => [],
+      async () => {},
+      vue.ref(["mods"]),
+      layout === "desktop"
+    );
     state.selectedMod.value = { id: "project", title: "Example", source: "Modrinth" };
     const primary = {
       primary: true,
@@ -1670,7 +2077,8 @@ for (const layout of ["normal", "desktop"]) {
       fallbackUrl: "https://mod.mcimirror.top/data/project/versions/v1/mod.jar"
     };
     const task = await state.onDownload({
-      id: "v1", project_type: "mod",
+      id: "v1",
+      project_type: "mod",
       files: [{ url: "https://cdn.modrinth.com/data/project/versions/v1/mod-sources.jar" }, primary]
     });
     assert.equal(task.data.url, primary.url);
@@ -1682,10 +2090,16 @@ for (const layout of ["normal", "desktop"]) {
     assert.equal(requests[0].data.fallbackUrl, primary.fallbackUrl);
 
     state.selectedMod.value = { id: "123", source: "SpigotMC" };
-    const spigot = await state.onDownload({ files: [
-      { primary: true, filename: "plugin.jar", url: "https://api.spiget.org/v2/resources/123/download" },
-      { url: "https://cdn.spiget.org/file/123.jar" }
-    ] });
+    const spigot = await state.onDownload({
+      files: [
+        {
+          primary: true,
+          filename: "plugin.jar",
+          url: "https://api.spiget.org/v2/resources/123/download"
+        },
+        { url: "https://cdn.spiget.org/file/123.jar" }
+      ]
+    });
     assert.equal(spigot.data.fallbackUrl, "https://cdn.spiget.org/file/123.jar");
   });
 }
@@ -1696,20 +2110,46 @@ test("editing node connection details preserves plugin settings and a blank API 
     "../../hooks/useRemoteNode": {
       useRemoteNode: () => ({
         updateNode: async (uuid, data) => writes.push({ uuid, data }),
-        addNode() {}, deleteNode() {}
+        addNode() {},
+        deleteNode() {}
       })
     },
-    "@/tools/validator": { isLocalNetworkIP: () => false, getValidatorErrorMsg() {}, reportErrorMsg(error) { throw error; } },
+    "@/tools/validator": {
+      isLocalNetworkIP: () => false,
+      getValidatorErrorMsg() {},
+      reportErrorMsg(error) {
+        throw error;
+      }
+    },
     "@/tools/vuetifyToast": { message: { success() {} } },
     "@/tools/vuetifyModal": { Modal: {} }
   });
-  state.openDialog({
-    uuid: "node", ip: "example.com", port: 24444, prefix: "/daemon", remarks: "Existing",
-    apiKey: "private", available: true,
-    config: { port: 25565, uploadSpeedRate: 128, outputBufferSize: 1024, enableSoftShutdown: false },
-    remoteMappings: [{ from: {}, to: {} }]
-  }, "node");
-  const expected = { ip: "example.com", port: 24444, prefix: "/daemon", remarks: "Existing", apiKey: "" };
+  state.openDialog(
+    {
+      uuid: "node",
+      ip: "example.com",
+      port: 24444,
+      prefix: "/daemon",
+      remarks: "Existing",
+      apiKey: "private",
+      available: true,
+      config: {
+        port: 25565,
+        uploadSpeedRate: 128,
+        outputBufferSize: 1024,
+        enableSoftShutdown: false
+      },
+      remoteMappings: [{ from: {}, to: {} }]
+    },
+    "node"
+  );
+  const expected = {
+    ip: "example.com",
+    port: 24444,
+    prefix: "/daemon",
+    remarks: "Existing",
+    apiKey: ""
+  };
   assert.deepEqual({ ...state.dialog.data }, expected);
   const originalTimeout = global.setTimeout;
   global.setTimeout = () => 0; // Do not reload the browser after the successful save.

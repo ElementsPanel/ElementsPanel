@@ -15,7 +15,10 @@ export default class DockerStartCommand extends AbsStartCommand {
       instance.config.ie = "utf-8";
       instance.config.oe = "utf-8";
     }
-    if (!instance.hasCwdPath()) throw new StartupDockerProcessError($t("TXT_CODE_COMMON_THE_WORKING_DIRECTORY_OR_STARTUP_COMMAND_CANNOT_BE_EMPTY"));
+    if (!instance.hasCwdPath())
+      throw new StartupDockerProcessError(
+        $t("TXT_CODE_COMMON_THE_WORKING_DIRECTORY_OR_STARTUP_COMMAND_CANNOT_BE_EMPTY")
+      );
     if (!fs.existsSync(instance.absoluteCwdPath())) fs.mkdirpSync(instance.absoluteCwdPath());
 
     const processAdapter = new DockerProcessAdapter(new SetupDockerContainer(instance));

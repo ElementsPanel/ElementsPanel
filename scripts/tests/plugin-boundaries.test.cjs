@@ -238,13 +238,15 @@ test("panel instance permission errors translate without undeclared service warn
   ctx.set("settings", {});
   ctx.set("websocket", {});
   const runtime = load("plugins/instance/panel/src/backend/runtime.ts");
-  ctx.plugin(load("plugins/instance/panel/src/backend/index.ts", {
-    "./terminal": { apply() {} },
-    "./backup": { apply() {} },
-    "./monitor": { apply() {} },
-    "./runtime": runtime,
-    "../runtime": runtime
-  }));
+  ctx.plugin(
+    load("plugins/instance/panel/src/backend/index.ts", {
+      "./terminal": { apply() {} },
+      "./backup": { apply() {} },
+      "./monitor": { apply() {} },
+      "./runtime": runtime,
+      "../runtime": runtime
+    })
+  );
   await ctx.start();
   const request = {
     path: "/api/protected_schedule/",
@@ -292,8 +294,10 @@ test("panel runtime retains audit records across instance monitoring unload and 
   ctx.plugin(load("plugins/server/panel/src/backend/koa.ts").KoaService, app);
   ctx.plugin(runtime);
   ctx.set("websocket", {});
-  const remoteService = { services: { services: new Map(), count: () => ({ available: 0, total: 0 }) } };
-  ctx.plugin({ name: "node", apply: scope => scope.set("remote", remoteService) });
+  const remoteService = {
+    services: { services: new Map(), count: () => ({ available: 0, total: 0 }) }
+  };
+  ctx.plugin({ name: "node", apply: (scope) => scope.set("remote", remoteService) });
   const emptyRouter = () => new (panelRequire("@koa/router"))();
   const instancePlugin = load("plugins/instance/panel/src/backend/index.ts", {
     "mcsmanager-common": common,
@@ -395,7 +399,12 @@ test("daemon monitoring and instance capabilities share the instance plugin life
     "./service/router": { routerApp: {} },
     "./install_task": { createInstanceInstallTaskClass() {} },
     "./minecraft_task": { apply() {} },
-    "./registries": { TasksService() {}, LifecycleService() {}, PresetsService() {}, SchedulesService() {} }
+    "./registries": {
+      TasksService() {},
+      LifecycleService() {},
+      PresetsService() {},
+      SchedulesService() {}
+    }
   });
   const instancePlugin = {
     ...instanceBackend,
@@ -532,7 +541,8 @@ function frontendFixture(t) {
   };
   const pluginContext = {
     ...load("core/common/src/instance_contract.ts"),
-    ctx, usePluginService: (name) => ctx.get(name)
+    ctx,
+    usePluginService: (name) => ctx.get(name)
   };
   const overrides = {
     "@/lang/i18n": { t: (key) => key },
@@ -567,9 +577,18 @@ function frontendFixture(t) {
     "./hooks/useTerminal": { useTerminal() {}, encodeConsoleColor() {} }
   };
   const nodePlugin = load("plugins/node/panel/src/frontend.ts", featureOverrides);
-  overrides["./terminal/frontend"] = load("plugins/instance/panel/src/terminal/frontend.ts", featureOverrides);
-  overrides["./backup/frontend"] = load("plugins/instance/panel/src/backup/frontend.ts", featureOverrides);
-  overrides["./monitor/frontend"] = load("plugins/instance/panel/src/monitor/frontend.ts", featureOverrides);
+  overrides["./terminal/frontend"] = load(
+    "plugins/instance/panel/src/terminal/frontend.ts",
+    featureOverrides
+  );
+  overrides["./backup/frontend"] = load(
+    "plugins/instance/panel/src/backup/frontend.ts",
+    featureOverrides
+  );
+  overrides["./monitor/frontend"] = load(
+    "plugins/instance/panel/src/monitor/frontend.ts",
+    featureOverrides
+  );
   return { ctx, routes, state, overrides, pluginContext, nodePlugin };
 }
 
@@ -599,17 +618,25 @@ function setupSfc(relative, overrides) {
   const content = compileSfc(relative);
   const scope = vue.effectScope();
   const unmounts = [];
-  const component = load(
-    relative,
-    {
-      ...overrides,
-      "vuetify/components": {},
-      vue: { ...vue, onMounted() {}, onUnmounted: (fn) => unmounts.push(fn) }
-    },
-    content
-  ).default;
+  const options = {
+    ...overrides,
+    "vuetify/components": {},
+    vue: { ...vue, onMounted() {}, onUnmounted: (fn) => unmounts.push(fn) }
+  };
+  let iconBindings = {};
+  if (relative === "plugins/desktop/panel/src/Desktop.vue") {
+    const { useDesktopIcons } = load("plugins/desktop/panel/src/hooks/useDesktopIcons.ts", options);
+    options["./hooks/useDesktopIcons"] = {
+      useDesktopIcons: (...args) => {
+        iconBindings = useDesktopIcons(...args);
+        return iconBindings;
+      }
+    };
+  }
+  const component = load(relative, options, content).default;
+  const state = scope.run(() => component.setup({}, { expose() {} }));
   return {
-    state: scope.run(() => component.setup({}, { expose() {} })),
+    state: { ...iconBindings, ...state },
     dispose() {
       unmounts.forEach((callback) => callback());
       scope.stop();
@@ -676,13 +703,13 @@ test("desktop user CRUD loads without resource providers and a late assignment r
   await opening;
   assert.equal(state.showAssignDialog.value, false);
   assert.deepEqual(state.assignedInstances.value, []);
-  assert.equal(state.nodeRequest.value, undefined);
+  assert.equal(state.nodes.value, undefined);
   await state.fetchUsers();
   assert.equal(state.users.value[0].userName, "Alice");
 });
 
 test("desktop shell opens/restores contributed windows and survives provider removal", async (t) => {
-  const { ctx, routes, overrides, state: app, pluginContext, nodePlugin } = frontendFixture(t);
+  const { ctx, routes, overrides, state: app, nodePlugin } = frontendFixture(t);
   const originalDocument = global.document;
   const originalWindow = global.window;
   global.window = { removeEventListener() {} };
@@ -710,7 +737,10 @@ test("desktop shell opens/restores contributed windows and survives provider rem
   const config = ctx.plugin(load("plugins/config/panel/src/frontend.ts", overrides));
   await tick();
   assert.ok(ctx.actions.instances.some((action) => action.id === "java-manager"));
-  assert.equal(ctx.actions.instances.some((action) => action.id === "mcstats"), false);
+  assert.equal(
+    ctx.actions.instances.some((action) => action.id === "mcstats"),
+    false
+  );
   assert.ok(ctx.java.setupComponent);
   assert.ok(routes.has("/overview"));
   assert.ok(ctx.desktop.apps.some((app) => app.id === "overview"));
@@ -720,7 +750,11 @@ test("desktop shell opens/restores contributed windows and survives provider rem
     ...overrides,
     "./api": {
       getDesktopLayoutConfig: () => ({ execute: async () => ({ value: savedLayout }) }),
-      setDesktopLayoutConfig: () => ({ execute: async ({ data }) => { savedLayout = JSON.parse(JSON.stringify(data)); } })
+      setDesktopLayoutConfig: () => ({
+        execute: async ({ data }) => {
+          savedLayout = JSON.parse(JSON.stringify(data));
+        }
+      })
     },
     "@/stores/useAppConfigStore": { useAppConfigStore: () => ({ isDarkTheme: vue.ref(false) }) },
     "@/services/apis/index": {},
@@ -736,9 +770,17 @@ test("desktop shell opens/restores contributed windows and survives provider rem
   await shell.state.loadDesktopLayout();
   assert.equal(ctx.desktop.open({ id: "bad", view: "instance-console" }), false);
   assert.equal(ctx.desktop.open({ id: "bad-config", view: "node-plugin-config" }), false);
-  assert.equal(ctx.desktop.open({ id: "bad-settings", view: "instance-settings", props: { instanceId: "one" } }), false);
+  assert.equal(
+    ctx.desktop.open({
+      id: "bad-settings",
+      view: "instance-settings",
+      props: { instanceId: "one" }
+    }),
+    false
+  );
   const configRequest = {
-    id: "node-plugin-config-node", view: "node-plugin-config",
+    id: "node-plugin-config-node",
+    view: "node-plugin-config",
     props: { scope: "node", daemonId: "node" }
   };
   assert.equal(ctx.desktop.open(configRequest), true);
@@ -756,15 +798,20 @@ test("desktop shell opens/restores contributed windows and survives provider rem
   let dropOnDesktop = true;
   global.document.elementFromPoint = () => ({});
   shell.state.desktopIconsRef.value = {
-    getBoundingClientRect: () => ({ left: 10, top: 20 }), contains: () => dropOnDesktop
+    getBoundingClientRect: () => ({ left: 10, top: 20 }),
+    contains: () => dropOnDesktop
   };
-  const dropInstance = (value, x = 100, y = 100) => shell.state.handleInstanceShortcutDrop({
-    detail: { shortcut: value, clientX: x, clientY: y }
-  });
+  const dropInstance = (value, x = 100, y = 100) =>
+    shell.state.handleInstanceShortcutDrop({
+      detail: { shortcut: value, clientX: x, clientY: y }
+    });
   dropInstance(shortcut);
   dropInstance(shortcut, 300, 250);
   assert.equal(shell.state.instanceShortcuts.size, 1, "repeated drops move the existing shortcut");
-  assert.equal(shell.state.desktopApps.value.find(app => app.id === "console-node-one").label, "One");
+  assert.equal(
+    shell.state.desktopApps.value.find((app) => app.id === "console-node-one").label,
+    "One"
+  );
   shell.state.openWindow("console-node-one");
   assert.equal(windows.get("console-node-one").props.daemonId, "node");
   dropInstance({ ...shortcut, daemonId: "other-node" });
@@ -774,18 +821,26 @@ test("desktop shell opens/restores contributed windows and survives provider rem
   assert.equal(shell.state.instanceShortcuts.size, 2);
   dropOnDesktop = false;
   dropInstance({ ...shortcut, instanceId: "not-on-desktop" });
-  assert.equal(shell.state.instanceShortcuts.size, 2, "releasing over a window must not add a shortcut");
+  assert.equal(
+    shell.state.instanceShortcuts.size,
+    2,
+    "releasing over a window must not add a shortcut"
+  );
   dropOnDesktop = true;
   shell.state.removeDesktopShortcut("console-other-node-one");
   assert.equal(shell.state.instanceShortcuts.size, 1);
   assert.equal(shell.state.iconPositions.has("console-other-node-one"), false);
-  await new Promise(resolve => setTimeout(resolve, 550));
+  await new Promise((resolve) => setTimeout(resolve, 550));
   assert.deepEqual(savedLayout.instanceShortcuts, [shortcut]);
-  assert.ok(savedLayout.icons.some(icon => icon.id === "console-node-one"));
+  assert.ok(savedLayout.icons.some((icon) => icon.id === "console-node-one"));
   const consoleView = ctx.desktop.views.find((view) => view.id === "instance-console");
-  const renderConsole = consoleView.component.setup({}, {
-    attrs: { instanceId: "one", daemonId: "node" }, emit() {}
-  });
+  const renderConsole = consoleView.component.setup(
+    {},
+    {
+      attrs: { instanceId: "one", daemonId: "node" },
+      emit() {}
+    }
+  );
   renderConsole().props.onOpenInstanceSettings("one", "node");
   const settingsWindow = windows.get("instance-settings-one");
   assert.equal(settingsWindow.content, "instance-settings");
@@ -804,7 +859,11 @@ test("desktop shell opens/restores contributed windows and survives provider rem
       { id: "schedule-one", content: "schedule", instanceId: "one", daemonId: "node" },
       { id: settingsWindow.id, content: settingsWindow.content, props: settingsWindow.props },
       { id: configRequest.id, content: configRequest.view, props: configRequest.props },
-      { id: "console-one", content: "instance-console", props: { instanceId: "one", daemonId: "node" } },
+      {
+        id: "console-one",
+        content: "instance-console",
+        props: { instanceId: "one", daemonId: "node" }
+      },
       { id: "bad", content: "schedule" },
       { id: "removed", content: "uninstalled-feature" }
     ]
@@ -814,8 +873,12 @@ test("desktop shell opens/restores contributed windows and survives provider rem
   assert.deepEqual(shell.state.instanceShortcuts.get("console-node-one"), shortcut);
   const restoredIcon = shell.state.iconPositions.get("console-node-one");
   assert.ok(restoredIcon.x >= 0 && restoredIcon.y >= 0);
-  assert.ok(restoredIcon.x + shell.state.iconGrid.value.iconWidth <= shell.state.iconGrid.value.width);
-  assert.ok(restoredIcon.y + shell.state.iconGrid.value.iconHeight <= shell.state.iconGrid.value.height);
+  assert.ok(
+    restoredIcon.x + shell.state.iconGrid.value.iconWidth <= shell.state.iconGrid.value.width
+  );
+  assert.ok(
+    restoredIcon.y + shell.state.iconGrid.value.iconHeight <= shell.state.iconGrid.value.height
+  );
   assert.deepEqual(windows.get(settingsWindow.id).props, settingsWindow.props);
   assert.equal(windows.get("schedule-one").props.instanceId, "one");
   assert.deepEqual(windows.get(configRequest.id).props, configRequest.props);
@@ -830,10 +893,22 @@ test("desktop shell opens/restores contributed windows and survives provider rem
   assert.ok(ctx.get("node"), "node frontend survives instance removal");
   assert.equal(ctx.get("terminal"), undefined);
   assert.equal(routes.has("/overview"), false);
-  assert.equal(ctx.desktop.apps.some((app) => app.id === "overview"), false);
-  assert.equal(ctx.actions.instances.some((action) => action.id === "operation-log"), false);
-  assert.equal(ctx.actions.instances.some((action) => action.id === "java-manager"), false);
-  assert.equal(ctx.actions.instances.some((action) => action.id === "mcstats"), false);
+  assert.equal(
+    ctx.desktop.apps.some((app) => app.id === "overview"),
+    false
+  );
+  assert.equal(
+    ctx.actions.instances.some((action) => action.id === "operation-log"),
+    false
+  );
+  assert.equal(
+    ctx.actions.instances.some((action) => action.id === "java-manager"),
+    false
+  );
+  assert.equal(
+    ctx.actions.instances.some((action) => action.id === "mcstats"),
+    false
+  );
   assert.equal(windows.size, 1);
   assert.equal(shell.state.instanceShortcuts.size, 0);
   assert.ok(windows.has(configRequest.id));
@@ -907,26 +982,44 @@ function daemonSettingsFixture(plugin, initialConfig = {}) {
     settings: { config, save: () => saved.push(structuredClone(config)) },
     i18n: { $t: (key) => key },
     inject: (_names, callback) => callback(ctx),
-    settingsForm: { declare: (value) => { declaration = value; } },
-    overview: { provide: (provider) => { overview = provider; } },
+    settingsForm: {
+      declare: (value) => {
+        declaration = value;
+      }
+    },
+    overview: {
+      provide: (provider) => {
+        overview = provider;
+      }
+    },
     protocol: {
       on: (event, handler) => handlers.set(event, handler),
-      response: (request, value) => { request.body = value; },
-      responseError: (_request, error) => { throw error; }
+      response: (request, value) => {
+        request.body = value;
+      },
+      responseError: (_request, error) => {
+        throw error;
+      }
     }
   };
-  const overrides = plugin === "instance" ? {
-    "./instance_settings": load("plugins/instance/daemon/src/backend/instance_settings.ts", {
-      "./entity/config": { globalConfiguration: { config } }
-    })
-  } : {};
-  const settingsPath = plugin === "terminal"
-    ? `plugins/instance/daemon/src/backend/${plugin}/settings.ts`
-    : `plugins/${plugin}/daemon/src/backend/settings.ts`;
+  const overrides =
+    plugin === "instance"
+      ? {
+          "./instance_settings": load("plugins/instance/daemon/src/backend/instance_settings.ts", {
+            "./entity/config": { globalConfiguration: { config } }
+          })
+        }
+      : {};
+  const settingsPath =
+    plugin === "terminal"
+      ? `plugins/instance/daemon/src/backend/${plugin}/settings.ts`
+      : `plugins/${plugin}/daemon/src/backend/settings.ts`;
   load(settingsPath, overrides).registerSettings(ctx);
   const { validatePluginSettings } = load("core/common/src/plugin_contract.ts");
   return {
-    config, saved, handlers,
+    config,
+    saved,
+    handlers,
     read: () => declaration.read(),
     overview: () => overview(),
     write: (values) => {
@@ -938,11 +1031,18 @@ function daemonSettingsFixture(plugin, initialConfig = {}) {
 
 test("file, terminal and instance forms retain stored settings and reject invalid changes atomically", () => {
   const file = daemonSettingsFixture("file", {
-    uploadSpeedRate: 40, downloadSpeedRate: 128, maxDownloadFromUrlFileCount: 3,
+    uploadSpeedRate: 40,
+    downloadSpeedRate: 128,
+    maxDownloadFromUrlFileCount: 3,
     outputBufferSize: 256
   });
   file.write(file.read()); // Existing rates outside the former dropdown remain editable.
-  file.write({ uploadSpeedRate: 0, downloadSpeedRate: 32, maxDownloadFromUrlFileCount: 0, outputBufferSize: 512 });
+  file.write({
+    uploadSpeedRate: 0,
+    downloadSpeedRate: 32,
+    maxDownloadFromUrlFileCount: 0,
+    outputBufferSize: 512
+  });
   assert.equal(file.config.outputBufferSize, 256);
   assert.equal(file.config.uploadSpeedRate, 0);
   assert.equal(file.config.maxDownloadFromUrlFileCount, 0);
@@ -961,26 +1061,38 @@ test("file, terminal and instance forms retain stored settings and reject invali
   assert.equal(terminal.config.outputBufferSize, 4096);
 
   const instance = daemonSettingsFixture("instance", {
-    enableSoftShutdown: true, softShutdownSkipDocker: false, softShutdownWaitSeconds: 45
+    enableSoftShutdown: true,
+    softShutdownSkipDocker: false,
+    softShutdownWaitSeconds: 45
   });
   const beforeInstance = instance.read();
   for (const invalid of [0, 601, 1.5, Infinity, "30"]) {
-    assert.throws(() => instance.write({ enableSoftShutdown: false, softShutdownWaitSeconds: invalid }));
+    assert.throws(() =>
+      instance.write({ enableSoftShutdown: false, softShutdownWaitSeconds: invalid })
+    );
     assert.deepEqual(instance.read(), beforeInstance);
   }
-  instance.write({ enableSoftShutdown: false, softShutdownSkipDocker: true, softShutdownWaitSeconds: 60 });
+  instance.write({
+    enableSoftShutdown: false,
+    softShutdownSkipDocker: true,
+    softShutdownWaitSeconds: 60
+  });
   assert.deepEqual(instance.saved[0], {
-    enableSoftShutdown: false, softShutdownSkipDocker: true, softShutdownWaitSeconds: 60
+    enableSoftShutdown: false,
+    softShutdownSkipDocker: true,
+    softShutdownWaitSeconds: 60
   });
 });
 
 test("node mappings migrate once, validate before saving and preserve an intentionally empty list", () => {
   const node = daemonSettingsFixture("node");
   assert.deepEqual(node.overview(), { remoteMappings: null });
-  const legacy = [{
-    from: { ip: "panel.example", port: 443, prefix: "/panel" },
-    to: { ip: "node.example", port: 443, prefix: "/node" }
-  }];
+  const legacy = [
+    {
+      from: { ip: "panel.example", port: 443, prefix: "/panel" },
+      to: { ip: "node.example", port: 443, prefix: "/node" }
+    }
+  ];
   const request = {};
   node.handlers.get("node/mappings")(request, { remoteMappings: legacy });
   assert.deepEqual(request.body, legacy);
@@ -1010,8 +1122,15 @@ test("daemon settings declarations keep their plugin ownership and leave when th
   const warnings = [];
   ctx.on("internal/warning", (error) => warnings.push(error.message));
   ctx.plugin(translations(Service));
-  ctx.set("settings", { config: { outputBufferSize: 256 }, defaults: () => ({ outputBufferSize: 256 }), save() {} });
-  ctx.set("plugins", { runExclusive: (operation) => operation(), configuration: (id) => ({ id, fields: [], values: {} }) });
+  ctx.set("settings", {
+    config: { outputBufferSize: 256 },
+    defaults: () => ({ outputBufferSize: 256 }),
+    save() {}
+  });
+  ctx.set("plugins", {
+    runExclusive: (operation) => operation(),
+    configuration: (id) => ({ id, fields: [], values: {} })
+  });
   const { SettingsFormService } = load("plugins/config/daemon/src/backend/settings.ts", {
     "mcsmanager-common": load("core/common/src/plugin_contract.ts")
   });
@@ -1045,29 +1164,38 @@ for (const side of ["panel", "daemon"]) {
     const { Context } = from(side)("cordis");
     const ctx = new Context();
     t.after(() => ctx.stop());
-    ctx.set("plugins", { runExclusive: operation => operation() });
+    ctx.set("plugins", { runExclusive: (operation) => operation() });
     const { SettingsFormService } = load(`plugins/config/${side}/src/backend/settings.ts`, {
       "mcsmanager-common": load("core/common/src/plugin_contract.ts")
     });
-    ctx.plugin({ name: "config", inject: ["plugins"], apply: scope => scope.plugin(SettingsFormService) });
+    ctx.plugin({
+      name: "config",
+      inject: ["plugins"],
+      apply: (scope) => scope.plugin(SettingsFormService)
+    });
     let terminal = { fontSize: 20 };
     let backup = { compression: 6 };
     let backupWrites = 0;
     const owner = ctx.plugin({
-      name: "instance", inject: ["settingsForm"],
+      name: "instance",
+      inject: ["settingsForm"],
       apply(scope) {
         scope.settingsForm.declare({
           page: () => ({ id: "terminal", title: "Terminal" }),
           fields: () => [{ key: "fontSize", type: "number", min: 8, max: 48 }],
-          read: () => ({ ...terminal }), defaults: () => ({ fontSize: 14 }),
-          write: values => { terminal = { ...terminal, ...values }; }
+          read: () => ({ ...terminal }),
+          defaults: () => ({ fontSize: 14 }),
+          write: (values) => {
+            terminal = { ...terminal, ...values };
+          }
         });
         scope.settingsForm.declare({
           restartRequired: true,
           page: () => ({ id: "backups", title: "Backups" }),
           fields: () => [{ key: "compression", type: "number", min: 0, max: 9 }],
-          read: () => ({ ...backup }), defaults: () => ({ compression: 9 }),
-          write: values => {
+          read: () => ({ ...backup }),
+          defaults: () => ({ compression: 9 }),
+          write: (values) => {
             backupWrites++;
             if (values.compression === 8) throw new Error("save failed");
             backup = { ...backup, ...values };
@@ -1078,10 +1206,19 @@ for (const side of ["panel", "daemon"]) {
     await ctx.start();
     assert.deepEqual(ctx.settingsForm.declared(), ["instance"]);
     const form = await ctx.settingsForm.read("instance");
-    assert.deepEqual(form.fields.map(field => field.key), ["fontSize", "compression"]);
-    assert.deepEqual(form.fields.map(field => field.page.id), ["terminal", "backups"]);
+    assert.deepEqual(
+      form.fields.map((field) => field.key),
+      ["fontSize", "compression"]
+    );
+    assert.deepEqual(
+      form.fields.map((field) => field.page.id),
+      ["terminal", "backups"]
+    );
     assert.deepEqual(form.values, { fontSize: 20, compression: 6 });
-    await assert.rejects(ctx.settingsForm.write("instance", { fontSize: 22, compression: 8 }), /save failed/);
+    await assert.rejects(
+      ctx.settingsForm.write("instance", { fontSize: 22, compression: 8 }),
+      /save failed/
+    );
     assert.deepEqual((await ctx.settingsForm.read("instance")).values, form.values);
     const result = await ctx.settingsForm.write("instance", { fontSize: 22, compression: 7 });
     assert.equal(result.application, "restart-required");
@@ -1095,7 +1232,10 @@ for (const side of ["panel", "daemon"]) {
     assert.equal(partial.application, "applied");
     assert.equal(ctx.settingsForm.canReset("instance"), true);
     await ctx.settingsForm.reset("instance");
-    assert.deepEqual((await ctx.settingsForm.read("instance")).values, { fontSize: 14, compression: 9 });
+    assert.deepEqual((await ctx.settingsForm.read("instance")).values, {
+      fontSize: 14,
+      compression: 9
+    });
     await owner.dispose();
     assert.deepEqual(ctx.settingsForm.declared(), []);
   });
@@ -1106,15 +1246,22 @@ test("daemon storage preserves migrated and cleared mappings across reloads", ()
   const { default: Storage } = load("core/common/src/system_storage.ts");
   const storage = new Storage();
   let saved;
-  storage.writeFile = (_name, content) => { saved = content; };
+  storage.writeFile = (_name, content) => {
+    saved = content;
+  };
   storage.readFile = () => saved;
   storage.fileExists = () => true;
   const config = new Config();
   assert.equal(config.remoteMappings, undefined);
-  for (const mappings of [[{
-    from: { ip: "panel.example", port: 443, prefix: "" },
-    to: { ip: "node.example", port: 8443, prefix: "/daemon" }
-  }], []]) {
+  for (const mappings of [
+    [
+      {
+        from: { ip: "panel.example", port: 443, prefix: "" },
+        to: { ip: "node.example", port: 8443, prefix: "/daemon" }
+      }
+    ],
+    []
+  ]) {
     config.remoteMappings = mappings;
     storage.store("Config", "global", config);
     assert.deepEqual(storage.load("Config", Config, "global").remoteMappings, mappings);

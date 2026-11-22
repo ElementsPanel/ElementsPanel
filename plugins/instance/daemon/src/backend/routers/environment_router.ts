@@ -8,7 +8,7 @@ import * as protocol from "../service/protocol";
 import { routerApp } from "../service/router";
 import { ctx as daemon } from "../plugin/context";
 
-routerApp.on("environment/images", async (ctx, data) => {
+routerApp.on("environment/images", async (ctx, _data) => {
   try {
     const docker = new DockerManager().getDocker();
     const result = await docker.listImages();
@@ -18,7 +18,7 @@ routerApp.on("environment/images", async (ctx, data) => {
   }
 });
 
-routerApp.on("environment/containers", async (ctx, data) => {
+routerApp.on("environment/containers", async (ctx, _data) => {
   try {
     const docker = new DockerManager().getDocker();
     const result = await docker.listContainers();
@@ -28,7 +28,7 @@ routerApp.on("environment/containers", async (ctx, data) => {
   }
 });
 
-routerApp.on("environment/networkModes", async (ctx, data) => {
+routerApp.on("environment/networkModes", async (ctx, _data) => {
   try {
     const docker = new DockerManager().getDocker();
     const result = await docker.listNetworks();

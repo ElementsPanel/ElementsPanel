@@ -36,7 +36,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
     meta: {
       mainMenu: true,
       permission: ROLE_ADMIN,
-      icon: "mdi-chart-line",
+      icon: "mdi-chart-line"
     }
   });
 

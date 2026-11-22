@@ -323,7 +323,10 @@ test("full daemon restarts take over running auto-start instances and preserve s
   assert.equal(adopted.startTimestamp, metadata.startTimestamp);
   assert.equal(subsystem.getInstance("stopped").status(), 0);
   assert.equal(running.kills, 0);
-  assert.equal(f.events.some((event) => event.startsWith("launch:")), false);
+  assert.equal(
+    f.events.some((event) => event.startsWith("launch:")),
+    false
+  );
 });
 
 test("a pending process restart cancels auto-start commands already waiting for boot delay", async (t) => {
@@ -342,7 +345,10 @@ test("a pending process restart cancels auto-start commands already waiting for 
   delay.resolve();
   await settle();
   assert.equal(f.ctx.instances.subsystem.getInstance("stopped").status(), 0);
-  assert.equal(f.events.some((event) => event.startsWith("launch:")), false);
+  assert.equal(
+    f.events.some((event) => event.startsWith("launch:")),
+    false
+  );
 });
 
 test("foundation replacements retain live owners, output, counters and commands across module generations", async (t) => {
@@ -478,7 +484,9 @@ test("stop timeout uses the configured duration and force termination is optiona
   t.mock.timers.enable({ apis: ["setTimeout", "Date"], now: 100000 });
   const instance = f.create();
   const process = child();
-  await instance.forceExec(new (f.current.source(base + "entity/commands/dispatcher.ts").default)());
+  await instance.forceExec(
+    new (f.current.source(base + "entity/commands/dispatcher.ts").default)()
+  );
   instance.config.stopCommand = "stop";
   instance.started(f.adapter(process));
   await instance.execPreset("stop");
@@ -793,14 +801,16 @@ test("process restart waits for pending starts and persists live owners without 
   const starting = deferred();
   instance.starting = starting.promise;
   let prepared = false;
-  const preparing = f.ctx.parallel("process/restarting").then(() => { prepared = true; });
+  const preparing = f.ctx.parallel("process/restarting").then(() => {
+    prepared = true;
+  });
   await settle();
   assert.equal(prepared, false);
   instance.started(f.adapter(process));
   instance.startCount = 4;
   instance.autoRestartCount = 2;
   const metadata = [];
-  process.setMetadata = value => metadata.push(value);
+  process.setMetadata = (value) => metadata.push(value);
   starting.resolve();
   await preparing;
   assert.equal(process.kills, 0);
@@ -830,7 +840,9 @@ test("takeover restores process state and reports an exit buffered during a work
   const key = Symbol.for("elementspanel.instance-process-host");
   const previous = globalThis[key];
   let released = false;
-  process.release = () => { released = true; };
+  process.release = () => {
+    released = true;
+  };
   globalThis[key] = {
     list: async () => [{ id: "running", pid: process.pid, metadata: original }],
     connect: () => process
@@ -846,12 +858,15 @@ test("takeover restores process state and reports an exit buffered during a work
   assert.equal(instance.startTimestamp, original.startTimestamp);
   assert.equal(instance.startCount, 4);
   assert.equal(instance.autoRestartCount, 2);
-  const exited = new Promise(resolve => instance.once("exit", resolve));
+  const exited = new Promise((resolve) => instance.once("exit", resolve));
   process.stdout.write("last output before exit\n");
   process.exitCode = 0;
   process.emit("close", 0);
   assert.deepEqual(await exited, { code: 0, isCrash: false });
   assert.equal(released, true);
   assert.equal(process.kills, 0);
-  assert.equal(f.events.some(event => event.startsWith("launch:")), false);
+  assert.equal(
+    f.events.some((event) => event.startsWith("launch:")),
+    false
+  );
 });

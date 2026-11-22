@@ -39,8 +39,14 @@ test("each built-in package owns one manifest and preserves its side-specific id
       assert.deepEqual(manifest.frontendInject, definition.frontendInject);
     }
     assert.equal(plugins.find((plugin) => plugin.id === "instance").folder, "instance");
-    assert.equal(plugins.some((plugin) => plugin.id === "mod-manager"), false);
-    assert.equal(plugins.some((plugin) => ["terminal", "backup", "monitor"].includes(plugin.id)), false);
+    assert.equal(
+      plugins.some((plugin) => plugin.id === "mod-manager"),
+      false
+    );
+    assert.equal(
+      plugins.some((plugin) => ["terminal", "backup", "monitor"].includes(plugin.id)),
+      false
+    );
     assert.equal(plugins.find((plugin) => plugin.id === "node").folder, "node");
     assert.equal(
       plugins.some((plugin) => plugin.id === (side === "panel" ? "auth" : "market")),

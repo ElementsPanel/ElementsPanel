@@ -155,6 +155,7 @@ export default class DockerStatsTask implements ILifeCycleTask {
 
       instance.info = { ...instance.info, ...result };
     } catch (error) {
+      // Retain the last successful statistics snapshot.
     } finally {
       this.isUpdating = false;
     }

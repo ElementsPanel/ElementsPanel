@@ -92,7 +92,10 @@ export function jsonToMap(json: JsonData, topTitle = "", map = {}) {
             json[key] = BigInt(value).toString();
           }
           const preValue = json[key];
-          if (typeof preValue === "number" && !isNaN(Number(v))) return (json[key] = Number(v));
+          if (typeof preValue === "number" && !isNaN(Number(v))) {
+            json[key] = Number(v);
+            return;
+          }
           json[key] = v;
         }
       });

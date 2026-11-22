@@ -22,7 +22,8 @@ async function attachInstanceNames(ctx: PanelPluginContext, entries: OperationLo
     const details = await provider.getDetails([...missing.values()]);
     const names = new Map<string, string>();
     for (const detail of details) {
-      if (detail?.nickname) names.set(`${detail.daemonId}:${detail.instanceUuid}`, String(detail.nickname));
+      if (detail?.nickname)
+        names.set(`${detail.daemonId}:${detail.instanceUuid}`, String(detail.nickname));
     }
     return entries.map((entry) => {
       const name = names.get(`${entry?.daemon_id}:${entry?.instance_id}`);

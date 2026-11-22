@@ -24,24 +24,38 @@ const pages = computed(() => {
   const grouped = new Map<string, { id: string; title: string; fields: SettingField[] }>();
   for (const field of props.fields) {
     const id = field.page?.id || "general";
-    if (!grouped.has(id)) grouped.set(id, {
-      id, title: field.page?.title || t("TXT_CODE_SETTINGS_PAGE_GENERAL"), fields: []
-    });
+    if (!grouped.has(id))
+      grouped.set(id, {
+        id,
+        title: field.page?.title || t("TXT_CODE_SETTINGS_PAGE_GENERAL"),
+        fields: []
+      });
     grouped.get(id)!.fields.push(field);
   }
   return [...grouped.values()];
 });
-watch(pages, (items) => {
-  if (!items.some((page) => page.id === selectedPage.value))
-    selectedPage.value = items[0]?.id ?? "";
-}, { immediate: true });
-const currentFields = computed(() =>
-  pages.value.find((page) => page.id === selectedPage.value)?.fields ?? pages.value[0]?.fields ?? []
+watch(
+  pages,
+  (items) => {
+    if (!items.some((page) => page.id === selectedPage.value))
+      selectedPage.value = items[0]?.id ?? "";
+  },
+  { immediate: true }
 );
-const modified = (fields: SettingField[]) => fields.some((field) =>
-  props.savedValues && field.key && field.type !== "link" &&
-  JSON.stringify(props.values[field.key]) !== JSON.stringify(props.savedValues[field.key])
+const currentFields = computed(
+  () =>
+    pages.value.find((page) => page.id === selectedPage.value)?.fields ??
+    pages.value[0]?.fields ??
+    []
 );
+const modified = (fields: SettingField[]) =>
+  fields.some(
+    (field) =>
+      props.savedValues &&
+      field.key &&
+      field.type !== "link" &&
+      JSON.stringify(props.values[field.key]) !== JSON.stringify(props.savedValues[field.key])
+  );
 </script>
 
 <template>
@@ -53,9 +67,14 @@ const modified = (fields: SettingField[]) => fields.some((field) =>
       show-arrows
       class="settings-pages-tabs app-ui-root"
     >
-      <VTab v-for="page in pages" :key="page.id" :value="page.id" rounded="xl">
-        <VBadge :model-value="modified(page.fields)" color="warning" dot inline>
-          {{ page.title }}
+      <VTab
+        v-for="settingsPage in pages"
+        :key="settingsPage.id"
+        :value="settingsPage.id"
+        rounded="xl"
+      >
+        <VBadge :model-value="modified(settingsPage.fields)" color="warning" dot inline>
+          {{ settingsPage.title }}
         </VBadge>
       </VTab>
     </VTabs>

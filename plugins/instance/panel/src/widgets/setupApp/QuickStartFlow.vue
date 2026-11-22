@@ -63,60 +63,63 @@ const handleNext = (key: string) => {
 <template>
   <main class="quickstart-page">
     <VContainer fluid class="quickstart-page-container">
-      <PageToolbar :title="t('TXT_CODE_COMMON_QUICKLY_DEPLOY_APPLICATION_INSTANCES')" icon="mdi-rocket-launch-outline" />
+      <PageToolbar
+        :title="t('TXT_CODE_COMMON_QUICKLY_DEPLOY_APPLICATION_INSTANCES')"
+        icon="mdi-rocket-launch-outline"
+      />
       <CardPanel class="card-wrapper">
         <template #body>
-      <div v-if="!isLoading" class="pd-24 h-100">
-        <VRow v-if="isNormalStep" class="h-100" density="compact">
-          <VCol v-if="!isPhone" lg="6">
-            <div class="quickstart-icon d-flex align-center justify-center h-100">
-              <Transition name="global-action-float">
-                <VIcon :icon="currentIcon" size="180" />
-              </Transition>
-            </div>
-          </VCol>
-          <VCol lg="6">
-            <div class="text-left">
-              <h3 class="mb-6">
-                {{ formData.title }}
-              </h3>
-              <div style="max-height: 400px; overflow-x: hidden">
-                <Empty
-                  v-if="formData.actions?.length === 0"
-                  :title="formData.emptyActionsText"
-                  icon="mdi-server-network-outline"
-                  compact
-                />
-                <VRow density="compact">
-                  <fade-up-animation>
-                    <action-button
-                      v-for="(action, index) in formData.actions"
-                      :key="action.key"
-                      :data-index="index"
-                      :title="action.title"
-                      :icon="action.icon"
-                      :click="() => (action.click ? action.click() : handleNext(action.key))"
+          <div v-if="!isLoading" class="pd-24 h-100">
+            <VRow v-if="isNormalStep" class="h-100" density="compact">
+              <VCol v-if="!isPhone" lg="6">
+                <div class="quickstart-icon d-flex align-center justify-center h-100">
+                  <Transition name="global-action-float">
+                    <VIcon :icon="currentIcon" size="180" />
+                  </Transition>
+                </div>
+              </VCol>
+              <VCol lg="6">
+                <div class="text-left">
+                  <h3 class="mb-6">
+                    {{ formData.title }}
+                  </h3>
+                  <div style="max-height: 400px; overflow-x: hidden">
+                    <Empty
+                      v-if="formData.actions?.length === 0"
+                      :title="formData.emptyActionsText"
+                      icon="mdi-server-network-outline"
+                      compact
                     />
-                  </fade-up-animation>
-                </VRow>
-              </div>
+                    <VRow density="compact">
+                      <fade-up-animation>
+                        <action-button
+                          v-for="(action, index) in formData.actions"
+                          :key="action.key"
+                          :data-index="index"
+                          :title="action.title"
+                          :icon="action.icon"
+                          :click="() => (action.click ? action.click() : handleNext(action.key))"
+                        />
+                      </fade-up-animation>
+                    </VRow>
+                  </div>
+                </div>
+              </VCol>
+            </VRow>
+            <div v-else-if="isFormStep && formData.appType && formData.createMethod">
+              <CreateInstanceForm
+                :app-type="formData.appType"
+                :create-method="formData.createMethod"
+                :daemon-id="formData.daemonId ? formData.daemonId : ''"
+                @next-step="handleNext"
+              />
             </div>
-          </VCol>
-        </VRow>
-        <div v-else-if="isFormStep && formData.appType && formData.createMethod">
-          <CreateInstanceForm
-            :app-type="formData.appType"
-            :create-method="formData.createMethod"
-            :daemon-id="formData.daemonId ? formData.daemonId : ''"
-            @next-step="handleNext"
-          />
-        </div>
-      </div>
-      <div v-else class="loading d-flex align-center justify-center w-100 h-100">
-        <Loading />
-      </div>
-      </template>
-    </CardPanel>
+          </div>
+          <div v-else class="loading d-flex align-center justify-center w-100 h-100">
+            <Loading />
+          </div>
+        </template>
+      </CardPanel>
     </VContainer>
   </main>
 </template>

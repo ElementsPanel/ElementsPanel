@@ -40,38 +40,55 @@ export class TasksService extends Service implements DaemonTasksService {
     }
     return claim(this.ctx, this.entries, "async task", name, registration);
   }
-  get(name: string) { return this.entries.get(name); }
+  get(name: string) {
+    return this.entries.get(name);
+  }
 }
 
 export class LifecycleService extends Service implements DaemonLifecycleService {
   private readonly factories: DaemonLifecycleTaskFactory[] = [];
-  constructor(ctx: Context) { super(ctx, "instanceLifecycle", true); }
+  constructor(ctx: Context) {
+    super(ctx, "instanceLifecycle", true);
+  }
   register(factory: DaemonLifecycleTaskFactory) {
-    if (typeof factory !== "function") throw new Error("Invalid daemon lifecycle task registration");
+    if (typeof factory !== "function")
+      throw new Error("Invalid daemon lifecycle task registration");
     return this.ctx.effect(() => {
       this.factories.push(factory);
       return () => remove(this.factories, factory);
     });
   }
-  entries() { return this.factories as readonly DaemonLifecycleTaskFactory[]; }
+  entries() {
+    return this.factories as readonly DaemonLifecycleTaskFactory[];
+  }
 }
 
 export class PresetsService extends Service implements DaemonPresetsService {
   private readonly factories = new Map<Preset, DaemonPresetCommandFactory>();
-  constructor(ctx: Context) { super(ctx, "presets", true); }
+  constructor(ctx: Context) {
+    super(ctx, "presets", true);
+  }
   register(preset: Preset, factory: DaemonPresetCommandFactory) {
-    if (!preset || typeof factory !== "function") throw new Error("Invalid daemon preset command registration");
+    if (!preset || typeof factory !== "function")
+      throw new Error("Invalid daemon preset command registration");
     return claim(this.ctx, this.factories, "preset command", preset, factory);
   }
-  entries() { return this.factories as ReadonlyMap<Preset, DaemonPresetCommandFactory>; }
+  entries() {
+    return this.factories as ReadonlyMap<Preset, DaemonPresetCommandFactory>;
+  }
 }
 
 export class SchedulesService extends Service implements DaemonSchedulesService {
   private readonly handlers = new Map<string, DaemonScheduleActionHandler>();
-  constructor(ctx: Context) { super(ctx, "schedules", true); }
+  constructor(ctx: Context) {
+    super(ctx, "schedules", true);
+  }
   register(actionType: string, handler: DaemonScheduleActionHandler) {
-    if (!actionType || typeof handler !== "function") throw new Error("Invalid daemon schedule action registration");
+    if (!actionType || typeof handler !== "function")
+      throw new Error("Invalid daemon schedule action registration");
     return claim(this.ctx, this.handlers, "schedule action", actionType, handler);
   }
-  get(actionType: string) { return this.handlers.get(actionType); }
+  get(actionType: string) {
+    return this.handlers.get(actionType);
+  }
 }

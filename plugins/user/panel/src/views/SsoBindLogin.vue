@@ -2,7 +2,11 @@
 import CardPanel from "@elementspanel/epanel-plugin-console/components/CardPanel";
 import { router } from "@elementspanel/epanel-plugin-console/config/router";
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { ssoBindCurrent, ssoBindLogin, userInfoApi } from "@elementspanel/epanel-plugin-console/services/apis";
+import {
+  ssoBindCurrent,
+  ssoBindLogin,
+  userInfoApi
+} from "@elementspanel/epanel-plugin-console/services/apis";
 import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
 import { sleep } from "@elementspanel/epanel-plugin-console/tools/common";
 import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
@@ -33,6 +37,7 @@ onMounted(async () => {
       loggedInUserName.value = info.value.userName;
     }
   } catch {
+    // Continue showing the login form if session lookup fails.
   }
 });
 
@@ -107,7 +112,7 @@ const handleBind = async () => {
           <div v-if="loggedInUserName && !showLoginForm">
             <VAlert type="info" variant="tonal" class="mb-1">
               <template #text>
-                {{ t('TXT_CODE_SSO_BIND_CURRENT_HINT') }}
+                {{ t("TXT_CODE_SSO_BIND_CURRENT_HINT") }}
                 <strong>{{ loggedInUserName }}</strong>
               </template>
             </VAlert>
@@ -145,8 +150,8 @@ const handleBind = async () => {
                   type="password"
                   :placeholder="t('TXT_CODE_COMMON_PASSWORD')"
                   size="large"
-                  @keyup.enter="handleBind"
                   prepend-inner-icon="mdi-lock-outline"
+                  @keyup.enter="handleBind"
                 />
               </div>
               <div v-else>
@@ -154,11 +159,13 @@ const handleBind = async () => {
                   v-model="formData.code"
                   class="mt-5 mb-5 account"
                   type="text"
-                  :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_THE_TWO_FACTOR_AUTHENTICATION_CODE')"
+                  :placeholder="
+                    t('TXT_CODE_COMMON_PLEASE_ENTER_THE_TWO_FACTOR_AUTHENTICATION_CODE')
+                  "
                   size="large"
                   autocomplete="off"
-                  @keyup.enter="handleBind"
                   prepend-inner-icon="mdi-lock-outline"
+                  @keyup.enter="handleBind"
                 />
               </div>
             </form>

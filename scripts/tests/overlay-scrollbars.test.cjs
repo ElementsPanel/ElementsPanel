@@ -23,34 +23,39 @@ function fixture(t, nodes = 0) {
   let dispose;
 
   global.CSS.supports = () => true;
-  window.matchMedia = query => {
+  window.matchMedia = (query) => {
     if (!media.has(query)) {
       const listeners = new Set();
       media.set(query, {
-        matches: query.includes("any-pointer"), listeners,
-        addEventListener(_event, listener) { listeners.add(listener); },
-        removeEventListener(_event, listener) { listeners.delete(listener); },
+        matches: query.includes("any-pointer"),
+        listeners,
+        addEventListener(_event, listener) {
+          listeners.add(listener);
+        },
+        removeEventListener(_event, listener) {
+          listeners.delete(listener);
+        },
         change(matches) {
           this.matches = matches;
-          listeners.forEach(listener => listener());
+          listeners.forEach((listener) => listener());
         }
       });
     }
     return media.get(query);
   };
 
-  global.requestAnimationFrame = callback => {
+  global.requestAnimationFrame = (callback) => {
     const id = nextId++;
     frames.set(id, callback);
     return id;
   };
-  global.cancelAnimationFrame = id => frames.delete(id);
-  window.setTimeout = callback => {
+  global.cancelAnimationFrame = (id) => frames.delete(id);
+  window.setTimeout = (callback) => {
     const id = nextId++;
     timers.set(id, callback);
     return id;
   };
-  window.clearTimeout = id => timers.delete(id);
+  window.clearTimeout = (id) => timers.delete(id);
 
   const originalQuery = dom.window.Element.prototype.querySelectorAll;
   dom.window.Element.prototype.querySelectorAll = function (selector) {
@@ -67,13 +72,20 @@ function fixture(t, nodes = 0) {
     if (markers.includes(name)) events.push({ type: "remove", element: this });
     return originalRemove.call(this, name);
   };
-  global.getComputedStyle = element => {
+  global.getComputedStyle = (element) => {
     events.push({ type: "read", element });
-    assert.equal(markers.every(name => element.hasAttribute(name)), active.has(element), "Keep initialized viewport markers intact");
+    assert.equal(
+      markers.every((name) => element.hasAttribute(name)),
+      active.has(element),
+      "Keep initialized viewport markers intact"
+    );
     const rule = rules.get(element)?.() || {};
     return {
       overflowX: element.style.overflowX || element.style.overflow || rule.x || "hidden",
-      overflowY: element.style.overflowY || element.style.overflow || rule.y ||
+      overflowY:
+        element.style.overflowY ||
+        element.style.overflow ||
+        rule.y ||
         (element.classList.contains("scrollable") ? "auto" : "hidden")
     };
   };
@@ -90,21 +102,37 @@ function fixture(t, nodes = 0) {
     target.setAttribute(markers[0], "host");
     target.setAttribute(markers[1], "");
     const record = {
-      target, horizontal, vertical, options, changes: [], updates: [], sleeps: [], sleeping: false, destroyed: 0,
+      target,
+      horizontal,
+      vertical,
+      options,
+      changes: [],
+      updates: [],
+      sleeps: [],
+      sleeping: false,
+      destroyed: 0,
       coordinates: { start: { x: 0, y: 0 }, end: { x: 600, y: 800 } }
     };
     records.push(record);
     active.set(target, record);
     const instance = {
-      options(options) { record.changes.push(options); },
+      options(options) {
+        record.changes.push(options);
+      },
       state() {
         return {
           sleeping: record.sleeping,
-          scrollCoordinates: { start: { ...record.coordinates.start }, end: { ...record.coordinates.end } }
+          scrollCoordinates: {
+            start: { ...record.coordinates.start },
+            end: { ...record.coordinates.end }
+          }
         };
       },
       update(force) {
-        assert.ok(markers.every(name => target.hasAttribute(name)), "Measure with viewport styles restored");
+        assert.ok(
+          markers.every((name) => target.hasAttribute(name)),
+          "Measure with viewport styles restored"
+        );
         assert.equal(horizontal.parentElement, target);
         assert.equal(vertical.parentElement, target);
         record.updates.push(force);
@@ -127,7 +155,7 @@ function fixture(t, nodes = 0) {
         active.delete(target);
         horizontal.remove();
         vertical.remove();
-        markers.forEach(name => target.removeAttribute(name));
+        markers.forEach((name) => target.removeAttribute(name));
       }
     };
     record.updated = () => handlers.updated(instance);
@@ -142,15 +170,32 @@ function fixture(t, nodes = 0) {
   );
 
   const f = {
-    dom, root, frames, timers, active, records, rules, events, queries, media,
-    install() { dispose = installOverlayScrollbars(); },
-    dispose() { dispose?.(); },
-    reset() { events.length = queries.length = 0; },
-    resize() { window.dispatchEvent(new window.Event("resize")); },
+    dom,
+    root,
+    frames,
+    timers,
+    active,
+    records,
+    rules,
+    events,
+    queries,
+    media,
+    install() {
+      dispose = installOverlayScrollbars();
+    },
+    dispose() {
+      dispose?.();
+    },
+    reset() {
+      events.length = queries.length = 0;
+    },
+    resize() {
+      window.dispatchEvent(new window.Event("resize"));
+    },
     settleResize() {
       const callbacks = [...timers.values()];
       timers.clear();
-      callbacks.forEach(callback => callback());
+      callbacks.forEach((callback) => callback());
     },
     async flush() {
       await settle();
@@ -158,19 +203,22 @@ function fixture(t, nodes = 0) {
         assert.ok(index < 5, "Scrollbar updates must not trigger an observer loop");
         const callbacks = [...frames.values()];
         frames.clear();
-        callbacks.forEach(callback => callback(performance.now()));
+        callbacks.forEach((callback) => callback(performance.now()));
         await settle();
       }
     }
   };
-  t.after(() => { f.dispose(); dom.window.close(); });
+  t.after(() => {
+    f.dispose();
+    dom.window.close();
+  });
   return f;
 }
 
-test("window resizing defers DOM discovery until it settles", async t => {
+test("window resizing defers DOM discovery until it settles", async (t) => {
   const f = fixture(t, 1000);
   f.install();
-  const initialReads = f.events.filter(event => event.type === "read").length;
+  const initialReads = f.events.filter((event) => event.type === "read").length;
   f.reset();
   for (let index = 0; index < 10; index++) {
     f.resize();
@@ -182,11 +230,11 @@ test("window resizing defers DOM discovery until it settles", async t => {
   f.settleResize();
   await f.flush();
   assert.deepEqual(f.queries, [document.body]);
-  assert.equal(f.events.filter(event => event.type === "read").length, initialReads);
+  assert.equal(f.events.filter((event) => event.type === "read").length, initialReads);
   assert.equal(f.records[0].changes.length, 0);
 });
 
-test("desktop focus and compositor motion do not scan or measure window content", async t => {
+test("desktop focus and compositor motion do not scan or measure window content", async (t) => {
   const f = fixture(t, 1000);
   f.root.classList.add("desktop-window");
   f.install();
@@ -207,10 +255,10 @@ test("desktop focus and compositor motion do not scan or measure window content"
   f.root.classList.add("application-layout-change");
   await f.flush();
   assert.deepEqual(f.queries, [f.root]);
-  assert.ok(f.events.some(event => event.type === "read"));
+  assert.ok(f.events.some((event) => event.type === "read"));
 });
 
-test("cached desktop viewports retain their scrollbar instance until the owning window closes", async t => {
+test("cached desktop viewports retain their scrollbar instance until the owning window closes", async (t) => {
   const f = fixture(t);
   const window = document.createElement("section");
   window.className = "desktop-window";
@@ -250,7 +298,7 @@ test("cached desktop viewports retain their scrollbar instance until the owning 
   assert.equal(original.destroyed, 1);
 });
 
-test("overlapping mutation roots are scanned once and new scroll regions are discovered", async t => {
+test("overlapping mutation roots are scanned once and new scroll regions are discovered", async (t) => {
   const f = fixture(t);
   f.install();
   f.reset();
@@ -267,10 +315,13 @@ test("overlapping mutation roots are scanned once and new scroll regions are dis
   assert.deepEqual(f.queries, [parent]);
   assert.ok(f.active.has(child));
   assert.equal(f.active.has(input), false);
-  assert.equal(f.events.some(event => event.type === "read" && event.element === input), false);
+  assert.equal(
+    f.events.some((event) => event.type === "read" && event.element === input),
+    false
+  );
 });
 
-test("library size styles are ignored while application overflow changes remain supported", async t => {
+test("library size styles are ignored while application overflow changes remain supported", async (t) => {
   const f = fixture(t, 1000);
   f.install();
   f.reset();
@@ -291,7 +342,7 @@ test("library size styles are ignored while application overflow changes remain 
   assert.ok(f.active.has(f.root));
 });
 
-test("content replacement restores scrollbar nodes and removing a region destroys its instances", async t => {
+test("content replacement restores scrollbar nodes and removing a region destroys its instances", async (t) => {
   const f = fixture(t);
   f.install();
   const original = f.active.get(f.root);
@@ -306,10 +357,10 @@ test("content replacement restores scrollbar nodes and removing a region destroy
   f.root.remove();
   await f.flush();
   assert.equal(f.active.size, 0);
-  assert.ok(f.records.every(record => record.destroyed === 1));
+  assert.ok(f.records.every((record) => record.destroyed === 1));
 });
 
-test("shorter text refreshes the existing viewport and clamps both axes to their actual bounds", async t => {
+test("shorter text refreshes the existing viewport and clamps both axes to their actual bounds", async (t) => {
   const f = fixture(t);
   const text = document.createTextNode("Long content");
   f.root.append(text);
@@ -342,7 +393,7 @@ test("shorter text refreshes the existing viewport and clamps both axes to their
   assert.equal(f.root.scrollLeft, 0);
 });
 
-test("child size changes refresh ancestor scrollbars and preserve valid reversed scroll positions", async t => {
+test("child size changes refresh ancestor scrollbars and preserve valid reversed scroll positions", async (t) => {
   const f = fixture(t);
   const child = document.createElement("div");
   f.root.append(child);
@@ -361,13 +412,14 @@ test("child size changes refresh ancestor scrollbars and preserve valid reversed
   assert.equal(f.queries.length, 0);
 });
 
-test("ancestor classes and inherited custom properties can change descendant scrollability", async t => {
+test("ancestor classes and inherited custom properties can change descendant scrollability", async (t) => {
   const f = fixture(t);
   const child = document.createElement("div");
   f.root.append(child);
   f.rules.set(child, () => ({
-    y: document.body.classList.contains("mobile") ? "auto" :
-      f.root.style.getPropertyValue("--application-overflow") || "hidden"
+    y: document.body.classList.contains("mobile")
+      ? "auto"
+      : f.root.style.getPropertyValue("--application-overflow") || "hidden"
   }));
   f.install();
   assert.equal(f.active.has(child), false);
@@ -382,7 +434,7 @@ test("ancestor classes and inherited custom properties can change descendant scr
   assert.ok(f.active.has(child));
 });
 
-test("style discovery never removes viewport markers or forces an unchanged instance", async t => {
+test("style discovery never removes viewport markers or forces an unchanged instance", async (t) => {
   const f = fixture(t);
   const other = document.createElement("aside");
   other.className = "scrollable";
@@ -392,18 +444,18 @@ test("style discovery never removes viewport markers or forces an unchanged inst
   f.resize();
   f.settleResize();
   await f.flush();
-  const types = f.events.map(event => event.type);
+  const types = f.events.map((event) => event.type);
   assert.ok(types.includes("read"));
   assert.equal(types.includes("remove"), false);
   assert.equal(types.includes("restore"), false);
-  assert.ok(f.records.every(record => record.changes.length === 0));
-  assert.ok(f.records.every(record => record.updates.every(force => !force)));
+  assert.ok(f.records.every((record) => record.changes.length === 0));
+  assert.ok(f.records.every((record) => record.updates.every((force) => !force)));
 });
 
-test("native editors remain untouched and their content mutations do not rescan descendants", async t => {
+test("native editors remain untouched and their content mutations do not rescan descendants", async (t) => {
   const f = fixture(t);
   const editors = ["xterm", "cm-editor", "monaco-editor"];
-  const contents = editors.map(className => {
+  const contents = editors.map((className) => {
     const editor = document.createElement("div");
     editor.className = className;
     const content = document.createElement("div");
@@ -413,9 +465,9 @@ test("native editors remain untouched and their content mutations do not rescan 
     return content;
   });
   f.install();
-  assert.ok(contents.every(element => !f.active.has(element)));
+  assert.ok(contents.every((element) => !f.active.has(element)));
   f.reset();
-  contents.forEach(element => element.replaceChildren(document.createElement("div")));
+  contents.forEach((element) => element.replaceChildren(document.createElement("div")));
   await f.flush();
   assert.equal(f.queries.length, 0);
   assert.equal(f.events.length, 0);
@@ -428,7 +480,7 @@ test("native editors remain untouched and their content mutations do not rescan 
   assert.ok(f.active.has(f.root));
 });
 
-test("unchanged or growing bounds preserve overscroll and temporarily hidden viewports retain position", t => {
+test("unchanged or growing bounds preserve overscroll and temporarily hidden viewports retain position", (t) => {
   const f = fixture(t);
   f.install();
   const original = f.active.get(f.root);
@@ -449,7 +501,7 @@ test("unchanged or growing bounds preserve overscroll and temporarily hidden vie
   assert.equal(f.root.scrollTop, 500);
 });
 
-test("pointer and motion preferences update live and forced colors restore native scrollbars", async t => {
+test("pointer and motion preferences update live and forced colors restore native scrollbars", async (t) => {
   const f = fixture(t);
   f.install();
   const original = f.active.get(f.root);
@@ -473,10 +525,10 @@ test("pointer and motion preferences update live and forced colors restore nativ
   await f.flush();
   assert.ok(f.active.has(f.root));
   f.dispose();
-  assert.ok([...f.media.values()].every(query => query.listeners.size === 0));
+  assert.ok([...f.media.values()].every((query) => query.listeners.size === 0));
 });
 
-test("unsupported overflow isolation falls back to native scrolling", t => {
+test("unsupported overflow isolation falls back to native scrolling", (t) => {
   const f = fixture(t);
   global.CSS.supports = () => false;
   f.install();
@@ -486,7 +538,7 @@ test("unsupported overflow isolation falls back to native scrolling", t => {
   assert.equal(f.media.size, 0);
 });
 
-test("disposing cancels deferred scans and releases each scrollbar once", async t => {
+test("disposing cancels deferred scans and releases each scrollbar once", async (t) => {
   const f = fixture(t);
   f.install();
   f.reset();
@@ -500,7 +552,7 @@ test("disposing cancels deferred scans and releases each scrollbar once", async 
   assert.equal(f.frames.size, 0);
   assert.equal(f.timers.size, 0);
   assert.equal(f.active.size, 0);
-  assert.ok(f.records.every(record => record.destroyed === 1));
+  assert.ok(f.records.every((record) => record.destroyed === 1));
   f.reset();
   f.resize();
   f.root.classList.add("after-dispose");

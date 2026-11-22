@@ -9,10 +9,12 @@ function backendDependencies(value: readonly string[]): string[] {
 }
 
 /** Track backend plugin dependencies through Cordis-scoped readiness services. */
-export function withBackendPluginDependencies<T extends {
-  inject?: BackendInjection;
-  apply(ctx: any, config?: unknown): void | Promise<void>;
-}>(plugin: T, id: string, dependencies: readonly string[] = []) {
+export function withBackendPluginDependencies<
+  T extends {
+    inject?: BackendInjection;
+    apply(ctx: any, config?: unknown): void | Promise<void>;
+  }
+>(plugin: T, id: string, dependencies: readonly string[] = []) {
   const services: Record<string, { required: boolean }> = {};
   if (Array.isArray(plugin.inject)) {
     for (const name of plugin.inject) services[name] = { required: true };
@@ -26,15 +28,18 @@ export function withBackendPluginDependencies<T extends {
     inject: services,
     apply(ctx: any, config?: unknown) {
       let disposed = false;
-      ctx.on("dispose", () => { disposed = true; });
+      ctx.on("dispose", () => {
+        disposed = true;
+      });
       const ready = () => {
         if (!disposed) ctx.set(BACKEND_PLUGIN_SERVICE_PREFIX + id, true);
       };
       const result = plugin.apply(ctx, config);
-      if (result && typeof result.then === "function") return Promise.resolve(result).then((value) => {
-        ready();
-        return value;
-      });
+      if (result && typeof result.then === "function")
+        return Promise.resolve(result).then((value) => {
+          ready();
+          return value;
+        });
       ready();
       return result;
     }
@@ -47,12 +52,21 @@ export function missingBackendPluginDependencies(
   dependencies: readonly string[] = [],
   inject: Record<string, { required: boolean }> = {}
 ): string[] {
-  const missing = backendDependencies(dependencies).filter((id) => !ctx.get(BACKEND_PLUGIN_SERVICE_PREFIX + id));
+  const missing = backendDependencies(dependencies).filter(
+    (id) => !ctx.get(BACKEND_PLUGIN_SERVICE_PREFIX + id)
+  );
   if (missing.length) return [...new Set(missing)];
-  return [...new Set(Object.entries(inject)
-    .filter(([name, entry]) => entry.required && !ctx.get(name))
-    .map(([name]) => name.startsWith(BACKEND_PLUGIN_SERVICE_PREFIX)
-      ? name.slice(BACKEND_PLUGIN_SERVICE_PREFIX.length) : name))];
+  return [
+    ...new Set(
+      Object.entries(inject)
+        .filter(([name, entry]) => entry.required && !ctx.get(name))
+        .map(([name]) =>
+          name.startsWith(BACKEND_PLUGIN_SERVICE_PREFIX)
+            ? name.slice(BACKEND_PLUGIN_SERVICE_PREFIX.length)
+            : name
+        )
+    )
+  ];
 }
 
 /** Cordis 3 starts async disposers without awaiting them. Track them per host. */

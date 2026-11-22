@@ -53,11 +53,7 @@ const items = computed<BreadcrumbItem[]>(() => {
 
 <template>
   <div class="breadcrumbs">
-    <VBreadcrumbs
-      class="breadcrumbs-list"
-      density="comfortable"
-      :items="items"
-    >
+    <VBreadcrumbs class="breadcrumbs-list" density="comfortable" :items="items">
       <template #divider>
         <VIcon icon="mdi-chevron-right" size="16" />
       </template>
@@ -101,5 +97,4 @@ const items = computed<BreadcrumbItem[]>(() => {
     color: var(--color-gray-7);
   }
 }
-
 </style>

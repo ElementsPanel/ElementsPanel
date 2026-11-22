@@ -147,7 +147,9 @@ export function useQuickStartFlow() {
 
   const toStep5 = (instanceId?: string) => {
     formData.step = 5;
-    formData.title = t("TXT_CODE_COMMON_CONGRATULATIONS_THE_INSTANCE_HAS_BEEN_CREATED_SUCCESSFULLY");
+    formData.title = t(
+      "TXT_CODE_COMMON_CONGRATULATIONS_THE_INSTANCE_HAS_BEEN_CREATED_SUCCESSFULLY"
+    );
     currentIcon.value = "mdi-emoticon-outline";
 
     formData.actions = arrayFilter<ActionButtons>([

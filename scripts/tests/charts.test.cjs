@@ -9,7 +9,9 @@ const vue = frontendRequire("vue");
 const load = createLoader({ compiler: ts, resolve: (id) => frontendRequire(id) });
 
 function fixture(t, chartModule) {
-  const mounted = [], beforeUnmount = [], charts = [];
+  const mounted = [],
+    beforeUnmount = [],
+    charts = [];
   const scope = vue.effectScope();
   const activity = { visible: vue.ref(true), interacting: vue.ref(false) };
   let disposed = false;
@@ -24,9 +26,15 @@ function fixture(t, chartModule) {
       this.destroyed = 0;
       charts.push(this);
     }
-    update(mode) { this.updates.push(mode); }
-    stop() { this.stops = (this.stops ?? 0) + 1; }
-    destroy() { this.destroyed++; }
+    update(mode) {
+      this.updates.push(mode);
+    }
+    stop() {
+      this.stops = (this.stops ?? 0) + 1;
+    }
+    destroy() {
+      this.destroyed++;
+    }
   }
   const lifecycle = {
     ...vue,
@@ -36,11 +44,20 @@ function fixture(t, chartModule) {
   const imports = {
     vue: lifecycle,
     "./useDesktopWindowActivity": { useDesktopWindowActivity: () => activity },
-    "chart.js": chartModule ?? Object.fromEntries([
-      ["Chart", FakeChart],
-      ...["CategoryScale", "LinearScale", "LineController", "LineElement", "PointElement", "Filler", "Tooltip"]
-        .map((name) => [name, {}])
-    ])
+    "chart.js":
+      chartModule ??
+      Object.fromEntries([
+        ["Chart", FakeChart],
+        ...[
+          "CategoryScale",
+          "LinearScale",
+          "LineController",
+          "LineElement",
+          "PointElement",
+          "Filler",
+          "Tooltip"
+        ].map((name) => [name, {}])
+      ])
   };
   const hooks = load("plugins/console/panel/src/hooks/useOverviewChart.ts", imports);
   const dispose = () => {
@@ -51,17 +68,26 @@ function fixture(t, chartModule) {
   };
   t.after(dispose);
   return {
-    hooks, charts, dispose, activity,
+    hooks,
+    charts,
+    dispose,
+    activity,
     run: (callback) => scope.run(callback),
     mount: () => Promise.all(mounted.map((callback) => callback())),
     setupSfc(relative, overrides) {
-      return scope.run(() => load(relative, {
-        vue: lifecycle,
-        "vuetify/components": {},
-        "@/components/Empty.vue": {},
-        "@/lang/i18n": { t: (key) => key },
-        ...overrides
-      }, compileSfc(relative)).default.setup({}, { expose() {} }));
+      return scope.run(() =>
+        load(
+          relative,
+          {
+            vue: lifecycle,
+            "vuetify/components": {},
+            "@/components/Empty.vue": {},
+            "@/lang/i18n": { t: (key) => key },
+            ...overrides
+          },
+          compileSfc(relative)
+        ).default.setup({}, { expose() {} })
+      );
     }
   };
 }
@@ -137,14 +163,21 @@ test("monitoring charts map request and instance histories independently and ret
   const f = fixture(t);
   const state = vue.ref({
     totalInstance: 3,
-    chart: { request: [{ value: 2, runningInstance: 1 }, { value: 0, runningInstance: 3 }] }
+    chart: {
+      request: [
+        { value: 2, runningInstance: 1 },
+        { value: 0, runningInstance: 3 }
+      ]
+    }
   });
   const overviewHook = load("plugins/instance/panel/src/monitor/hooks/useOverviewChart.ts", {
     "@/hooks/useOverviewChart": f.hooks
   });
   const page = f.setupSfc("plugins/instance/panel/src/monitor/normal/OverviewPage.vue", {
     "@/hooks/useOverviewInfo": { useOverviewInfo: () => ({ state }) },
-    "../hooks/useOperationLog": { useOperationLog: () => ({ fetchData() {}, formattedLogs: vue.ref([]) }) },
+    "../hooks/useOperationLog": {
+      useOperationLog: () => ({ fetchData() {}, formattedLogs: vue.ref([]) })
+    },
     "../hooks/useOverviewChart": overviewHook
   });
   page.requestChartCanvas.value = {};
@@ -165,7 +198,11 @@ test("monitoring charts map request and instance histories independently and ret
   assert.deepEqual(request.data.datasets[0].data, [5, 0]);
   assert.deepEqual(instances.data.datasets[0].data, [4, 3]);
   assert.equal(request.options.scales.y.max, 5);
-  assert.equal(instances.options.scales.y.max, 4, "past counts must not be clipped after instance deletion");
+  assert.equal(
+    instances.options.scales.y.max,
+    4,
+    "past counts must not be clipped after instance deletion"
+  );
   state.value.chart.request = [];
   await vue.nextTick();
   assert.deepEqual(request.data.datasets[0].data, []);
@@ -181,9 +218,17 @@ test("area gradients are isolated between canvases and recreated after the drawi
   await f.mount();
   const renderContext = () => ({
     chartArea: { top: 6, bottom: 74 },
-    ctx: { createLinearGradient: () => ({ stops: [], addColorStop(...stop) { this.stops.push(stop); } }) }
+    ctx: {
+      createLinearGradient: () => ({
+        stops: [],
+        addColorStop(...stop) {
+          this.stops.push(stop);
+        }
+      })
+    }
   });
-  const first = renderContext(), second = renderContext();
+  const first = renderContext(),
+    second = renderContext();
   const cpuFill = f.charts[0].data.datasets[0].backgroundColor;
   const memFill = f.charts[1].data.datasets[0].backgroundColor;
   const gradient = cpuFill({ chart: first });
@@ -192,21 +237,30 @@ test("area gradients are isolated between canvases and recreated after the drawi
   first.chartArea.bottom = 104;
   const resized = cpuFill({ chart: first });
   assert.notEqual(resized, gradient);
-  assert.deepEqual(resized.stops.map(([offset]) => offset), [0, 0.6, 1]);
+  assert.deepEqual(
+    resized.stops.map(([offset]) => offset),
+    [0, 0.6, 1]
+  );
 });
 
 test("Chart.js can render, update, resize and destroy the configured line chart", async (t) => {
   const chartModule = frontendRequire("chart.js");
   const f = fixture(t, chartModule);
   const canvas = { width: 320, height: 78, getContext: () => context };
-  const context = new Proxy({
-    canvas,
-    measureText: (text) => ({ width: String(text).length * 6 }),
-    createLinearGradient: () => ({ addColorStop() {} })
-  }, {
-    get: (target, key) => key in target ? target[key] : () => {},
-    set: (target, key, value) => { target[key] = value; return true; }
-  });
+  const context = new Proxy(
+    {
+      canvas,
+      measureText: (text) => ({ width: String(text).length * 6 }),
+      createLinearGradient: () => ({ addColorStop() {} })
+    },
+    {
+      get: (target, key) => (key in target ? target[key] : () => {}),
+      set: (target, key, value) => {
+        target[key] = value;
+        return true;
+      }
+    }
+  );
   const values = vue.ref([10, 50, 30]);
   const hook = f.run(() => f.hooks.useSimpleChart(vue.shallowRef(canvas), () => values.value));
   await f.mount();

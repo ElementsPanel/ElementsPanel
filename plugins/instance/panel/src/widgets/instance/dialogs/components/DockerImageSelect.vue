@@ -27,10 +27,14 @@ const emit = defineEmits<{
   "update:imageSelectMethod": [value: "SELECT" | "EDIT"];
 }>();
 
-const imageSelectMethod = ref<"SELECT" | "EDIT">("SELECT");
-watch(() => props.imageSelectMethod, (value) => {
-  if (value) imageSelectMethod.value = value;
-}, { immediate: true });
+const selectedImageMethod = ref<"SELECT" | "EDIT">("SELECT");
+watch(
+  () => props.imageSelectMethod,
+  (value) => {
+    if (value) selectedImageMethod.value = value;
+  },
+  { immediate: true }
+);
 const { toPage } = useAppRouters();
 const dockerImages = ref<{ label: string; value: string }[]>([]);
 const loading = ref(false);
@@ -69,6 +73,7 @@ const loadImages = async () => {
       }
     }
   } catch {
+    // Keep manual image entry available if discovery fails.
   } finally {
     loading.value = false;
   }
@@ -84,19 +89,43 @@ const selectImage = (image: unknown) => {
   if (image === IMAGE_DEFINE.EDIT) {
     emit("update:modelValue", "");
     emit("update:imageSelectMethod", "EDIT");
-    imageSelectMethod.value = "EDIT";
+    selectedImageMethod.value = "EDIT";
   }
 };
 </script>
 
 <template>
-  <template v-if="imageSelectMethod === 'SELECT'">
-    <VSelect :model-value="modelValue" :id="id" :rules="rules" :items="dockerImages" item-title="label" item-value="value" :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT')" :loading="loading" hide-details="auto" @focus="loadImages" @update:model-value="(v) => { emit('update:modelValue', v); selectImage(v); }">
+  <template v-if="selectedImageMethod === 'SELECT'">
+    <VSelect
+      :id="id"
+      :model-value="modelValue"
+      :rules="rules"
+      :items="dockerImages"
+      item-title="label"
+      item-value="value"
+      :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT')"
+      :loading="loading"
+      hide-details="auto"
+      @focus="loadImages"
+      @update:model-value="
+        (v) => {
+          emit('update:modelValue', v);
+          selectImage(v);
+        }
+      "
+    >
       <template #no-data><Empty :icon="false" compact /></template>
     </VSelect>
   </template>
 
   <template v-else>
-    <VTextField :model-value="modelValue" :id="id" :rules="rules" :placeholder="t('TXT_CODE_COMMON_REQUIRED_E_G_ECLIPSE_TEMURIN_24')" hide-details="auto" @update:model-value="(v) => emit('update:modelValue', v)" />
+    <VTextField
+      :id="id"
+      :model-value="modelValue"
+      :rules="rules"
+      :placeholder="t('TXT_CODE_COMMON_REQUIRED_E_G_ECLIPSE_TEMURIN_24')"
+      hide-details="auto"
+      @update:model-value="(v) => emit('update:modelValue', v)"
+    />
   </template>
 </template>

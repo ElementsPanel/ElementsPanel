@@ -47,11 +47,18 @@ class RedisStorage implements EntityStorage {
   private client?: RedisClientType;
 
   // Connection settings must remain available before Redis can be initialized.
-  constructor(private readonly bootstrap: FileStorage, private readonly onError: (error?: unknown) => void) {}
+  constructor(
+    private readonly bootstrap: FileStorage,
+    private readonly onError: (error?: unknown) => void
+  ) {}
 
   async initialize(url: string) {
     await this.dispose();
-    this.client = createClient({ url, disableOfflineQueue: true, socket: { connectTimeout: 5000 } });
+    this.client = createClient({
+      url,
+      disableOfflineQueue: true,
+      socket: { connectTimeout: 5000 }
+    });
     this.client.on("error", this.onError);
     let timer: NodeJS.Timeout | undefined;
     try {
@@ -108,7 +115,10 @@ class RedisStorage implements EntityStorage {
   async list(category: string) {
     if (category === "SystemConfig") return this.bootstrap.list(category);
     const keys: string[] = [];
-    for await (const key of this.connectedClient().scanIterator({ MATCH: `${this.category(category)}:*`, COUNT: 100 })) {
+    for await (const key of this.connectedClient().scanIterator({
+      MATCH: `${this.category(category)}:*`,
+      COUNT: 100
+    })) {
       keys.push(key.slice(category.length + 1));
     }
     return keys;
@@ -137,9 +147,16 @@ function defineAttr(target: any, source: any): any {
 class PanelStorage {
   readonly TYPE = { FILE: 0, REDIS: 1 } as const;
   private readonly file = new FileStorage();
-  private readonly redis = new RedisStorage(this.file, (error) => this.logger?.error("Redis storage error", error));
+  private readonly redis = new RedisStorage(
+    this.file,
+    (error) => this.logger?.error("Redis storage error", error)
+  );
   private current: EntityStorage = this.file;
-  private logger?: { info(...args: any[]): void; warn(...args: any[]): void; error(...args: any[]): void };
+  private logger?: {
+    info(...args: any[]): void;
+    warn(...args: any[]): void;
+    error(...args: any[]): void;
+  };
 
   setLogger(logger: PanelStorage["logger"]) {
     this.logger = logger;
