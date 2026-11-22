@@ -105,3 +105,21 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Generated artifacts and external plugins
+out/
+lib/
+production/
+production-code/
+/npm-packages/
+/.elementspanel-npm-*/
+/external/
+market_plugins/
+core/panel/public/
+core/panel/plugins/
+core/daemon/plugins/
+plugins/*/panel/backend/
+plugins/*/daemon/backend/
+core/frontend/components.d.ts
+core/frontend/stats.html
+package-lock.json

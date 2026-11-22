@@ -5,6 +5,12 @@
   "description": "ElementsPanel workspace — a fork of the MCSManager project",
   "scripts": {
     "test": "node --test scripts/tests/*.test.cjs",
+    "test:performance": "node --test scripts/performance/*.test.cjs",
+    "lint": "node scripts/check-quality.cjs lint",
+    "lint:fix": "node scripts/check-quality.cjs lint --fix",
+    "format": "node scripts/check-quality.cjs format --write",
+    "format:check": "node scripts/check-quality.cjs format",
+    "check": "npm run lint && npm run format:check && npm run type-check && npm run check:i18n && npm test && npm run test:performance",
     "type-check": "npm run type-check --prefix core/common && npm run type-check --prefix core/panel && npm run type-check --prefix core/daemon && npm run type-check --prefix core/frontend",
     "check:i18n": "node scripts/check-i18n.mjs",
     "daemon": "cd core/daemon &&  npm run dev",

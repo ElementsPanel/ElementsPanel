@@ -14,6 +14,10 @@
     "url": "https://github.com/ElementsPanel/ElementsPanel"
   },
   "scripts": {
+    "lint": "node ../../scripts/check-quality.cjs lint",
+    "lint:fix": "node ../../scripts/check-quality.cjs lint --fix",
+    "format": "node ../../scripts/check-quality.cjs format --write",
+    "format:check": "node ../../scripts/check-quality.cjs format",
     "type-check": "tsc --noEmit --project tsconfig.json",
     "build": "tsc --project tsconfig.json",
     "pub": "npm publish"

@@ -46,6 +46,14 @@ jobs:
           npm ci --prefix core/frontend --no-fund --no-audit
       - name: Run tests
         run: npm test
+      - name: Lint repository sources
+        run: npm run lint
+      - name: Check formatting
+        run: npm run format:check
+      - name: Check performance regressions
+        run: npm run test:performance
+      - name: Check translations
+        run: npm run check:i18n
       - name: Check types
         run: npm run type-check
       - name: Build npm packages

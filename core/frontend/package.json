@@ -8,8 +8,10 @@
     "preview": "vite preview",
     "build-only": "node ../../scripts/build-frontend.mjs",
     "type-check": "vue-tsc --noEmit --skipLibCheck -p tsconfig.vitest.json --composite false",
-    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
-    "format": "prettier --write src/",
+    "lint": "node ../../scripts/check-quality.cjs lint",
+    "lint:fix": "node ../../scripts/check-quality.cjs lint --fix",
+    "format": "node ../../scripts/check-quality.cjs format --write",
+    "format:check": "node ../../scripts/check-quality.cjs format",
     "analyze": "vite build --mode analyze"
   },
   "dependencies": {
