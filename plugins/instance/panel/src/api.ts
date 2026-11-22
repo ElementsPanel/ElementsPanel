@@ -525,20 +525,6 @@ export const containerList = useDefineApi<
   method: "GET"
 });
 
-export const buildProgress = useDefineApi<
-  {
-    params: {
-      daemonId: string;
-    };
-  },
-  {
-    [propsName: string]: number;
-  }
->({
-  url: "/api/environment/progress",
-  method: "GET"
-});
-
 export const getImagePlatforms = useDefineApi<
   {
     params: {

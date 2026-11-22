@@ -5,7 +5,7 @@ import { notification } from "@elementspanel/epanel-plugin-console/tools/vuetify
 import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
 import { imageList } from "@elementspanel/epanel-plugin-console/services/apis/envImage";
 import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
-import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VTextField, VTextarea } from "vuetify/components";
+import { VBtn, VTextField, VTextarea } from "vuetify/components";
 
 const props = defineProps<{
   dockerFile: string;
@@ -49,7 +49,14 @@ const submit = async () => {
   }
 };
 
-const confirmSubmit = () => Modal.confirm({ title: t("TXT_CODE_DOCKER_IMAGE_BUILD_CONFIRM_HINT"), async onOk() { await submit(); } });
+const confirmSubmit = () =>
+  Modal.confirm({
+    title: t("TXT_CODE_COMMON_CREATE_IMAGE"),
+    content: t("TXT_CODE_DOCKER_IMAGE_BUILD_CONFIRM_HINT"),
+    async onOk() {
+      await submit();
+    }
+  });
 
 onMounted(() => {
   options.dockerFile = props.dockerFile;

@@ -6,7 +6,6 @@ type EnvironmentApi = Pick<
   | "imageList"
   | "getNetworkModeList"
   | "containerList"
-  | "buildProgress"
   | "getImagePlatforms"
   | "getDockerHubImagePlatforms"
 >;
@@ -25,6 +24,5 @@ const call = <K extends keyof EnvironmentApi>(name: K) =>
 export const imageList = call("imageList");
 export const getNetworkModeList = call("getNetworkModeList");
 export const containerList = call("containerList");
-export const buildProgress = call("buildProgress");
 export const getImagePlatforms = call("getImagePlatforms");
 export const getDockerHubImagePlatforms = call("getDockerHubImagePlatforms");

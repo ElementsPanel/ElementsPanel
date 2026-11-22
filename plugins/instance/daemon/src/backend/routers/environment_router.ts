@@ -92,20 +92,6 @@ routerApp.on("environment/del_image", async (ctx, data) => {
   }
 });
 
-routerApp.on("environment/progress", async (ctx, request) => {
-  try {
-    const data: any = {};
-    DockerManager.builderProgress.forEach((v, k) => {
-      data[k] = request?.details === true
-        ? DockerManager.builderDetails.get(k) ?? { status: v, downloadedBytes: 0, totalBytes: 0, ...(v === 2 ? { percentage: 100 } : {}) }
-        : v;
-    });
-    protocol.response(ctx, data);
-  } catch (error: any) {
-    protocol.responseError(ctx, error);
-  }
-});
-
 routerApp.on("environment/image_platforms", async (ctx, data) => {
   try {
     const imageName = data.imageName;

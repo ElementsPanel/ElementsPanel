@@ -1,5 +1,4 @@
 import Docker from "dockerode";
-import { DockerBuildTracker, type DockerBuildProgress } from "./docker_build_progress";
 import http from "http";
 import https from "https";
 import { normalizeDockerPlatform } from "mcsmanager-common";
@@ -77,10 +76,6 @@ export class DefaultDocker extends Docker {
 }
 
 export class DockerManager {
-  // 1=creating 2=creating completed -1=creating error
-  public static readonly builderProgress = new Map<string, number>();
-  public static readonly builderDetails = new Map<string, DockerBuildProgress>();
-
   public docker: Docker;
 
   constructor(p?: any) {
@@ -91,43 +86,19 @@ export class DockerManager {
     return this.docker;
   }
 
-  public static setBuilderProgress(imageName: string, status: number) {
-    DockerManager.builderProgress.set(imageName, status);
-  }
-
-  public static getBuilderProgress(imageName: string) {
-    return DockerManager.builderProgress.get(imageName);
-  }
-
   async startBuildImage(dockerFileDir: string, dockerImageName: string) {
-    const tracker = new DockerBuildTracker();
-    const publish = () => DockerManager.builderDetails.set(dockerImageName, tracker.snapshot());
-    publish();
-    try {
-      DockerManager.setBuilderProgress(dockerImageName, 1);
-      const stream = await this.docker.buildImage(
-        {
-          context: dockerFileDir,
-          src: ["Dockerfile"]
-        },
-        { t: dockerImageName }
+    const stream = await this.docker.buildImage(
+      {
+        context: dockerFileDir,
+        src: ["Dockerfile"]
+      },
+      { t: dockerImageName }
+    );
+    await new Promise<void>((resolve, reject) => {
+      this.docker.modem.followProgress(Readable.from(stream), (err) =>
+        err ? reject(err) : resolve()
       );
-      await new Promise((resolve, reject) => {
-        this.docker.modem.followProgress(
-          Readable.from(stream),
-          (err, res) => err ? reject(err) : resolve(res),
-          (event) => { tracker.update(event); publish(); }
-        );
-      });
-      tracker.finish();
-      publish();
-      DockerManager.setBuilderProgress(dockerImageName, 2);
-    } catch (error: any) {
-      tracker.finish(error ?? new Error("Docker build failed"));
-      publish();
-      DockerManager.setBuilderProgress(dockerImageName, -1);
-      throw error;
-    }
+    });
   }
 
   /** Return the daemon's native platform; discover additional buildx platforms separately. */

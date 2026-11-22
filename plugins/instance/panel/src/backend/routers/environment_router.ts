@@ -88,22 +88,6 @@ export function createEnvironmentRouter() {
     }
   );
 
-  router.get(
-    "/progress",
-    permission({ level: ROLE.ADMIN }),
-    validator({ query: daemonQuery }),
-    async (ctx) => {
-      try {
-        const remoteService = remoteSubsystem().getInstance(String(ctx.query.daemonId));
-        ctx.body = await remoteRequest(remoteService).request("environment/progress", {
-          details: ctx.query.details === "true"
-        });
-      } catch (error) {
-        ctx.body = error;
-      }
-    }
-  );
-
   router.post(
     "/image_platforms",
     permission({ level: ROLE.ADMIN }),

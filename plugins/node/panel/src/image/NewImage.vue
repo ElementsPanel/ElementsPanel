@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import CardPanel from "@elementspanel/epanel-plugin-console/components/CardPanel";
@@ -17,13 +17,11 @@ import {
 } from "@elementspanel/epanel-plugin-console/types/const";
 import { getCurrentLang } from "@elementspanel/epanel-plugin-i18n";
 import DockerFileForm from "./DockerFileForm.vue";
-import BuildProgress from "./BuildProgress.vue";
 import { VBtn, VCard, VCardText, VCol, VContainer, VDialog, VRow } from "vuetify/components";
 
 const { toPage } = useAppRouters();
 const route = useRoute();
 const daemonId: string = String(route.query.daemonId ?? "");
-const buildProgressDialog = ref<InstanceType<typeof BuildProgress>>();
 const dockerFileDrawer = ref(false);
 const imageList = [
   {
@@ -88,8 +86,6 @@ const toImageListPage = () => {
     }
   });
 };
-
-onMounted(async () => {});
 </script>
 
 <template>
@@ -99,9 +95,6 @@ onMounted(async () => {});
         <template #actions>
           <VBtn variant="tonal" @click="toImageListPage">
             {{ t("TXT_CODE_COMMON_BACK_TO_IMAGE_LIST") }}
-          </VBtn>
-          <VBtn color="primary" @click="buildProgressDialog?.openDialog()">
-            {{ t("TXT_CODE_COMMON_VIEW_BUILD_PROGRESS") }}
           </VBtn>
         </template>
       </PageToolbar>
@@ -157,8 +150,6 @@ onMounted(async () => {});
       </VCardText>
     </VCard>
   </VDialog>
-
-    <BuildProgress ref="buildProgressDialog" :daemon-id="daemonId ?? ''" />
   </main>
 </template>
 
