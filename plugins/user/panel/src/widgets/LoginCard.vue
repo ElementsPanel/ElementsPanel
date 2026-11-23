@@ -144,7 +144,7 @@ const {
                 <span>{{ t("TXT_CODE_SSO_LOGIN_DIVIDER") }}</span>
                 <VDivider />
               </div>
-              <VBtn size="large" block variant="outlined" @click="handleSsoLogin">
+              <VBtn size="large" block variant="flat" @click="handleSsoLogin">
                 <template #prepend>
                   <img v-if="ssoInfo?.iconUrl" :src="ssoInfo.iconUrl" class="sso-icon" alt="" />
                   <span v-else class="mdi mdi-login" aria-hidden="true"></span>

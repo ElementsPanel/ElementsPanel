@@ -135,7 +135,7 @@ onMounted(async () => {
           <VBtn variant="tonal" :loading="getConfigFileLoading" @click="refresh()">
             {{ t("TXT_CODE_COMMON_REFRESH") }}
           </VBtn>
-          <VBtn variant="outlined" @click="toEditRawFile">
+          <VBtn variant="flat" @click="toEditRawFile">
             {{ t("TXT_CODE_COMMON_EDIT_SOURCE_FILE") }}
           </VBtn>
         </template>
