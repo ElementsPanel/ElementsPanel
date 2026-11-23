@@ -358,12 +358,11 @@ onUnmounted(() => {
 <template>
   <main
     class="file-manager-page"
-    :style="{ opacity: opacity ? 0.45 : 1 }"
     @dragover="handleDragover"
     @dragleave="handleDragleave"
     @drop="handleDrop"
   >
-    <VContainer fluid class="file-manager-container">
+    <VContainer fluid class="file-manager-container" :style="{ opacity: opacity ? 0.45 : 1 }">
       <VRow class="file-manager-toolbar d-flex align-center" density="comfortable">
         <VCol cols="12" lg="3" class="file-manager-title">
           <VIcon icon="mdi-folder-open-outline" size="28" />
@@ -769,7 +768,6 @@ onUnmounted(() => {
   min-height: 100%;
   overflow-x: hidden;
   box-sizing: border-box;
-  transition: opacity 0.15s ease;
 }
 
 .file-manager-container {
@@ -778,6 +776,7 @@ onUnmounted(() => {
   margin: 0 auto;
   padding: 20px 24px 32px;
   box-sizing: border-box;
+  transition: opacity 0.15s ease;
 }
 
 .file-manager-toolbar {
