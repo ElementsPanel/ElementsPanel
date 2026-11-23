@@ -70,6 +70,12 @@ const operationForm = ref({ instanceName: "", currentPage: 1, pageSize: 20, stat
 const currentRemoteNode = ref<NodeStatus>();
 const multipleMode = ref(false);
 const selectedInstance = ref<InstanceMoreDetail[]>([]);
+type CardAction = "start" | "stop" | "restart" | "kill" | "update" | "delete";
+const pendingCardActions = ref(new Map<string, CardAction>());
+const cardActionKey = (item: InstanceMoreDetail) =>
+  `${currentRemoteNode.value?.uuid || ""}/${item.instanceUuid}`;
+const getPendingCardAction = (item: InstanceMoreDetail) =>
+  pendingCardActions.value.get(cardActionKey(item));
 const { isPhone } = useScreen();
 
 const { execute: getNodes, state: nodes, isLoading: nodesLoading } = remoteNodeList();
@@ -224,16 +230,16 @@ const batchDeleteInstances = (deleteFile: boolean) => {
   void paths;
 };
 
-const runCardAction = async (
-  item: InstanceMoreDetail,
-  action: "start" | "stop" | "restart" | "kill" | "update"
-) => {
+const runCardAction = async (item: InstanceMoreDetail, action: Exclude<CardAction, "delete">) => {
+  const key = cardActionKey(item);
+  if (pendingCardActions.value.has(key)) return;
   const params = {
     params: { uuid: item.instanceUuid, daemonId: currentRemoteNode.value?.uuid || "" }
   };
+  pendingCardActions.value.set(key, action);
   try {
     if (action === "start") {
-      if (!(await verifyEULA(item.instanceUuid, currentRemoteNode.value?.uuid || ""))) return;
+      if (!(await verifyEULA(item.instanceUuid, params.params.daemonId))) return;
       await openInstance().execute(params);
     }
     if (action === "stop") await stopInstance().execute(params);
@@ -248,6 +254,8 @@ const runCardAction = async (
     await initInstancesData();
   } catch (error: any) {
     reportErrorMsg(error.message);
+  } finally {
+    pendingCardActions.value.delete(key);
   }
 };
 
@@ -294,9 +302,12 @@ const closeDeleteDialog = () => {
 
 const deleteCardInstance = async () => {
   const item = deleteDialogItem.value;
-  if (!item) return;
+  if (!item || deleteDialogLoading.value) return;
+  const key = cardActionKey(item);
+  if (pendingCardActions.value.has(key)) return;
 
   deleteDialogLoading.value = true;
+  pendingCardActions.value.set(key, "delete");
   try {
     const { execute, state } = batchDelete();
     await execute({
@@ -318,6 +329,7 @@ const deleteCardInstance = async () => {
     reportErrorMsg(error.message);
   } finally {
     deleteDialogLoading.value = false;
+    pendingCardActions.value.delete(key);
   }
 };
 
@@ -617,6 +629,8 @@ onMounted(async () => {
                     size="small"
                     color="success"
                     variant="text"
+                    :loading="getPendingCardAction(item) === 'start'"
+                    :disabled="!!getPendingCardAction(item)"
                     @click="runCardAction(item, 'start')"
                   /> </template
                 ><span>{{ t("TXT_CODE_COMMON_START") }}</span>
@@ -630,6 +644,8 @@ onMounted(async () => {
                     size="small"
                     color="warning"
                     variant="text"
+                    :loading="getPendingCardAction(item) === 'stop'"
+                    :disabled="!!getPendingCardAction(item)"
                     @click="confirmCardAction(item, 'stop')"
                   /> </template
                 ><span>{{ t("TXT_CODE_COMMON_STOP") }}</span>
@@ -642,6 +658,8 @@ onMounted(async () => {
                     icon="mdi-restart"
                     size="small"
                     variant="text"
+                    :loading="getPendingCardAction(item) === 'restart'"
+                    :disabled="!!getPendingCardAction(item)"
                     @click="confirmCardAction(item, 'restart')"
                   />
                 </template>
@@ -655,6 +673,8 @@ onMounted(async () => {
                     icon="mdi-cloud-download-outline"
                     size="small"
                     variant="text"
+                    :loading="getPendingCardAction(item) === 'update'"
+                    :disabled="!!getPendingCardAction(item)"
                     @click="runCardAction(item, 'update')"
                   />
                 </template>
@@ -669,6 +689,8 @@ onMounted(async () => {
                     size="small"
                     color="error"
                     variant="text"
+                    :loading="getPendingCardAction(item) === 'kill'"
+                    :disabled="!!getPendingCardAction(item)"
                     @click="confirmCardAction(item, 'kill')"
                   />
                 </template>
@@ -705,6 +727,8 @@ onMounted(async () => {
                     size="small"
                     color="error"
                     variant="text"
+                    :loading="getPendingCardAction(item) === 'delete'"
+                    :disabled="!!getPendingCardAction(item)"
                     @click.stop="openDeleteDialog(item)"
                   /> </template
                 ><span>{{ t("TXT_CODE_COMMON_DELETE_INSTANCE") }}</span>

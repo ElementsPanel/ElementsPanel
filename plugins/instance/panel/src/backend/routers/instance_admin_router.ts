@@ -1,6 +1,6 @@
 import Router from "@koa/router";
 import axios from "axios";
-import { $t, identity, middleware, operations, remote, roles } from "../runtime";
+import { $t, core, identity, middleware, operations, remote, roles } from "../runtime";
 import { multiOperationForwarding } from "../service/instance_service";
 import { timeUuid } from "../runtime";
 
@@ -183,40 +183,44 @@ export function createInstanceAdminRouter() {
     ["restart", "instance_restart"]
   ] as const) {
     router.post(`/multi_${operation}`, permission({ level: ROLE.ADMIN }), async (ctx) => {
-      await multiOperationForwarding(ctx.request.body, async (daemonId, instanceUuids) => {
-        // Older daemons reply once per instance using the same request ID. Give
-        // each instance its own request so a first success cannot hide later failures.
-        const results = await Promise.all(
-          instanceUuids.map(async (instanceUuid) => {
-            try {
-              const result = await remoteRequest(remoteSubsystem().getInstance(daemonId)).request(
-                `instance/${operation}`,
-                { instanceUuids: [instanceUuid] }
-              );
-              const instance = result.instances?.find(
-                (item: { instanceUuid: string }) => item.instanceUuid === instanceUuid
-              );
-              operationLogger.log(
-                logType,
-                {
-                  daemon_id: daemonId,
-                  instance_id: instanceUuid,
-                  operator_ip: ctx.ip,
-                  operator_name: guard().identify(ctx).userName,
-                  instance_name: instance?.nickname ?? instanceUuid
-                },
-                operation === "kill" ? "warning" : "info"
-              );
-              return undefined;
-            } catch (error) {
-              return `${daemonId}/${instanceUuid}: ${
+      const operatorIp = ctx.ip;
+      const operatorName = guard().identify(ctx).userName;
+      const logger = core().logger;
+      // Validate synchronously, then run each node's instances in the background.
+      void multiOperationForwarding(ctx.request.body, async (daemonId, instanceUuids) => {
+        const failures: string[] = [];
+        for (const instanceUuid of instanceUuids) {
+          try {
+            // Use one request per instance for older daemons.
+            const result = await remoteRequest(remoteSubsystem().getInstance(daemonId)).request(
+              `instance/${operation}`,
+              { instanceUuids: [instanceUuid] }
+            );
+            const instance = result.instances?.find(
+              (item: { instanceUuid: string }) => item.instanceUuid === instanceUuid
+            );
+            operationLogger.log(
+              logType,
+              {
+                daemon_id: daemonId,
+                instance_id: instanceUuid,
+                operator_ip: operatorIp,
+                operator_name: operatorName,
+                instance_name: instance?.nickname ?? instanceUuid
+              },
+              operation === "kill" ? "warning" : "info"
+            );
+          } catch (error) {
+            failures.push(
+              `${daemonId}/${instanceUuid}: ${
                 error instanceof Error ? error.message : String(error)
-              }`;
-            }
-          })
-        );
-        const failures = results.filter((result): result is string => result !== undefined);
+              }`
+            );
+          }
+        }
         if (failures.length) throw new Error(failures.join("\n"));
+      }).catch((error) => {
+        logger.warn(`Batch instance ${operation} failed:`, error);
       });
       ctx.body = true;
     });

@@ -1,4 +1,4 @@
-const { from, createLoader } = require("./helpers.cjs");
+const { from, createLoader, deferred, settle } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const { test } = require("node:test");
 
@@ -37,64 +37,112 @@ test("batch forwarding waits for other nodes after one fails", async () => {
   await rejection;
 });
 
-test("panel batch routes account for every instance when talking to an older daemon", async () => {
-  const runtime = {
-    $t: (key) => key,
-    roles: () => ({ ADMIN: 10, USER: 1 }),
-    middleware: () => ({
-      permission: () => async (_ctx, next) => next(),
-      validator: () => async (_ctx, next) => next()
-    }),
-    identity: () => ({ identify: () => ({ userName: "admin" }) }),
-    operations: () => ({ log: (...args) => logged.push(args) }),
-    remote: () => ({
-      services: { getInstance: (id) => id },
-      Request: class {
-        constructor(id) {
-          this.id = id;
+test("panel batch routes return immediately and process every instance in the background", async () => {
+  for (const operation of ["open", "stop", "kill", "restart"]) {
+    const firstRequest = deferred();
+    const completed = deferred();
+    const logged = [],
+      calls = [],
+      warnings = [];
+    let operatorName = "admin";
+    const runtime = {
+      $t: (key) => key,
+      roles: () => ({ ADMIN: 10, USER: 1 }),
+      middleware: () => ({
+        permission: () => async (_ctx, next) => next(),
+        validator: () => async (_ctx, next) => next()
+      }),
+      identity: () => ({ identify: () => ({ userName: operatorName }) }),
+      operations: () => ({ log: (...args) => logged.push(args) }),
+      core: () => ({
+        logger: {
+          warn: (...args) => {
+            warnings.push(args);
+            completed.resolve();
+          }
         }
-        async request(event, data) {
-          calls.push([this.id, event, data.instanceUuids]);
-          assert.equal(data.instanceUuids.length, 1);
-          const [instanceUuid] = data.instanceUuids;
-          if (instanceUuid === "failed") throw new Error("cannot start");
-          return { instances: [{ instanceUuid, nickname: instanceUuid }] };
+      }),
+      remote: () => ({
+        services: { getInstance: (id) => id },
+        Request: class {
+          constructor(id) {
+            this.id = id;
+          }
+          async request(event, data) {
+            calls.push([this.id, event, data.instanceUuids]);
+            assert.equal(data.instanceUuids.length, 1);
+            const [instanceUuid] = data.instanceUuids;
+            if (instanceUuid === "one") await firstRequest.promise;
+            if (instanceUuid === "failed") throw new Error("command failed");
+            return { instances: [{ instanceUuid, nickname: instanceUuid }] };
+          }
         }
+      })
+    };
+    const service = load("plugins/instance/panel/src/backend/service/instance_service.ts", {
+      "mcsmanager-common": {},
+      "../runtime": runtime
+    });
+    const { createInstanceAdminRouter } = load(
+      "plugins/instance/panel/src/backend/routers/instance_admin_router.ts",
+      {
+        "../runtime": runtime,
+        "../service/instance_service": service
       }
-    })
-  };
-  const logged = [],
-    calls = [];
-  const service = load("plugins/instance/panel/src/backend/service/instance_service.ts", {
-    "mcsmanager-common": {},
-    "../runtime": runtime
-  });
-  const { createInstanceAdminRouter } = load(
-    "plugins/instance/panel/src/backend/routers/instance_admin_router.ts",
-    {
-      "../runtime": runtime,
-      "../service/instance_service": service
-    }
-  );
-  const router = createInstanceAdminRouter();
-  const route = router.stack.find((item) => item.path === "/instance/multi_open");
-  await assert.rejects(
-    panelRequire("koa-compose")(route.stack)({
+    );
+    const router = createInstanceAdminRouter();
+    const route = router.stack.find((item) => item.path === `/instance/multi_${operation}`);
+    const handler = panelRequire("koa-compose")(route.stack);
+    const ctx = {
       ip: "127.0.0.1",
       request: {
-        body: ["one", "failed", "three"].map((instanceUuid) => ({ daemonId: "node", instanceUuid }))
+        body: ["one", "one", "failed", "three"].map((instanceUuid) => ({
+          daemonId: "node",
+          instanceUuid
+        }))
       }
-    }),
-    /node\/failed: cannot start/
-  );
-  assert.deepEqual(
-    calls.map((call) => call[2][0]),
-    ["one", "failed", "three"]
-  );
-  assert.deepEqual(
-    logged.map((call) => call[1].instance_id),
-    ["one", "three"]
-  );
+    };
+    let returned = false;
+    const response = handler(ctx).then(() => {
+      returned = true;
+    });
+    await settle();
+    assert.equal(returned, true);
+    assert.equal(ctx.body, true);
+    assert.deepEqual(calls, [["node", `instance/${operation}`, ["one"]]]);
+    assert.equal(logged.length, 0);
+    assert.equal(warnings.length, 0);
+    await response;
+
+    ctx.ip = "changed";
+    operatorName = "changed";
+    firstRequest.resolve();
+    await completed.promise;
+    assert.equal(ctx.body, true);
+    assert.deepEqual(
+      calls.map((call) => call[2][0]),
+      ["one", "failed", "three"]
+    );
+    assert.deepEqual(
+      logged.map((call) => call[1].instance_id),
+      ["one", "three"]
+    );
+    assert.ok(
+      logged.every(
+        (call) => call[1].operator_ip === "127.0.0.1" && call[1].operator_name === "admin"
+      )
+    );
+    assert.equal(warnings.length, 1);
+    assert.match(warnings[0][1].message, /node\/failed: command failed/);
+
+    for (const body of [null, [{ daemonId: "node", instanceUuid: "one" }, { daemonId: "node" }]]) {
+      await assert.rejects(
+        handler({ request: { body } }),
+        /Instances must be an array|Invalid instance reference/
+      );
+      assert.equal(calls.length, 3);
+    }
+  }
 });
 
 test("daemon batch operations reply once, include all failures and never hang for missing instances", async () => {

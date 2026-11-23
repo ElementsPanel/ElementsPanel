@@ -43,7 +43,7 @@ export interface IAdvancedInstanceInfo {
   info?: Record<string, any>;
 }
 
-export async function multiOperationForwarding(
+export function multiOperationForwarding(
   instances: unknown,
   callback: (daemonId: string, instanceUuids: string[]) => Promise<void>
 ) {
@@ -66,7 +66,7 @@ export async function multiOperationForwarding(
       map.set(daemonId, [instanceUuid]);
     }
   }
-  const failures = await Promise.all(
+  return Promise.all(
     Array.from(map, async ([daemonId, instanceUuids]) => {
       try {
         await callback(daemonId, [...new Set(instanceUuids)]);
@@ -75,9 +75,10 @@ export async function multiOperationForwarding(
         return error instanceof Error ? error.message : String(error);
       }
     })
-  );
-  const messages = failures.filter((failure): failure is string => failure !== undefined);
-  if (messages.length) throw new Error(messages.join("\n"));
+  ).then((failures) => {
+    const messages = failures.filter((failure): failure is string => failure !== undefined);
+    if (messages.length) throw new Error(messages.join("\n"));
+  });
 }
 
 export async function getInstanceDetails(
