@@ -4,6 +4,7 @@ import { killProcess } from "mcsmanager-common";
 import { commandStringToArray } from "../entity/commands/base/command_parser";
 import Instance from "../entity/instance/instance";
 import { $t } from "../i18n";
+import { sanitizeInstanceEnv } from "../tools/instance_env";
 import { AsyncTask, IAsyncTaskJSON } from "./async_task_service";
 import logger from "./log";
 import { SetupDockerContainer } from "./docker_process_service";
@@ -61,7 +62,8 @@ export class InstanceUpdateAction extends AsyncTask {
     const process = spawn(commandExeFile, commandParameters, {
       cwd: this.instance.absoluteCwdPath(),
       stdio: "pipe",
-      windowsHide: true
+      windowsHide: true,
+      env: sanitizeInstanceEnv()
     });
     process.once("error", (error) => {
       void this.error(error);
