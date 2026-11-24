@@ -438,6 +438,7 @@ function instanceFixture() {
       "../../i18n": { $t: (key) => key },
       "../../service/java_access": {},
       "../../service/log": { ...logger, error: (...args) => logs.push(args) },
+      "../../tools/instance_env": load(base + "tools/instance_env.ts"),
       "../commands/base/command_parser": {},
       "../commands/dispatcher": {},
       "../commands/task/openfrp": {},

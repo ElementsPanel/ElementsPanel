@@ -9,6 +9,7 @@ import { STEAM_CMD_PATH } from "../../const";
 import { $t } from "../../i18n";
 import { javaManagerSubsystem } from "../../service/java_access";
 import logger from "../../service/log";
+import { sanitizeInstanceEnv } from "../../tools/instance_env";
 import { instanceSetting } from "../../instance_settings";
 import InstanceCommand from "../commands/base/command";
 import { commandStringToArray } from "../commands/base/command_parser";
@@ -730,15 +731,12 @@ export default class Instance extends EventEmitter {
     return this.config.crlf === 2 ? "\r\n" : "\n";
   }
 
-  public generateEnv() {
-    let env = process.env;
+  public generateEnv(): NodeJS.ProcessEnv {
+    const env = sanitizeInstanceEnv(process.env);
     if (this.config.runAs) {
-      env = {
-        ...env,
-        USER: this.config.runAs ?? "",
-        HOME: this.config.runAs ? `/home/${this.config.runAs}` : "",
-        LOGNAME: this.config.runAs ?? ""
-      };
+      env.USER = this.config.runAs;
+      env.HOME = `/home/${this.config.runAs}`;
+      env.LOGNAME = this.config.runAs;
     }
     return env;
   }
