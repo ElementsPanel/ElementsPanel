@@ -64,10 +64,12 @@ const router = createRouter({
   routes: originRouterConfig as RouteRecordRaw[],
   scrollBehavior() {
     // Page scrolling belongs to the shell viewports rather than the window.
+    const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const behavior: ScrollBehavior = reducedMotion ? "instant" : "smooth";
     for (const element of document.querySelectorAll<HTMLElement>(
       "#app-mount-point, .main-content"
     )) {
-      element.scrollTo({ left: 0, top: 0, behavior: "instant" });
+      element.scrollTo({ left: 0, top: 0, behavior });
     }
     return false;
   }
