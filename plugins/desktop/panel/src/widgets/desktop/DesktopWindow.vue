@@ -273,7 +273,7 @@ watch(
       savedScrollPositions = [];
       const element = windowElement.value;
       for (const scroller of element?.querySelectorAll<HTMLElement>(
-        ".window__content, .window-inner-content > *, .os-viewport, .cm-scroller, .xterm-viewport"
+        ".window__content, .window-inner-content > *, .cm-scroller, .xterm-viewport"
       ) ?? [])
         scrollingElements.add(scroller);
       for (const element of scrollingElements) {

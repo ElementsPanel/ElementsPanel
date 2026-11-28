@@ -287,15 +287,7 @@ export function useTerminal() {
     { flush: "post" }
   );
 
-  const handleScrollbarMouseDown = (event: MouseEvent) => {
-    if (event.target instanceof Element && event.target.closest(".os-scrollbar")) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-  };
-
   const touchHandler = (event: TouchEvent) => {
-    if (event.target instanceof Element && event.target.closest(".os-scrollbar")) return;
     const touches = event.changedTouches;
     const first = touches[0];
     if (!first) return;
@@ -344,7 +336,6 @@ export function useTerminal() {
     }
     terminalElement = element;
 
-    element.addEventListener("mousedown", handleScrollbarMouseDown, true);
     element.addEventListener("touchstart", touchHandler, true);
     element.addEventListener("touchmove", touchHandler, true);
     element.addEventListener("touchend", touchHandler, true);
@@ -537,7 +528,6 @@ export function useTerminal() {
     socket?.removeAllListeners();
     terminal.value?.dispose();
     terminal.value = undefined;
-    terminalElement?.removeEventListener("mousedown", handleScrollbarMouseDown, true);
     for (const type of ["touchstart", "touchmove", "touchend", "touchcancel"]) {
       terminalElement?.removeEventListener(type, touchHandler as EventListener, true);
     }

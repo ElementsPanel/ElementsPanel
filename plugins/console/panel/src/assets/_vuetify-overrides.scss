@@ -317,6 +317,11 @@ $app-root: ":where(#app-mount-point, .app-ui-root, .v-overlay-container)";
       color: var(--text-color) !important;
     }
 
+    .v-menu > .v-overlay__content,
+    .v-menu > .v-overlay__content * {
+      scrollbar-width: none;
+    }
+
     // Paint menu shadows outside the rounded, clipped content.
     .v-menu > .v-overlay__content {
       box-shadow:

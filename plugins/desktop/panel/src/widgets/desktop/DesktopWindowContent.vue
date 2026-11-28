@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { computed, inject, onBeforeUnmount, ref, type Component } from "vue";
+import { computed, inject, type Component } from "vue";
 import { desktopWindowContextKey, type WindowState } from "../../windowContext";
 
 const props = defineProps<{ window: WindowState }>();
 const desktop = inject(desktopWindowContextKey)!;
-const contentElement = ref<HTMLElement>();
-onBeforeUnmount(() => contentElement.value?.removeAttribute("data-desktop-window-content"));
 const close = () => desktop.close(props.window.id);
 const openFileEditor = (path: string, name: string) =>
   desktop.openFileEditor(props.window.instanceId!, props.window.daemonId!, path, name);
@@ -87,7 +85,7 @@ const content = computed<WindowContent | undefined>(() => {
 </script>
 
 <template>
-  <div ref="contentElement" class="window-inner-content" :data-desktop-window-content="window.id">
+  <div class="window-inner-content">
     <component
       :is="content.component"
       v-if="content"

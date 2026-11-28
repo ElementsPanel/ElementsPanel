@@ -255,7 +255,6 @@ html {
   opacity: 1;
 }
 
-// Standard scrollbar properties also cover browsers without WebKit pseudo-elements.
 * {
   scrollbar-width: thin;
   scrollbar-color: rgba(140, 140, 140, 0.45) transparent;
@@ -267,45 +266,10 @@ html {
   }
 }
 
-*::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-  background: transparent;
-}
-
-*::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: rgba(140, 140, 140, 0.45);
-  background: color-mix(in srgb, var(--color-gray-7, #8c8c8c) 45%, transparent);
-}
-
-*::-webkit-scrollbar-thumb:hover {
-  background: var(--color-gray-8, #595959);
-}
-
-*::-webkit-scrollbar-track,
-*::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
 @media (forced-colors: active) {
   * {
     scrollbar-width: auto;
     scrollbar-color: auto;
-  }
-
-  *::-webkit-scrollbar {
-    width: auto;
-    height: auto;
-  }
-
-  *::-webkit-scrollbar-thumb {
-    background: CanvasText;
-  }
-
-  *::-webkit-scrollbar-track,
-  *::-webkit-scrollbar-corner {
-    background: Canvas;
   }
 }
 

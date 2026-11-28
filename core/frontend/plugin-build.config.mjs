@@ -25,9 +25,6 @@ export function frontendAliases() {
     "@mdi/font/css/materialdesignicons.css": require.resolve(
       "@mdi/font/css/materialdesignicons.css"
     ),
-    "overlayscrollbars/overlayscrollbars.css": require.resolve(
-      "overlayscrollbars/overlayscrollbars.css"
-    ),
     "wavesurfer.js": require.resolve("wavesurfer.js")
   };
 }

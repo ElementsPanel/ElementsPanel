@@ -3,7 +3,6 @@ import "@/assets/base.scss";
 import "@/assets/variables.scss";
 import "@/assets/variables-dark.scss";
 import "@/assets/global.scss";
-import "@/assets/scrollbars.scss";
 import "@/assets/bg-extend-theme.scss";
 import "@/initLib";
 
